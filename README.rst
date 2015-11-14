@@ -46,4 +46,4 @@ Run the sequence of class unit tests::
 
 For more details about how to use labTools, refer to the
 `Setup Documentation on BitBucket
-<https://bitbucket.org/collectiveacuity/labtools/SETUP.rst>`_)
+<https://bitbucket.org/collectiveacuity/labtools/SETUP.rst>`_
