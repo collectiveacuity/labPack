@@ -2,7 +2,6 @@
 labTools
 ========
 
-# Table
 :Source: https://bitbucket.org/collectiveacuity/labtools.git
 
 A Collection of Classes & REST APIs to Handle Data Collection & Processing
