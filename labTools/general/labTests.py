@@ -3,10 +3,10 @@ __created__ = '2015.08'
 
 from timeit import default_timer as timer
 
-from processor.methods.general.labValidation import *
-from processor.methods.general.labRandom import *
-from processor.methods.general.labData import *
-from processor.methods.general.labRecords import *
+from labTools.general.labValidation import *
+from labTools.general.labRandom import *
+from labTools.general.labData import *
+from labTools.general.labRecords import *
 
 class labTest(object):
 

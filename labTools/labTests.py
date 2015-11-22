@@ -12,27 +12,43 @@ import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
+from cred.credentialsGoogle import *
+from labTools.location.googleMapsAPI import *
 from cred.credentialsATT import tinkerbellCredentials
-from labTools.speech.attAPI import *
+from labTools.speech.attSpeechAPI import *
+from cred.credentialsClarifai import clarifaiCredentials
+from labTools.image.clarifaiImageAPI import *
 
 class unitTests(object):
 
     def __init__(self):
         pass
 
-    def attAPI(self):
+    def attSpeechAPI(self):
         token = attAccessToken(att_credentials=tinkerbellCredentials).request()
         attSpeech(access_token=token).unitTests()
         return self
 
+    def clarifaiImageAPI(self):
+        token = clarifaiAccessToken(clarifai_credentials=clarifaiCredentials).request()
+        clarifaiImage(access_token=token).unitTests()
+        return self
+
+    def googleMapsAPI(self):
+        mapRules = json.loads(open('location/google-map-rules.json').read())
+        googleMaps(app_key=googleMapsCred['appKey'], map_rules=mapRules).unitTests()
+        return self
+
     def run(self):
-        self.attAPI()
+        self.attSpeechAPI()
+        self.clarifaiImageAPI()
+        self.googleMapsAPI()
         return self
 
 class performanceTests(object):
     pass
 
-unitTests().run()
+unitTests()
 
 
 

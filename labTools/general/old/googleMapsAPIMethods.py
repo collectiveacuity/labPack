@@ -1,19 +1,5 @@
 __author__ = 'rcj1492'
-__created__ = '2015'
-
-# dependencies for google map api requests & performance tests
-# https://developers.google.com/maps/documentation/
-# quota: 2500 requests per day
-# throttle: 5 requests per sec
-
-import time
-import json
-import urllib.request
-import urllib.parse
-from timeit import default_timer as timer
-
-from cred.credentialsDataProcessor import *
-
+__created__ = '2015.11'
 
 def timeZonefromGPS(lat, long, timestamp, google_app_key):
     '''
@@ -144,4 +130,3 @@ def placeDetailsfromPlaceID(placeid, google_app_key):
     data = json.loads(response.read().decode("utf-8"))
     return data['result']
 assert placeDetailsfromPlaceID('ChIJrcijEoGgwokRheFOp_lB0Vw', googleAppKey)['name'] == 'Starbucks'
-
