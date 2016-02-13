@@ -3,8 +3,10 @@ __created__ = '2015.09'
 
 import re
 import os
+from ipaddress import ip_address
 from decimal import Decimal
 from copy import deepcopy
+from base64 import b64decode
 
 class labValid(object):
 
@@ -425,55 +427,227 @@ class labValid(object):
         assert labValid.validateEmail('r@me.xn--internationaltopdomain') == True
         return self
 
-class parseString(str):
+class labString(str):
 
     '''
-        a class of methods for parsing data from strings
+        a class of methods for parsing, formatting and validating a string
         
         dependencies:
             import re
             from copy import deepcopy
+            import b
         
         built-in methods:
-            self.stripHTML: removes all html markup elements
-            self.stripScripts: removes all html script and style elements
-            self.stripEscapes: removes all new lines, tabs and escape characters
+            all standard string methods
+
     '''
 
-    def __init__(self, input, title=None):
-        str.__init__('')
+    def __init__(self, input):
+
+        name = '%s.__init__()' % self.__class__.__name__
+
+        self.title = 'String input'
+
+        try:
+            assert input == str(input)
+        except:
+            raise TypeError('\n%s for %s must be an utf-8 encoded string.' % (self.title, name))
+
+        str.__init__(input)
+
+    def argument(self, argument, name):
+
+        try:
+            assert argument == str(argument)
+        except:
+            raise TypeError('\n%s must be a string.' % name)
+
+        return True
+
+    def rename(self, title):
+
+        name = 'title argument for %s.rename()' % self.__class__.__name__
+
+        self.argument(title, name)
+        self.title = title
+
+        return self
+
+    def validate(self, byte_data=False, min_length=None, max_length=None, must_contain=None, must_not_contain=None, contains_either=None, discrete_values=None):
         
-    # validate inputs
-        if title:
-            self.title = title
-        else:
-            self.title = 'String input'
-        labValid.string(input, self.title)
+        '''
+            a method to validate the string against a number of criteria
+        
+        :param byte_data: boolean
+        :param min_length: integer
+        :param max_length: integer
+        :param must_contain: list
+        :param must_not_contain: list
+        :param contains_either: list
+        :param discrete_values: list
+        :return: labString
+        '''
 
-    # stripHTML method (re.S creates DOTALL flag to make . = ANY character at all)
-        pattern1 = re.compile('<!--.+?-->', re.S) # html comments
-        pattern2 = re.compile('<[^>]+?>') # html selectors
-        pattern3 = re.compile('&.+?;') # non-ascii characters
-        stripA = pattern1.sub('', self)
-        stripB = pattern2.sub('', stripA)
-        stripC = pattern3.sub('', stripB)
-        self.stripHTML = stripC
+        if byte_data:
+            error_msg = '\n%s must be a 64 byte encodable string.' % self.title
+            try:
+                decoded_bytes = b64decode(self)
+            except:
+                raise TypeError(error_msg)
+            if not isinstance(decoded_bytes, bytes):
+                raise TypeError(error_msg)
 
-    # stripScripts (re.S creates DOTALL flag to make . = ANY character at all)
-        pattern1 = re.compile('<script.+?</script>', re.S) # html scripts
-        pattern2 = re.compile('<style>.+?</style>', re.S) # html styles
-        stripA = pattern1.sub('', self)
-        stripB = pattern2.sub('', stripA)
-        self.stripScripts = stripB
+        if min_length or min_length == 0:
+            error_msg = '\n%s cannot be less than %s.' % (self.title, min_length)
+            if not isinstance(min_length, int):
+                raise Exception('min_length argument for %s.validate() must be an integer.' % self.__class__.__name__)
+            elif min_length < 0:
+                raise ValueError('min_length argument for %s.validate() may not be negative.' % self.__class__.__name__)
+            elif len(self) < min_length:
+                raise ValueError(error_msg)
 
-    # stripEscapes (re.S creates DOTALL flag to make . = ANY character at all)
-        pattern1 = re.compile(r'\\n') # new line
-        pattern2 = re.compile(r'\\t') # tab
-        pattern3 = re.compile(r'\\') # escape character
-        stripA = pattern1.sub('', self)
-        stripB = pattern2.sub('', stripA)
-        stripC = pattern3.sub('', stripB)
-        self.stripEscapes = stripC
+        if max_length or max_length == 0:
+            error_msg = '\n%s cannot be greater than %s.' % (self.title, max_length)
+            if not min_length:
+                min_length = 0
+            if not isinstance(max_length, int):
+                raise Exception('max_length argument for %s.validate() must be an integer.' % self.__class__.__name__)
+            elif max_length < 0:
+                raise ValueError('max_length argument for %s.validate() may not be negative.', self.__class__.__name__)
+            elif max_length < min_length:
+                raise ValueError('max_length argument for %s.validate() may not be less than min_length.', self.__class__.__name__)
+            elif len(self) > max_length:
+                raise ValueError(error_msg)
+
+        if must_contain:
+            if not isinstance(must_contain, list):
+                raise TypeError('must_contain argument for %s.validate() must be a list.' % self.__class__.__name__)
+            for i in range(len(must_contain)):
+                if not isinstance(must_contain[i], str):
+                    raise TypeError('item [%s] of must_contain argument for %s.validate() is not a string.' % (i, self.__class__.__name__))
+                regex = must_contain[i]
+                error_msg = "\n%s must contain pattern '%s'" % (self.title, regex)
+                regex_pattern = re.compile(regex)
+                if not regex_pattern.findall(self):
+                    raise ValueError(error_msg)
+
+        if must_not_contain:
+            if not isinstance(must_not_contain, list):
+                raise TypeError('must_not_contain argument for %s.validate() must be a list.' % self.__class__.__name__)
+            for i in range(len(must_not_contain)):
+                if not isinstance(must_not_contain[i], str):
+                    raise TypeError('item [%s] of must_not_contain argument for %s.validate() is not a string.' % (i, self.__class__.__name__))
+                regex = must_not_contain[i]
+                regex_pattern = re.compile(regex)
+                regex_match = regex_pattern.findall(self)
+                if regex_match:
+                    error_msg = "\n%s must not contain %s which match pattern '%s'" % (self.title, regex_match, regex)
+                    raise ValueError(error_msg)
+
+        if contains_either:
+            if not isinstance(contains_either, list):
+                raise TypeError('contains_either argument for %s.validate() must be a list.' % self.__class__.__name__)
+            regex_match = []
+            for i in range(len(contains_either)):
+                if not isinstance(contains_either[i], str):
+                    raise TypeError('item [%s] of contains_either argument for %s.validate() is not a string.' % (i, self.__class__.__name__))
+                regex = contains_either[i]
+                regex_pattern = re.compile(regex)
+                for match in regex_pattern.findall(self):
+                    regex_match.append(match)
+            if not regex_match:
+                error_msg = "\n%s must contain either of %s patterns." % (self.title, contains_either)
+                raise ValueError(error_msg)
+
+        if discrete_values:
+            if not isinstance(discrete_values, list):
+                raise TypeError('discrete_values argument for %s.validate() must be a list.' % self.__class__.__name__)
+            error_msg = "\n%s must be one of %s discrete values." % (self.title, discrete_values)
+            if self not in set(discrete_values):
+                raise ValueError(error_msg)
+        
+        return self
+
+    def validDNS(self):
+        kw_args = {
+            'must_not_contain': ['[^0-9a-zA-Z/:=_,&~%@#\.\-\?\+\$]+'],
+            'contains_either': [
+                'https?://',
+                '[\w\-]+\.[a-z]{2}'
+            ]
+        }
+        self.validate(**kw_args)
+        return True
+
+    def validIP(self):
+        # kw_args = {
+        #     'contains_either': [
+        #         '\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}', # ipv4
+        #         '[0-9a-fA-F]+:[0-9a-fA-F]+:[0-9a-fA-F]+:[0-9a-fA-F:]*:[0-9a-fA-F]+$' #ipv6
+        #     ]
+        # }
+        # self.validate(**kw_args)
+        ip = ip_address(self)
+        return True
+
+    def validURL(self):
+        try:
+            self.validIP()
+        except:
+            self.validDNS()
+        return True
+
+    def stripHTML(self):
+
+        '''
+            a method for removing html elements from the string
+
+            (re.S creates DOTALL flag to make . = ANY character at all)
+        :return: string
+        '''
+
+        html_pattern1 = re.compile('<!--.+?-->', re.S) # html comments
+        html_pattern2 = re.compile('<[^>]+?>') # html selectors
+        html_pattern3 = re.compile('&.+?;') # non-ascii characters
+        stripA = html_pattern1.sub('', self)
+        stripB = html_pattern2.sub('', stripA)
+        stripC = html_pattern3.sub('', stripB)
+
+        return labString(stripC)
+
+    def stripScripts(self):
+
+        '''
+            a method for removing script and style elements from the string
+
+            (re.S creates DOTALL flag to make . = ANY character at all)
+        :return: string
+        '''
+
+        script_pattern1 = re.compile('<script.+?</script>', re.S) # html scripts
+        script_pattern2 = re.compile('<style>.+?</style>', re.S) # html styles
+        stripA = script_pattern1.sub('', self)
+        stripB = script_pattern2.sub('', stripA)
+
+        return labString(stripB)
+
+    def stripEscapes(self):
+
+        '''
+            a method for removing escape elements from the string
+
+            (re.S creates DOTALL flag to make . = ANY character at all)
+        :return: string
+        '''
+
+        escape_pattern1 = re.compile(r'\\n') # new line
+        escape_pattern2 = re.compile(r'\\t') # tab
+        escape_pattern3 = re.compile(r'\\') # escape character
+        stripA = escape_pattern1.sub('', self)
+        stripB = escape_pattern2.sub('', stripA)
+        stripC = escape_pattern3.sub('', stripB)
+
+        return labString(stripC)
 
     def extractByFind(self, prefix, suffix):
 
@@ -485,9 +659,8 @@ class parseString(str):
         '''
 
     # validate inputs
-        sub_title = 'extractByFind of %s' % self.title
-        labValid.string(prefix, 'Prefix input for %s' % sub_title)
-        labValid.string(suffix, 'Suffix input for %s' % sub_title)
+        self.argument(prefix, 'prefix argument for %s.extractByFind()' % self.__class__.__name__)
+        self.argument(suffix, 'suffix argument for %s.extractByFind()' % self.__class__.__name__)
 
     # find segment
         start = self.find(prefix) + len(prefix)
@@ -508,21 +681,20 @@ class parseString(str):
         '''
 
     # validate inputs
-        sub_title = 'extractByRegex in %s' % self.title
-        labValid.string(pattern, 'Pattern input for %s' % sub_title)
+        self.argument(pattern, 'pattern argument for %s.extractByRegex()' % self.__class__.__name__)
 
     # construct segment
         prefix_test = False
         suffix_test = False
         segment = deepcopy(pattern)
         if prefix:
-            labValid.string(prefix, 'Prefix input for %s' % sub_title)
+            self.argument(pattern, 'prefix argument for %s.extractByRegex()' % self.__class__.__name__)
             segment = prefix + segment
             prefix_test = True
             if '\\' in prefix:
                 prefix = prefix.replace('\\\\','\\')
         if suffix:
-            labValid.string(suffix, 'Suffix input for %s' % sub_title)
+            self.argument(pattern, 'suffix argument for %s.extractByRegex()' % self.__class__.__name__)
             segment = segment + suffix
             suffix_test = True
             if '\\' in suffix:
@@ -546,8 +718,8 @@ class parseString(str):
         return segment_list
 
     def unitTests(self):
-        test1 = parseString('http:\/\/www.meetup.com\/insidestartupsclub\/events\/221604732\/')
-        test2 = parseString('<p>Drinks with <b><a href=\"http:\/\/uncubed.com\/\">Uncubed<\/a><\/b>.<\/p>')
+        test1 = labString('http:\/\/www.meetup.com\/insidestartupsclub\/events\/221604732\/')
+        test2 = labString('<p>Drinks with <b><a href=\"http:\/\/uncubed.com\/\">Uncubed<\/a><\/b>.<\/p>')
         noEscapes = '<p>Drinks with <b><a href="http://uncubed.com/">Uncubed</a></b>.</p>'
         assert test1.extractByFind('events\/', '\/') == '221604732'
         assert test1.extractByRegex('\d+', 'events\\\\/', '\\\\/')[0] == '221604732'
@@ -557,9 +729,23 @@ class parseString(str):
         assert test1.extractByRegex('[A-Z]+') == []
         assert test1.extractByRegex('\d+', 'A') == []
         assert test1.extractByRegex('[a-zA-Z0-9.:]+')[4] == '221604732'
-        assert test2.stripHTML == 'Drinks with Uncubed.'
-        assert test2.stripEscapes == noEscapes
+        assert test2.stripHTML() == 'Drinks with Uncubed.'
+        assert test2.stripEscapes() == noEscapes
+        assert test1.stripEscapes().validDNS()
+        assert labString('me.ca').validDNS()
+        assert labString('192.168.99.100').validIP()
+        test_list = [ 'validIP' ]
+        test3 = labString('192.168.99.100')
+        assert test3.__getattribute__(test_list[0])()
         return self
 
 labValid.unitTests()
-parseString('').unitTests()
+test = labString('hi').rename('mom')
+test.unitTests()
+print(test.title)
+text = b64decode('ZGF0LnRvL2hleQ==')
+print(text)
+testModel = { 'schema': { 'hi': 'mom' } }
+testInput = { 'hi': 'dad' }
+from jsonmodel.validators import jsonModel
+jsonModel(testModel).validate(testInput)

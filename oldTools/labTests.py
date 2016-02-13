@@ -13,11 +13,11 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 from cred.credentialsGoogle import *
-from labTools.location.googleMapsAPI import *
+from oldTools.location.googleMapsAPI import *
 from cred.credentialsATT import tinkerbellCredentials
-from labTools.speech.attSpeechAPI import *
+from oldTools.speech.attSpeechAPI import *
 from cred.credentialsClarifai import clarifaiCredentials
-from labTools.image.clarifaiImageAPI import *
+from oldTools.image.clarifaiImageAPI import *
 
 class unitTests(object):
 

@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 #   https://the-hitchhikers-guide-to-packaging.readthedocs.org/en/latest/creation.html
 
 setup(
-   name="labTools",
+   name="oldTools",
    version="0.1.0",
    author = __author__,
    include_package_data=True,  # Checks MANIFEST.in for explicit rules
@@ -20,7 +20,8 @@ setup(
       "pytz" >= "2015.2",
       "scp" >= "0.10.2",
       "boto3" >= "1.1.4",
-      "pytest" >= "2.7.2"
+      "pytest" >= "2.7.2",
+      "selenium" >= "2.51.1"
    ],
    classifiers=[
       'Development Status :: Alpha',
