@@ -3,4 +3,5 @@ ChangeLog
 
 0.1.0
 -----
-* Upload of package
+* Local Build of Package
+* Creation of BitBucket Repo
