@@ -7,6 +7,7 @@ labPack
 
 Top-Level Classes
 -----------------
+- **labScrape**: A class to scrape data from websites
 - **labSpeech**: A class to manage the speech-to-text and text-to-speech APIs
 
 Low-Level Classes
