@@ -35,14 +35,14 @@ setup(
     author = __author__,
     maintainer_email="support@collectiveacuity.com",
     include_package_data=True,  # Checks MANIFEST.in for explicit rules
-    packages=find_packages(exclude=['cred','tests','models','notes','oldTools']),  # Needed for bdist
+    packages=find_packages(exclude=['cred','tests','models','notes']),  # Needed for bdist
     license="MIT",
     description="A Collection of Methods to Handle Data Collection & Processing",
     long_description=open('README.rst').read(),
     install_requires=[
-        "jsonmodel" >= "1.0",
-        "selenium" >= "2.51.1",
-        "splinter" >= "0.7.3"
+        "jsonmodel>=1.0",
+        "selenium>=2.51.1",
+        "splinter>=0.7.3"
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
