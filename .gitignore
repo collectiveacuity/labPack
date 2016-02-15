@@ -15,9 +15,6 @@ cred/
 # Data Files
 data/
 
-# Old Versions
-labPack/
-
 # Distribution / packaging
 .Python
 env/
