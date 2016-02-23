@@ -1,21 +1,23 @@
 __author__ = 'rcj1492'
 __created__ = '2015'
 
+'''
+Google Locations
+geo location based upon wiki & cell towers
+https://developers.google.com/maps/documentation/geolocation/
+
+import netifaces
+'''
+
 import re
 import os
 from urllib.request import urlopen
 import json
 import socket
-import netifaces
 from timeit import default_timer as timer
 
-from cred.credentialsDataProcessor import *
+class geoLocateByIP(object):
 
-
-# geo location based upon wiki & cell towers
-# https://developers.google.com/maps/documentation/geolocation/
-
-class geoLocateByIP:
     '''
         a class of methods used to determine location from IP
         http://ip-api.com/docs/api:json
@@ -28,7 +30,11 @@ class geoLocateByIP:
         from config.apiCredentials import *
         from timeit import default_timer as timer
     '''
-    def ipAPI(ip_address):
+
+    def __init__(self, dpip_credentials):
+        self.dpIPCred = dpip_credentials
+
+    def ipAPI(self, ip_address):
         '''
             method for using ip-api.com api to locate an IP address
             ipAPIAPIThrottle = 60 / 250
@@ -65,7 +71,7 @@ class geoLocateByIP:
                     del d[i]
             return d
 
-    def dbIP(ip_address):
+    def dbIP(self, ip_address):
         '''
             method for using db-ip.com api to locate an IP address
             dbIPAPIThrottle = (60 * 60 * 24) / 2000
@@ -90,7 +96,7 @@ class geoLocateByIP:
         elif not ipv6pattern.match(ip_address) and not ipv4pattern.match(ip_address):
             raise Exception('input is not a valid internet address')
         else:
-            url = 'http://api.db-ip.com/addrinfo?addr=' + ip_address + '&api_key=' + dbIPAPIKey
+            url = 'http://api.db-ip.com/addrinfo?addr=' + ip_address + '&api_key=' + self.dpIPCred
             t1 = timer()
             r = urlopen(url).read().decode()
             t2 = timer()
@@ -101,16 +107,19 @@ class geoLocateByIP:
                 if i in d.keys():
                     del d[i]
             return d
-# assert geoLocateByIP.dbIP('4.35.25.132')['stateprov'] == 'Connecticut'
-# assert geoLocateByIP.dbIP('2001:db8:85a3:8d3:1319:8a2e:370:7348')['stateprov'] == 'Queensland'
-# assert geoLocateByIP.ipAPI('8.8.8.8')['regionName'] == 'California'
-# assert geoLocateByIP.ipAPI('2001:4860:4860::8888')['countryCode'] == 'US'
 
-class localPublicIP:
+class localPublicIP(object):
+
     '''
         a class of methods to determine local public IP address
+
     '''
-    def httpBin():
+
+    def __init__(self):
+        pass
+
+    def httpBin(self):
+
         '''
             from urllib.request import urlopen
             import json
@@ -125,7 +134,7 @@ class localPublicIP:
         print(urlTitle + ': ' + format((t2 - t1), '.5f') + ' seconds')
         return json.loads(r)['origin']
 
-    def jsonIP():
+    def jsonIP(self):
         '''
             from urllib.request import urlopen
             import json
@@ -140,7 +149,7 @@ class localPublicIP:
         print(urlTitle + ': ' + format((t2 - t1), '.5f') + ' seconds')
         return json.loads(r)['ip']
 
-    def ip42():
+    def ip42(self):
         '''
             from urllib.request import urlopen
             import json
@@ -155,13 +164,15 @@ class localPublicIP:
         print(urlTitle + ': ' + format((t2 - t1), '.5f') + ' seconds')
         return r
 
-    def ipify():
+    def ipify(self):
+
         '''
             from urllib.request import urlopen
             import json
             from timeit import default_timer as timer
         :return: local public ip address as string
         '''
+
         urlTitle = 'Ipify API'
         url = 'https://api.ipify.org/?format=json'
         t1 = timer()
@@ -169,16 +180,13 @@ class localPublicIP:
         t2 = timer()
         print(urlTitle + ': ' + format((t2 - t1), '.5f') + ' seconds')
         return json.loads(r)['ip']
-# assert localPublicIP.httpBin()
-# assert localPublicIP.jsonIP()
-# assert localPublicIP.ip42()
-# assert localPublicIP.ipify()
 
-# print(localPublicIP.httpBin())
+class localPrivateIP(object):
 
-class localPrivateIP:
+    def __init__(self):
+        pass
 
-    def pingHTTP(ip_address):
+    def pingHTTP(self, ip_address):
         '''
             method for determining local IP assignment from public HTTP callback request
             get request format
@@ -207,7 +215,7 @@ class localPrivateIP:
                 return localSock
             s.close()
 
-    def askSocket():
+    def askSocket(self):
         host = socket.getfqdn()
         addresses = socket.getaddrinfo(host, None)
         testList = []
@@ -219,7 +227,42 @@ class localPrivateIP:
                 testList.append(addr)
         return testList
 
-    def netifaces():
+    def socketHost(self):
+        d = []
+        host = socket.gethostname()
+        for ip in socket.gethostbyname_ex(host)[2]:
+            if not ip.startswith("127."):
+                d.append(ip)
+        return d
+
+class wipMethods(object):
+
+    def __init__(self):
+        pass
+
+    def get_lan_ip(self):
+        # if os.name != "nt":
+        import fcntl
+        import struct
+        def get_interface_ip(ifname):
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            return socket.inet_ntoa(fcntl.ioctl(
+                    s.fileno(),
+                    0x8915,  # SIOCGIFADDR
+                    struct.pack('256s', bytes(ifname[:15], 'utf-8'))
+                )[20:24])
+        ip = socket.gethostbyname(socket.gethostname())
+        if ip.startswith("127.") and os.name != "nt":
+            interfaces = ["eth0","eth1","eth2","wlan0","wlan1","wifi0","ath0","ath1","ppp0"]
+            for ifname in interfaces:
+                try:
+                    ip = get_interface_ip(ifname)
+                    break
+                except IOError:
+                    pass
+        return ip
+
+    def netifaces(self):
         '''
             import netifaces
             # pip install netifaces
@@ -236,47 +279,16 @@ class localPrivateIP:
                     deviceList.append(res[2][0]['addr'])
         return deviceList
 
-    def socketHost():
-        d = []
-        host = socket.gethostname()
-        for ip in socket.gethostbyname_ex(host)[2]:
-            if not ip.startswith("127."):
-                d.append(ip)
-        return d
-# print(localPrivateIP.askSocket())
-# print(localPrivateIP.netifaces())
-# print(localPrivateIP.socketHost())
-# print(localPrivateIP.pingHTTP('8.8.8.8'))
+    def getNetworkIp(self):
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        s.connect(('<broadcast>', 0))
+        return s.getsockname()[0]
 
-def get_lan_ip():
-    if os.name != "nt":
-        import fcntl
-        import struct
-        def get_interface_ip(ifname):
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            return socket.inet_ntoa(fcntl.ioctl(
-                    s.fileno(),
-                    0x8915,  # SIOCGIFADDR
-                    struct.pack('256s', bytes(ifname[:15], 'utf-8'))
-                )[20:24])
-    ip = socket.gethostbyname(socket.gethostname())
-    if ip.startswith("127.") and os.name != "nt":
-        interfaces = ["eth0","eth1","eth2","wlan0","wlan1","wifi0","ath0","ath1","ppp0"]
-        for ifname in interfaces:
-            try:
-                ip = get_interface_ip(ifname)
-                break;
-            except IOError:
-                pass
-    return ip
-print(get_lan_ip())
-
-def getNetworkIp():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    s.connect(('<broadcast>', 0))
-    return s.getsockname()[0]
-print(getNetworkIp())
+    def unitTest(self):
+        print(self.get_lan_ip())
+        print(self.netifaces())
+        print(self.getNetworkIp())
 
 
 
