@@ -10,9 +10,10 @@ https://wit.ai/docs/console/quickstart
 '''
 
 import json
+from urllib.parse import urlencode
 from urllib.request import Request
 from urllib.request import urlopen
-from urllib.parse import urlencode
+
 from cred.credentialsWitAI import witAICredentials
 
 # construct get request

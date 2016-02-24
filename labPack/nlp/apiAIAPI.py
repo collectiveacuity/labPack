@@ -11,5 +11,3 @@ apt-get install -y python-numpy
 pip3 install apiai
 '''
 
-from cred.credentialsAPIAI import apiAICredentials
-

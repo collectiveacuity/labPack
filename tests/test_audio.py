@@ -2,8 +2,9 @@ __author__ = 'rcj1492'
 __created__ = '2016.02'
 
 # Harmon API
-from labPack.audio import harmonAccessToken
 from cred.credentialsHarmon import harmonCredentials, harmonCredentialsCA
+from labPack.audio import harmonAccessToken
+
 token = harmonAccessToken(harmon_credentials=harmonCredentials)
 print(token.endpoint)
 print(token.clientID)

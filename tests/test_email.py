@@ -1,16 +1,25 @@
 __author__ = 'rcj1492'
 __created__ = '2016.02'
 
-from cred.credentialsMandrill import mandrillKey
-from labPack.email import sendEmailFromHFEMandrill
 from datetime import datetime
+from cred.credentialsMandrill import mandrillCredentials
+from labPack.email import mandrillAPI, MandrillConnectionError
 
-assert sendEmailFromHFEMandrill(
-    mandrillKey,
-    userEmail='collectiveacuity@gmail.com',
-    userName='Collective Acuity',
-    emailSubject='[Activation] High Frequency Events',
-    emailText='Restful python script activated for High Frequency Events at ' \
-              + datetime.utcnow().isoformat() + 'Z',
-    emailTags=['QA','Development','ActivationTime','HFE']
-    )
+class mandrillAPITests(mandrillAPI):
+
+    def __init__(self, mandrill_credentials):
+        mandrillAPI.__init__(self, mandrill_credentials)
+
+    def unitTests(self):
+        time_stamp = datetime.utcnow().isoformat()
+        test_email = {
+            'user_email': 'collectiveacuity@gmail.com',
+            'user_name': 'Collective Acuity',
+            'email_subject': '[Activation] High Frequency Events',
+            'email_text': 'Restful python script activated for High Frequency Events at %sZ' % time_stamp,
+            'email_tags': ['QA','Development','ActivationTime','HFE']
+        }
+        self.send(**test_email)
+
+client = mandrillAPITests(mandrillCredentials)
+client.unitTests()

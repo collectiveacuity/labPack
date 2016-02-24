@@ -24,6 +24,10 @@ pip install [module]
 python setup.py develop  # for local on-the-fly file updates
 python setup.py install  # when possessing distribution files
 
+Uninstall:
+pip uninstall [module]
+python setup.py develop --uninstall # for removing symbolic link
+
 Old Methods:
 python setup.py sdist bdist_wheel upload  # for PyPi
 pip wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
@@ -35,14 +39,13 @@ setup(
     author = __author__,
     maintainer_email="support@collectiveacuity.com",
     include_package_data=True,  # Checks MANIFEST.in for explicit rules
-    packages=find_packages(exclude=['cred','tests','models','notes']),  # Needed for bdist
+    packages=find_packages(exclude=['cred','keys','tests','models','notes']),  # Needed for bdist
     license="MIT",
-    description="A Collection of Methods to Handle Data Collection & Processing",
+    description="A Collection of Methods & APIs to Handle Data Collection & Processing",
     long_description=open('README.rst').read(),
     install_requires=[
         "jsonmodel>=1.0",
-        "selenium>=2.51.1",
-        "splinter>=0.7.3"
+        "mandrill>=1.0.57"
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
