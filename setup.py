@@ -39,7 +39,7 @@ setup(
     author = __author__,
     maintainer_email="support@collectiveacuity.com",
     include_package_data=True,  # Checks MANIFEST.in for explicit rules
-    packages=find_packages(exclude=['cred','keys','tests','models','notes']),  # Needed for bdist
+    packages=find_packages(exclude=['cred','keys','docs','tests','models','notes']),  # Needed for bdist
     license="MIT",
     description="A Collection of Methods & APIs to Handle Data Collection & Processing",
     long_description=open('README.rst').read(),
