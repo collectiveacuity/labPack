@@ -33,10 +33,12 @@ This module is designed to manage...
 Run a string validation tool::
 .. code-block:: python
 
-    from labPack.validators import labString
+    from labPack_dev.shorteners import bitlyAPI
+    from cred.credentialsBitly import bitlyCredentials
 
-    greeting = labString('hi').rename('mom')
+    bitlySession = bitlyAPI(bitlyCredentials)
+    bitlySession.shorten('https://mylongdomainname.com/?param=verylongquerystring')
 
 For more details about how to use labPack, refer to the
 `Reference Documentation on BitBucket
-<https://bitbucket.org/collectiveacuity/labpack/REFERENCE.rst>`_
+<https://bitbucket.org/collectiveacuity/labpack_dev/src/master/REFERENCE.rst>`_
