@@ -3,7 +3,7 @@ __created__ = '2016.02'
 
 from datetime import datetime
 from cred.credentialsMandrill import mandrillCredentials
-from labPack.email import mandrillAPI, MandrillConnectionError
+from labPack_dev.email import mandrillAPI, MandrillConnectionError
 
 class mandrillAPITests(mandrillAPI):
 

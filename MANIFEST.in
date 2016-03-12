@@ -4,7 +4,7 @@ recursive-exclude tests *
 recursive-exclude models *
 recursive-exclude notes *
 recursive-exclude docs *
-recursive-include labPack *.json
+recursive-include labPack_dev *.json
 include *.rst
 include *.txt
 include *.md

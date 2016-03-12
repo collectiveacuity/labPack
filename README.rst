@@ -1,9 +1,9 @@
-=======
-labPack
-=======
-*A Collection of Methods & APIs to Handle Data Collection & Processing*
+===========
+labPack_dev
+===========
+*A WIP Collection of Methods & APIs to Handle Data Collection & Processing*
 
-:Source: https://bitbucket.org/collectiveacuity/labPack.git
+:Source: https://bitbucket.org/collectiveacuity/labpack_dev.git
 
 Top-Level Classes
 -----------------

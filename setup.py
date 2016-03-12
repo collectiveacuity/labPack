@@ -7,6 +7,8 @@ from setuptools import setup, find_packages
 References:
 https://python-packaging-user-guide.readthedocs.org/en/latest/
 https://docs.python.org/3.5/distutils/index.html
+https://github.com/jgehrcke/python-cmdline-bootstrap
+http://www.pyinstaller.org/
 
 Installation Packages:
 pip install wheel
@@ -27,6 +29,17 @@ python setup.py install  # when possessing distribution files
 Uninstall:
 pip uninstall [module]
 python setup.py develop --uninstall # for removing symbolic link
+# remove command line tool in ../Python/Python35-32/Scripts/
+
+CLI Installation:
+command = 'name of command'
+module = 'name of module'
+    entry_points = {
+        "console_scripts": ['%s = %s.cli:cli' % (command, module)]
+    },
+
+System Installation:
+# http://www.pyinstaller.org/
 
 Old Methods:
 python setup.py sdist bdist_wheel upload  # for PyPi
@@ -34,7 +47,7 @@ pip wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
 '''
 
 setup(
-    name="labPack",
+    name="labPack_dev",
     version="0.1.0",
     author = __author__,
     maintainer_email="support@collectiveacuity.com",
@@ -44,7 +57,7 @@ setup(
     description="A Collection of Methods & APIs to Handle Data Collection & Processing",
     long_description=open('README.rst').read(),
     install_requires=[
-        "jsonmodel>=1.0",
+        "jsonmodel>=1.1",
         "mandrill>=1.0.57"
     ],
     classifiers=[
