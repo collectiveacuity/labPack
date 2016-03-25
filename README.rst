@@ -33,6 +33,7 @@ From PyPi::
 From GitHub::
 
     $ git clone https://github.com/collectiveacuity/labPack
+    $ cd labPack
     $ python setup.py install
 
 Getting Started
