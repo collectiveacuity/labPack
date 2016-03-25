@@ -6,6 +6,7 @@ recursive-exclude keys *
 recursive-exclude tests *
 recursive-exclude models *
 recursive-exclude notes *
+recursive-exclude tests_dev *
 recursive-include labpack/rules *.json
 include *.rst
 include *.txt
