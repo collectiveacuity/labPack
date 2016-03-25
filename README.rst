@@ -1,44 +1,50 @@
-===========
-labPack_dev
-===========
-*A WIP Collection of Methods & APIs to Handle Data Collection & Processing*
+.. image:: https://img.shields.io/pypi/v/jsonmodel.svg
+    :target: https://pypi.python.org/pypi/jsonmodel
+.. image:: https://img.shields.io/pypi/dm/jsonmodel.svg
+    :target: https://pypi.python.org/pypi/jsonmodel
+.. image:: https://img.shields.io/pypi/l/jsonmodel.svg
+    :target: https://pypi.python.org/pypi/jsonmodel
 
-:Source: https://bitbucket.org/collectiveacuity/labpack_dev.git
+=======
+labPack
+=======
+*A Collection of Methods for Data Collection & Processing*
+
+:Downloads: http://pypi.python.org/pypi/labPack
+:Source: https://github.com/collectiveacuity/labPack
 
 Top-Level Classes
 -----------------
-- **labScrape**: A class to scrape data from websites
-- **labSpeech**: A class to manage the speech-to-text and text-to-speech APIs
-
-Class Object Models (in models/)
---------------------------------
--
+* **labID**: A class of methods for uniquely identifying objects
+* **labString**: A class of methods for parsing, formatting and validating a string
+* **labRandom**: A class of methods for generating random data
 
 Features
 --------
--
+*
 
+============
 Installation
 ============
-From BitBucket::
+From PyPi::
 
-    $ git clone https://bitbucket.org/collectiveacuity/labpack.git
-    $ python setup.py sdist --format=gztar
-    $ python setup.py develop  # for local on-the-fly file updates
+    $ pip install labPack
+
+From GitHub::
+
+    $ git clone https://github.com/collectiveacuity/labPack
+    $ python setup.py install
 
 Getting Started
-^^^^^^^^^^^^^^^
+---------------
 This module is designed to manage...
 
 Run a string validation tool::
-.. code-block:: python
 
-    from labPack_dev.shorteners import bitlyAPI
-    from cred.credentialsBitly import bitlyCredentials
+    from labPack.validations import labString
 
-    bitlySession = bitlyAPI(bitlyCredentials)
-    bitlySession.shorten('https://mylongdomainname.com/?param=verylongquerystring')
+    greeting = labString('hi').rename('mom')
 
 For more details about how to use labPack, refer to the
 `Reference Documentation on BitBucket
-<https://bitbucket.org/collectiveacuity/labpack_dev/src/master/REFERENCE.rst>`_
+<https://bitbucket.org/collectiveacuity/labpack/src/master/REFERENCE.rst>`_

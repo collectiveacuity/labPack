@@ -1,5 +1,5 @@
 __author__ = 'rcj1492'
 __created__ = '2015.11'
-__module__ = 'labPack_dev'
+__module__ = 'labpack'
 __version__ = '0.1'
 __email__ = 'support@collectiveacuity.com'

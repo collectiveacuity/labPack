@@ -3,7 +3,7 @@ __created__ = '2016.02'
 
 # Harmon API
 from cred.credentialsHarmon import harmonCredentials, harmonCredentialsCA
-from labPack_dev.audio import harmonAccessToken
+from dev.audio import harmonAccessToken
 
 token = harmonAccessToken(harmon_credentials=harmonCredentials)
 print(token.endpoint)

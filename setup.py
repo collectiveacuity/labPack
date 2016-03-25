@@ -44,13 +44,13 @@ python setup.py sdist bdist_wheel upload  # for PyPi
 pip wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
 '''
 
-config_file = open('labPack_dev/__init__.py').read()
+config_file = open('labpack/__init__.py').read()
 version = re.search("^__version__\s*=\s*'(.*)'", config_file, re.M).group(1)
-command = re.search("^__command__\s*=\s*'(.*)'", config_file, re.M).group(1)
+# command = re.search("^__command__\s*=\s*'(.*)'", config_file, re.M).group(1)
 module = re.search("^__module__\s*=\s*'(.*)'", config_file, re.M).group(1)
 author = re.search("^__author__\s*=\s*'(.*)'", config_file, re.M).group(1)
 email = re.search("^__email__\s*=\s*'(.*)'", config_file, re.M).group(1)
-author_list = re.search("^__authors__\s*=\s*'(.*)'", config_file, re.M).group(1)
+# author_list = re.search("^__authors__\s*=\s*'(.*)'", config_file, re.M).group(1)
 
 setup(
     name=module,
@@ -58,13 +58,12 @@ setup(
     author=author,
     maintainer_email=email,
     include_package_data=True,  # Checks MANIFEST.in for explicit rules
-    packages=find_packages(exclude=['cred','keys','docs','tests','models','notes']),  # Needed for bdist
+    packages=find_packages(exclude=['cred','keys','dev','docs','tests','models','notes']),  # Needed for bdist
     license="MIT",
-    description="A Catchall for Methods which are Works In Progress",
+    description="A Collection of Methods for Data Collection & Processing",
     long_description=open('README.rst').read(),
     install_requires=[
-        "jsonmodel>=1.1",
-        "mandrill>=1.0.57"
+        "jsonmodel>=1.4"
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',

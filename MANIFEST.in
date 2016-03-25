@@ -1,10 +1,12 @@
 recursive-exclude cred *
+recursive-exclude data *
+recursive-exclude dev *
+recursive-exclude docs *
 recursive-exclude keys *
 recursive-exclude tests *
 recursive-exclude models *
 recursive-exclude notes *
-recursive-exclude docs *
-recursive-include labPack_dev *.json
+recursive-include labpack/rules *.json
 include *.rst
 include *.txt
 include *.md
