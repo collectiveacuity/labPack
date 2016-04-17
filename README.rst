@@ -8,7 +8,7 @@
 =======
 labPack
 =======
-*A Collection of Methods for Data Collection & Processing*
+*A Collection of Methods and APIs for Data Collection & Processing*
 
 :Downloads: http://pypi.python.org/pypi/labPack
 :Source: https://github.com/collectiveacuity/labPack

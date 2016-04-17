@@ -63,7 +63,7 @@ setup(
     description="A Collection of Methods for Data Collection & Processing",
     long_description=open('README.rst').read(),
     install_requires=[
-        "jsonmodel>=1.4"
+        "jsonmodel>=1.5"
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
