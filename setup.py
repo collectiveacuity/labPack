@@ -16,7 +16,7 @@ Build Distributions:
 python setup.py sdist --format=gztar,zip bdist_wheel
 
 Upload Distributions to PyPi:
-twine register dist/*
+python setup.py register
 twine upload dist/[module-version]*
 
 Installation:
@@ -39,19 +39,21 @@ module = 'name of module'
 System Installation:
 # http://www.pyinstaller.org/
 
-Git Management:
+Git Public Setup:
 https://stackoverflow.com/questions/37422221/git-remove-a-file-from-a-branch-keep-it-in-the-master/37422311
 git remote add github https://github.com/...
 git branch public
 git checkout public
 git rm --cached --ignore-unmatch -r dev/*
+git rm --cached --ignore-unmatch -r tests_dev/*
+git rm --cached --ignore-unmatch -r notes/*
 git commit -m 'removed dev files before public push'
 git push github public
 git checkout -f master
 
+Git Public Updates:
 git checkout public
-git add labpack/*
-git commit -m 'added new changes'
+git merge master
 git push github public
 git checkout master
 
@@ -84,7 +86,7 @@ setup(
         'tzlocal>=1.2'
     ],
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
