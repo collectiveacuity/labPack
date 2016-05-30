@@ -30,8 +30,7 @@ Installation
 ============
 From PyPi::
 
-    $
-    $ python setup.py install
+    $ pip install labpack
 
 From GitHub::
 
