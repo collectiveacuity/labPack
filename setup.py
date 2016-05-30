@@ -39,6 +39,16 @@ module = 'name of module'
 System Installation:
 # http://www.pyinstaller.org/
 
+Git Management:
+https://stackoverflow.com/questions/37422221/git-remove-a-file-from-a-branch-keep-it-in-the-master/37422311
+git remote add github https://github.com/...
+git branch public
+git checkout public
+git rm --cached --ignore-unmatch -r dev/*
+git commit -m 'removed dev files before public push'
+git push github public
+git checkout -f master
+
 Old Methods:
 python setup.py sdist bdist_wheel upload  # for PyPi
 pip wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
