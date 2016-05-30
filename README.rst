@@ -24,6 +24,7 @@ Features
 - Unique IDs which do not conflict nor leak record origin
 - Transformations of datetime data between popular formats
 - Randomization using best current algorithms
+- Other features **[WIP]**
 
 ============
 Installation
