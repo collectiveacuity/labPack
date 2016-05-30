@@ -49,6 +49,12 @@ git commit -m 'removed dev files before public push'
 git push github public
 git checkout -f master
 
+git checkout public
+git add labpack/*
+git commit -m 'added new changes'
+git push github public
+git checkout master
+
 Old Methods:
 python setup.py sdist bdist_wheel upload  # for PyPi
 pip wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
