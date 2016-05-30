@@ -1,26 +1,21 @@
 __author__ = 'rcj1492'
 __created__ = '2015.09'
+__license__ = 'MIT'
 
-# pip install pysha3
 # pip install pytz
-# pip install pytest
+# pip install tzlocal
 
-from processor.methods.general.labValidation import labValid
 import uuid
 import binascii
 import os
 import hashlib
 import base64
 import re
-import pytest
 from datetime import datetime
 from tzlocal import get_localzone
 from dateutil import parser as dTparser
 from dateutil import tz
 import pytz
-import sys
-import sha3
-import time
 
 class labID(object):
 
@@ -95,29 +90,6 @@ class labID(object):
         else:
             local_mac = ''
         self.mac = local_mac
-
-    def unitTests(self):
-
-    # assertion tests
-        assert len(self.id12) == 12
-        assert len(self.id24) == 24
-        assert len(self.id36) == 36
-        assert len(self.id48) == 48
-        assert len(self.mac) == 17
-        assert len(str(self.uuid)) == 36
-        assert isinstance(self.epoch, float)
-        assert isinstance(self.iso, str)
-        assert isinstance(self.datetime, datetime)
-
-        return self
-
-class labLocation(object):
-
-    def __init__(self):
-        pass
-
-    def unitTests(self):
-        return self
 
 class labDT(datetime):
 
@@ -196,7 +168,6 @@ class labDT(datetime):
         get_tz = get_localzone()
         title = 'Timezone input for labDT.pyLocal'
         if time_zone:
-            labValid.string(input, title)
             try:
                 get_tz = tz.gettz(time_zone)
             except:
@@ -228,7 +199,6 @@ class labDT(datetime):
         title = 'Timezone input for labDT.jsLocal'
         get_tz = get_localzone()
         if time_zone:
-            labValid.string(input, title)
             try:
                 get_tz = tz.gettz(time_zone)
             except:
@@ -252,7 +222,6 @@ class labDT(datetime):
         human_format = '%A, %B %d, %Y %I:%M%p %Z'
         get_tz = get_localzone()
         if time_zone:
-            labValid.string(input, title)
             try:
                 get_tz = tz.gettz(time_zone)
             except:
@@ -306,7 +275,6 @@ class labDT(datetime):
     # validate input
         title = 'ISO time input for labDT.fromISO'
         isopattern = re.compile('\d{4}-\d{2}-\d{2}T.*')
-        labValid.string(iso_string, title)
         if not isopattern.search(iso_string):
             raise ValueError('\n%s is not a valid ISO string.' % title)
         python_datetime = dTparser.parse(iso_string)
@@ -368,7 +336,6 @@ class labDT(datetime):
         title = 'Javascript datetime string input for labDT.fromJavascript'
         jsDTpattern = re.compile('\s*\(.*\)$')
         jsGMTpattern = re.compile('GMT[-\+]\d{4}')
-        labValid.string(javascript_datetime, title)
         if not jsGMTpattern.findall(javascript_datetime):
             raise Exception('\n%s must have a GMT timezone adjustment.' % title)
 
@@ -407,8 +374,6 @@ class labDT(datetime):
 
     # validate inputs
         title = 'input for labDT.fromPattern'
-        labValid.string(datetime_string, 'Datetime string %s' % title)
-        labValid.string(datetime_pattern, 'Datetime pattern %s' % title)
         dT_req = [['%Y','%y'],['%b','%B','%m'],['%d'],['%H','%I']]
         req_counter = 0
         for i in dT_req:
@@ -417,7 +382,6 @@ class labDT(datetime):
                     req_counter += 1
         if not req_counter == 4:
             raise Exception('Datetime pattern %s must contain at least year, month, day and hour.' % title)
-        labValid.string(time_zone, 'Timezone %s' % title)
         try:
             get_tz = tz.gettz(time_zone)
         except:
@@ -438,44 +402,10 @@ class labDT(datetime):
             tzinfo=dT.tzinfo
         )
 
-    @classmethod
-    def unitTests(self):
 
-    # define variables
-        epochDT = 1420167845.67891
-        isoDT = '2015-01-01T22:04:05.678910-0500'
-        pyDT = datetime(2015, 1, 2, 4, 4, 5, 678910, tzinfo=tz.gettz('Europe/Copenhagen'))
-        jsDT = 'Thu Jan 01 2015 22:04:05.678910 GMT-0500 (Eastern Standard Time)'
-        humanDT = 'Friday, January 2, 2015 12:04PM 5.67891sec' # Time in Palau
-        pattern = '%A, %B %d, %Y %I:%M%p %S.%fsec'
-
-    # assertion tests
-        assert self.new()
-        assert self.fromEpoch(epochDT).pyLocal() == self.fromISO(isoDT).pyLocal()
-        assert self.fromPython(pyDT).epoch() == self.fromJavascript(jsDT).epoch()
-        assert self.fromPattern(humanDT, pattern, 'Pacific/Palau').iso() == self.fromPython(pyDT).iso()
-        assert self.fromEpoch(epochDT).humanFriendly() == self.fromJavascript(jsDT).humanFriendly()
-        assert self.fromPattern(humanDT, pattern, 'Pacific/Palau').jsLocal() == self.fromISO(isoDT).jsLocal()
-
-    # exception tests
-        with pytest.raises(ValueError): # no timezone info in ISO datetime
-            self.fromISO(isoDT[0:26])
-
-        return self
-
-class labUnits(object):
-
-    def __init__(self):
-        pass
-
-    def unitTests(self):
-        return self
-
-# labID().unitTests()
-# labDT.unitTests()
-
-print(labID().id24)
-print(labID().epoch)
+if __name__ == '__main__':
+    print(labID().id48)
+    print(labID().epoch)
 
 
 

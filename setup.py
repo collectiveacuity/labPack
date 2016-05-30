@@ -16,7 +16,7 @@ Build Distributions:
 python setup.py sdist --format=gztar,zip bdist_wheel
 
 Upload Distributions to PyPi:
-twine register dist/*
+python setup.py register
 twine upload dist/[module-version]*
 
 Installation:
@@ -39,6 +39,24 @@ module = 'name of module'
 System Installation:
 # http://www.pyinstaller.org/
 
+Git Public Setup:
+https://stackoverflow.com/questions/37422221/git-remove-a-file-from-a-branch-keep-it-in-the-master/37422311
+git remote add github https://github.com/...
+git branch public
+git checkout public
+git rm --cached --ignore-unmatch -r dev/*
+git rm --cached --ignore-unmatch -r tests_dev/*
+git rm --cached --ignore-unmatch -r notes/*
+git commit -m 'removed dev files before public push'
+git push github public
+git checkout -f master
+
+Git Public Updates:
+git checkout public
+git merge master
+git push github public
+git checkout master
+
 Old Methods:
 python setup.py sdist bdist_wheel upload  # for PyPi
 pip wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
@@ -47,6 +65,7 @@ pip wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
 config_file = open('labpack/__init__.py').read()
 version = re.search("^__version__\s*=\s*'(.*)'", config_file, re.M).group(1)
 # command = re.search("^__command__\s*=\s*'(.*)'", config_file, re.M).group(1)
+license_terms = re.search("^__license__\s*=\s*'(.*)'", config_file, re.M).group(1)
 module = re.search("^__module__\s*=\s*'(.*)'", config_file, re.M).group(1)
 author = re.search("^__author__\s*=\s*'(.*)'", config_file, re.M).group(1)
 email = re.search("^__email__\s*=\s*'(.*)'", config_file, re.M).group(1)
@@ -58,15 +77,16 @@ setup(
     author=author,
     maintainer_email=email,
     include_package_data=True,  # Checks MANIFEST.in for explicit rules
-    packages=find_packages(exclude=['cred','keys','dev','docs','tests','models','notes']),  # Needed for bdist
-    license="MIT",
+    packages=find_packages(exclude=['cred','data','dev','docs','keys','models','notes','tests', 'tests_dev']),  # Needed for bdist
+    license=license_terms,
     description="A Collection of Methods for Data Collection & Processing",
     long_description=open('README.rst').read(),
     install_requires=[
-        "jsonmodel>=1.5"
+        'pytz>=2015.7',
+        'tzlocal>=1.2'
     ],
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
