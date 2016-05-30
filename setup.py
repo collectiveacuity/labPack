@@ -47,6 +47,7 @@ pip wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
 config_file = open('labpack/__init__.py').read()
 version = re.search("^__version__\s*=\s*'(.*)'", config_file, re.M).group(1)
 # command = re.search("^__command__\s*=\s*'(.*)'", config_file, re.M).group(1)
+license_terms = re.search("^__license__\s*=\s*'(.*)'", config_file, re.M).group(1)
 module = re.search("^__module__\s*=\s*'(.*)'", config_file, re.M).group(1)
 author = re.search("^__author__\s*=\s*'(.*)'", config_file, re.M).group(1)
 email = re.search("^__email__\s*=\s*'(.*)'", config_file, re.M).group(1)
@@ -58,12 +59,13 @@ setup(
     author=author,
     maintainer_email=email,
     include_package_data=True,  # Checks MANIFEST.in for explicit rules
-    packages=find_packages(exclude=['cred','keys','dev','docs','tests','models','notes']),  # Needed for bdist
-    license="MIT",
+    packages=find_packages(exclude=['cred','data','dev','docs','keys','models','notes','tests', 'tests_dev']),  # Needed for bdist
+    license=license_terms,
     description="A Collection of Methods for Data Collection & Processing",
     long_description=open('README.rst').read(),
     install_requires=[
-        "jsonmodel>=1.5"
+        'pytz>=2015.7',
+        'tzlocal>=1.2'
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
