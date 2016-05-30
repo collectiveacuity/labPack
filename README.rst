@@ -15,7 +15,7 @@ labPack
 
 Top-Level Classes
 -----------------
-* **labID**: A class of methods for uniquely identifying objects
+* **labID**: A class of methods for uniquely identifying records
 * **labDT**: A class of methods for transforming datetime data
 * **labRandom**: A class of methods for generating random data
 
