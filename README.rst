@@ -46,4 +46,4 @@ Create an unique ID for records::
 
 For more details about how to use labPack, refer to the
 `Reference Documentation on GitHub
-<https://github.com/collectiveacuity/labPack/blob/master/REFERENCE.rst>`_
+<https://github.com/collectiveacuity/labPack/blob/public/REFERENCE.rst>`_
