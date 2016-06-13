@@ -83,10 +83,11 @@ setup(
     long_description=open('README.rst').read(),
     install_requires=[
         'pytz>=2015.7',
-        'tzlocal>=1.2'
+        'tzlocal>=1.2',
+        'python-dateutil>=2.4.2'
     ],
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 3 - Alpha',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',

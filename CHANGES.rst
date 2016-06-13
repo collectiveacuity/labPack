@@ -1,6 +1,10 @@
 ChangeLog
 =========
 
+0.3 (2016.05.31)
+----------------
+* [BUG FIX] Missing python-dateutil dependency added to setup
+
 0.2 (2016.05.30)
 ----------------
 * Upload of Module to PyPi
