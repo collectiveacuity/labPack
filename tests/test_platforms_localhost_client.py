@@ -17,14 +17,19 @@ class testLocalhostClient(localhostClient):
         assert username
         ip = self.ip
         assert ip
-        data_path = self.appData('Collective Acuity', 'pocketLab')
+        home = self.home
+        assert home
+        data_path = self.appData('Collective Acuity', 'labpack')
         assert data_path
         self.os = 'Linux'
-        data_path = self.appData('Collective Acuity', 'pocketLab')
+        self.home = '~/'
+        data_path = self.appData('Collective Acuity', 'labpack')
         assert data_path
         self.os = 'Mac'
-        data_path = self.appData('Collective Acuity', 'pocketLab')
+        self.home = '~/'
+        data_path = self.appData('Collective Acuity', 'labpack')
         assert data_path
+
 
         return self
 
@@ -38,4 +43,3 @@ class testLocalhostClient(localhostClient):
 
 if __name__ == '__main__':
     testLocalhostClient().unitTests()
-    testLocalhostClient().performanceTests()

@@ -30,4 +30,4 @@ class testUserdataClient(userdataClient):
         return self
 
 if __name__ == '__main__':
-    labPerform(testUserdataClient().unitTests(), 'testLoggingClient().unitTests()', 1)
+    testUserdataClient().unitTests()

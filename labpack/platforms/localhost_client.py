@@ -1,7 +1,6 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-
 from os import environ, path
 from subprocess import check_output
 from labpack import __team__, __module__
@@ -45,8 +44,20 @@ class localhostClient(object):
             except:
                 pass
 
-    # construct empty file list
-        self.files = []
+    # retrieve path to user home
+        self.home = ''
+        if self.os == 'Windows':
+            from re import compile
+            xp_pattern = compile('^C:\\Documents and Settings')
+            app_data = ''
+            if environ.get('APPDATA'):
+                app_data = environ.get('APPDATA')
+            if xp_pattern.findall(app_data):
+                self.home = 'C:\\Documents and Settings\\%s' % self.username
+            else:
+                self.home = 'C:\\Users\\%s' % self.username
+        elif self.os in ('Linux', 'FreeBSD', 'Solaris', 'Mac'):
+            self.home = '~/'
 
     def appData(self, org_name, prod_name):
 
@@ -59,21 +70,21 @@ class localhostClient(object):
             if environ.get('APPDATA'):
                 app_data = environ.get('APPDATA')
             if xp_pattern.findall(app_data):
-                data_path = 'C:\\Documents and Settings\\%sLocal Settings\\Application Data\\%s\\%s' % (self.username, org_name, prod_name)
+                data_path = '%s\\Local Settings\\Application Data\\%s\\%s' % (self.home, org_name, prod_name)
             else:
-                data_path = 'C:\\Users\\%s\\AppData\\Local\\%s\\%s' % (self.username, org_name, prod_name)
+                data_path = '%s\\AppData\\Local\\%s\\%s' % (self.home, org_name, prod_name)
 
         elif self.os == 'Mac':
-            data_path = '~/Library/Application Support/%s/%s/' % (org_name, prod_name)
+            data_path = '%sLibrary/Application Support/%s/%s/' % (self.home, org_name, prod_name)
 
         elif self.os in ('Linux', 'FreeBSD', 'Solaris'):
             org_format = org_name.replace(' ','-').lower()
             prod_format = prod_name.replace(' ', '-').lower()
-            data_path = '~/.config/%s-%s/' % (org_format, prod_format)
+            data_path = '%s.config/%s-%s/' % (self.home, org_format, prod_format)
 
         return data_path
     
-    def clientData(self, client_name, org_name='', prod_name=''):
+    def repoData(self, repo_name, org_name='', prod_name=''):
 
         if not org_name:
             org_name = __team__
@@ -81,8 +92,8 @@ class localhostClient(object):
             prod_name = __module__
         app_path = self.appData(org_name, prod_name)
         if self.os in ('Linux', 'FreeBSD', 'Solaris'):
-            client_name = client_name.replace(' ', '-').lower()
-        data_path = path.join(app_path, client_name)
+            repo_name = repo_name.replace(' ', '-').lower()
+        data_path = path.join(app_path, repo_name)
         
         return data_path
 

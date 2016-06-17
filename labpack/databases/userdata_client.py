@@ -4,21 +4,20 @@ __created__ = '2016.03'
 from os import path, listdir
 from re import compile
 from jsonmodel.validators import jsonModel
-from popuplab.clients.localhost_client import localhostClient
+from labpack.platforms.localhost_client import localhostClient
 
 class userdataClient(localhostClient):
 
     def __init__(self, repo_name='', org_name='', prod_name=''):
         localhostClient.__init__(self)
 
-    # validate existence of log folder in app data (or create)
+    # validate existence of user data folder in app data (or create)
         if not repo_name:
-            client_name = 'Log Data'
-
-        self.logFolder = self.clientData(client_name=repo_name, org_name=org_name, prod_name=prod_name)
-        if not path.exists(self.logFolder):
+            repo_name = 'User Data'
+        self.repoFolder = self.repoData(repo_name=repo_name, org_name=org_name, prod_name=prod_name)
+        if not path.exists(self.repoFolder):
             from os import makedirs
-            makedirs(self.logFolder)
+            makedirs(self.repoFolder)
 
     # construct supported file type regex patterns
         class _regex_ext(object):
@@ -95,27 +94,27 @@ class userdataClient(localhostClient):
         log_data = ''.encode('utf-8')
         if self.ext.json.findall(key_string):
             import json
-            log_path = path.join(self.logFolder, key_string)
+            log_path = path.join(self.repoFolder, key_string)
             log_data = json.dumps(body_dict).encode('utf-8')
         elif self.ext.yaml.findall(key_string):
             import yaml
-            log_path = path.join(self.logFolder, key_string)
+            log_path = path.join(self.repoFolder, key_string)
             log_data = yaml.dump(body_dict).encode('utf-8')
         elif self.ext.jsongz.findall(key_string):
             import json
             from gzip import compress
-            log_path = path.join(self.logFolder, key_string)
+            log_path = path.join(self.repoFolder, key_string)
             log_bytes = json.dumps(body_dict).encode('utf-8')
             log_data = compress(log_bytes)
         elif self.ext.yamlgz.findall(key_string):
             import yaml
             from gzip import compress
-            log_path = path.join(self.logFolder, key_string)
+            log_path = path.join(self.repoFolder, key_string)
             log_bytes = yaml.dump(body_dict).encode('utf-8')
             log_data = compress(log_bytes)
         elif self.ext.drep.findall(key_string):
             from popuplab.compilers import drep
-            log_path = path.join(self.logFolder, key_string)
+            log_path = path.join(self.repoFolder, key_string)
             private_key, log_data, drep_index = drep.dump(body_dict)
 
     # save details to log file
@@ -157,7 +156,7 @@ class userdataClient(localhostClient):
 
     # construct search resource variables
         result_list = []
-        log_list = listdir(self.logFolder)
+        log_list = listdir(self.repoFolder)
         if not results:
             results = len(log_list)
         if reverse:
@@ -233,7 +232,7 @@ class userdataClient(localhostClient):
         key_string = self.validInput.validate(key_string, '.key_string')
 
     # construct path to file
-        log_path = path.join(self.logFolder, key_string)
+        log_path = path.join(self.repoFolder, key_string)
 
     # validate existence of file
         if not path.exists(log_path):
@@ -303,7 +302,7 @@ class userdataClient(localhostClient):
         key_string = self.validInput.validate(key_string, '.key_string')
 
     # construct path to file
-        log_path = path.join(self.logFolder, key_string)
+        log_path = path.join(self.repoFolder, key_string)
 
     # validate existence of file
         if not path.exists(log_path):
