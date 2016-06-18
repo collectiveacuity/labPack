@@ -32,7 +32,7 @@ class userdataClient(localhostClient):
                 self.names = ['json', 'yaml', 'jsongz', 'yamlgz', 'drep']
         self.ext = _regex_ext()
 
-    # construct field validator model
+    # construct class fields validator model
         class_fields = {
             'schema': {
                 'key_string': 'obs-terminal-2016-03-17T17-24-51-687845Z.yaml',

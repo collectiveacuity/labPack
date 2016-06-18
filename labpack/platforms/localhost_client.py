@@ -1,7 +1,8 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-from os import environ, path
+from os import environ, path, walk
+from jsonmodel.validators import jsonModel
 from subprocess import check_output
 from labpack import __team__, __module__
 
@@ -59,10 +60,65 @@ class localhostClient(object):
         elif self.os in ('Linux', 'FreeBSD', 'Solaris', 'Mac'):
             self.home = '~/'
 
+    # construct class fields validator model
+        class_fields = {
+            'schema': {
+                'org_name': 'Collective Acuity',
+                'prod_name': 'labPack',
+                'repo_name': 'User Data',
+                'key_query': ['terminal'],
+                'body_query': {'key': ['regex']},
+                'results': 1,
+                'query_root': '../'
+            },
+            'components': {
+                '.org_name': {
+                    'must_not_contain': ['/']
+                },
+                '.prod_name': {
+                    'must_not_contain': ['/']
+                },
+                '.repo_name': {
+                    'must_not_contain': ['/']
+                },
+                '.key_query': {
+                    'min_size': 1
+                },
+                '.results': {
+                    'min_value': 0,
+                    'integer_only': True
+                },
+                '.body_query': {
+                    'extra_fields': True,
+                },
+                '.body_query.key': {
+                    'required_field': False,
+                    'min_size': 1
+                }
+            }
+        }
+        self.validKwargs = jsonModel(class_fields)
+
     def appData(self, org_name, prod_name):
 
+        '''
+            a method to retrieve the os appropriate path to user app data
+
+        :param org_name: string with name of product/service creator
+        :param prod_name: string with name of product/service
+        :return: string with path to app data
+        '''
+
+        __name__ = '%s.appData' % self.__class__.__name__
+
+    # validate inputs
+        org_name = self.validKwargs.validate(org_name, '.org_name')
+        prod_name = self.validKwargs.validate(prod_name, '.prod_name')
+
+    # construct empty fields
         data_path = ''
 
+    # construct path from os
         if self.os == 'Windows':
             from re import compile
             xp_pattern = compile('^C:\\Documents and Settings')
@@ -86,6 +142,25 @@ class localhostClient(object):
     
     def repoData(self, repo_name, org_name='', prod_name=''):
 
+        '''
+            a method to retrieve the os appropriate path to an user app file repo
+
+        :param repo_name: string with name of file repository folder
+        :param org_name: string with name of product/service creator
+        :param prod_name: string with name of product/service
+        :return: string with path to app data
+        '''
+
+        __name__ = '%s.repoData' % self.__class__.__name__
+
+    # validate inputs
+        repo_name = self.validKwargs.validate(repo_name, '.repo_name')
+        if org_name:
+            org_name = self.validKwargs.validate(org_name, '.org_name')
+        if prod_name:
+            prod_name = self.validKwargs.validate(prod_name, '.prod_name')
+
+    # construct path from os
         if not org_name:
             org_name = __team__
         if not prod_name:
@@ -97,24 +172,72 @@ class localhostClient(object):
         
         return data_path
 
-    def index(self, index_root=''):
+    def query(self, key_query=None, body_query=None, results=0, top_down=False, query_root=''):
 
-    # import dependencies
-        from os import walk
+        '''
+            a method to find files from query parameters
 
-    # clear existing index
-        self.files = []
+        :param key_query: list of regex expressions
+        :param body_query: dictionary of keys and values which are lists of regex
+        :param results: integer of results to return
+        :param top_down: boolean to search from folder endpoints down to root
+        :param query_root: string with path of root folder
+        :return: list of file paths
+        '''
 
-    # determine inputs
-        if index_root:
-            if not path.isdir(index_root):
-                index_root = './'
+    # TODO: Look into declarative query language architecture instead
+
+        __name__ = '%s.query' % self.__class__.__name__
+        _key_arg = '%s(key_query=[...])' % __name__
+        _body_arg = '%s(body_query={...})' % __name__
+
+    # validate inputs
+        if key_query:
+            key_query = self.validKwargs.validate(key_query, '.key_query')
+        if body_query:
+            body_query = self.validKwargs.validate(body_query, '.body_query')
+            for key, value in body_query.items():
+                self.validKwargs.validate(value, '.body_query.key')
+        if query_root:
+            query_root = self.validKwargs.validate(query_root, '.query_root')
+        results = self.validKwargs.validate(results, '.results')
+
+    # construct empty fields
+        result_list = []
+
+    # determine results size
+        if not results:
+            results = 1000
+
+    # compile regex patterns
+        _key_query = []
+        if key_query:
+            import re
+            for regex in key_query:
+                _key_query.append(re.compile(regex))
+
+    # determine root for walk
+        if query_root:
+            if not path.isdir(query_root):
+                query_root = './'
         else:
-            index_root = './'
+            query_root = './'
 
     # walk the local file index
-        for current_dir, sub_dirs, dir_files in walk(index_root):
+        for current_dir, sub_dirs, dir_files in walk(query_root):
             for file in dir_files:
-                self.files.append(path.join(path.abspath(current_dir), file))
+                add_file = True
 
-        return self
+    # add files whose name match each regex expression in key query
+                if _key_query:
+                    for regex_pattern in _key_query:
+                        if not regex_pattern.findall(file):
+                            add_file = False
+
+    # add qualifying file to results list
+                if add_file:
+                    result_list.append(path.join(path.abspath(current_dir), file))
+                if len(result_list) == results:
+                    return result_list
+
+        return result_list

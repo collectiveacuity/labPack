@@ -21,6 +21,8 @@ class testLocalhostClient(localhostClient):
         assert home
         data_path = self.appData('Collective Acuity', 'labpack')
         assert data_path
+        file_query = self.query(key_query=['.py'], results=5, query_root='../')
+        print(file_query)
         self.os = 'Linux'
         self.home = '~/'
         data_path = self.appData('Collective Acuity', 'labpack')
@@ -34,10 +36,6 @@ class testLocalhostClient(localhostClient):
         return self
 
     def performanceTests(self):
-
-        index_root = '../../../'
-        labPerform(self.index(index_root).files[45], 'localhostClient.fileList(../../../)', 10000)
-        print('Number of files in fileList: %s'% len(self.files))
 
         return self
 
