@@ -1,7 +1,6 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
 
-from labpack.performance import labPerform
 from labpack.platforms.localhost_client import localhostClient
 
 class testLocalhostClient(localhostClient):
@@ -21,7 +20,8 @@ class testLocalhostClient(localhostClient):
         assert home
         data_path = self.appData('Collective Acuity', 'labpack')
         assert data_path
-        file_query = self.query(key_query=['.py'], results=5, query_root='../')
+        file_query = self.query(key_query=['.py'], results=5, top_down=False, query_root='../')
+        assert file_query
         print(file_query)
         self.os = 'Linux'
         self.home = '~/'

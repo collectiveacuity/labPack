@@ -6,15 +6,17 @@ from re import compile
 from jsonmodel.validators import jsonModel
 from labpack.platforms.localhost_client import localhostClient
 
-class userdataClient(localhostClient):
+class userdataClient(object):
 
     def __init__(self, repo_name='', org_name='', prod_name=''):
-        localhostClient.__init__(self)
+
+    # add localhost property
+        self.localhost = localhostClient()
 
     # validate existence of user data folder in app data (or create)
         if not repo_name:
             repo_name = 'User Data'
-        self.repoFolder = self.repoData(repo_name=repo_name, org_name=org_name, prod_name=prod_name)
+        self.repoFolder = self.localhost.repoData(repo_name=repo_name, org_name=org_name, prod_name=prod_name)
         if not path.exists(self.repoFolder):
             from os import makedirs
             makedirs(self.repoFolder)

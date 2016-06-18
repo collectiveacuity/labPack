@@ -172,7 +172,7 @@ class localhostClient(object):
         
         return data_path
 
-    def query(self, key_query=None, body_query=None, results=0, top_down=False, query_root=''):
+    def query(self, key_query=None, body_query=None, results=0, top_down=True, query_root=''):
 
         '''
             a method to find files from query parameters
@@ -180,7 +180,7 @@ class localhostClient(object):
         :param key_query: list of regex expressions
         :param body_query: dictionary of keys and values which are lists of regex
         :param results: integer of results to return
-        :param top_down: boolean to search from folder endpoints down to root
+        :param top_down: boolean to direct search from root to the branches
         :param query_root: string with path of root folder
         :return: list of file paths
         '''
@@ -224,7 +224,7 @@ class localhostClient(object):
             query_root = './'
 
     # walk the local file index
-        for current_dir, sub_dirs, dir_files in walk(query_root):
+        for current_dir, sub_dirs, dir_files in walk(query_root, topdown=top_down):
             for file in dir_files:
                 add_file = True
 
