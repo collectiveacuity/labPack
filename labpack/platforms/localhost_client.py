@@ -4,7 +4,6 @@ __created__ = '2016.03'
 from os import environ, path, walk
 from jsonmodel.validators import jsonModel
 from subprocess import check_output
-from labpack import __team__, __module__
 
 class localhostClient(object):
 
@@ -103,6 +102,7 @@ class localhostClient(object):
 
         '''
             a method to retrieve the os appropriate path to user app data
+            https://www.chromium.org/user-experience/user-data-directory
 
         :param org_name: string with name of product/service creator
         :param prod_name: string with name of product/service
@@ -138,38 +138,6 @@ class localhostClient(object):
             prod_format = prod_name.replace(' ', '-').lower()
             data_path = '%s.config/%s-%s/' % (self.home, org_format, prod_format)
 
-        return data_path
-    
-    def repoData(self, repo_name, org_name='', prod_name=''):
-
-        '''
-            a method to retrieve the os appropriate path to an user app file repo
-
-        :param repo_name: string with name of file repository folder
-        :param org_name: string with name of product/service creator
-        :param prod_name: string with name of product/service
-        :return: string with path to app data
-        '''
-
-        __name__ = '%s.repoData' % self.__class__.__name__
-
-    # validate inputs
-        repo_name = self.validKwargs.validate(repo_name, '.repo_name')
-        if org_name:
-            org_name = self.validKwargs.validate(org_name, '.org_name')
-        if prod_name:
-            prod_name = self.validKwargs.validate(prod_name, '.prod_name')
-
-    # construct path from os
-        if not org_name:
-            org_name = __team__
-        if not prod_name:
-            prod_name = __module__
-        app_path = self.appData(org_name, prod_name)
-        if self.os in ('Linux', 'FreeBSD', 'Solaris'):
-            repo_name = repo_name.replace(' ', '-').lower()
-        data_path = path.join(app_path, repo_name)
-        
         return data_path
 
     def query(self, key_query=None, body_query=None, results=0, top_down=True, query_root=''):

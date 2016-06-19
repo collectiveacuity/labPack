@@ -1,22 +1,31 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
+__license__ = 'MIT'
 
 from os import path, listdir
 from re import compile
+from labpack import __team__, __module__
 from jsonmodel.validators import jsonModel
 from labpack.platforms.localhost_client import localhostClient
 
-class userdataClient(object):
+class appdataClient(object):
 
-    def __init__(self, repo_name='', org_name='', prod_name=''):
+    def __init__(self, folder_name='', org_name='', prod_name=''):
 
     # add localhost property
         self.localhost = localhostClient()
 
     # validate existence of user data folder in app data (or create)
-        if not repo_name:
-            repo_name = 'User Data'
-        self.repoFolder = self.localhost.repoData(repo_name=repo_name, org_name=org_name, prod_name=prod_name)
+        if not folder_name:
+            folder_name = 'User Data'
+        if not org_name:
+            org_name = __team__
+        if not prod_name:
+            prod_name = __module__
+        self.appFolder = self.localhost.appData(org_name=org_name, prod_name=prod_name)
+        if self.localhost.os in ('Linux', 'FreeBSD', 'Solaris'):
+            folder_name = folder_name.replace(' ', '-').lower()
+        self.repoFolder = path.join(self.appFolder, folder_name)
         if not path.exists(self.repoFolder):
             from os import makedirs
             makedirs(self.repoFolder)

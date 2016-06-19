@@ -2,12 +2,12 @@ __author__ = 'rcj1492'
 __created__ = '2016.03'
 
 from labpack.performance import labPerform
-from labpack.databases.userdata_client import userdataClient
+from labpack.databases.appdata_client import appdataClient
 
-class testUserdataClient(userdataClient):
+class testAppdataClient(appdataClient):
 
     def __init__(self):
-        userdataClient.__init__(self)
+        appdataClient.__init__(self)
 
     def unitTests(self):
 
@@ -30,4 +30,4 @@ class testUserdataClient(userdataClient):
         return self
 
 if __name__ == '__main__':
-    testUserdataClient().unitTests()
+    testAppdataClient().unitTests()
