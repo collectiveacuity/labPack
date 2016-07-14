@@ -4,12 +4,12 @@ __license__ = 'MIT'
 
 import re
 
-class regexPatterns(object):
+class labRegex(object):
 
     def __init__(self, regex_schema, override=False):
 
         '''
-            instantiates class with regular expression dictionary
+            instantiates class with a regular expression dictionary
 
         :param regex_schema: dictionary with regular expression name, pattern key-pairs
         :param override: boolean to ignore value errors raised from regex name conflicts
@@ -103,7 +103,7 @@ if __name__ == '__main__':
         "json extension": ".+\\.json$",
         "non-ascii characters": "[^\x00-\x7F]+"
     }
-    regex = regexPatterns(test_schema)
+    regex = labRegex(test_schema)
     test_input = "the website for the lab is collectiveacuity.com"
     input_map = regex.map(test_input)
     file_ext = {
@@ -113,7 +113,7 @@ if __name__ == '__main__':
         "yaml.gz": ".+\\.ya?ml\\.gz$",
         "drep": ".+\\.drep$"
     }
-    regex = regexPatterns(file_ext)
+    regex = labRegex(file_ext)
     test_input = 'happy.json.gz'
     input_map = regex.map(test_input)[0]
     print(input_map)

@@ -3,12 +3,12 @@ __created__ = '2016.03'
 __license__ = 'MIT'
 
 from os import path, listdir, remove
+import yaml
 import gzip
 import json
-import yaml
-from labpack.regex import regexPatterns
 from jsonmodel.validators import jsonModel
 from labpack import __team__, __module__
+from labpack.parsing.regex import labRegex
 from labpack.platforms.localhost import localhostClient
 
 class appdataConnectionError(Exception):
@@ -241,7 +241,7 @@ class appdataClient(object):
             "yaml.gz": ".+\\.ya?ml\\.gz$",
             "drep": ".+\\.drep$"
         }
-        self.ext = regexPatterns(file_extensions)
+        self.ext = labRegex(file_extensions)
         
     def create(self, key_string, body_dict, overwrite=True, secret_key=''):
 

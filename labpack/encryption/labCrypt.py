@@ -2,13 +2,19 @@ __author__ = 'rcj1492'
 __created__ = '2016.07'
 __license__ = 'MIT'
 
+'''
+PLEASE NOTE:    labCrypt requires both the cryptography and pycrypto modules.
+                pycrypto requires a C compiler to install.
+'''
+
 import hashlib
 try:
     from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
     from cryptography.hazmat.backends import openssl
     from cryptography.hazmat.primitives import padding
 except:
-    raise ImportError('\nlabCrypto module requires cryptography module. try: pip install cryptography')
+    print('\nlabCrypto requires the cryptography module. try: pip install cryptography')
+    exit()
 
 def encrypt(byte_data, secret_key=''):
 
@@ -32,7 +38,7 @@ def encrypt(byte_data, secret_key=''):
 
 # validate input
     if not isinstance(byte_data, bytes):
-        raise TypeError('\nbyte data input must be byte datatype.')
+        raise TypeError('\nbyte data input must be a byte datatype.')
 
 # validate secret key or create secret key
     if secret_key:
@@ -114,5 +120,6 @@ if __name__ == '__main__':
     test_data = json.dumps(test_details).encode('utf-8')
     encrypted_data, secret_key = encrypt(test_data)
     decrypted_data = decrypt(encrypted_data, secret_key)
-    test_details = json.loads(decrypted_data.decode())
-    print(test_details)
+    decrypted_details = json.loads(decrypted_data.decode())
+    assert decrypted_details['encrypt'] == test_details['encrypt']
+    # print(decrypted_details)

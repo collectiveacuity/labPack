@@ -2,24 +2,25 @@ __author__ = 'rcj1492'
 __created__ = '2016.03'
 __license__ = 'MIT'
 
-import yaml
+import json
 from gzip import compress, decompress
 
 try:
-    from labpack import labCrypt
+    from labpack.encryption import labCrypt
 except:
-    raise ImportError('\ndrep module requires cryptography module. try: pip install cryptography')
+    print('\ndrep methods require the cryptography module. try: pip install cryptography')
+    exit()
 
 def dump(map_input, secret_key):
 
-# validate input and convert to yaml data
+# validate input and convert to json data
     try:
-        yaml_data = yaml.dump(map_input).encode('utf-8')
+        json_data = json.dumps(map_input).encode('utf-8')
     except:
-        raise TypeError('Map data input is not a valid yaml data structure.')
+        raise TypeError('Map data input is not a valid json data structure.')
 
 # compress data using gzip
-    compressed_data = compress(yaml_data)
+    compressed_data = compress(json_data)
 
 # encrypt data
     encrypted_data, secret_key = labCrypt.encrypt(compressed_data, secret_key)
@@ -37,8 +38,8 @@ def load(encrypted_data, secret_key):
 # decompress data using gzip
     decompressed_data = decompress(byte_data)
 
-# load map details from yaml data
-    map_output = yaml.load(decompressed_data.decode())
+# load map details from json data
+    map_output = json.loads(decompressed_data.decode())
 
     return map_output
 

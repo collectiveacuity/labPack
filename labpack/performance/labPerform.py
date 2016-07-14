@@ -3,9 +3,10 @@ __created__ = '2016.05'
 __license__ = 'MIT'
 
 from time import perf_counter as timer
+
 from labpack.randomization import labRandom
 
-def labPerform(function, title, count, verbose=True):
+def repeat(function, title, count, verbose=True):
 
     t0 = timer()
     id_list = []
@@ -14,7 +15,7 @@ def labPerform(function, title, count, verbose=True):
     t1 = timer()
     if verbose:
         print('%s inits of %s in %s secs' % (count, title, (t1 - t0)))
-    rand_int = labRandom.integer(0, (count - 1))
+    rand_int = labRandom.random_integer(0, (count - 1))
     rand_item = id_list[rand_int]
     try:
         rand_str = str(rand_item)
