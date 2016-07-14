@@ -14,17 +14,22 @@ class testAppdataClient(appdataClient):
         from copy import deepcopy
         testKey = 'lab-log-unittest'
         testDetails = { 'command': 'home', 'project': 'lab', 'verbose': True }
-        for type in self.ext.types:
+        file_types = set(self.ext.__dir__()) - set(self.ext.builtins)
+        for type in file_types:
             test_dt = time()
+            file_type = type.replace('_','.')
             test_details = deepcopy(testDetails)
-            test_details['type'] = type
+            test_details['type'] = file_type
             test_details['time'] = test_dt
-            test_key = '%s-%s%s' % (testKey, str(test_details['time']), type)
-            self.put(test_key, test_details)
-            assert self.get(test_key)
-            assert self.query(key_filters={'discrete_values': [test_key]})
-            body_filter = { '.time': { 'min_value': test_dt } }
-            assert self.query(body_filters=body_filter)
+            test_key = '%s-%s.%s' % (testKey, str(test_details['time']), file_type)
+            secret_key = ''
+            if type == 'drep':
+                secret_key = 'test-key'
+            self.create(test_key, test_details, secret_key=secret_key)
+            assert self.retrieve(test_key, secret_key)
+            # assert self.query(key_filters={'discrete_values': [test_key]})
+            # body_filter = { '.time': { 'min_value': test_dt } }
+            # assert self.query(body_filters=body_filter)
             assert self.delete(test_key)
 
         return self

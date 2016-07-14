@@ -3,11 +3,13 @@ __created__ = '2016.03'
 __license__ = 'MIT'
 
 from os import path, listdir, remove
-
+import gzip
+import json
+import yaml
+from labpack.regex import regexPatterns
 from jsonmodel.validators import jsonModel
 from labpack import __team__, __module__
 from labpack.platforms.localhost import localhostClient
-
 
 class appdataConnectionError(Exception):
     def __init__(self, message='', request_name='', error_dict=None):
@@ -64,7 +66,13 @@ class appdataModel(object):
                     'prod_name': '',
                     'org_name': '',
                     'versioning': False,
-                    'index_fields': [ '.dt' ]
+                    'index_fields': [ '.dt' ],
+                    'file_extension': ''
+                },
+                'components': {
+                    '.file_extension': {
+                        'discrete_values': [ 'json', 'json.gz', 'yaml', 'yaml.gz', 'drep' ]
+                    }
                 }
             } 
             collection_model = jsonModel(collection_schema)
@@ -72,13 +80,12 @@ class appdataModel(object):
             self.data = {}
             self.model = jsonModel(record_schema)
             self.settings = collection_model.ingest(**collection_settings)
-            if not self.settings['index_fields']:
-                self.index = False
-            else:
-                self.index = True
-                for item in self.settings['index_fields']:
-                    if item not in self.model.keyMap.keys():
-                        raise ValueError('\nCollection settings index item %s is not found in record schema.' % item)
+            self.index = []
+            for item in self.settings['index_fields']:
+                if item not in self.model.keyMap.keys():
+                    raise ValueError('\nCollection settings index item %s is not found in record schema.' % item)
+                else:
+                    self.index.append(item)
             client_kwargs = {
                 'folder_name': self.settings['folder_name'],
                 'org_name': self.settings['org_name'],
@@ -148,8 +155,7 @@ class appdataModel(object):
 
         result_list = []
         return result_list
-        
-    
+
 class appdataClient(object):
 
     '''
@@ -163,6 +169,7 @@ class appdataClient(object):
             'folder_name': 'User Data',
             'key_string': 'obs-terminal-2016-03-17T17-24-51-687845Z.yaml',
             'body_dict': { 'dT': 1458235492.311154 },
+            'secret_key': '6tZ0rUexOiBcOse2-dgDkbeY',
             'max_results': 1,
             'query_filters': {},
             'sort_order': {}
@@ -178,14 +185,17 @@ class appdataClient(object):
                 'must_not_contain': ['/']
             },
             '.key_string': {
-                'must_not_contain': [ '[^\\w\\-_\\.]' ],
-                'contains_either': [ '\\.json$', '\\.ya?ml$', '\\.json\\.gz$', '\\.ya?ml\\.gz$' ]
+                'must_not_contain': [ '[^\\w\\-\\.]' ],
+                'contains_either': [ '\\.json$', '\\.ya?ml$', '\\.json\\.gz$', '\\.ya?ml\\.gz$', '\\.drep$' ]
             },
             '.body_dict': {
                 'extra_fields': True
             },
             '.body_dict.dT': {
                 'required_field': False
+            },
+            '.secret_key': {
+                'must_not_contain': [ '[\\s\\t\\n\\r]' ]
             },
             '.max_results': {
                 'min_value': 1,
@@ -200,17 +210,17 @@ class appdataClient(object):
         self.localhost = localhostClient()
 
     # construct input validation model
-        self.validInput = jsonModel(self._class_fields)
+        self.fields = jsonModel(self._class_fields)
 
     # validate inputs
         if not folder_name:
             folder_name = 'User Data'
         else:
-            folder_name = self.validInput.validate(folder_name, '.folder_name')
+            folder_name = self.fields.validate(folder_name, '.folder_name')
         if not org_name:
             org_name = __team__
         else:
-            org_name = self.localhost.validInput.validate(org_name, '.org_name')
+            org_name = self.localhost.fields.validate(org_name, '.org_name')
         if not prod_name:
             prod_name = __module__
 
@@ -218,98 +228,95 @@ class appdataClient(object):
         self.appFolder = self.localhost.appData(org_name=org_name, prod_name=prod_name)
         if self.localhost.os in ('Linux', 'FreeBSD', 'Solaris'):
             folder_name = folder_name.replace(' ', '-').lower()
-        self.storeFolder = path.join(self.appFolder, folder_name)
-        if not path.exists(self.storeFolder):
+        self.collectionFolder = path.join(self.appFolder, folder_name)
+        if not path.exists(self.collectionFolder):
             from os import makedirs
-            makedirs(self.storeFolder)
+            makedirs(self.collectionFolder)
 
     # construct supported file type regex patterns
-        class _regex_ext(object):
-            def __init__(self):
-                from re import compile
-                self.json = compile('\.json$')
-                self.yaml = compile('\.ya?ml$')
-                self.jsongz = compile('\.json\.gz$')
-                self.yamlgz = compile('\.ya?ml\.gz$')
-                self.drep = compile('\.drep$')
-                self.types = ['.json','.json.gz','.yaml','.yml','.yaml.gz','.yml.gz','.drep']
-                self.names = ['json', 'yaml', 'jsongz', 'yamlgz', 'drep']
-        self.ext = _regex_ext()
-
-    def put(self, key_string, body_dict, override=True):
+        file_extensions = {
+            "json": ".+\\.json$",
+            "json.gz": ".+\\.json\\.gz$",
+            "yaml": ".+\\.ya?ml$",
+            "yaml.gz": ".+\\.ya?ml\\.gz$",
+            "drep": ".+\\.drep$"
+        }
+        self.ext = regexPatterns(file_extensions)
+        
+    def create(self, key_string, body_dict, overwrite=True, secret_key=''):
 
         '''
             a method to create a file in store folder
 
         :param key_string: string with name to assign file
         :param body_dict: dictionary with file body details
-        :param override: boolean to overwrite files with same name
+        :param overwrite: boolean to overwrite files with same name
+        :param secret_key: [optional] string with key to encrypt body data
         :return: self
         '''
 
-        __name__ = '%s.put' % self.__class__.__name__
-        _key_arg = '%s(key_string="%s")' % (__name__, key_string)
-        _body_arg = '%s(body_dict={...}' % {__name__}
+        method_name = '%s.create' % self.__class__.__name__
+        _key_arg = '%s(key_string="%s")' % (method_name, key_string)
+        _body_arg = '%s(body_dict={...}' % {method_name}
+        _secret_arg = '%s(secret_key="%s")' % (method_name, secret_key)
 
     # validate inputs
-        key_string = self.validInput.validate(key_string, '.key_string')
-        body_dict = self.validInput.validate(body_dict, '.body_dict')
+        key_string = self.fields.validate(key_string, '.key_string')
+        body_dict = self.fields.validate(body_dict, '.body_dict')
 
     # construct data file path
         file_path = ''
         file_data = ''.encode('utf-8')
-        if self.ext.json.findall(key_string):
-            import json
-            file_path = path.join(self.storeFolder, key_string)
+        key_map = self.ext.map(key_string)[0]
+        if key_map['json']:
+            file_path = path.join(self.collectionFolder, key_string)
             file_data = json.dumps(body_dict).encode('utf-8')
-        elif self.ext.yaml.findall(key_string):
-            import yaml
-            file_path = path.join(self.storeFolder, key_string)
+        elif key_map['yaml']:
+            file_path = path.join(self.collectionFolder, key_string)
             file_data = yaml.dump(body_dict).encode('utf-8')
-        elif self.ext.jsongz.findall(key_string):
-            import json
-            from gzip import compress
-            file_path = path.join(self.storeFolder, key_string)
+        elif key_map['json.gz']:
+            file_path = path.join(self.collectionFolder, key_string)
             file_bytes = json.dumps(body_dict).encode('utf-8')
-            file_data = compress(file_bytes)
-        elif self.ext.yamlgz.findall(key_string):
-            import yaml
-            from gzip import compress
-            file_path = path.join(self.storeFolder, key_string)
+            file_data = gzip.compress(file_bytes)
+        elif key_map['yaml.gz']:
+            file_path = path.join(self.collectionFolder, key_string)
             file_bytes = yaml.dump(body_dict).encode('utf-8')
-            file_data = compress(file_bytes)
-        elif self.ext.drep.findall(key_string):
-            from dev.compilers import drep
-            file_path = path.join(self.storeFolder, key_string)
-            private_key, file_data, drep_index = drep.dump(body_dict)
+            file_data = gzip.compress(file_bytes)
+        elif key_map['drep']:
+            from labpack.compilers import drep
+            secret_key = self.fields.validate(secret_key, '.secret_key')
+            file_path = path.join(self.collectionFolder, key_string)
+            file_data = drep.dump(body_dict, secret_key)
 
     # save file data to folder
-        if not override:
+        if not overwrite:
             if path.exists(file_path):
-                raise Exception('%s already exists. To overwrite %s, set override=True' % (_key_arg, key_string))
+                raise Exception('%s already exists. To overwrite %s, set overwrite=True' % (_key_arg, key_string))
         with open(file_path, 'wb') as f:
             f.write(file_data)
             f.close()
 
         return self
 
-    def get(self, key_string):
+    def retrieve(self, key_string, secret_key=''):
 
         '''
             a method to retrieve body details from a file
 
         :param key_string: string with name of file
-        :return: dictionary with body details
+        :param secret_key: [optional] string used to decrypt data
+        :return: dictionary with file content details
         '''
 
-        __name__ = '%s.get' % self.__class__.__name__
-        _key_arg = '%s(key_string="%s")' % (__name__, key_string)
+        method_name = '%s.create' % self.__class__.__name__
+        _key_arg = '%s(key_string="%s")' % (method_name, key_string)
+        _secret_arg = '%s(secret_key="%s")' % (method_name, secret_key)
 
     # validate inputs
-        key_string = self.validInput.validate(key_string, '.key_string')
+        key_string = self.fields.validate(key_string, '.key_string')
 
     # construct path to file
-        file_path = path.join(self.storeFolder, key_string)
+        file_path = path.join(self.collectionFolder, key_string)
 
     # validate existence of file
         if not path.exists(file_path):
@@ -317,23 +324,20 @@ class appdataClient(object):
 
     # retrieve file details
         file_details = {}
-        if self.ext.json.findall(key_string):
-            import json
+        key_map = self.ext.map(key_string)[0]
+        if key_map['json']:
             try:
                 file_data = open(file_path, 'rt')
                 file_details = json.loads(file_data.read())
             except:
                 raise Exception('%s is not valid json data.' % _key_arg)
-        elif self.ext.yaml.findall(key_string):
-            import yaml
+        elif key_map['yaml']:
             try:
                 file_data = open(file_path, 'rt')
                 file_details = yaml.load(file_data.read())
             except:
                 raise Exception('%s is not valid yaml data.' % _key_arg)
-        elif self.ext.jsongz.findall(key_string):
-            import json
-            import gzip
+        elif key_map['json.gz']:
             try:
                 file_data = gzip.open(file_path, 'rb')
             except:
@@ -342,9 +346,7 @@ class appdataClient(object):
                 file_details = json.loads(file_data.read().decode())
             except:
                 raise Exception('%s is not valid json data.' % _key_arg)
-        elif self.ext.yamlgz.findall(key_string):
-            import yaml
-            import gzip
+        elif key_map['yaml.gz']:
             try:
                 file_data = gzip.open(file_path, 'rb')
             except:
@@ -353,11 +355,12 @@ class appdataClient(object):
                 file_details = yaml.load(file_data.read().decode())
             except:
                 raise Exception('%s is not valid yaml data.' % _key_arg)
-        elif self.ext.drep.findall(key_string):
-            from dev.compilers import drep
+        elif key_map['drep']:
+            from labpack.compilers import drep
+            secret_key = self.fields.validate(secret_key, '.secret_key')
             try:
-                file_data = open(file_path)
-                file_details = drep.load(private_key='', encrypted_data=file_data)
+                file_data = open(file_path, 'rb').read()
+                file_details = drep.load(encrypted_data=file_data, secret_key=secret_key)
             except:
                 raise Exception('%s is not valid drep data.' % _key_arg)
 
@@ -387,7 +390,7 @@ class appdataClient(object):
         input_names = [ '.key_filters', '.body_filters', '.max_results' ]
         for i in range(len(input_args)):
             if input_args[i]:
-                self.validInput.validate(input_args[i], input_names[i])
+                self.fields.validate(input_args[i], input_names[i])
 
     # validate query criteria structure
         key_criteria = {}
@@ -395,11 +398,11 @@ class appdataClient(object):
             key_criteria = {
                 '.key_string': key_filters
             }
-            self.validInput.query(key_criteria)
+            self.fields.query(key_criteria)
 
     # construct search resource variables
         result_list = []
-        file_list = listdir(self.storeFolder)
+        file_list = listdir(self.collectionFolder)
         if reverse_search:
             file_list = reversed(file_list)
 
@@ -410,7 +413,7 @@ class appdataClient(object):
     # add files whose name match each regex expression in key query
             if key_criteria:
                 file_name = { 'key_string': file }
-                if not self.validInput.query(key_criteria, file_name):
+                if not self.fields.query(key_criteria, file_name):
                     add_file = False
 
     # add files whose top level values match each regex expression in body query
@@ -455,10 +458,10 @@ class appdataClient(object):
         _key_arg = '%s(key_string="%s")' % (__name__, key_string)
 
     # validate inputs
-        key_string = self.validInput.validate(key_string, '.key_string')
+        key_string = self.fields.validate(key_string, '.key_string')
 
     # construct path to file
-        file_path = path.join(self.storeFolder, key_string)
+        file_path = path.join(self.collectionFolder, key_string)
 
     # validate existence of file
         if not path.exists(file_path):

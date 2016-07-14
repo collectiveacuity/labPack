@@ -43,7 +43,7 @@ class localhostClient(object):
     def __init__(self):
 
     # construct class field input validation property
-        self.validInput = jsonModel(self._class_fields)
+        self.fields = jsonModel(self._class_fields)
 
     # retrieve OS variable from system
         env_os = environ.get('OS')
@@ -122,8 +122,8 @@ class localhostClient(object):
         __name__ = '%s.appData' % self.__class__.__name__
 
     # validate inputs
-        org_name = self.validInput.validate(org_name, '.org_name')
-        prod_name = self.validInput.validate(prod_name, '.prod_name')
+        org_name = self.fields.validate(org_name, '.org_name')
+        prod_name = self.fields.validate(prod_name, '.prod_name')
 
     # construct empty fields
         data_path = ''
@@ -215,7 +215,7 @@ class localhostClient(object):
         input_names = [ '.query_filters', '.query_root', '.results' ]
         for i in range(len(input_kwargs)):
             if input_kwargs[i]:
-                self.validInput.validate(input_kwargs[i], input_names[i])
+                self.fields.validate(input_kwargs[i], input_names[i])
 
     # construct empty fields
         result_list = []
