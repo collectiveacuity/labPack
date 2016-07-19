@@ -32,7 +32,7 @@ class appdataConnectionError(Exception):
 
 class appdataModel(object):
     
-    def __init__(self, record_schema=None, collection_settings=None, appdata_model=None):
+    def __init__(self, record_schema=None, collection_settings=None, appdata_model=None, access_key=''):
 
         '''
 
@@ -124,7 +124,7 @@ class appdataModel(object):
     def migrate(self, storage_model):
         return self
     
-    def find(self, query_filters=None, max_results=1, sort_order=None, reverse_search=True, starting_key='', all_versions=False, scan_record=False):
+    def find(self, query_filters=None, max_results=1, sort_order=None, reverse_search=True, starting_key='', all_versions=False, scan_records=False):
 
         '''
 
@@ -156,6 +156,10 @@ class appdataModel(object):
         result_list = []
         return result_list
 
+    def compact(self, total_number=0, cutoff_date=''):
+
+        return True
+
 class appdataClient(object):
 
     '''
@@ -171,7 +175,20 @@ class appdataClient(object):
             'body_dict': { 'dT': 1458235492.311154 },
             'secret_key': '6tZ0rUexOiBcOse2-dgDkbeY',
             'max_results': 1,
-            'query_filters': {},
+            'key_filters': {
+                'byte_data': False,
+                'discrete_values': [ '' ],
+                'excluded_values': [ '' ],
+                'greater_than': '',
+                'less_than': '',
+                'max_length': 0,
+                'max_value': '',
+                'min_length': 0,
+                'min_value': '',
+                'must_contain': [ '' ],
+                'must_not_contain': [ '' ],
+                'contains_either': [ '' ]
+            },
             'sort_order': {}
         },
         'components': {
@@ -200,6 +217,21 @@ class appdataClient(object):
             '.max_results': {
                 'min_value': 1,
                 'integer_data': True
+            },
+            '.key_filters.discrete_values': {
+                'required_field': False
+            },
+            '.key_filters.excluded_values': {
+                'required_field': False
+            },
+            '.key_filters.must_contain': {
+                'required_field': False
+            },
+            '.key_filters.must_not_contain': {
+                'required_field': False
+            },
+            '.key_filters.contains_either': {
+                'required_field': False
             }
         }
     }
@@ -298,7 +330,7 @@ class appdataClient(object):
 
         return self
 
-    def retrieve(self, key_string, secret_key=''):
+    def read(self, key_string, secret_key=''):
 
         '''
             a method to retrieve body details from a file
@@ -366,84 +398,95 @@ class appdataClient(object):
 
         return file_details
 
-    def query(self, key_filters=None, body_filters=None, max_results=1, reverse_search=True):
+    def list(self, key_filters=None, max_results=1, reverse_search=True, starting_key=''):
 
         '''
-            a method to find files from query parameters
+            a method to find key strings from query filters
 
-        :param key_filters: dictionary with query criteria for record key
-        :param body_filters: dictionary with names & query criteria for fields in record body
+            NOTE: query filters only apply to key_string, not contents of records
+
+        :param key_filters: dictionary with conditional operators for key string filter
         :param max_results: integer with maximum number of results to return
         :param reverse_search: boolean to start search from last file in folder first
+        :param starting_key: string with file name of record to begin search on
         :return: list of file names
+
+        conditional operators for key_string
+            "byte_data": false,
+            "discrete_values": [ "" ],
+            "excluded_values": [ "" ],
+            "greater_than": "",
+            "less_than": "",
+            "max_length": 0,
+            "max_value": "",
+            "min_length": 0,
+            "min_value": "",
+            "must_contain": [ "" ],
+            "must_not_contain": [ "" ],
+            "contains_either": [ "" ]
+
         '''
 
     # TODO: Look into declarative query language architecture instead
 
-        __name__ = '%s.query' % self.__class__.__name__
+        __name__ = '%s.list' % self.__class__.__name__
         _key_arg = '%s(key_filters={...})' % __name__
-        _body_arg = '%s(body_filters={...})' % __name__
         _results_arg = '%s(max_results=1)' % __name__
+        _starting_arg = '%s(starting_key="...")' % __name__
 
     # validate inputs
-        input_args = [ key_filters, body_filters, max_results ]
-        input_names = [ '.key_filters', '.body_filters', '.max_results' ]
+        input_args = [ key_filters, max_results, starting_key ]
+        input_names = [ '.key_filters', '.max_results', '.key_string' ]
         for i in range(len(input_args)):
             if input_args[i]:
                 self.fields.validate(input_args[i], input_names[i])
 
-    # validate query criteria structure
-        key_criteria = {}
-        if key_filters:
-            key_criteria = {
-                '.key_string': key_filters
-            }
-            self.fields.query(key_criteria)
+    # construct result function
+        def _yield_results(query_filters, record_details):
+            for query_criteria in query_filters:
+                if self.localhost.fileModel.query(query_criteria, record_details):
+                    return True
+            return False
 
-    # construct search resource variables
-        result_list = []
-        file_list = listdir(self.collectionFolder)
+    # retrieve list of files from collection and order them
+        collection_files = listdir(self.collectionFolder)
+        collection_length = len(collection_files)
         if reverse_search:
-            file_list = reversed(file_list)
+            reversed(collection_files)
 
-    # conduct search over list of files in folder and return results
-        for file in file_list:
-            add_file = True
+    # validate starting key and determine starting index
+        starting_index = 0
+        if starting_key:
+            if starting_key not in collection_files:
+                _starting_arg = _starting_arg.replace('...', starting_key)
+                raise ValueError('%s is not a file in the collection %s.' % (_starting_arg, path.basename(self.collectionFolder)))
+            else:
+                starting_index = collection_files.index(starting_key)
 
-    # add files whose name match each regex expression in key query
-            if key_criteria:
-                file_name = { 'key_string': file }
-                if not self.fields.query(key_criteria, file_name):
-                    add_file = False
+    # construct empty results list
+        results_list = []
 
-    # add files whose top level values match each regex expression in body query
-            if add_file and body_filters:
-                valid_file = False
-                for extension in self.ext.names:
-                    regex_pattern = getattr(self.ext, extension)
-                    if regex_pattern.findall(file):
-                        valid_file = True
-                if not valid_file:
-                    add_file = False
-                else:
-                    file_details = self.get(file)
-                    file_schema = {'schema': file_details}
-                    file_model = jsonModel(file_schema)
-                    if not file_model.query(body_filters, file_details):
-                        add_file = False
+    # search file names in collection for query match
+        for i in range(starting_index, collection_length):
+            file_name = collection_files[i]
+            file_record = { 'file_name': file_name }
+            query_criteria = [ { '.file_name': key_filters } ]
+            filter_match = False
+            if _yield_results(query_criteria, file_record):
+                filter_match = True
 
-    # add file that passes all query tests
-            if add_file:
-                for extension in self.ext.names:
-                    regex_pattern = getattr(self.ext, extension)
-                    if regex_pattern.findall(file):
-                        result_list.append(file)
+    # make sure that file name is an eligible extension
+            if filter_match:
+                key_map = self.ext.map(file_name)[0]
+                for key in key_map.keys():
+                    if key_map[key]:
+                        results_list.append(file_name)
 
     # end search if results match desired result number
-            if len(result_list) == max_results:
-                return result_list
+            if len(results_list) == max_results:
+                return results_list
 
-        return result_list
+        return results_list
 
     def delete(self, key_string):
 
@@ -473,10 +516,6 @@ class appdataClient(object):
             raise Exception('%s failed to delete %s' % (_key_arg, key_string))
 
         return '%s has been deleted.' % key_string
-
-    def compact(self, total_number=0, cutoff_date=''):
-
-        return True
 
 if __name__ == '__main__':
     appdataModel()

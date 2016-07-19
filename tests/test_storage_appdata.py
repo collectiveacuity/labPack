@@ -26,10 +26,9 @@ class testAppdataClient(appdataClient):
             if type == 'drep':
                 secret_key = 'test-key'
             self.create(test_key, test_details, secret_key=secret_key)
-            assert self.retrieve(test_key, secret_key)
-            # assert self.query(key_filters={'discrete_values': [test_key]})
-            # body_filter = { '.time': { 'min_value': test_dt } }
-            # assert self.query(body_filters=body_filter)
+            assert self.read(test_key, secret_key)
+            assert self.list(key_filters={'discrete_values': [test_key]})
+            assert self.list(key_filters={'discrete_values': [test_key]}, starting_key=test_key)
             assert self.delete(test_key)
 
         return self

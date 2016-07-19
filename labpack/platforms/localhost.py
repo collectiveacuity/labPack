@@ -15,7 +15,7 @@ class localhostClient(object):
         'schema': {
             'org_name': 'Collective Acuity',
             'prod_name': 'labPack',
-            'results': 1,
+            'max_results': 1,
             'query_root': '../',
             'query_filters': [ {
                 '.file_name': {},
@@ -33,7 +33,7 @@ class localhostClient(object):
             '.prod_name': {
                 'must_not_contain': ['/']
             },
-            '.results': {
+            '.max_results': {
                 'min_value': 1,
                 'integer_data': True
             }
@@ -150,14 +150,14 @@ class localhostClient(object):
 
         return data_path
 
-    def find(self, query_filters=None, query_root='', results=1, top_down=True):
+    def find(self, query_filters=None, query_root='', max_results=1, top_down=True):
 
         '''
             a method to find files on localhost based upon a variety of query criteria
 
         :param query_filters: list with query_criteria dictionaries
         :param query_root: string with path from which to root walk of localhost directories
-        :param results: integer with maximum number of results to return
+        :param max_results: integer with maximum number of results to return
         :param top_down: boolean to determine direction of walk from top of root down branches
         :return: list of file path strings
 
@@ -211,8 +211,8 @@ class localhostClient(object):
         __name__ = '%s.query' % self.__class__.__name__
 
     # validate input
-        input_kwargs = [ query_filters, query_root, results ]
-        input_names = [ '.query_filters', '.query_root', '.results' ]
+        input_kwargs = [ query_filters, query_root, max_results ]
+        input_names = [ '.query_filters', '.query_root', '.max_results' ]
         for i in range(len(input_kwargs)):
             if input_kwargs[i]:
                 self.fields.validate(input_kwargs[i], input_names[i])
@@ -255,7 +255,7 @@ class localhostClient(object):
                     result_list.append(file_source)
 
     # return results list
-                if len(result_list) == results:
+                if len(result_list) == max_results:
                     return result_list
 
         return result_list
