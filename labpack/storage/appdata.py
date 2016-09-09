@@ -305,6 +305,7 @@ class appdataClient(object):
 
     # construct data file path
         file_path = ''
+        file_time = 0
         file_data = ''.encode('utf-8')
         key_map = self.ext.map(key_string)[0]
         if key_map['json']:
@@ -326,6 +327,7 @@ class appdataClient(object):
             secret_key = self.fields.validate(secret_key, '.secret_key')
             file_path = path.join(self.collectionFolder, key_string)
             file_data = drep.dump(body_dict, secret_key)
+            file_time = 1
 
     # save file data to folder
         if not overwrite:
@@ -334,6 +336,14 @@ class appdataClient(object):
         with open(file_path, 'wb') as f:
             f.write(file_data)
             f.close()
+
+    # eliminate update and access time metadata (for drep files)
+        if file_time:
+            from os import utime
+            utime(file_path, times=(file_time, file_time))
+
+    # TODO add windows creation time wiping
+    # http://stackoverflow.com/questions/4996405/how-do-i-change-the-file-creation-date-of-a-windows-file-from-python
 
         return self
 
