@@ -35,10 +35,12 @@ class appdataModel(object):
     def __init__(self, record_schema=None, collection_settings=None, appdata_model=None, access_key=''):
 
         '''
+            a method to initialize the appdata file storage class
 
-        :param record_schema:
-        :param collection_settings:
-        :param appdata_model:
+        :param record_schema: dictionary with record schema in jsonModel format
+        :param collection_settings: dictionary with collection settings
+        :param appdata_model: [optional] appdataModel object with pre-existing settings
+        :param access_key: [optional] string to access drep index
 
         general database model init args:
             record_schema
@@ -56,6 +58,7 @@ class appdataModel(object):
                 self.settings = appdata_model.settings
                 self.methods = appdata_model.methods
                 self.index = appdata_model.index
+                self.access = appdata_model.access
             else:
                 raise TypeError('\nModel input must be an %s object.' % class_name)
         
@@ -92,6 +95,10 @@ class appdataModel(object):
                 'prod_name': self.settings['prod_name']
             }
             self.methods = appdataClient(**client_kwargs)
+            self.access = ''
+            if access_key:
+                if isinstance(access_key, str):
+                    self.access = access_key
         
         else:
             raise IndexError('\n%s init requires either an existing %s or record schema and collection settings.' % (class_name, class_name))
@@ -470,9 +477,9 @@ class appdataClient(object):
         for i in range(starting_index, collection_length):
             file_name = collection_files[i]
             file_record = { 'file_name': file_name }
-            query_criteria = [ { '.file_name': key_filters } ]
+            query_filters = [ { '.file_name': key_filters } ]
             filter_match = False
-            if _yield_results(query_criteria, file_record):
+            if _yield_results(query_filters, file_record):
                 filter_match = True
 
     # make sure that file name is an eligible extension

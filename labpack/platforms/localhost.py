@@ -48,8 +48,17 @@ class localhostClient(object):
     # retrieve OS variable from system
         env_os = environ.get('OS')
         if not env_os:
-            sys_command = 'uname -a'
+            # import subprocess
+            #
+            # env_os = subprocess.run(sys_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            # print(env_os.stdout)
+            # sys_command = 'ls'
+            sys_command = ['uname', '-a']
             env_os = check_output(sys_command).decode('utf-8').replace('\n','')
+            # print(env_os)
+            # from sys import exit
+            # exit()
+
 
     # determine OS from environment variable
         local_os = ''
@@ -65,6 +74,10 @@ class localhostClient(object):
             local_os = 'Solaris'
         self.os = local_os
 
+    # TODO: determine file system and parameters
+    # TODO: request latest info from
+    # https://en.wikipedia.org/wiki/Comparison_of_file_systems#Limits
+
     # retrieve USERNAME variable from system
         self.username = ''
         env_username = environ.get('USERNAME')
@@ -75,7 +88,7 @@ class localhostClient(object):
         self.ip = 'localhost'
         if self.os in ('Linux', 'FreeBSD', 'Solaris'):
             try:
-                sys_command = 'hostname -i'
+                sys_command = ['hostname', '-i']
                 self.ip = check_output(sys_command).decode('utf-8').replace('\n', '')
             except:
                 pass

@@ -90,7 +90,7 @@ class labRegex(object):
                 regex_pattern = getattr(regex_method, 'pattern')
                 regex_name = getattr(regex_method, 'name')
                 token_map[regex_name] = False
-                if regex_pattern.match(gram_list[i]):
+                if regex_pattern.findall(gram_list[i]):
                     token_map[regex_name] = True
             word_list.append(token_map)
 
@@ -101,11 +101,13 @@ if __name__ == '__main__':
         "valid email": "^[\\w\\-_\\.\\+]{1,36}?@[\\w\\-\\.]{1,36}?\\.[a-z]{2,10}$",
         "valid url": "[\\w\\-\\.]+\\.[a-z]{2,10}$",
         "json extension": ".+\\.json$",
-        "non-ascii characters": "[^\x00-\x7F]+"
+        "non-ascii characters": "[^\x00-\x7F]+",
+        "invalid filename": '[/<>!`:\\\"\\*\\?\\n\\t\\r\\|]+|^\\.|[\\.\\s]$'
     }
     regex = labRegex(test_schema)
     test_input = "the website for the lab is collectiveacuity.com"
     input_map = regex.map(test_input)
+    print(input_map)
     file_ext = {
         "json": ".+\\.json$",
         "json.gz": ".+\\.json\\.gz$",

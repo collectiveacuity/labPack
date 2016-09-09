@@ -8,12 +8,13 @@ class testLocalhostClient(localhostClient):
     def __init__(self):
         localhostClient.__init__(self)
 
-    def unitTests(self):
+    def unittests(self):
 
         os = self.os
         assert os
         username = self.username
-        assert username
+        if os == 'Windows':
+            assert username
         ip = self.ip
         assert ip
         home = self.home
@@ -67,4 +68,4 @@ class testLocalhostClient(localhostClient):
         return self
 
 if __name__ == '__main__':
-    testLocalhostClient().unitTests()
+    testLocalhostClient().unittests()
