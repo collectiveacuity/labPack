@@ -209,7 +209,7 @@ class appdataClient(object):
                 'must_not_contain': ['/']
             },
             '.key_string': {
-                'must_not_contain': [ '[^\\w\\-\\.]' ],
+                'must_not_contain': [ '[^\\w\\-\\.]', '^\\.', '\\.$' ],
                 'contains_either': [ '\\.json$', '\\.ya?ml$', '\\.json\\.gz$', '\\.ya?ml\\.gz$', '\\.drep$' ]
             },
             '.body_dict': {
@@ -287,11 +287,23 @@ class appdataClient(object):
         '''
             a method to create a file in store folder
 
-        :param key_string: string with name to assign file
+        :param key_string: string with name to assign file (see NOTE below)
         :param body_dict: dictionary with file body details
         :param overwrite: boolean to overwrite files with same name
         :param secret_key: [optional] string with key to encrypt body data
         :return: self
+
+            NOTE:   key_string may only contain alphanumeric, _, . or -
+                    characters and may not begin with the . character
+                    key_string must end with one of the acceptable file
+                    extensions:
+                        .json
+                        .yaml
+                        .yml
+                        .json.gz
+                        .yaml.gz
+                        .yml.gz
+                        .drep
         '''
 
         method_name = '%s.create' % self.__class__.__name__

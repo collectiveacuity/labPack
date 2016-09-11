@@ -84,7 +84,8 @@ setup(
     install_requires=[
         'pytz>=2015.7',
         'tzlocal>=1.2',
-        'python-dateutil>=2.4.2'
+        'python-dateutil>=2.4.2',
+        'pyyaml>=3.12'
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',

@@ -106,7 +106,7 @@ class localhostClient(object):
             else:
                 self.home = 'C:\\Users\\%s' % self.username
         elif self.os in ('Linux', 'FreeBSD', 'Solaris', 'Mac'):
-            self.home = '~/'
+            self.home = path.expanduser('~')
 
     # construct file record model property
         file_model = {
@@ -154,12 +154,12 @@ class localhostClient(object):
                 data_path = '%s\\AppData\\Local\\%s\\%s' % (self.home, org_name, prod_name)
 
         elif self.os == 'Mac':
-            data_path = '%sLibrary/Application Support/%s/%s/' % (self.home, org_name, prod_name)
+            data_path = '%s/Library/Application Support/%s/%s/' % (self.home, org_name, prod_name)
 
         elif self.os in ('Linux', 'FreeBSD', 'Solaris'):
             org_format = org_name.replace(' ','-').lower()
             prod_format = prod_name.replace(' ', '-').lower()
-            data_path = '%s.config/%s-%s/' % (self.home, org_format, prod_format)
+            data_path = '%s/.config/%s-%s/' % (self.home, org_format, prod_format)
 
         return data_path
 
