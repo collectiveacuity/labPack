@@ -178,7 +178,9 @@ class appdataClient(object):
             'org_name': 'Collective Acuity',
             'prod_name': 'labPack',
             'folder_name': 'User Data',
-            'key_string': 'obs-terminal-2016-03-17T17-24-51-687845Z.yaml',
+            'key_string': 'obs/terminal/2016-03-17T17-24-51-687845Z.yaml',
+            'key_string_path': '/home/user/.config/collective-acuity-labpack/user-data/obs/terminal',
+            'key_string_comp': 'obs',
             'body_dict': { 'dT': 1458235492.311154 },
             'secret_key': '6tZ0rUexOiBcOse2-dgDkbeY',
             'max_results': 1,
@@ -200,17 +202,26 @@ class appdataClient(object):
         },
         'components': {
             '.org_name': {
-              'must_not_contain': ['/']
+                'max_length': 255,
+                'must_not_contain': ['/', '^\\.']
             },
             '.prod_name': {
-                'must_not_contain': ['/']
+                'max_length': 255,
+                'must_not_contain': ['/', '^\\.']
             },
             '.folder_name': {
-                'must_not_contain': ['/']
+                'max_length': 255,
+                'must_not_contain': ['/', '^\\.']
             },
             '.key_string': {
-                'must_not_contain': [ '[^\\w\\-\\.]', '^\\.', '\\.$' ],
+                'must_not_contain': [ '[^\\w\\-\\./]', '^\\.', '\\.$', '^/' ],
                 'contains_either': [ '\\.json$', '\\.ya?ml$', '\\.json\\.gz$', '\\.ya?ml\\.gz$', '\\.drep$' ]
+            },
+            '.key_string_path': {
+                'max_length': 32767
+            },
+            '.key_string_comp': {
+                'max_length': 255
             },
             '.body_dict': {
                 'extra_fields': True
@@ -315,36 +326,47 @@ class appdataClient(object):
         key_string = self.fields.validate(key_string, '.key_string')
         body_dict = self.fields.validate(body_dict, '.body_dict')
 
-    # construct data file path
-        file_path = ''
+    # construct file path
+        file_path = path.join(self.collectionFolder, key_string)
+        file_path = self.fields.validate(file_path, '.key_string_path')
+        current_path = path.split(file_path)
+        self.fields.validate(current_path[1], '.key_string_comp')
+        while current_path[0] != self.collectionFolder:
+            current_path = path.split(current_path[0])
+            self.fields.validate(current_path[1], '.key_string_comp')
+
+    # construct file data
         file_time = 0
         file_data = ''.encode('utf-8')
         key_map = self.ext.map(key_string)[0]
         if key_map['json']:
-            file_path = path.join(self.collectionFolder, key_string)
             file_data = json.dumps(body_dict).encode('utf-8')
         elif key_map['yaml']:
-            file_path = path.join(self.collectionFolder, key_string)
             file_data = yaml.dump(body_dict).encode('utf-8')
         elif key_map['json.gz']:
-            file_path = path.join(self.collectionFolder, key_string)
             file_bytes = json.dumps(body_dict).encode('utf-8')
             file_data = gzip.compress(file_bytes)
         elif key_map['yaml.gz']:
-            file_path = path.join(self.collectionFolder, key_string)
             file_bytes = yaml.dump(body_dict).encode('utf-8')
             file_data = gzip.compress(file_bytes)
         elif key_map['drep']:
             from labpack.compilers import drep
             secret_key = self.fields.validate(secret_key, '.secret_key')
-            file_path = path.join(self.collectionFolder, key_string)
             file_data = drep.dump(body_dict, secret_key)
             file_time = 1
 
-    # save file data to folder
+    # check overwrite exception
         if not overwrite:
             if path.exists(file_path):
                 raise Exception('%s already exists. To overwrite %s, set overwrite=True' % (_key_arg, key_string))
+
+    # create directories in path to file
+        dir_path = path.split(file_path)
+        if not path.exists(dir_path[0]):
+            from os import makedirs
+            makedirs(dir_path[0])
+
+    # write data to file
         with open(file_path, 'wb') as f:
             f.write(file_data)
             f.close()
@@ -432,7 +454,7 @@ class appdataClient(object):
         '''
             a method to find key strings from query filters
 
-            NOTE: query filters only apply to key_string, not contents of records
+            NOTE:   query filters only apply to key_string, not contents of records
 
         :param key_filters: dictionary with conditional operators for key string filter
         :param max_results: integer with maximum number of results to return
@@ -539,10 +561,21 @@ class appdataClient(object):
         if not path.exists(file_path):
             return '%s does not exist.' % key_string
 
+    # remove file
         try:
             remove(file_path)
         except:
             raise Exception('%s failed to delete %s' % (_key_arg, key_string))
+
+    # remove empty directories in path to file
+        from os import rmdir
+        current_dir = path.split(file_path)[0]
+        while current_dir != self.collectionFolder:
+            if not listdir(current_dir):
+                rmdir(current_dir)
+                current_dir = path.split(current_dir)[0]
+            else:
+                break
 
         return '%s has been deleted.' % key_string
 
