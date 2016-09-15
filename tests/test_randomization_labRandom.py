@@ -34,8 +34,8 @@ class testlabRandom(object):
         labPerform.repeat(labRandom.random_double(1, 2), 'labRandom.random_double(1, 2)', 10000)
         test1 = [1, 2, 3, 4, 5, 6]
         labPerform.repeat(labRandom.random_shuffle(test1), 'labRandom.random_shuffle([1,2,3,4,5,6])', 10000)
-        test4 = [i for i in range(10000)]
-        labPerform.repeat(labRandom.random_shuffle(test4), 'labRandom.random_shuffle([1,2,..., 10,000])', 10000)
+        test4 = [i for i in range(1000)]
+        labPerform.repeat(labRandom.random_shuffle(test4), 'labRandom.random_shuffle([1,2,..., 1000])', 10000)
 
         return self
 

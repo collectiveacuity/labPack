@@ -1,9 +1,34 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
+__license__ = 'MIT'
 
-from os import environ, path, walk, stat
+import os
 from jsonmodel.validators import jsonModel
-from subprocess import check_output
+from socket import gethostname, gethostbyname
+
+class osClient(object):
+
+    def __init__(self):
+
+    # construct empty methods
+        self.sysname = ''
+        self.nodename = ''
+        self.release = ''
+        self.version = ''
+        self.machine = ''
+
+    # reconstruct class methods from system call
+        local_os = os.uname()
+        if local_os.sysname:
+            self.sysname = local_os.sysname
+        if local_os.nodename:
+            self.nodename = local_os.nodename
+        if local_os.release:
+            self.release = local_os.release
+        if local_os.version:
+            self.release = local_os.version
+        if local_os.machine:
+            self.machine = local_os.machine
 
 class localhostClient(object):
 
@@ -15,7 +40,10 @@ class localhostClient(object):
         'schema': {
             'org_name': 'Collective Acuity',
             'prod_name': 'labPack',
+            'walk_root': '../',
             'max_results': 1,
+            'previous_file': '/home/user/.config/collective-acuity-labpack/user-data/test.json',
+            'file_path': '/home/user/.config/collective-acuity-labpack/user-data/test.json',
             'query_root': '../',
             'query_filters': [ {
                 '.file_name': {},
@@ -45,68 +73,32 @@ class localhostClient(object):
     # construct class field input validation property
         self.fields = jsonModel(self._class_fields)
 
-    # retrieve OS variable from system
-        env_os = environ.get('OS')
-        if not env_os:
-            # import subprocess
-            #
-            # env_os = subprocess.run(sys_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            # print(env_os.stdout)
-            # sys_command = 'ls'
-            sys_command = ['uname', '-a']
-            env_os = check_output(sys_command).decode('utf-8').replace('\n','')
-            # print(env_os)
-            # from sys import exit
-            # exit()
-
-
-    # determine OS from environment variable
-        local_os = ''
-        if 'Linux' in env_os:
-            local_os = 'Linux'
-        elif 'FreeBSD' in env_os:
-            local_os = 'FreeBSD'
-        elif 'Windows' in env_os:
-            local_os = 'Windows'
-        elif 'Darwin' in env_os:
-            local_os = 'Mac'
-        elif 'SunOS' in env_os:
-            local_os = 'Solaris'
-        self.os = local_os
+    # retrieve operating system from localhost
+        self.os = osClient()
 
     # TODO: determine file system and parameters
     # TODO: request latest info from
     # https://en.wikipedia.org/wiki/Comparison_of_file_systems#Limits
 
-    # retrieve USERNAME variable from system
-        self.username = ''
-        env_username = environ.get('USERNAME')
-        if env_username:
-            self.username = env_username
-
     # retrieve IP from system
-        self.ip = 'localhost'
-        if self.os in ('Linux', 'FreeBSD', 'Solaris'):
-            try:
-                sys_command = ['hostname', '-i']
-                self.ip = check_output(sys_command).decode('utf-8').replace('\n', '')
-            except:
-                pass
+        self.os.nodename = gethostname()
+        self.ip = gethostbyname(self.os.nodename)
 
     # retrieve path to user home
         self.home = ''
-        if self.os == 'Windows':
+        if self.os.sysname == 'Windows':
+            env_username = os.environ.get('USERNAME')
             from re import compile
             xp_pattern = compile('^C:\\Documents and Settings')
             app_data = ''
-            if environ.get('APPDATA'):
-                app_data = environ.get('APPDATA')
+            if os.environ.get('APPDATA'):
+                app_data = os.environ.get('APPDATA')
             if xp_pattern.findall(app_data):
-                self.home = 'C:\\Documents and Settings\\%s' % self.username
+                self.home = 'C:\\Documents and Settings\\%s' % env_username
             else:
-                self.home = 'C:\\Users\\%s' % self.username
-        elif self.os in ('Linux', 'FreeBSD', 'Solaris', 'Mac'):
-            self.home = path.expanduser('~')
+                self.home = 'C:\\Users\\%s' % env_username
+        elif self.os.sysname in ('Linux', 'FreeBSD', 'Solaris', 'Darwin'):
+            self.home = os.path.expanduser('~')
 
     # construct file record model property
         file_model = {
@@ -142,26 +134,141 @@ class localhostClient(object):
         data_path = ''
 
     # construct path from os
-        if self.os == 'Windows':
+        if self.os.sysname == 'Windows':
             from re import compile
             xp_pattern = compile('^C:\\Documents and Settings')
             app_data = ''
-            if environ.get('APPDATA'):
-                app_data = environ.get('APPDATA')
+            if os.environ.get('APPDATA'):
+                app_data = os.environ.get('APPDATA')
             if xp_pattern.findall(app_data):
                 data_path = '%s\\Local Settings\\Application Data\\%s\\%s' % (self.home, org_name, prod_name)
             else:
                 data_path = '%s\\AppData\\Local\\%s\\%s' % (self.home, org_name, prod_name)
 
-        elif self.os == 'Mac':
+        elif self.os.sysname == 'Darwin':
             data_path = '%s/Library/Application Support/%s/%s/' % (self.home, org_name, prod_name)
 
-        elif self.os in ('Linux', 'FreeBSD', 'Solaris'):
+        elif self.os.sysname in ('Linux', 'FreeBSD', 'Solaris'):
             org_format = org_name.replace(' ','-').lower()
             prod_format = prod_name.replace(' ', '-').lower()
             data_path = '%s/.config/%s-%s/' % (self.home, org_format, prod_format)
 
         return data_path
+
+    def list(self, walk_root='', max_results=1, reverse_order=False, previous_file=''):
+
+        '''
+            a method to list files on localhost from walk of directories
+
+        :param walk_root: string with path from which to root walk of localhost directories
+        :param max_results: integer with maximum number of results to return
+        :param reverse_order: boolean to determine alphabetical direction of walk
+        :param previous_file: string with absolute path of file to begin search after
+        :return: list of file absolute path strings
+        '''
+
+        __name__ = '%s.list(...)' % self.__class__.__name__
+
+    # validate input
+        input_kwargs = [walk_root, max_results, previous_file]
+        input_names = ['.walk_root', '.max_results', '.previous_file']
+        for i in range(len(input_kwargs)):
+            if input_kwargs[i]:
+                self.fields.validate(input_kwargs[i], input_names[i])
+
+    # validate that previous file exists
+        file_exists = False
+        previous_found = False
+        if previous_file:
+            if os.path.exists(previous_file):
+                if os.path.isfile(previous_file):
+                    file_exists = True
+            if not file_exists:
+                err_msg = __name__.replace('...', 'previous_file=%s' % previous_file)
+                raise ValueError('%s must be a valid file.' % err_msg)
+
+    # construct empty results object
+        results_list = []
+
+    # determine root for walk
+        if walk_root:
+            if not os.path.isdir(walk_root):
+                return results_list
+        else:
+            walk_root = './'
+
+    # walk directory structure to find files
+        for current_dir, sub_dirs, dir_files in os.walk(walk_root):
+            sub_dirs.sort()
+            if reverse_order:
+                sub_dirs.reverse()
+            if previous_file and not previous_found:
+                key_path = previous_file.split(os.sep)
+                current_path = os.path.abspath(current_dir)
+                for i in range(len(current_path.split(os.sep))):
+                    del key_path[0]
+                if key_path:
+                    if key_path[0] in sub_dirs:
+                        path_index = sub_dirs.index(key_path[0])
+                        sub_dirs[0:path_index] = []
+                        dir_files = []
+                    elif key_path[0] in dir_files:
+                        dir_files.sort()
+                        if reverse_order:
+                            dir_files.reverse()
+                        file_index = dir_files.index(key_path[0]) + 1
+                        dir_files[0:file_index] = []
+                        previous_found = True
+
+    # add file to results list
+            for file in dir_files:
+                dir_files.sort()
+                if reverse_order:
+                    dir_files.reverse()
+                file_source = os.path.join(os.path.abspath(current_dir), file)
+                results_list.append(file_source)
+                        
+    # return results list
+                if len(results_list) == max_results:
+                    return results_list
+
+        return results_list
+
+    def metadata(self, file_path):
+
+        '''
+            a method to retrieve the metadata of a file on the localhost
+
+        :param file_path: string with path to file
+        :return: dictionary with file properties
+        '''
+
+        __name__ = '%s.metadata(...)' % self.__class__.__name__
+
+    # validate input
+        self.fields.validate(file_path, '.file_path')
+        file_exists = False
+        if os.path.exists(file_path):
+            if os.path.isfile(file_path):
+                file_exists = True
+        if not file_exists:
+            err_msg = __name__.replace('...', 'file_path=%s' % file_path)
+            raise ValueError('%s must be a valid file.' % err_msg)
+
+    # construct metadata dictionary
+        abs_path = os.path.abspath(file_path)
+        file_stats = os.stat(file_path)
+        file_metadata = {
+            'path_segments': abs_path.split(os.sep),
+            'file_name': os.path.split(abs_path)[1],
+            'file_path': abs_path,
+            'file_size': file_stats.st_size,
+            'create_date': file_stats.st_ctime,
+            'update_date': file_stats.st_mtime,
+            'access_date': file_stats.st_atime
+        }
+
+        return file_metadata
 
     def find(self, query_filters=None, query_root='', max_results=1, top_down=True):
 
@@ -237,7 +344,7 @@ class localhostClient(object):
 
     # determine root for walk
         if query_root:
-            if not path.isdir(query_root):
+            if not os.path.isdir(query_root):
                 return result_list
         else:
             query_root = './'
@@ -250,12 +357,12 @@ class localhostClient(object):
             return False
 
     # walk the local file index
-        for current_dir, sub_dirs, dir_files in walk(query_root, topdown=top_down):
+        for current_dir, sub_dirs, dir_files in os.walk(query_root, topdown=top_down):
             for file in dir_files:
-                file_source = path.join(path.abspath(current_dir), file)
-                file_stats = stat(file_source)
+                file_source = os.path.join(os.path.abspath(current_dir), file)
+                file_stats = os.stat(file_source)
                 record_details = {
-                    'file_path': path.abspath(current_dir),
+                    'file_path': os.path.abspath(current_dir),
                     'file_name': file,
                     'file_size': file_stats.st_size,
                     'create_date': file_stats.st_ctime,
