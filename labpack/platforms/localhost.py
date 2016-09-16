@@ -18,17 +18,32 @@ class osClient(object):
         self.machine = ''
 
     # reconstruct class methods from system call
-        local_os = os.uname()
-        if local_os.sysname:
-            self.sysname = local_os.sysname
-        if local_os.nodename:
-            self.nodename = local_os.nodename
-        if local_os.release:
-            self.release = local_os.release
-        if local_os.version:
-            self.release = local_os.version
-        if local_os.machine:
-            self.machine = local_os.machine
+        try:
+            from os import uname
+            local_os = uname()
+            if local_os.sysname:
+                self.sysname = local_os.sysname
+            if local_os.nodename:
+                self.nodename = local_os.nodename
+            if local_os.release:
+                self.release = local_os.release
+            if local_os.version:
+                self.release = local_os.version
+            if local_os.machine:
+                self.machine = local_os.machine
+        except:
+            from platform import uname
+            local_os = uname()
+            if local_os.system:
+                self.sysname = local_os.system
+            if local_os.node:
+                self.nodename = local_os.node
+            if local_os.release:
+                self.release = local_os.release
+            if local_os.version:
+                self.release = local_os.version
+            if local_os.machine:
+                self.machine = local_os.machine
 
 class localhostClient(object):
 
@@ -41,6 +56,7 @@ class localhostClient(object):
             'org_name': 'Collective Acuity',
             'prod_name': 'labPack',
             'walk_root': '../',
+            'list_root': '../',
             'max_results': 1,
             'previous_file': '/home/user/.config/collective-acuity-labpack/user-data/test.json',
             'file_path': '/home/user/.config/collective-acuity-labpack/user-data/test.json',
@@ -155,23 +171,22 @@ class localhostClient(object):
 
         return data_path
 
-    def list(self, walk_root='', max_results=1, reverse_order=False, previous_file=''):
+    def walk(self, walk_root='', reverse_order=False, previous_file=''):
 
         '''
-            a method to list files on localhost from walk of directories
+            a method which generates file paths on localhost from walk of directories
 
         :param walk_root: string with path from which to root walk of localhost directories
-        :param max_results: integer with maximum number of results to return
         :param reverse_order: boolean to determine alphabetical direction of walk
-        :param previous_file: string with absolute path of file to begin search after
-        :return: list of file absolute path strings
+        :param previous_file: string with path of file after which to start walk
+        :yield: string with absolute path to file
         '''
 
-        __name__ = '%s.list(...)' % self.__class__.__name__
+        __name__ = '%s.walk(...)' % self.__class__.__name__
 
     # validate input
-        input_kwargs = [walk_root, max_results, previous_file]
-        input_names = ['.walk_root', '.max_results', '.previous_file']
+        input_kwargs = [walk_root, previous_file]
+        input_names = ['.walk_root', '.previous_file']
         for i in range(len(input_kwargs)):
             if input_kwargs[i]:
                 self.fields.validate(input_kwargs[i], input_names[i])
@@ -183,25 +198,28 @@ class localhostClient(object):
             if os.path.exists(previous_file):
                 if os.path.isfile(previous_file):
                     file_exists = True
+                    previous_file = os.path.abspath(previous_file)
             if not file_exists:
                 err_msg = __name__.replace('...', 'previous_file=%s' % previous_file)
                 raise ValueError('%s must be a valid file.' % err_msg)
 
-    # construct empty results object
-        results_list = []
+    # construct empty result
+        file_path = ''
 
     # determine root for walk
         if walk_root:
             if not os.path.isdir(walk_root):
-                return results_list
+                yield file_path
         else:
             walk_root = './'
 
     # walk directory structure to find files
         for current_dir, sub_dirs, dir_files in os.walk(walk_root):
+            dir_files.sort()
             sub_dirs.sort()
             if reverse_order:
                 sub_dirs.reverse()
+                dir_files.reverse()
             if previous_file and not previous_found:
                 key_path = previous_file.split(os.sep)
                 current_path = os.path.abspath(current_dir)
@@ -213,24 +231,65 @@ class localhostClient(object):
                         sub_dirs[0:path_index] = []
                         dir_files = []
                     elif key_path[0] in dir_files:
-                        dir_files.sort()
-                        if reverse_order:
-                            dir_files.reverse()
                         file_index = dir_files.index(key_path[0]) + 1
                         dir_files[0:file_index] = []
                         previous_found = True
 
-    # add file to results list
+    # yield file path
             for file in dir_files:
-                dir_files.sort()
-                if reverse_order:
-                    dir_files.reverse()
-                file_source = os.path.join(os.path.abspath(current_dir), file)
-                results_list.append(file_source)
-                        
+                file_path = os.path.join(os.path.abspath(current_dir), file)
+                yield file_path
+
+        yield file_path
+
+    def list(self, list_root='', max_results=1, reverse_order=False, previous_file=''):
+
+        '''
+            a method to list files on localhost from walk of directories
+
+        :param list_root: string with localhost path from which to root list of files
+        :param max_results: integer with maximum number of results to return
+        :param reverse_order: boolean to determine alphabetical direction of walk
+        :param previous_file: string with absolute path of file to begin search after
+        :return: list of file absolute path strings
+        '''
+
+        __name__ = '%s.list(...)' % self.__class__.__name__
+
+    # validate input
+        input_kwargs = [list_root, max_results, previous_file]
+        input_names = ['.list_root', '.max_results', '.previous_file']
+        for i in range(len(input_kwargs)):
+            if input_kwargs[i]:
+                self.fields.validate(input_kwargs[i], input_names[i])
+
+    # validate that previous file exists
+        file_exists = False
+        if previous_file:
+            if os.path.exists(previous_file):
+                if os.path.isfile(previous_file):
+                    file_exists = True
+            if not file_exists:
+                err_msg = __name__.replace('...', 'previous_file="%s"' % previous_file)
+                raise ValueError('%s must be a valid file.' % err_msg)
+
+    # construct empty results object
+        results_list = []
+
+    # determine root for walk
+        if list_root:
+            if not os.path.isdir(list_root):
+                return results_list
+        else:
+            list_root = './'
+
+    # walk directory structure to find files
+        for file in self.walk(list_root, reverse_order, previous_file):
+            results_list.append(file)
+
     # return results list
-                if len(results_list) == max_results:
-                    return results_list
+            if len(results_list) == max_results:
+                return results_list
 
         return results_list
 
@@ -270,16 +329,17 @@ class localhostClient(object):
 
         return file_metadata
 
-    def find(self, query_filters=None, query_root='', max_results=1, top_down=True):
+    def find(self, query_filters=None, query_root='', max_results=1, reverse_order=False, previous_file=''):
 
         '''
-            a method to find files on localhost based upon a variety of query criteria
+            a method to find files on localhost based upon query criteria
 
         :param query_filters: list with query_criteria dictionaries
         :param query_root: string with path from which to root walk of localhost directories
         :param max_results: integer with maximum number of results to return
-        :param top_down: boolean to determine direction of walk from top of root down branches
-        :return: list of file path strings
+        :param reverse_order: boolean to determine alphabetical direction of walk
+        :param previous_file: string with absolute path of file to begin search after
+        :return: list of file absolute path strings
 
             **NOTE: the query method uses a query filters list structure to represent
                     the disjunctive normal form of a logical expression. a record is
@@ -331,8 +391,8 @@ class localhostClient(object):
         __name__ = '%s.query' % self.__class__.__name__
 
     # validate input
-        input_kwargs = [ query_filters, query_root, max_results ]
-        input_names = [ '.query_filters', '.query_root', '.max_results' ]
+        input_kwargs = [ query_filters, query_root, max_results, previous_file ]
+        input_names = [ '.query_filters', '.query_root', '.max_results', '.previous_file' ]
         for i in range(len(input_kwargs)):
             if input_kwargs[i]:
                 self.fields.validate(input_kwargs[i], input_names[i])
@@ -349,33 +409,41 @@ class localhostClient(object):
         else:
             query_root = './'
 
-    # construct result function
+    # construct query test function
         def _yield_results(query_filters, record_details):
             for query_criteria in query_filters:
                 if self.fileModel.query(query_criteria, record_details):
                     return True
             return False
 
-    # walk the local file index
-        for current_dir, sub_dirs, dir_files in os.walk(query_root, topdown=top_down):
-            for file in dir_files:
-                file_source = os.path.join(os.path.abspath(current_dir), file)
-                file_stats = os.stat(file_source)
-                record_details = {
-                    'file_path': os.path.abspath(current_dir),
-                    'file_name': file,
-                    'file_size': file_stats.st_size,
-                    'create_date': file_stats.st_ctime,
-                    'update_date': file_stats.st_mtime,
-                    'access_date': file_stats.st_atime
-                }
+    # add qualifying files to results list
+        for file_path in self.walk(query_root, reverse_order, previous_file):
+            file_details = self.metadata(file_path)
+            if _yield_results(query_filters, file_details):
+                result_list.append(file_path)
+    # # walk the local file index
+    #     for current_dir, sub_dirs, dir_files in os.walk(query_root, topdown=top_down):
+    #         for file in dir_files:
+    #             file_source = os.path.join(os.path.abspath(current_dir), file)
+    #             file_stats = os.stat(file_source)
+    #             record_details = {
+    #                 'file_path': os.path.abspath(current_dir),
+    #                 'file_name': file,
+    #                 'file_size': file_stats.st_size,
+    #                 'create_date': file_stats.st_ctime,
+    #                 'update_date': file_stats.st_mtime,
+    #                 'access_date': file_stats.st_atime
+    #             }
 
     # add qualifying file to results list
-                if _yield_results(query_filters, record_details):
-                    result_list.append(file_source)
+
 
     # return results list
-                if len(result_list) == max_results:
-                    return result_list
+            if len(result_list) == max_results:
+                return result_list
 
         return result_list
+
+if __name__ == '__main__':
+    os_client = osClient()
+    localhost_client = localhostClient()

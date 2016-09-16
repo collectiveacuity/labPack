@@ -27,7 +27,7 @@ class testAppdataClient(appdataClient):
                 secret_key = 'test-key'
             self.create(test_key, test_details, secret_key=secret_key)
             assert self.read(test_key, secret_key)
-            # assert self.list(key_filters={'discrete_values': [test_key]})
+            assert self.list(index_filters={0:{'must_contain': ['^lab']}})
             # assert self.list(key_filters={'discrete_values': [test_key]}, starting_key=test_key)
             assert self.delete(test_key)
 
