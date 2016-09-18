@@ -105,5 +105,5 @@ class testLocalhostClient(localhostClient):
 
 if __name__ == '__main__':
     testLocalhostClient().unittests()
-    # testLocalhostClient().performanceTests()
+    testLocalhostClient().performanceTests()
 

@@ -2,7 +2,7 @@ __author__ = 'rcj1492'
 __created__ = '2016.03'
 __license__ = 'MIT'
 
-from os import path, listdir, remove
+import os
 import yaml
 import gzip
 import json
@@ -65,7 +65,7 @@ class appdataModel(object):
         elif record_schema and collection_settings:
             collection_schema = {
                 'schema': {
-                    'folder_name': '',
+                    'collection_name': '',
                     'prod_name': '',
                     'org_name': '',
                     'versioning': False,
@@ -90,7 +90,7 @@ class appdataModel(object):
                 else:
                     self.index.append(item)
             client_kwargs = {
-                'folder_name': self.settings['folder_name'],
+                'collection_name': self.settings['collection_name'],
                 'org_name': self.settings['org_name'],
                 'prod_name': self.settings['prod_name']
             }
@@ -177,14 +177,16 @@ class appdataClient(object):
         'schema': {
             'org_name': 'Collective Acuity',
             'prod_name': 'labPack',
-            'folder_name': 'User Data',
+            'collection_name': 'User Data',
             'key_string': 'obs/terminal/2016-03-17T17-24-51-687845Z.yaml',
             'key_string_path': '/home/user/.config/collective-acuity-labpack/user-data/obs/terminal',
             'key_string_comp': 'obs',
+            'previous_key': 'obs/terminal/2016-03-17T17-24-51-687845Z.yaml',
             'body_dict': { 'dT': 1458235492.311154 },
             'secret_key': '6tZ0rUexOiBcOse2-dgDkbeY',
             'max_results': 1,
-            'key_filters': {
+            'path_filters': [ {} ],
+            'path_filter': {
                 'byte_data': False,
                 'discrete_values': [ '' ],
                 'excluded_values': [ '' ],
@@ -209,12 +211,12 @@ class appdataClient(object):
                 'max_length': 255,
                 'must_not_contain': ['/', '^\\.']
             },
-            '.folder_name': {
+            '.collection_name': {
                 'max_length': 255,
                 'must_not_contain': ['/', '^\\.']
             },
             '.key_string': {
-                'must_not_contain': [ '[^\\w\\-\\./]', '^\\.', '\\.$', '^/' ],
+                'must_not_contain': [ '[^\\w\\-\\./]', '^\\.', '\\.$', '^/', '//' ],
                 'contains_either': [ '\\.json$', '\\.ya?ml$', '\\.json\\.gz$', '\\.ya?ml\\.gz$', '\\.drep$' ]
             },
             '.key_string_path': {
@@ -236,25 +238,25 @@ class appdataClient(object):
                 'min_value': 1,
                 'integer_data': True
             },
-            '.key_filters.discrete_values': {
+            '.path_filter.discrete_values': {
                 'required_field': False
             },
-            '.key_filters.excluded_values': {
+            '.path_filter.excluded_values': {
                 'required_field': False
             },
-            '.key_filters.must_contain': {
+            '.path_filter.must_contain': {
                 'required_field': False
             },
-            '.key_filters.must_not_contain': {
+            '.path_filter.must_not_contain': {
                 'required_field': False
             },
-            '.key_filters.contains_either': {
+            '.path_filter.contains_either': {
                 'required_field': False
             }
         }
     }
 
-    def __init__(self, folder_name='', org_name='', prod_name=''):
+    def __init__(self, collection_name='', org_name='', prod_name=''):
 
     # add localhost property to class
         self.localhost = localhostClient()
@@ -263,10 +265,10 @@ class appdataClient(object):
         self.fields = jsonModel(self._class_fields)
 
     # validate inputs
-        if not folder_name:
-            folder_name = 'User Data'
+        if not collection_name:
+            collection_name = 'User Data'
         else:
-            folder_name = self.fields.validate(folder_name, '.folder_name')
+            collection_name = self.fields.validate(collection_name, '.collection_name')
         if not org_name:
             org_name = __team__
         else:
@@ -277,11 +279,10 @@ class appdataClient(object):
     # validate existence of file data folder in app data (or create)
         self.appFolder = self.localhost.appData(org_name=org_name, prod_name=prod_name)
         if self.localhost.os in ('Linux', 'FreeBSD', 'Solaris'):
-            folder_name = folder_name.replace(' ', '-').lower()
-        self.collectionFolder = path.join(self.appFolder, folder_name)
-        if not path.exists(self.collectionFolder):
-            from os import makedirs
-            makedirs(self.collectionFolder)
+            collection_name = collection_name.replace(' ', '-').lower()
+        self.collectionFolder = os.path.join(self.appFolder, collection_name)
+        if not os.path.exists(self.collectionFolder):
+            os.makedirs(self.collectionFolder)
 
     # construct supported file type regex patterns
         file_extensions = {
@@ -296,7 +297,7 @@ class appdataClient(object):
     def create(self, key_string, body_dict, overwrite=True, secret_key=''):
 
         '''
-            a method to create a file in store folder
+            a method to create a file in the collection folder
 
         :param key_string: string with name to assign file (see NOTE below)
         :param body_dict: dictionary with file body details
@@ -304,8 +305,8 @@ class appdataClient(object):
         :param secret_key: [optional] string with key to encrypt body data
         :return: self
 
-            NOTE:   key_string may only contain alphanumeric, _, . or -
-                    characters and may not begin with the . character
+            NOTE:   key_string may only contain alphanumeric, /, _, . or -
+                    characters and may not begin with the . or / character.
                     key_string must end with one of the acceptable file
                     extensions:
                         .json
@@ -315,6 +316,14 @@ class appdataClient(object):
                         .yaml.gz
                         .yml.gz
                         .drep
+
+            NOTE:   using one or more / characters splits the key into
+                    separate segments. these segments will appear as a
+                    sub directories inside the record collection and each
+                    segment is used as a separate index for that record
+                    when using the list method
+                    eg. lab/unittests/1473719695.2165067.json is indexed:
+                    [ 'lab', 'unittests', '1473719695.2165067', '.json' ]
         '''
 
         method_name = '%s.create' % self.__class__.__name__
@@ -327,12 +336,12 @@ class appdataClient(object):
         body_dict = self.fields.validate(body_dict, '.body_dict')
 
     # construct file path
-        file_path = path.join(self.collectionFolder, key_string)
+        file_path = os.path.join(self.collectionFolder, key_string)
         file_path = self.fields.validate(file_path, '.key_string_path')
-        current_path = path.split(file_path)
+        current_path = os.path.split(file_path)
         self.fields.validate(current_path[1], '.key_string_comp')
         while current_path[0] != self.collectionFolder:
-            current_path = path.split(current_path[0])
+            current_path = os.path.split(current_path[0])
             self.fields.validate(current_path[1], '.key_string_comp')
 
     # construct file data
@@ -357,14 +366,13 @@ class appdataClient(object):
 
     # check overwrite exception
         if not overwrite:
-            if path.exists(file_path):
+            if os.path.exists(file_path):
                 raise Exception('%s already exists. To overwrite %s, set overwrite=True' % (_key_arg, key_string))
 
     # create directories in path to file
-        dir_path = path.split(file_path)
-        if not path.exists(dir_path[0]):
-            from os import makedirs
-            makedirs(dir_path[0])
+        dir_path = os.path.split(file_path)
+        if not os.path.exists(dir_path[0]):
+            os.makedirs(dir_path[0])
 
     # write data to file
         with open(file_path, 'wb') as f:
@@ -373,8 +381,7 @@ class appdataClient(object):
 
     # eliminate update and access time metadata (for drep files)
         if file_time:
-            from os import utime
-            utime(file_path, times=(file_time, file_time))
+            os.utime(file_path, times=(file_time, file_time))
 
     # TODO add windows creation time wiping
     # http://stackoverflow.com/questions/4996405/how-do-i-change-the-file-creation-date-of-a-windows-file-from-python
@@ -399,10 +406,10 @@ class appdataClient(object):
         key_string = self.fields.validate(key_string, '.key_string')
 
     # construct path to file
-        file_path = path.join(self.collectionFolder, key_string)
+        file_path = os.path.join(self.collectionFolder, key_string)
 
     # validate existence of file
-        if not path.exists(file_path):
+        if not os.path.exists(file_path):
             raise Exception('%s does not exist.' % _key_arg)
 
     # retrieve file details
@@ -449,20 +456,102 @@ class appdataClient(object):
 
         return file_details
 
-    def list(self, key_filters=None, max_results=1, reverse_search=True, starting_key=''):
+    def list(self, max_results=1, reverse_order=True, previous_key=''):
 
         '''
-            a method to find key strings from query filters
+            a method to list keys in collection
 
-            NOTE:   query filters only apply to key_string, not contents of records
-
-        :param key_filters: dictionary with conditional operators for key string filter
         :param max_results: integer with maximum number of results to return
-        :param reverse_search: boolean to start search from last file in folder first
-        :param starting_key: string with file name of record to begin search on
-        :return: list of file names
+        :param reverse_order: boolean to search keys in reverse alphanumeric order
+        :param previous_key: string with key in collection to begin search after
+        :return: list of key strings
+        '''
 
-        conditional operators for key_string
+        __name__ = '%s.list(...)' % self.__class__.__name__
+
+    # validate input
+        input_kwargs = [max_results, previous_key]
+        input_names = ['.max_results', '.key_string']
+        for i in range(len(input_kwargs)):
+            if input_kwargs[i]:
+                self.fields.validate(input_kwargs[i], input_names[i])
+
+    # construct empty results list
+        results_list = []
+        root_segments = self.collectionFolder.split(os.sep)
+        if previous_key:
+            previous_key = os.path.join(self.collectionFolder, previous_key)
+
+    # walk collection folder to find files
+        for file_path in self.localhost.walk(self.collectionFolder, reverse_order, previous_key):
+            path_segments = file_path.split(os.sep)
+            for i in range(len(root_segments)):
+                del path_segments[0]
+            key_string = os.path.join(*path_segments)
+            key_string = key_string.replace('\\','/')
+            results_list.append(key_string)
+
+    # return results list
+            if len(results_list) == max_results:
+                return results_list
+
+        return results_list
+
+    def find(self, path_filters=None, max_results=1, reverse_order=True, previous_key=''):
+
+        '''
+            a method to discover key strings from a query criteria on path segments
+
+        :param path_filters: list of dictionaries with path segment query criteria
+        :param max_results: integer with maximum number of results to return
+        :param reverse_order: boolean to search keys in reverse alphanumeric order
+        :param previous_key: string with key in collection to begin search after
+        :return: list of key strings
+        
+            **NOTE: each key string can be divided into one or more segments
+                    based upon the / characters which occur in the key string as
+                    well as its file extension type. if the key string represents
+                    a file path, then each directory in the path, the file name
+                    and the file extension are all separate indexed values.
+                    
+                    eg. lab/unittests/1473719695.2165067.json is indexed:
+                    [ 'lab', 'unittests', '1473719695.2165067', '.json' ]
+                    
+                    it is possible to filter the records in the collection according
+                    to one or more of these path segments using the query filters.
+
+                    each item in the query filters argument must be a dictionary
+                    which is composed of integer-value key names that represent the
+                    index value of the file path segment to test and key values
+                    with the dictionary of conditional operators used to test the 
+                    string value in the indexed field of the record.
+                    
+                    eg. path_filters = [ { 0: { 'must_contain': [ '^lab' ] } } ]
+                    
+                    this example filter looks at the first segment of each key string
+                    in the collection for a string value which starts with the 
+                    characters 'lab'. as a result, it will match both the example
+                    record above as well as another key string called
+                    'laboratory20160912.json'
+
+            **NOTE: the query method uses a query filters list structure to represent
+                    the disjunctive normal form of a logical expression. a record is
+                    added to the results list if any query criteria dictionary in the
+                    list evaluates to true. within each query_criteria dictionary, all
+                    declared conditional operators must evaluate to true.
+
+            **NOTE: in this way, the path_filters represents a boolean OR operator and
+                    the query_criteria represents a boolean AND operator between all
+                    keys in the dictionary. any number of path segments may be added to
+                    each query criteria dictionary, but the method will only return
+                    key_strings which match all indexed criteria.
+                    
+            NOTE:   all values in each indexed segment are a string datatype
+
+        path_filters:
+            [ { 0: { conditional operators }, 1: { conditional_operators }, ... } ]
+
+        conditional operators for an index criteria:
             "byte_data": false,
             "discrete_values": [ "" ],
             "excluded_values": [ "" ],
@@ -475,63 +564,74 @@ class appdataClient(object):
             "must_contain": [ "" ],
             "must_not_contain": [ "" ],
             "contains_either": [ "" ]
-
         '''
 
     # TODO: Look into declarative query language architecture instead
 
         __name__ = '%s.list' % self.__class__.__name__
-        _key_arg = '%s(key_filters={...})' % __name__
+        _filter_arg = '%s(path_filters={...})' % __name__
         _results_arg = '%s(max_results=1)' % __name__
         _starting_arg = '%s(starting_key="...")' % __name__
 
     # validate inputs
-        input_args = [ key_filters, max_results, starting_key ]
-        input_names = [ '.key_filters', '.max_results', '.key_string' ]
+        input_args = [ path_filters, max_results, previous_key ]
+        input_names = [ '.path_filters', '.max_results', '.key_string' ]
         for i in range(len(input_args)):
             if input_args[i]:
                 self.fields.validate(input_args[i], input_names[i])
+        if path_filters:
+            for filter in path_filters:
+                if not isinstance(filter, dict):
+                    raise TypeError('%s must be a dictionary datatype.' % _filter_arg)
+                for key, value in filter.items():
+                    _key_name = '%s : {...}' % key
+                    if not isinstance(key, str):
+                        raise TypeError('%s key name must be an string.' % _filter_arg.replace('...', _key_name))
+                    elif not isinstance(value, dict):
+                        raise TypeError('%s key value must be a dictionary' % _filter_arg.replace('...', _key_name))
+                    self.fields.validate(value, '.path_filter')
 
-    # construct result function
-        def _yield_results(query_filters, record_details):
-            for query_criteria in query_filters:
-                if self.localhost.fileModel.query(query_criteria, record_details):
-                    return True
-            return False
-
-    # retrieve list of files from collection and order them
-        collection_files = listdir(self.collectionFolder)
-        collection_length = len(collection_files)
-        if reverse_search:
-            reversed(collection_files)
-
-    # validate starting key and determine starting index
-        starting_index = 0
-        if starting_key:
-            if starting_key not in collection_files:
-                _starting_arg = _starting_arg.replace('...', starting_key)
-                raise ValueError('%s is not a file in the collection %s.' % (_starting_arg, path.basename(self.collectionFolder)))
-            else:
-                starting_index = collection_files.index(starting_key)
-
+    # construct index model
+        index_schema = {'schema': {'index_segment': 'string'}}
+        index_model = jsonModel(index_schema)
+    
     # construct empty results list
         results_list = []
+        root_segments = self.collectionFolder.split(os.sep)
+        if previous_key:
+            previous_key = os.path.join(self.collectionFolder, previous_key)
 
-    # search file names in collection for query match
-        for i in range(starting_index, collection_length):
-            file_name = collection_files[i]
-            file_record = { 'file_name': file_name }
-            query_filters = [ { '.file_name': key_filters } ]
-            filter_match = False
-            if _yield_results(query_filters, file_record):
-                filter_match = True
+    # construct query test function
+        def _yield_results(index_criteria, path_segments):
+            file_match = True
+            for key, value in index_criteria.items():
+                query_criteria = {'.index_segment': value}
+                try:
+                    valid_record = {'index_segment': path_segments[int(key)]}
+                    if not index_model.query(query_criteria, valid_record):
+                        file_match = False
+                        break
+                except:
+                    file_match = False
+                    break
+            return file_match
 
-    # make sure that file name is an eligible extension
-            if filter_match:
-                key_map = self.ext.map(file_name)[0]
-                for key in key_map.keys():
-                    if key_map[key]:
-                        results_list.append(file_name)
+    # decompose file path values into path segments and test against filters
+        for file_path in self.localhost.walk(self.collectionFolder, reverse_order, previous_key):
+            path_segments = file_path.split(os.sep)
+            for i in range(len(root_segments)):
+                del path_segments[0]
+            key_string = os.path.join(*path_segments)
+            key_string = key_string.replace('\\','/')
+            for key, value in self.ext.map(path_segments[-1])[0].items():
+                if value and isinstance(value, bool):
+                    crop_length = int((len(key) + 1) * -1)
+                    path_segments[-1] = path_segments[-1][0:crop_length]
+                    path_segments.append('.%s' % key)
+                    for filter in path_filters:
+                        if _yield_results(filter, path_segments):
+                            results_list.append(key_string)
+                            break
 
     # end search if results match desired result number
             if len(results_list) == max_results:
@@ -555,29 +655,51 @@ class appdataClient(object):
         key_string = self.fields.validate(key_string, '.key_string')
 
     # construct path to file
-        file_path = path.join(self.collectionFolder, key_string)
+        file_path = os.path.join(self.collectionFolder, key_string)
 
     # validate existence of file
-        if not path.exists(file_path):
+        if not os.path.exists(file_path):
             return '%s does not exist.' % key_string
+        current_dir = os.path.split(file_path)[0]
 
     # remove file
         try:
-            remove(file_path)
+            os.remove(file_path)
         except:
             raise Exception('%s failed to delete %s' % (_key_arg, key_string))
 
+    # # remove empty directories in path to file
+    #     if not os.listdir(current_dir):
+    #         os.removedirs(current_dir)
+
     # remove empty directories in path to file
-        from os import rmdir
-        current_dir = path.split(file_path)[0]
         while current_dir != self.collectionFolder:
-            if not listdir(current_dir):
-                rmdir(current_dir)
-                current_dir = path.split(current_dir)[0]
+            if not os.listdir(current_dir):
+                os.rmdir(current_dir)
+                current_dir = os.path.split(current_dir)[0]
             else:
                 break
 
         return '%s has been deleted.' % key_string
+
+    def remove(self):
+
+        '''
+            a method to remove all records in the collection
+
+        :return: string with confirmation of deletion
+        '''
+
+        __name__ = '%s.remove' % self.__class__.__name__
+
+    # remove collection tree
+        try:
+            import shutil
+            shutil.rmtree(self.collectionFolder)
+        except:
+            raise Exception('%s failed to remove %s collection from app data.' % (__name__, self.collectionFolder))
+
+        return '%s collection has been removed from app data.' % self.collectionFolder
 
 if __name__ == '__main__':
     appdataModel()

@@ -200,7 +200,7 @@ class localhostClient(object):
                     file_exists = True
                     previous_file = os.path.abspath(previous_file)
             if not file_exists:
-                err_msg = __name__.replace('...', 'previous_file=%s' % previous_file)
+                err_msg = __name__.replace('...', 'previous_file="%s"' % previous_file)
                 raise ValueError('%s must be a valid file.' % err_msg)
 
     # construct empty result
@@ -209,7 +209,8 @@ class localhostClient(object):
     # determine root for walk
         if walk_root:
             if not os.path.isdir(walk_root):
-                yield file_path
+                err_msg = __name__.replace('...', 'walk_root="%s"' % walk_root)
+                raise ValueError('%s msut be a valid directory.' % err_msg)
         else:
             walk_root = './'
 
@@ -239,8 +240,6 @@ class localhostClient(object):
             for file in dir_files:
                 file_path = os.path.join(os.path.abspath(current_dir), file)
                 yield file_path
-
-        yield file_path
 
     def list(self, list_root='', max_results=1, reverse_order=False, previous_file=''):
 
