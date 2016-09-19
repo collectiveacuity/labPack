@@ -420,22 +420,6 @@ class localhostClient(object):
             file_details = self.metadata(file_path)
             if _yield_results(query_filters, file_details):
                 result_list.append(file_path)
-    # # walk the local file index
-    #     for current_dir, sub_dirs, dir_files in os.walk(query_root, topdown=top_down):
-    #         for file in dir_files:
-    #             file_source = os.path.join(os.path.abspath(current_dir), file)
-    #             file_stats = os.stat(file_source)
-    #             record_details = {
-    #                 'file_path': os.path.abspath(current_dir),
-    #                 'file_name': file,
-    #                 'file_size': file_stats.st_size,
-    #                 'create_date': file_stats.st_ctime,
-    #                 'update_date': file_stats.st_mtime,
-    #                 'access_date': file_stats.st_atime
-    #             }
-
-    # add qualifying file to results list
-
 
     # return results list
             if len(result_list) == max_results:

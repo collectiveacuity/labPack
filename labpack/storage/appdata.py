@@ -170,7 +170,7 @@ class appdataModel(object):
 class appdataClient(object):
 
     '''
-        a class of methods for managing file storage in the local app data
+        a class of methods for managing file storage in local app data
     '''
 
     _class_fields = {
@@ -199,8 +199,7 @@ class appdataClient(object):
                 'must_contain': [ '' ],
                 'must_not_contain': [ '' ],
                 'contains_either': [ '' ]
-            },
-            'sort_order': {}
+            }
         },
         'components': {
             '.org_name': {
@@ -281,6 +280,7 @@ class appdataClient(object):
         if self.localhost.os in ('Linux', 'FreeBSD', 'Solaris'):
             collection_name = collection_name.replace(' ', '-').lower()
         self.collectionFolder = os.path.join(self.appFolder, collection_name)
+        self.fields.validate(self.collectionFolder, '.key_string_path')
         if not os.path.exists(self.collectionFolder):
             os.makedirs(self.collectionFolder)
 
@@ -623,15 +623,18 @@ class appdataClient(object):
                 del path_segments[0]
             key_string = os.path.join(*path_segments)
             key_string = key_string.replace('\\','/')
-            for key, value in self.ext.map(path_segments[-1])[0].items():
-                if value and isinstance(value, bool):
-                    crop_length = int((len(key) + 1) * -1)
-                    path_segments[-1] = path_segments[-1][0:crop_length]
-                    path_segments.append('.%s' % key)
-                    for filter in path_filters:
-                        if _yield_results(filter, path_segments):
-                            results_list.append(key_string)
-                            break
+            if path_filters:
+                for key, value in self.ext.map(path_segments[-1])[0].items():
+                    if value and isinstance(value, bool):
+                        crop_length = int((len(key) + 1) * -1)
+                        path_segments[-1] = path_segments[-1][0:crop_length]
+                        path_segments.append('.%s' % key)
+                        for filter in path_filters:
+                            if _yield_results(filter, path_segments):
+                                results_list.append(key_string)
+                                break
+            else:
+                results_list.append(key_string)
 
     # end search if results match desired result number
             if len(results_list) == max_results:

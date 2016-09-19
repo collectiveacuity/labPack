@@ -7,7 +7,7 @@ from labpack.performance import labPerform
 class testAppdataClient(appdataClient):
 
     def __init__(self):
-        appdataClient.__init__(self)
+        appdataClient.__init__(self, collection_name='Unit Tests')
 
     def unitTests(self):
 
