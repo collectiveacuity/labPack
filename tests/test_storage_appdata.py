@@ -1,8 +1,17 @@
 __author__ = 'rcj1492'
 __created__ = '2016.03'
+__license__ = 'MIT'
+
+try:
+    import pytest
+except:
+    print('pytest module required to perform unittests. try: pip install pytest')
+    exit()
 
 from labpack.storage.appdata import appdataClient, appdataModel
 from labpack.performance import labPerform
+from jsonmodel.exceptions import InputValidationError
+from copy import deepcopy
 
 class testAppdataClient(appdataClient):
 
@@ -19,7 +28,7 @@ class testAppdataClient(appdataClient):
         seed_details['type'] = '.json'
         seed_details['time'] = time()
         seed_key = '%s/%s%s' % (testKey, str(seed_details['time']), seed_details['type'])
-        self.create(seed_key, seed_details)
+        self.create(key_string=seed_key, body_dict=seed_details)
         file_types = set(self.ext.__dir__()) - set(self.ext.builtins)
         for type in file_types:
             test_dt = time()
@@ -31,13 +40,46 @@ class testAppdataClient(appdataClient):
             secret_key = ''
             if type == 'drep':
                 secret_key = 'test-key'
-            self.create(test_key, test_details, secret_key=secret_key)
-            assert self.read(test_key, secret_key)
-            assert test_key in self.list(max_results=100, reverse_order=False)
-            assert test_key in self.find(path_filters=[{'0':{'must_contain':['^lab']}, '1':{'must_contain': ['^log']}}], max_results=3)
-            assert self.delete(test_key)
-        self.delete(seed_key)
+            self.create(key_string=test_key, body_dict=test_details, secret_key=secret_key)
+            assert self.read(key_string=test_key, secret_key=secret_key)
+            assert test_key in self.list(max_results=100, reverse_search=False)
+            path_filters = [{0: {'must_contain': ['^lab']}, 2:{'discrete_values': ['unittest']}}]
+            filter_function = self.filter(path_filters=path_filters)
+            assert test_key in self.list(filter_function=filter_function, max_results=100)
+            assert self.delete(key_string=test_key)
+        self.delete(key_string=seed_key)
         self.remove()
+
+    # test filter method
+        path_segments = ['lab', 'unittests', '1473719695.2165067', '.json']
+        path_filters = [ { 0: { 'must_contain': [ '^lab' ] } } ]
+        filter_function = self.filter(path_filters=path_filters)
+        assert filter_function(*path_segments)
+
+    # test filter false results
+        path_filters = [{0: {'must_not_contain': ['^lab']}}]
+        filter_function = self.filter(path_filters=path_filters)
+        assert not filter_function(*path_segments)
+        path_filters = [{0: {'must_contain': ['^lab']}, 1:{'excluded_values': ['unittests']} }]
+        filter_function = self.filter(path_filters=path_filters)
+        assert not filter_function(*path_segments)
+        path_filters = [{0: {'must_contain': ['^lab']}, 2: {'discrete_values': ['unittests']}}]
+        filter_function = self.filter(path_filters=path_filters)
+        assert not filter_function(*path_segments)
+        path_filters = [{4: {'must_contain': ['^lab']}}]
+        filter_function = self.filter(path_filters=path_filters)
+        assert not filter_function(*path_segments)
+
+    # test filter exceptions
+        path_filters = [{ '0': {'must_contain': ['^lab']}}]
+        with pytest.raises(TypeError):
+            self.filter(path_filters=path_filters)
+        path_filters = [{ 0: 'string' }]
+        with pytest.raises(TypeError):
+            self.filter(path_filters=path_filters)
+        path_filters = [{ 0: {'must_contai': ['^lab']}}]
+        with pytest.raises(InputValidationError):
+            self.filter(path_filters=path_filters)
 
         return self
 
@@ -54,7 +96,7 @@ class testAppdataClient(appdataClient):
             seed_details['type'] = '.json'
             seed_details['time'] = time()
             seed_key = '%s/%s%s' % (testKey, str(seed_details['time']), seed_details['type'])
-            self.create(seed_key, seed_details)
+            self.create(key_string=seed_key, body_dict=seed_details)
             count += 1
             sleep(.001)
             if count == 2:
@@ -72,19 +114,60 @@ class testAppdataModel(appdataModel):
 
     def unitTests(self):
 
+    # instantiation assertions
+        assert self.index
+        assert isinstance(self.methods, appdataClient)
+        assert not self.settings['enforce_schema']
+        print(self.settings)
+        print(test_record)
+
+    # test new method
+        new_record = self.new(**test_record)
+        assert new_record.data
+        new_record.settings['enforce_schema'] = True
+        with pytest.raises(InputValidationError):
+            new_record.new(**test_record)
+
+    # test byte data in record
+        new_record.settings['enforce_schema'] = False
+        byte_record = deepcopy(test_record)
+        import base64
+        byte_data = b'\xb0mx\x0b\xec[\xc3a\xaf>Ce\x07\x08\xd1I\x8drs\x15\xedP\xc4\xef+-0^C^\x97\x17'
+        byte_record['happy'] = base64.urlsafe_b64encode(byte_data).decode()
+        new_record = self.new(**byte_record)
+        print(new_record.data)
+        import json
+        t = json.dumps(new_record.data)
+
+    # test extract value method
+        new_record.settings['enforce_schema'] = False
+        assert new_record._extract_value('.deviceID') == test_record['deviceID']
+        assert new_record._extract_value('.metric') == 'null'
+
+    # test extract value method with dictionary datatypes
+
+
         return self
 
 
 if __name__ == '__main__':
-    record_schema = {
-        'schema': {
-            'test': 'me'
-        }
+    test_schema = { 'schema': {
+        'dt': 1474505298.768161,
+        'deviceID': 'ZeLPQ77bU3qnl5QI9ucwZyLK',
+        'metric': 'temperature',
+        'value': 34.5,
+        'units': 'degrees Celsius'
+    } }
+    test_settings = {
+        'enforce_schema': False,
+        'index_fields': ['.deviceID', '.dt']
     }
-    collection_settings = {
-        'index_fields': []
+    test_record = {
+        'dt': 1474509314.419702,
+        'deviceID': '2Pp8d9lpsappm8QPv_Ps6cL0'
     }
     testAppdataClient().unitTests()
     # testAppdataClient().performanceTests()
-    # test_appdata_model = testAppdataModel(record_schema, collection_settings)
+    # test_kwargs = { 'record_schema': test_schema, 'collection_settings': test_settings }
+    # test_appdata_model = testAppdataModel(**test_kwargs)
     # testAppdataModel(appdata_model=test_appdata_model).unitTests()

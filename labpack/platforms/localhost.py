@@ -61,7 +61,7 @@ class localhostClient(object):
             'previous_file': '/home/user/.config/collective-acuity-labpack/user-data/test.json',
             'file_path': '/home/user/.config/collective-acuity-labpack/user-data/test.json',
             'query_root': '../',
-            'query_filters': [ {
+            'metadata_filters': [ {
                 '.file_name': {},
                 '.file_path': {},
                 '.file_size': {},
@@ -119,12 +119,17 @@ class localhostClient(object):
     # construct file record model property
         file_model = {
             'schema': {
-                'file_name': '',
-                'file_path': '',
-                'file_size': 0,
-                'create_date': 0,
-                'update_date': 0,
-                'access_date': 0
+                'file_name': 'test.json',
+                'file_path': '/home/user/.config/collective-acuity-labpack/user-data/test.json',
+                'file_size': 678,
+                'create_date': 1474509314.419702,
+                'update_date': 1474509314.419702,
+                'access_date': 1474509314.419702
+            },
+            'components': {
+                '.file_size': {
+                    'integer_data': True
+                }
             }
         }
         self.fileModel = jsonModel(file_model)
@@ -241,57 +246,6 @@ class localhostClient(object):
                 file_path = os.path.join(os.path.abspath(current_dir), file)
                 yield file_path
 
-    def list(self, list_root='', max_results=1, reverse_order=False, previous_file=''):
-
-        '''
-            a method to list files on localhost from walk of directories
-
-        :param list_root: string with localhost path from which to root list of files
-        :param max_results: integer with maximum number of results to return
-        :param reverse_order: boolean to determine alphabetical direction of walk
-        :param previous_file: string with absolute path of file to begin search after
-        :return: list of file absolute path strings
-        '''
-
-        __name__ = '%s.list(...)' % self.__class__.__name__
-
-    # validate input
-        input_kwargs = [list_root, max_results, previous_file]
-        input_names = ['.list_root', '.max_results', '.previous_file']
-        for i in range(len(input_kwargs)):
-            if input_kwargs[i]:
-                self.fields.validate(input_kwargs[i], input_names[i])
-
-    # validate that previous file exists
-        file_exists = False
-        if previous_file:
-            if os.path.exists(previous_file):
-                if os.path.isfile(previous_file):
-                    file_exists = True
-            if not file_exists:
-                err_msg = __name__.replace('...', 'previous_file="%s"' % previous_file)
-                raise ValueError('%s must be a valid file.' % err_msg)
-
-    # construct empty results object
-        results_list = []
-
-    # determine root for walk
-        if list_root:
-            if not os.path.isdir(list_root):
-                return results_list
-        else:
-            list_root = './'
-
-    # walk directory structure to find files
-        for file in self.walk(list_root, reverse_order, previous_file):
-            results_list.append(file)
-
-    # return results list
-            if len(results_list) == max_results:
-                return results_list
-
-        return results_list
-
     def metadata(self, file_path):
 
         '''
@@ -328,104 +282,150 @@ class localhostClient(object):
 
         return file_metadata
 
-    def find(self, query_filters=None, query_root='', max_results=1, reverse_order=False, previous_file=''):
+    def filter(self, metadata_filters):
 
         '''
-            a method to find files on localhost based upon query criteria
+            a method to construct a filter function for the list method
 
-        :param query_filters: list with query_criteria dictionaries
-        :param query_root: string with path from which to root walk of localhost directories
-        :param max_results: integer with maximum number of results to return
-        :param reverse_order: boolean to determine alphabetical direction of walk
-        :param previous_file: string with absolute path of file to begin search after
-        :return: list of file absolute path strings
+        :param metadata_filters: list with query_criteria dictionaries
+        :return: filter_function object
 
-            **NOTE: the query method uses a query filters list structure to represent
+            NOTE:   the filter method uses a query filters list structure to represent
                     the disjunctive normal form of a logical expression. a record is
                     added to the results list if any query_criteria dictionary in the
                     list evaluates to true. within each query_criteria dictionary, all
                     declared conditional operators must evaluate to true.
 
-            **NOTE: in this way, the query_filters represents a boolean OR operator and
-                    the query_criteria represents a boolean AND operator between all
-                    keys in the dictionary.
+            NOTE:   in this way, the metadata_filters represents a boolean OR operator and
+                    each criteria dictionary inside the list represents a boolean AND
+                    operator between all keys in the dictionary.
 
-        query_criteria = {
-            '.file_name': {},
-            '.file_path': {},
-            '.file_size': {},
-            '.create_date': {},
-            '.update_date': {},
-            '.access_date': {}
-        }
+            NOTE:   each query_criteria uses the architecture of query declaration in
+                    the jsonModel.query method
 
-        conditional operators for '.file_name' and '.file_path' fields:
-            "byte_data": false,
-            "discrete_values": [ "" ],
-            "excluded_values": [ "" ],
-            "greater_than": "",
-            "less_than": "",
-            "max_length": 0,
-            "max_value": "",
-            "min_length": 0,
-            "min_value": "",
-            "must_contain": [ "" ],
-            "must_not_contain": [ "" ],
-            "contains_either": [ "" ]
+            query_criteria = {
+                '.file_name': {},
+                '.file_path': {},
+                '.file_size': {},
+                '.create_date': {},
+                '.update_date': {},
+                '.access_date': {}
+            }
 
-        conditional operators for '.file_size', '.create_date', '.update_date', '.access_date':
-            "discrete_values": [ 0.0 ],
-            "excluded_values": [ 0.0 ],
-            "greater_than": 0.0,
-            "integer_data": false,
-            "less_than": 0.0,
-            "max_value": 0.0,
-            "min_value": 0.0
+            conditional operators for '.file_name' and '.file_path' fields:
+                "byte_data": false,
+                "discrete_values": [ "" ],
+                "excluded_values": [ "" ],
+                "greater_than": "",
+                "less_than": "",
+                "max_length": 0,
+                "max_value": "",
+                "min_length": 0,
+                "min_value": "",
+                "must_contain": [ "" ],
+                "must_not_contain": [ "" ],
+                "contains_either": [ "" ]
 
+            conditional operators for '.file_size', '.create_date', '.update_date', '.access_date':
+                "discrete_values": [ 0.0 ],
+                "excluded_values": [ 0.0 ],
+                "greater_than": 0.0,
+                "integer_data": false,
+                "less_than": 0.0,
+                "max_value": 0.0,
+                "min_value": 0.0
         '''
 
+    # validate input
+        self.fields.validate(metadata_filters, '.metadata_filters')
 
-    # TODO: Look into declarative query language architecture instead
+    # construct function called by list function
+        def query_function(**kwargs):
+            file_metadata = {}
+            for key, value in kwargs.items():
+                if key in self.fileModel.schema.keys():
+                    file_metadata[key] = value
+            for query_criteria in metadata_filters:
+                if self.fileModel.query(query_criteria, file_metadata):
+                    return True
+            return False
 
-        __name__ = '%s.query' % self.__class__.__name__
+        return query_function
+
+    def list(self, filter_function=None, list_root='', max_results=1, reverse_order=False, previous_file=''):
+
+        '''
+            a method to list files on localhost from walk of directories
+
+        :param filter_function: python function used to filter results
+        :param list_root: string with localhost path from which to root list of files
+        :param max_results: integer with maximum number of results to return
+        :param reverse_order: boolean to determine alphabetical direction of walk
+        :param previous_file: string with absolute path of file to begin search after
+        :return: list of file absolute path strings
+
+            NOTE:   the filter_function must be able to accept keyword arguments and
+                    return a value that can evaluate to true or false. while walking
+                    the local file structure, the metadata for each file will be
+                    fed to the filter function. if the function evaluates this input
+                    and returns a true value the file will be included in the list
+                    results.
+
+                    fields produced by the metadata function are listed in the
+                    self.fileModel.schema
+        '''
+
+        __name__ = '%s.list(...)' % self.__class__.__name__
 
     # validate input
-        input_kwargs = [ query_filters, query_root, max_results, previous_file ]
-        input_names = [ '.query_filters', '.query_root', '.max_results', '.previous_file' ]
+        input_kwargs = [list_root, max_results, previous_file]
+        input_names = ['.list_root', '.max_results', '.previous_file']
         for i in range(len(input_kwargs)):
             if input_kwargs[i]:
                 self.fields.validate(input_kwargs[i], input_names[i])
 
-    # construct empty fields
-        result_list = []
-        if not query_filters:
-            query_filters = [ {} ]
+    # validate filter function
+        if filter_function:
+            try:
+                filter_function(**self.fileModel.schema)
+            except:
+                err_msg = __name__.replace('...', 'filter_function=%s' % filter_function.__class__.__name__)
+                raise TypeError('%s must accept key word arguments.' % err_msg)
+
+    # validate that previous file exists
+        file_exists = False
+        if previous_file:
+            if os.path.exists(previous_file):
+                if os.path.isfile(previous_file):
+                    file_exists = True
+            if not file_exists:
+                err_msg = __name__.replace('...', 'previous_file="%s"' % previous_file)
+                raise ValueError('%s must be a valid file.' % err_msg)
+
+    # construct empty results object
+        results_list = []
 
     # determine root for walk
-        if query_root:
-            if not os.path.isdir(query_root):
-                return result_list
+        if list_root:
+            if not os.path.isdir(list_root):
+                return results_list
         else:
-            query_root = './'
+            list_root = './'
 
-    # construct query test function
-        def _yield_results(query_filters, record_details):
-            for query_criteria in query_filters:
-                if self.fileModel.query(query_criteria, record_details):
-                    return True
-            return False
-
-    # add qualifying files to results list
-        for file_path in self.walk(query_root, reverse_order, previous_file):
-            file_details = self.metadata(file_path)
-            if _yield_results(query_filters, file_details):
-                result_list.append(file_path)
+    # walk directory structure to find files
+        for file_path in self.walk(list_root, reverse_order, previous_file):
+            if filter_function:
+                file_metadata = self.metadata(file_path)
+                if filter_function(**file_metadata):
+                    results_list.append(file_path)
+            else:
+                results_list.append(file_path)
 
     # return results list
-            if len(result_list) == max_results:
-                return result_list
+            if len(results_list) == max_results:
+                return results_list
 
-        return result_list
+        return results_list
 
 if __name__ == '__main__':
     os_client = osClient()

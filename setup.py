@@ -77,7 +77,7 @@ setup(
     author=author,
     maintainer_email=email,
     include_package_data=True,  # Checks MANIFEST.in for explicit rules
-    packages=find_packages(exclude=['cred','data','dev','docs','keys','models','notes','tests', 'tests_dev']),  # Needed for bdist
+    packages=find_packages(exclude=['cred','data','dev','docs','keys','models','notes','tests', 'tests_dev', 'tinkering']),  # Needed for bdist
     license=license_terms,
     description="A Collection of Methods for Data Collection & Processing",
     long_description=open('README.rst').read(),
