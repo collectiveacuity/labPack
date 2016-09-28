@@ -666,15 +666,17 @@ class appdataClient(object):
 
         return file_details
 
-    def filter(self, path_filters):
+    def conditionalFilter(self, path_filters):
 
         '''
-            a method to construct a filter function for the list method
+            a method to construct a conditional filter function for the list method
 
-        :param path_filters: list with query_criteria dictionaries
+        :param path_filters: list with query criteria dictionaries
         :return: filter_function object
 
-            NOTE:   each item in the path filters argument must be a dictionary
+            NOTE:   query criteria architecture
+
+                    each item in the path filters argument must be a dictionary
                     which is composed of integer-value key names that represent the
                     index value of the file path segment to test and key values
                     with the dictionary of conditional operators used to test the
@@ -690,15 +692,15 @@ class appdataClient(object):
 
             NOTE:   the filter method uses a query filters list structure to represent
                     the disjunctive normal form of a logical expression. a record is
-                    added to the results list if any query_criteria dictionary in the
-                    list evaluates to true. within each query_criteria dictionary, all
+                    added to the results list if any query criteria dictionary in the
+                    list evaluates to true. within each query criteria dictionary, all
                     declared conditional operators must evaluate to true.
 
-            NOTE:   in this way, the metadata_filters represents a boolean OR operator and
+                    in this way, the path_filters represents a boolean OR operator and
                     each criteria dictionary inside the list represents a boolean AND
                     operator between all keys in the dictionary.
 
-            NOTE:   each query_criteria uses the architecture of query declaration in
+                    each query criteria uses the architecture of query declaration in
                     the jsonModel.query method
 
             path_filters:
@@ -762,7 +764,7 @@ class appdataClient(object):
         '''
             a method to list keys in the collection
 
-        :param filter_function: python function used to filter results
+        :param filter_function: (positional arguments) function used to filter results
         :param max_results: integer with maximum number of results to return
         :param reverse_search: boolean to search keys in reverse alphanumeric order
         :param previous_key: string with key in collection to begin search after
@@ -888,10 +890,13 @@ class appdataClient(object):
 
         __name__ = '%s.remove' % self.__class__.__name__
 
+    # TODO  error handling is turned off to avoid system blocking
+    #       fix potential to create artifacts in the system
+
     # remove collection tree
         try:
             import shutil
-            shutil.rmtree(self.collectionFolder)
+            shutil.rmtree(self.collectionFolder, ignore_errors=True)
         except:
             raise Exception('%s failed to remove %s collection from app data.' % (__name__, self.collectionFolder))
 

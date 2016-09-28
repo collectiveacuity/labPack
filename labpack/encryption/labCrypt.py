@@ -3,7 +3,7 @@ __created__ = '2016.07'
 __license__ = 'MIT'
 
 '''
-PLEASE NOTE:    labCrypt requires both the cryptography and pycrypto modules.
+PLEASE NOTE:    labCrypt package requires both the cryptography and pycrypto modules.
                 pycrypto requires a C compiler to install.
 '''
 
@@ -74,7 +74,7 @@ def encrypt(byte_data, secret_key=''):
 def decrypt(encrypted_data, secret_key):
 
     '''
-        uses cryptography module to encrypt byte data
+        uses cryptography module to decrypt byte data
         cipher: AES (128 bit block_size)
         hash: sha512
         key size: 256 bit (first 32 bytes of secret key hash)
@@ -116,10 +116,10 @@ def decrypt(encrypted_data, secret_key):
 
 if __name__ == '__main__':
     import json
-    test_details = { 'encrypt': 'me' }
+    test_details = { 'labCrypt': 'me' }
     test_data = json.dumps(test_details).encode('utf-8')
     encrypted_data, secret_key = encrypt(test_data)
     decrypted_data = decrypt(encrypted_data, secret_key)
     decrypted_details = json.loads(decrypted_data.decode())
-    assert decrypted_details['encrypt'] == test_details['encrypt']
-    # print(decrypted_details)
+    assert decrypted_details['labCrypt'] == test_details['labCrypt']
+    print(decrypted_details)

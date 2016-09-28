@@ -282,21 +282,37 @@ class localhostClient(object):
 
         return file_metadata
 
-    def filter(self, metadata_filters):
+    def conditionalFilter(self, metadata_filters):
 
         '''
-            a method to construct a filter function for the list method
+            a method to construct a conditional filter function for the list method
 
-        :param metadata_filters: list with query_criteria dictionaries
+        :param metadata_filters: list with query criteria dictionaries
         :return: filter_function object
+
+            NOTE:   query criteria architecture
+
+                    each item in the metadata filters list must be a dictionary
+                    which is composed of one or more key names which represent the
+                    dotpath to a metadata element of the record to be queried with a
+                    key value that is a dictionary of conditional operators used to
+                    test the value in the corresponding metadata field of the record.
+
+                    eg. path_filters = [ { '.file_name': { 'must_contain': [ '^lab' ] } } ]
+
+                    this example filter looks in the file tree that is walked for a
+                    file which starts with the characters 'lab'. as a result, it will
+                    match both the following:
+                        log/unittests/test/20160912/lab.json
+                        laboratory20160912.json
 
             NOTE:   the filter method uses a query filters list structure to represent
                     the disjunctive normal form of a logical expression. a record is
-                    added to the results list if any query_criteria dictionary in the
-                    list evaluates to true. within each query_criteria dictionary, all
+                    added to the results list if any query criteria dictionary in the
+                    list evaluates to true. within each query criteria dictionary, all
                     declared conditional operators must evaluate to true.
 
-            NOTE:   in this way, the metadata_filters represents a boolean OR operator and
+                    in this way, the metadata_filters represents a boolean OR operator and
                     each criteria dictionary inside the list represents a boolean AND
                     operator between all keys in the dictionary.
 
@@ -357,7 +373,7 @@ class localhostClient(object):
         '''
             a method to list files on localhost from walk of directories
 
-        :param filter_function: python function used to filter results
+        :param filter_function: (keyword arguments) function used to filter results
         :param list_root: string with localhost path from which to root list of files
         :param max_results: integer with maximum number of results to return
         :param reverse_order: boolean to determine alphabetical direction of walk

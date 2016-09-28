@@ -107,7 +107,8 @@ if __name__ == '__main__':
     regex = labRegex(test_schema)
     test_input = "the website for the lab is collectiveacuity.com"
     input_map = regex.map(test_input)
-    print(input_map)
+    assert input_map[0]['word'] == 'the'
+    # print(input_map)
     file_ext = {
         "json": ".+\\.json$",
         "json.gz": ".+\\.json\\.gz$",
@@ -118,4 +119,5 @@ if __name__ == '__main__':
     regex = labRegex(file_ext)
     test_input = 'happy.json.gz'
     input_map = regex.map(test_input)[0]
+    assert input_map['json.gz']
     print(input_map)

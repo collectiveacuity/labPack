@@ -44,7 +44,7 @@ class testAppdataClient(appdataClient):
             assert self.read(key_string=test_key, secret_key=secret_key)
             assert test_key in self.list(max_results=100, reverse_search=False)
             path_filters = [{0: {'must_contain': ['^lab']}, 2:{'discrete_values': ['unittest']}}]
-            filter_function = self.filter(path_filters=path_filters)
+            filter_function = self.conditionalFilter(path_filters=path_filters)
             assert test_key in self.list(filter_function=filter_function, max_results=100)
             assert self.delete(key_string=test_key)
         self.delete(key_string=seed_key)
@@ -53,33 +53,33 @@ class testAppdataClient(appdataClient):
     # test filter method
         path_segments = ['lab', 'unittests', '1473719695.2165067', '.json']
         path_filters = [ { 0: { 'must_contain': [ '^lab' ] } } ]
-        filter_function = self.filter(path_filters=path_filters)
+        filter_function = self.conditionalFilter(path_filters=path_filters)
         assert filter_function(*path_segments)
 
     # test filter false results
         path_filters = [{0: {'must_not_contain': ['^lab']}}]
-        filter_function = self.filter(path_filters=path_filters)
+        filter_function = self.conditionalFilter(path_filters=path_filters)
         assert not filter_function(*path_segments)
         path_filters = [{0: {'must_contain': ['^lab']}, 1:{'excluded_values': ['unittests']} }]
-        filter_function = self.filter(path_filters=path_filters)
+        filter_function = self.conditionalFilter(path_filters=path_filters)
         assert not filter_function(*path_segments)
         path_filters = [{0: {'must_contain': ['^lab']}, 2: {'discrete_values': ['unittests']}}]
-        filter_function = self.filter(path_filters=path_filters)
+        filter_function = self.conditionalFilter(path_filters=path_filters)
         assert not filter_function(*path_segments)
         path_filters = [{4: {'must_contain': ['^lab']}}]
-        filter_function = self.filter(path_filters=path_filters)
+        filter_function = self.conditionalFilter(path_filters=path_filters)
         assert not filter_function(*path_segments)
 
     # test filter exceptions
         path_filters = [{ '0': {'must_contain': ['^lab']}}]
         with pytest.raises(TypeError):
-            self.filter(path_filters=path_filters)
+            self.conditionalFilter(path_filters=path_filters)
         path_filters = [{ 0: 'string' }]
         with pytest.raises(TypeError):
-            self.filter(path_filters=path_filters)
+            self.conditionalFilter(path_filters=path_filters)
         path_filters = [{ 0: {'must_contai': ['^lab']}}]
         with pytest.raises(InputValidationError):
-            self.filter(path_filters=path_filters)
+            self.conditionalFilter(path_filters=path_filters)
 
         return self
 
@@ -87,7 +87,7 @@ class testAppdataClient(appdataClient):
 
         from time import time, sleep
         from copy import deepcopy
-        testKey = 'lab/log/unittest'
+        testKey = 'lab/log/performancetest'
         testDetails = {'command': 'home', 'project': 'lab', 'verbose': True}
         count = 0
         last_key = ''
@@ -101,8 +101,9 @@ class testAppdataClient(appdataClient):
             sleep(.001)
             if count == 2:
                 last_key = deepcopy(seed_key)
-        labPerform.repeat(self.list(max_results=100), 'appdataClient.list(max_results=100)', 10000)
-        labPerform.repeat(self.find(path_filters=[{'1':{'must_contain':['^log']}}],max_results=100, previous_key=last_key), 'appdataClient.find(path_filters=[{"1":{"must_contain":["^log"]}}], max_results=100, previous_key=%s)' % last_key, 10000)
+        path_filters = [{ 1:{'must_contain':['^log']}}]
+        filter_function = self.conditionalFilter(path_filters=path_filters)
+        labPerform.repeat(self.list(filter_function=filter_function, max_results=100, previous_key=last_key), 'appdataClient.list(filter_function=self.conditionalFilter(%s), max_results=100, previous_key=%s)' % (path_filters, last_key), 10000)
         self.remove()
 
         return self
@@ -149,7 +150,6 @@ class testAppdataModel(appdataModel):
 
         return self
 
-
 if __name__ == '__main__':
     test_schema = { 'schema': {
         'dt': 1474505298.768161,
@@ -167,7 +167,7 @@ if __name__ == '__main__':
         'deviceID': '2Pp8d9lpsappm8QPv_Ps6cL0'
     }
     testAppdataClient().unitTests()
-    # testAppdataClient().performanceTests()
+    testAppdataClient().performanceTests()
     # test_kwargs = { 'record_schema': test_schema, 'collection_settings': test_settings }
     # test_appdata_model = testAppdataModel(**test_kwargs)
     # testAppdataModel(appdata_model=test_appdata_model).unitTests()
