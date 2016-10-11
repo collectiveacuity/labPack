@@ -8,6 +8,7 @@ recursive-exclude notes *
 recursive-exclude tests *
 recursive-exclude tests_dev *
 recursive-exclude tinkering *
+prune */__pycache__
 include *.rst
 include *.txt
 include *.md

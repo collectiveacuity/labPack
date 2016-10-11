@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 '''
 References:
 https://python-packaging-user-guide.readthedocs.org/en/latest/
-https://docs.python.org/3.5/distutils/index.html
+https://docs.python.org/3.5/distributing/index.html#distributing-index
 https://github.com/jgehrcke/python-cmdline-bootstrap
 http://www.pyinstaller.org/
 
@@ -13,7 +13,8 @@ pip install wheel
 pip install twine
 
 Build Distributions:
-python setup.py sdist --format=gztar,zip bdist_wheel
+python setup.py sdist --format=gztar,zip
+pip wheel --no-index --no-deps --wheel-dir dist dist/labpack-0.3.tar.gz
 
 Upload Distributions to PyPi:
 python setup.py register
@@ -59,6 +60,7 @@ git checkout master
 
 Old Methods:
 python setup.py sdist bdist_wheel upload  # for PyPi
+python setup.py sdist --format=gztar,zip bdist_wheel # bdist_wheel misses excluded sub-packages
 pip wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
 '''
 
@@ -69,15 +71,18 @@ license_terms = re.search("^__license__\s*=\s*'(.*)'", config_file, re.M).group(
 module = re.search("^__module__\s*=\s*'(.*)'", config_file, re.M).group(1)
 author = re.search("^__author__\s*=\s*'(.*)'", config_file, re.M).group(1)
 email = re.search("^__email__\s*=\s*'(.*)'", config_file, re.M).group(1)
+url = re.search("^__url__\s*=\s*'(.*)'", config_file, re.M).group(1)
 # author_list = re.search("^__authors__\s*=\s*'(.*)'", config_file, re.M).group(1)
 
 setup(
     name=module,
     version=version,
     author=author,
+    author_email=author,
     maintainer_email=email,
+    url=url,
     include_package_data=True,  # Checks MANIFEST.in for explicit rules
-    packages=find_packages(exclude=['cred','data','dev','docs','keys','models','notes','tests', 'tests_dev', 'tinkering']),  # Needed for bdist
+    packages=find_packages(),  # exclude=['cred','data','keys','dev','docs','tests','tests_dev','models','notes','tinkering'] Needed for bdist
     license=license_terms,
     description="A Collection of Methods for Data Collection & Processing",
     long_description=open('README.rst').read(),

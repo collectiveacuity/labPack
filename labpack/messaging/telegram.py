@@ -39,50 +39,133 @@ class TelegramConnectionError(Exception):
 
 class telegramBotClient(object):
 
-    _class_fields = {
+    _class_methods = {
         'schema': {
-            'bot_settings': {
-                'commands': {
-                    'start': '',
-                    'help': '',
-                    'settings': ''
+            '__init__': {
+                'bot_settings': {
+                    'commands': {
+                        'start': '',
+                        'help': '',
+                        'settings': ''
+                    },
+                    'first_name': 'Telegram',
+                    'id': 123456789,
+                    'username': 'TelegramBot',
+                    'callback_url': '',
+                    'description': '',
+                    'about_text': '',
+                    'user_pic': ''
                 },
-                'first_name': 'Telegram',
-                'id': 123456789,
-                'username': 'TelegramBot',
-                'callback_url': '',
-                'description': '',
-                'about_text': '',
-                'user_pic': ''
+                'telegram_credentials': {
+                    'access_token': '123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11'
+                }
             },
-            'telegram_credentials': {
-                'access_token': '123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11'
+            'request': {
+                'bot_method': 'getMe'
             },
-            'bot_method': 'getMe',
-            'method_kwargs': {},
-            'file_id': 'AgADAQADqqcIlRwG3Q-cUsx5sAQADqT5y8BAAEgpr3t_b1ajggpr3I4C',
-            'file_path': '../../data/test_file.png',
-            'file_url': 'https://pbs.twimg.com/profile_images/479475632158408704/Zelyz-xr_400x400.png'
-        },
-        'components': {
-            '.telegram_credentials': {
-                'extra_fields': True
-            }
-        }
-    }
-
-    _bot_methods = {
-        'schema': {
+            'getMe': {},
+            'getUpdates': {
+                'offset': 0,
+                'limit': 0,
+                'timeout': 0
+            },
+            'setWebhook': {
+                'url': '',
+                'certificate': ''
+            },
+            'sendMessage': {
+                'chat_id': 123456,
+                'text': 'text me again',
+                'parse_mode': '',
+                'disable_web_page_preview': False,
+                'disable_notification': False,
+                'reply_to_message_id': 0,
+                'reply_markup': {}
+            },
             'sendPhoto': {
-                'chat_id': 0,
-                'photo': '',
+                'chat_id': 123456,
+                'photo': 'AgADAQADqqcIlRwG3Q-cUsx5sAQADqT5y8BAAEgpr3t_b1ajggpr3I4C',
                 'caption': '',
+                'disable_notification': False,
+                'reply_to_message_id': 0,
+                'reply_markup': {}
+            },
+            'forwardMessage': {
+                'chat_id': 123456,
+                'from_chat_id': 234567,
+                'disable_notification': False,
+                'message_id': 567890212
+            },
+            'sendAudio': {
+                'chat_id': 123456,
+                'audio': '../data/audio.mp3',
+                'caption': '',
+                'duration': 0,
+                'performer': '',
+                'title': '',
+                'disable_notification': False,
+                'reply_to_message_id': 0,
+                'reply_markup': {}
+            },
+            'sendDocument': {
+                'chat_id': 123456,
+                'document': 'https://pbs.twimg.com/profile_images/479475632158408704/Zelyz-xr_400x400.png',
+                'caption': '',
+                'disable_notification': False,
+                'reply_to_message_id': 0,
+                'reply_markup': {}
+            },
+            'sendSticker': {
+                'chat_id': 123456,
+                'document': 'https://pbs.twimg.com/profile_images/479475632158408704/Zelyz-xr_400x400.webp',
+                'disable_notification': False,
+                'reply_to_message_id': 0,
+                'reply_markup': {}
+            },
+            'sendVideo': {
+                'chat_id': 123456,
+                'video': '../data/video.mp4',
+                'caption': '',
+                'duration': 0,
+                'width': 0,
+                'height': 0,
+                'disable_notification': False,
+                'reply_to_message_id': 0,
+                'reply_markup': {}
+            },
+            'sendVoice': {
+                'chat_id': 123456,
+                'voice': '../data/voice.ogg',
+                'caption': '',
+                'duration': 0,
+                'disable_notification': False,
+                'reply_to_message_id': 0,
+                'reply_markup': {}
+            },
+            'sendLocation': {
+                'chat_id': 123456,
+                'latitude': 45.8742031,
+                'longitude': 34.9874612,
                 'disable_notification': False,
                 'reply_to_message_id': 0,
                 'reply_markup': {}
             }
         },
         'components': {
+            '.__init__.telegram_credentials': {
+                'extra_fields': True
+            },
+            '.setWebhook': {
+                'field_metadata': {
+                    'file_type': 'certificate',
+                    'file_extensions': {
+                        'pem': '.+\\.pem$'
+                    }
+                }
+            },
+            '.sendMessage.parse_mode': {
+                'discrete_values': [ 'Markdown', 'HTML' ]
+            },
             '.sendPhoto': {
                 'field_metadata': {
                     'file_type': 'photo',
@@ -95,6 +178,65 @@ class telegramBotClient(object):
                         'bmp': '.+\\.bmp$'
                     }
                 }
+            },
+            '.sendPhoto.caption': {
+                'max_length': 200
+            },
+            '.sendAudio': {
+                'field_metadata': {
+                    'file_type': 'audio',
+                    'file_extensions': {
+                        'mp3': '.+\\.mp3$'
+                    },
+                    'file_size': 50000000
+                }
+            },
+            '.sendAudio.caption': {
+                'max_length': 200
+            },
+            '.sendDocument': {
+                'field_metadata': {
+                    'file_type': 'document',
+                    'file_extensions': {
+                        'doc': '.+\\.docx?$'
+                    },
+                    'file_size': 50000000
+                }
+            },
+            '.sendDocument.caption': {
+                'max_length': 200
+            },
+            '.sendSticker': {
+                'field_metadata': {
+                    'file_type': 'sticker',
+                    'file_extensions': {
+                        'webp': '.+\\.webp$'
+                    }
+                }
+            },
+            '.sendVideo': {
+                'field_metadata': {
+                    'file_type': 'video',
+                    'file_extensions': {
+                        'mp4': '.+\\.mp4$'
+                    },
+                    'file_size': 50000000
+                }
+            },
+            '.sendVideo.caption': {
+                'max_length': 200
+            },
+            '.sendVoice': {
+                'field_metadata': {
+                    'file_type': 'voice',
+                    'file_extensions': {
+                        'ogg': '.+\\.ogg$'
+                    },
+                    'file_size': 50000000
+                }
+            },
+            '.sendVoice.caption': {
+                'max_length': 200
             }
         }
     }
@@ -102,21 +244,29 @@ class telegramBotClient(object):
     def __init__(self, bot_settings, telegram_credentials):
 
     # construct input validation method
-        self.fields = jsonModel(self._class_fields)
-        self.botMethods = jsonModel(self._bot_methods)
+        self.fields = jsonModel(self._class_methods)
 
-    # construct sub method generator
+    # construct file extensions map method
         file_extensions = {}
-        for key, value in self.botMethods.keyMap.items():
+        for key, value in self.fields.keyMap.items():
             if 'field_metadata' in value.keys():
                 meta_data = value['field_metadata']
                 if 'file_type' in meta_data.keys() and 'file_extensions' in meta_data.keys():
-                    file_extensions[meta_data['file_type']] = labRegex(meta_data['file_extensions'])
+                    if meta_data['file_type'] and meta_data['file_extensions']:
+                        file_extensions[meta_data['file_type']] = labRegex(meta_data['file_extensions'])
         self.ext =  file_extensions
 
+    # construct file source map method
+        file_patterns = {
+            'file_id': '[\\w-]{52}',
+            'file_url': '^https?://',
+            'file_path': '\\.'
+        }
+        self.sources = labRegex(file_patterns)
+
     # validate inputs
-        # bot_settings = self.fields.validate(bot_settings, '.bot_settings')
-        telegram_credentials = self.fields.validate(telegram_credentials, '.telegram_credentials')
+        # bot_settings = self.fields.validate(bot_settings, '.__init__.bot_settings')
+        telegram_credentials = self.fields.validate(telegram_credentials, '.__init__.telegram_credentials')
 
     # construct core methods
         self.accessToken = telegram_credentials['access_token']
@@ -141,16 +291,27 @@ class telegramBotClient(object):
 
         return self
 
-    def request(self, bot_method, method_kwargs=None, file_id='', file_path='', file_url=''):
+    def parseSource(self, file_string):
+
+        file_source = ''
+
+        file_map = self.sources.map(file_string)[0]
+        if file_map['file_url']:
+            file_source = 'file_url'
+        elif file_map['file_id']:
+            file_source = 'file_id'
+        elif file_map['file_path']:
+            file_source = 'file_path'
+
+        return file_source
+
+    def request(self, bot_method, **kwargs):
 
         '''
             a method to make a post request to the telegram bot api
 
         :param bot_method: string with bot method name
-        :param method_kwargs: dictionary with method keyword arguments
-        :param file_id: string with telegram file id to use for method
-        :param file_path: string with path to file located on localhost
-        :param file_url: string with url address of file
+        :param **kwargs: additional keyword arguments for bot method
         :return: (json valid) dictionary with response (or error)
 
         bot methods:
@@ -163,89 +324,82 @@ class telegramBotClient(object):
         title = '%s.request' % self.__class__.__name__
 
     # validate inputs
-        input_kwargs = [bot_method, method_kwargs, file_id, file_path, file_url]
-        input_names = ['.bot_method', '.method_kwargs', '.file_id', '.file_path', '.file_url']
-        for i in range(len(input_kwargs)):
-            if input_kwargs[i]:
-                self.fields.validate(input_kwargs[i], input_names[i])
+        if bot_method not in self.fields.schema.keys():
+            raise ValueError('%s(bot_method=%s) is not a valid telegram api method.' % (title, bot_method))
 
     # construct post request key word arguments
         request_kwargs = {
-            'url': '%s%s/%s' % (self.endpoint, self.accessToken, bot_method)
+            'url': '%s%s/%s' % (self.endpoint, self.accessToken, bot_method),
+            'data': {}
         }
+        method_key = '.' + bot_method
 
-    # add method arguments to request fields
-        if method_kwargs:
-            request_kwargs['data'] = method_kwargs
+    # validate keyword arguments
+        data_kwargs = {}
+        for key, value in kwargs.items():
+            argument_key = '%s.%s' % (method_key, key)
+            if argument_key in self.fields.keyMap.keys():
+                object_title = '%s(%s=%s)' % (title, key, value)
+                data_kwargs[key] = self.fields.validate(value, argument_key, object_title)
 
-    # TODO add method kwargs validation from api documentation
+    # validate requirements
+        object_title = '%s(bot_method=%s, **kwargs)' % (title, bot_method)
+        self.fields.validate(data_kwargs, method_key, object_title)
 
-    # retrieve file type for method
+    # add keywords to request kwargs
+        if data_kwargs:
+            request_kwargs['data'] = data_kwargs
+
+    # retrieve file type from arguments
         file_type = ''
-        component_key = '.' + bot_method
-        component_criteria = self.botMethods.keyMap[component_key]
-        if 'field_metadata' in component_criteria.keys():
-            if 'file_type' in component_criteria['field_metadata'].keys():
-                file_type = component_criteria['field_metadata']['file_type']
+        file_value = ''
+        for key in self.ext.keys():
+            if key in request_kwargs['data'].keys():
+                file_type = key
+                file_value = request_kwargs['data'][key]
+                del request_kwargs['data'][key]
 
     # add file to request kwargs
         if file_type:
-            if file_id:
-                request_kwargs['data'][file_type] = file_id
-            elif file_path:
-                if not os.path.exists(file_path):
-                    raise Exception('%s(file_path=%s}) is not a valid file path.' % (title,file_path))
-                request_kwargs['files'] = { file_type: open(file_path, 'rb') }
-            elif file_url:
+            file_field = self.parseSource(file_value)
+            if file_field == 'file_id':
+                request_kwargs['data'][file_type] = file_value
+            elif file_field == 'file_path':
+                if not os.path.exists(file_value):
+                    raise ValueError('%s(%s=%s) is not a valid file path.' % (title, file_type, file_value))
+                request_kwargs['files'] = { file_type: open(file_value, 'rb') }
+            elif file_field == 'file_url':
                 file_extension = ''
-                remote_file = requests.get(file_url)
-                file_mapping = self.ext[file_type].map(file_url)[0]
+                try:
+                    remote_file = requests.get(file_value)
+                except:
+                    raise ValueError('%s(%s=%s) is not a valid url.' % (title, file_type, file_value))
+                file_mapping = self.ext[file_type].map(file_value)[0]
+                extension_list = []
                 for key, value in file_mapping.items():
+                    if isinstance(value, bool):
+                        extension_list.append('.' % key)
                     if value and isinstance(value, bool):
                         file_extension = '.' + key
+                if not file_extension:
+                    raise ValueError('%s(%s=%s) must be one of %s file types.' % (title, file_type, file_value, extension_list))
                 file_buffer = io.BytesIO(remote_file.content)
                 file_buffer.name = '%s%s' % (file_type, file_extension)
                 request_kwargs['files'] = { file_type: file_buffer }
+            else:
+                raise IndexError('%s(bot_method=%s) requires a "%s" argument.' % (title, bot_method, file_type))
+
+    # remove data from request if empty
+        if not request_kwargs['data']:
+            del request_kwargs['data']
 
     # send request
         try:
             response = requests.post(**request_kwargs)
         except:
-            raise TelegramConnectionError('%s requests.post()' % title, error_dict=request_kwargs)
+            raise TelegramConnectionError('%s requests.post(%s)' % (title, bot_method), error_dict=request_kwargs)
 
     # unwrap and return json response
-        json_dict = response.json()
+        response_dict = response.json()
 
-        return json_dict
-
-if __name__ == '__main__':
-    from cred.credentialsTelegram import telegramCredentials, photoLists
-    user_id = telegramCredentials['admin_id']
-    bot_id = telegramCredentials['bot_id']
-    photo_path = '../../data/test_file.png'
-    photo_url = 'https://pbs.twimg.com/profile_images/479475632158408704/Zelyz-xr_400x400.png'
-    bot_settings = {
-        'commands': {
-            'start': '',
-            'help': '',
-            'settings': ''
-        },
-        'first_name': telegramCredentials['bot_name'],
-        'id': telegramCredentials['bot_id'],
-        'username': telegramCredentials['bot_username']
-    }
-    request_list = [
-        { 'bot_method': 'getMe' },
-        { 'bot_method': 'getUpdates', 'method_kwargs': { 'offset': 135205444 } },
-        { 'bot_method': 'sendMessage', 'method_kwargs': { 'chat_id': user_id, 'text': 'text me again' } },
-        { 'bot_method': 'sendPhoto', 'method_kwargs': { 'chat_id': user_id },
-          'file_path': photo_path },
-        { 'bot_method': 'sendPhoto', 'method_kwargs': { 'chat_id': user_id },
-          'file_id': photoLists[0]['file_id'] },
-        { 'bot_method': 'sendPhoto', 'method_kwargs': { 'chat_id': user_id },
-          'file_url': photo_url },
-    ]
-
-    bot = telegramBotClient(bot_settings=bot_settings, telegram_credentials=telegramCredentials)
-    response = bot.request(**request_list[5])
-    print(response)
+        return response_dict

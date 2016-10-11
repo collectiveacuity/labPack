@@ -3,8 +3,35 @@ __created__ = '2016.07'
 __license__ = 'MIT'
 
 import re
+from jsonmodel.validators import jsonModel
+from labpack.compilers.classes import _method_constructor
 
 class labRegex(object):
+
+    _class_methods = {
+        'schema': {
+            '__init__': {
+                'regex_schema': { 'json.gz': '\\.json\\.gz?' },
+                'override': False
+            },
+            'map': {
+                'string_input': 'the website for the lab is collectiveacuity.com',
+                'n_grams': 0
+            }
+        },
+        'components': {
+            '.__init__.regex_schema': {
+                'extra_fields': True
+            },
+            '.__init__.regex_schema.json.gz': {
+                'required_field': False
+            },
+            '.map.n_grams': {
+                'integer_data': True,
+                'min_value': 1
+            }
+        }
+    }
 
     def __init__(self, regex_schema, override=False):
 
@@ -17,11 +44,12 @@ class labRegex(object):
 
         class_name = self.__class__.__name__
 
-    # construct internal class for sub method attributes
-        class _sub_method(object):
-            def __init__(self, method_dict):
-                for k, v in method_dict.items():
-                    setattr(self, k, v)
+    # construct class method validator
+        self.fields = jsonModel(self._class_methods)
+
+    # validate inputs
+        object_title = '%s.__init__(regex_schema={...})' % class_name
+        regex_schema = self.fields.validate(regex_schema, '.__init__.regex_schema', object_title)
 
     # construct builtin list to differentiate custom methods
         self.builtins = []
@@ -48,12 +76,20 @@ class labRegex(object):
                         'pattern': re.compile(value),
                         'name': key
                     }
-                    method_object = _sub_method(sub_methods)
+                    method_object = _method_constructor(sub_methods)
                     setattr(self, method_name, method_object)
                 elif not override:
                     raise ValueError('\Regex key %s must begin with a letter.' % key)
 
     def map(self, string_input, n_grams=1):
+
+        title = '%s.map' % self.__class__.__name__
+
+    # validate inputs
+        input_dict = { '.map.string_input': string_input, '.map.n_grams': n_grams }
+        for key, value in input_dict.items():
+            object_title = '%s(%s)' % (title, key.replace('.map.', ''))
+            value = self.fields.validate(value, key, object_title)
 
     # construct empty method fields
         word_list = []
@@ -62,23 +98,19 @@ class labRegex(object):
         custom_methods = set(self.__dir__()) - set(self.builtins)
 
     # construct n gram list
-        if not n_grams:
-            gram_list = [string_input]
-        else:
-            gram_list = string_input.split()
-            if isinstance(n_grams, int):
-                if n_grams > 1:
-                    token_list = string_input.split()
-                    if n_grams <= len(token_list):
-                        gram_list = []
-                        stop_point = len(token_list) - n_grams + 1
-                        for i in range(stop_point):
-                            n_token = ''
-                            for j in range(i, i + n_grams):
-                                if n_token:
-                                    n_token += ' '
-                                n_token += token_list[j]
-                            gram_list.append(n_token)
+        gram_list = string_input.split()
+        if n_grams > 1:
+            token_list = string_input.split()
+            if n_grams <= len(token_list):
+                gram_list = []
+                stop_point = len(token_list) - n_grams + 1
+                for i in range(stop_point):
+                    n_token = ''
+                    for j in range(i, i + n_grams):
+                        if n_token:
+                            n_token += ' '
+                        n_token += token_list[j]
+                    gram_list.append(n_token)
 
     # analyze each item in n gram list for regex match
         for i in range(0, len(gram_list)):

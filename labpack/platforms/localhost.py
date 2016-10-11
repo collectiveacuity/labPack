@@ -100,6 +100,9 @@ class localhostClient(object):
         self.os.nodename = gethostname()
         self.ip = gethostbyname(self.os.nodename)
 
+    # retrieve environment variables from system
+        self.environ = dict(os.environ.items())
+
     # retrieve path to user home
         self.home = ''
         if self.os.sysname == 'Windows':
