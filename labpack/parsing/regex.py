@@ -140,6 +140,7 @@ if __name__ == '__main__':
     test_input = "the website for the lab is collectiveacuity.com"
     input_map = regex.map(test_input)
     assert input_map[0]['word'] == 'the'
+    assert input_map[-1]['valid url']
     # print(input_map)
     file_ext = {
         "json": ".+\\.json$",
