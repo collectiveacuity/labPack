@@ -17,14 +17,25 @@ Top-Level Classes
 -----------------
 * **labID**: A class of methods for uniquely identifying records
 * **labDT**: A class of methods for transforming datetime data
-* **labRandom**: A class of methods for generating random data
+* **labRandom**: A package of methods for generating random data
+* **labPerform**: A package of methods for running performance tests
+* **drep**: A file storage protocol for encrypted record data
+* **labCrypt**: A package for encrypting/decrypting data using AES256 sha512
+* **labRegex**: A class of methods for matching regex patterns
+* **appdataClient**: A class of methods for managing file storage in home dir
+* **localhostClient**: A class of methods for negotiating OS specific configuration
 
 Features
 --------
 - Unique IDs which do not conflict nor leak record origin
 - Transformations of datetime data between popular formats
 - Randomization using best current algorithms
-- Other features **[WIP]**
+- [FEATURES ADDED] drep compiler package for encrypted file storage protocol
+- [FEATURES ADDED] labCrypt package for encrypted data using AES 256bit sha512
+- [FEATURES ADDED] labPerform package for running performance tests
+- [FEATURES ADDED] labRegex parsing package for mapping n-grams in strings
+- [FEATURES ADDED] appdataClient class for managing file storage on local host
+- [FEATURES ADDED] localhostClient class for negotiating os specific methods
 
 ============
 Installation

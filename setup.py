@@ -90,7 +90,8 @@ setup(
         'pytz>=2015.7',
         'tzlocal>=1.2',
         'python-dateutil>=2.4.2',
-        'pyyaml>=3.12'
+        'pyyaml>=3.12',
+        'jsonmodel'
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
