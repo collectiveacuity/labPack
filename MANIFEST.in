@@ -7,7 +7,7 @@ recursive-exclude models *
 recursive-exclude notes *
 recursive-exclude tests *
 recursive-exclude tests_dev *
-recursive-exclude tinkering *
+recursive-exclude tinker *
 prune */__pycache__
 include *.rst
 include *.txt

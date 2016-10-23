@@ -39,3 +39,6 @@ __pycache__
 ############## backup sync files ###############
 desktop.ini
 *.gdoc
+
+############## tinkering scripts ###############
+tinker/

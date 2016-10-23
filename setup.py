@@ -56,12 +56,7 @@ Git Public Updates:
 git checkout public
 git merge master
 git push github public
-git checkout master
-
-Old Methods:
-python setup.py sdist bdist_wheel upload  # for PyPi
-python setup.py sdist --format=gztar,zip bdist_wheel # bdist_wheel misses excluded sub-packages
-pip wheel --no-index --no-deps --wheel-dir dist dist/*.tar.gz
+git checkout -f master
 '''
 
 config_file = open('labpack/__init__.py').read()
@@ -78,7 +73,7 @@ setup(
     name=module,
     version=version,
     author=author,
-    author_email=author,
+    author_email=email,
     maintainer_email=email,
     url=url,
     include_package_data=True,  # Checks MANIFEST.in for explicit rules
