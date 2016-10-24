@@ -119,12 +119,19 @@ class localhostClient(object):
         elif self.os.sysname in ('Linux', 'FreeBSD', 'Solaris', 'Darwin'):
             self.home = os.path.expanduser('~')
 
-    # retrieve path to bash config
+    # retrieve path to shell configs
+        self.bashConfig = ''
+        self.shConfig = ''
         if self.os.sysname == 'Windows':
             bash_config = '.bash_profile'
+            sh_config = ''
         else:
             bash_config = '.bashrc'
-        self.bashConfig = os.path.join(self.home, bash_config)
+            sh_config = '.cshrc'
+        if bash_config:
+            self.bashConfig = os.path.join(self.home, bash_config)
+        if sh_config:
+            self.shConfig = os.path.join(self.home, sh_config)
     # TODO check different terminal protocols
 
     # construct file record model property
