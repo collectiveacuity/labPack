@@ -119,6 +119,13 @@ class localhostClient(object):
         elif self.os.sysname in ('Linux', 'FreeBSD', 'Solaris', 'Darwin'):
             self.home = os.path.expanduser('~')
 
+    # retrieve path to bash config
+        if self.os.sysname == 'Windows':
+            bash_config = '.bash_profile'
+        else:
+            bash_config = '.bashrc'
+        self.bashConfig = os.path.join(self.home, bash_config)
+
     # construct file record model property
         file_model = {
             'schema': {

@@ -722,12 +722,15 @@ class appdataClient(object):
         '''
 
         __name__ = '%s.filter' % self.__class__.__name__
-        _filter_arg = '%s(path_filters={...})' % __name__
+        _filter_arg = '%s(path_filters=[...])' % __name__
 
     # validate input
-        self.fields.validate(path_filters, '.path_filters')
-        for filter in path_filters:
-            for key, value in filter.items():
+        if not isinstance(path_filters, list):
+            raise TypeError('%s key value must be a list.' % _filter_arg)
+        for i in range(len(path_filters)):
+            if not isinstance(path_filters[i], dict):
+                raise TypeError('%s item %s must be a dictionary.' % (_filter_arg, i))
+            for key, value in path_filters[i].items():
                 _key_name = '%s : {...}' % key
                 if not isinstance(key, int):
                     raise TypeError('%s key name must be an int.' % _filter_arg.replace('...', _key_name))
