@@ -125,6 +125,7 @@ class localhostClient(object):
         else:
             bash_config = '.bashrc'
         self.bashConfig = os.path.join(self.home, bash_config)
+    # TODO check different terminal protocols
 
     # construct file record model property
         file_model = {
