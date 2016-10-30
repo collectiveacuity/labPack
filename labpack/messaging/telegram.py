@@ -16,11 +16,181 @@ __license__ = 'MIT'
     https://github.com/vysheng/tg
 '''
 
+'''
+    telegram with OAUTH
+    http://stackoverflow.com/questions/37264827/telegram-bot-oauth-authorization
+
+    haproxy with ssl pass-thru
+    https://serversforhackers.com/using-ssl-certificates-with-haproxy
+    http://nginx.2469901.n2.nabble.com/SSL-pass-through-td7583170.html
+'''
+
 import io
 import os
 import requests
 from jsonmodel.validators import jsonModel
 from labpack.parsing.regex import labRegex
+
+def validate_type(file_name, extension_map):
+
+    title = 'validate_type'
+
+# validate file extension
+    file_extension = ''
+    ext_types = labRegex(extension_map)
+    file_mapping = ext_types.map(file_name)[0]
+    extension_list = []
+    for key, value in file_mapping.items():
+        if isinstance(value, bool):
+            extension_list.append('.%s' % key)
+        if value and isinstance(value, bool):
+            file_extension = '.%s' + key
+    if not file_extension:
+        raise ValueError('%s(file_name=%s) must be one of %s file types.' % (title, file_name, extension_list))
+
+    return file_extension
+
+def get_file(file_url, file_name=''):
+
+    title = 'get_file'
+
+# request file from url
+    try:
+        remote_file = requests.get(file_url)
+    except:
+        raise ValueError('%s(%s=%s) is not a valid url.' % (title, file_url, file_url))
+    if not file_name:
+        file_name = 'file'
+
+# add contents to buffer
+    import io
+    file_buffer = io.BytesIO(remote_file.content)
+    file_buffer.name = '%s' % file_name
+
+    return file_buffer
+
+def load_offset(file_path):
+
+    record_details = {
+        'last_update': 0
+    }
+
+    from labpack.records.settings import load_settings
+    record_details = load_settings(file_path)
+
+    return record_details['last_update']
+
+def save_offset(update_value, file_path):
+
+    if not isinstance(update_value, int):
+        raise ValueError('Update value must be an integer')
+
+    record_details = {
+        'last_update': update_value
+    }
+
+    from labpack.records.settings import save_settings
+    return_path = save_settings(record_details, file_path, overwrite=True)
+
+    return return_path
+
+def get_me(bot_id, access_token):
+
+# construct key word arguments
+    request_kwargs = {
+        'url': 'https://api.telegram.org/bot%s:%s/getMe' % (bot_id, access_token),
+    }
+
+# send get update request
+    response_object = requests.post(**request_kwargs)
+    response = response_object.json()
+
+    return response
+
+def get_updates(bot_id, access_token, last_update=0):
+
+# construct key word arguments
+    request_kwargs = {
+        'url': 'https://api.telegram.org/bot%s:%s/getUpdates' % (bot_id, access_token),
+    }
+
+# add offset to kwargs
+    if last_update:
+        request_kwargs['data'] = {
+            'offset': last_update + 1
+        }
+
+# send get update request
+    response_object = requests.post(**request_kwargs)
+    response = response_object.json()
+
+# construct update list
+    update_list = []
+    if response['result']:
+        for i in range(len(response['result'])):
+            update_list.append(response['result'][i])
+
+    return update_list
+
+def send_message(bot_id, access_token, user_id, message_text):
+
+# construct key word arguments
+    request_kwargs = {
+        'url': 'https://api.telegram.org/bot%s:%s/sendMessage' % (bot_id, access_token),
+        'data': {
+            'chat_id': user_id,
+            'text': message_text
+        }
+    }
+
+# send message
+    response = requests.post(**request_kwargs)
+
+    return response.json()
+
+def send_photo(bot_id, access_token, user_id, photo_path='', photo_id='', photo_url='', caption_text=''):
+
+    title = 'send_photo'
+
+# construct valid file extensions
+    extension_map = {
+        'jpg': '.+\\.jpg$',
+        'jpeg': '.+\\.jpeg$',
+        'gif': '.+\\.gif$',
+        'png': '.+\\.png$',
+        'tif': '.+\\.tif$',
+        'bmp': '.+\\.bmp$'
+    }
+
+# construct key word arguments
+    request_kwargs = {
+        'url': 'https://api.telegram.org/bot%s:%s/sendPhoto' % (bot_id, access_token),
+        'data': {
+            'chat_id': user_id
+        }
+    }
+    if caption_text:
+        request_kwargs['data']['caption'] = caption_text
+
+# add photo to request keywords
+    if photo_path:
+        validate_type(photo_path, extension_map)
+        if not os.path.exists(photo_path):
+            raise ValueError('%s is not a valid file path.' % photo_path)
+        request_kwargs['files'] = { 'photo': open(photo_path, 'rb') }
+    elif photo_id:
+        request_kwargs['data']['photo'] = photo_id
+    elif photo_url:
+        file_extension = validate_type(photo_url, extension_map)
+        file_buffer = get_file(photo_url, 'photo%s' % file_extension)
+        request_kwargs['files'] = { 'photo': file_buffer }
+    else:
+        raise IndexError('%s(...) requires either a photo_path, photo_id or photo_url argument' % title)
+
+# send welcome message
+    response = requests.post(**request_kwargs)
+
+    return response.json()
 
 class TelegramConnectionError(Exception):
 
@@ -403,3 +573,15 @@ class telegramBotClient(object):
         response_dict = response.json()
 
         return response_dict
+
+if __name__ == '__main__':
+    from labpack.records.settings import load_settings
+    telegram_cred = load_settings('../../../cred/telegram.yaml')
+    bot_id = telegram_cred['telegram_bot_id']
+    access_token = telegram_cred['telegram_access_token']
+    assert get_me(bot_id, access_token)['result']
+    update_list = get_updates(bot_id, access_token)
+    if update_list:
+        user_id = update_list[0]['message']['from']['id']
+        photo_url = 'https://pbs.twimg.com/profile_images/479475632158408704/Zelyz-xr_400x400.png'
+        # send_photo(bot_id, access_token, user_id, photo_url=photo_url)
