@@ -2,6 +2,22 @@ __author__ = 'rcj1492'
 __created__ = '2016.10'
 __license__ = 'MIT'
 
+class MovesError(Exception):
+
+    def __init__(self, message='', error_dict=None):
+
+    # TODO create bad connection diagnostics methods
+
+        text = '\nBad Request %s' % message
+        self.error = {
+            'message': message
+        }
+        if error_dict:
+            if isinstance(error_dict, dict):
+                for key, value in error_dict.items():
+                    self.error[key] = value
+        super(MovesError, self).__init__(text)
+
 class movesRegister(object):
     ''' currently must be done manually '''
     ''' https://dev.moves-app.com/ '''
@@ -21,6 +37,12 @@ class movesOAuth(object):
                 'token_type': '',
                 'expires_in': 0,
                 'refresh_token': '',
+                'user_id': 0
+            },
+            'token_status': {
+                'client_id': '',
+                'scope': '',
+                'expires_in': 0,
                 'user_id': 0
             },
             'client_id': '',
@@ -129,6 +151,8 @@ class movesOAuth(object):
         response = requests.post(url_string, params=request_params)
         if response.status_code == 200:
             token_details = response.json()
+        elif response.status_code == 400:
+            raise MovesError(error_dict=response.json())
         else:
             raise Exception('%s returned status code %s' % (title, response.status_code))
 
@@ -166,14 +190,40 @@ class movesOAuth(object):
         response = requests.post(url_string, params=request_params)
         if response.status_code == 200:
             token_details = response.json()
+        elif response.status_code == 400:
+            raise MovesError(error_dict=response.json())
         else:
             raise Exception('%s returned status code %s' % (title, response.status_code))
 
         return token_details
 
-    def check_token(self):
-        token_details = {}
-        return token_details
+    def validate_token(self, access_token):
+
+        title = '%s.validate_token' % self.__class__.__name__
+
+    # validate inputs
+        object_title = '%s(%s=%s)' % (title, 'access_token', access_token)
+        self.fields.validate(access_token, '.token_details.access_token', object_title)
+
+    # construct url string
+        url_string = '%s/tokeninfo' % self.fields.schema['oauth_endpoint']['web']
+
+    # construct request params
+        request_params = {
+            'access_token': access_token
+        }
+
+    # send request
+        import requests
+        response = requests.get(url_string, params=request_params)
+        if response.status_code == 200:
+            token_status = response.json()
+        elif response.status_code == 404:
+            raise MovesError(error_dict=response.json())
+        else:
+            raise Exception('%s returned status code %s' % (title, response.status_code))
+
+        return token_status
 
 class movesClient(object):
 

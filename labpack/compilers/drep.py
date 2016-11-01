@@ -6,7 +6,7 @@ import json
 from gzip import compress, decompress
 
 try:
-    from labpack.encryption import labCrypt
+    from labpack.encryption import cryptolab
 except:
     print('\ndrep methods require the cryptography module. try: pip install cryptography')
     exit()
@@ -23,7 +23,7 @@ def dump(map_input, secret_key):
     compressed_data = compress(json_data)
 
 # encrypt data
-    encrypted_data, secret_key = labCrypt.encrypt(compressed_data, secret_key)
+    encrypted_data, secret_key = cryptolab.encrypt(compressed_data, secret_key)
 
     return encrypted_data
 
@@ -31,7 +31,7 @@ def load(encrypted_data, secret_key):
 
 # attempt to decrypt data
     try:
-        byte_data = labCrypt.decrypt(encrypted_data, secret_key)
+        byte_data = cryptolab.decrypt(encrypted_data, secret_key)
     except:
         raise ValueError('\nsecret key is not valid key for drep file.')
 

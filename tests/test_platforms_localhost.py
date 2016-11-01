@@ -3,7 +3,7 @@ __created__ = '2016.03'
 __license__ = 'MIT'
 
 from labpack.platforms.localhost import localhostClient
-from labpack.performance import labPerform
+from labpack.performance import performlab
 
 class testLocalhostClient(localhostClient):
 
@@ -106,7 +106,7 @@ class testLocalhostClient(localhostClient):
 
     def performanceTests(self):
 
-        labPerform.repeat(self.list(list_root='../', max_results=1000, previous_file='../labpack/compilers/drep.py'), 'localhost.list(max_results=1000)', 10000)
+        performlab.repeat(self.list(list_root='../', max_results=1000, previous_file='../labpack/compilers/drep.py'), 'localhost.list(max_results=1000)', 10000)
 
         return self
 

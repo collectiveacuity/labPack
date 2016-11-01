@@ -40,5 +40,10 @@ def random_shuffle(item_list):
     shuffle(item_list, random_object().random)
     return item_list
 
+def random_characters(character_set, length):
+    return ''.join(random_object().choice(character_set) for i in range(length))
+
 if __name__ == '__main__':
+    from string import ascii_lowercase
     print(random_fraction())
+    print(random_characters(ascii_lowercase, 5))

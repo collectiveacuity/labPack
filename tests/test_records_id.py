@@ -3,7 +3,7 @@ __created__ = '2016.05'
 __license__ = 'MIT'
 
 from datetime import datetime
-from labpack.performance import labPerform
+from labpack.performance import performlab
 from labpack.records.id import labID
 
 class testlabID(labID):
@@ -29,9 +29,9 @@ class testlabID(labID):
 
     def performanceTests(self):
 
-        labPerform.repeat(labID().id48, 'labID().id48', 10000)
-        labPerform.repeat(labID().mac, 'labID().mac', 10000)
-        labPerform.repeat(labID().datetime, 'labID().datetime', 10000)
+        performlab.repeat(labID().id48, 'labID().id48', 10000)
+        performlab.repeat(labID().mac, 'labID().mac', 10000)
+        performlab.repeat(labID().datetime, 'labID().datetime', 10000)
 
         return self
 

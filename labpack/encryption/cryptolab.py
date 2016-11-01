@@ -3,7 +3,7 @@ __created__ = '2016.07'
 __license__ = 'MIT'
 
 '''
-PLEASE NOTE:    labCrypt package requires both the cryptography and pycrypto modules.
+PLEASE NOTE:    cryptolab package requires both the cryptography and pycrypto modules.
                 pycrypto requires a C compiler to install.
 '''
 
@@ -13,7 +13,7 @@ try:
     from cryptography.hazmat.backends import openssl
     from cryptography.hazmat.primitives import padding
 except:
-    print('\nlabCrypto requires the cryptography module. try: pip install cryptography')
+    print('\ncryptolab requires the cryptography module. try: pip install cryptography')
     exit()
 
 def encrypt(byte_data, secret_key=''):
@@ -116,10 +116,10 @@ def decrypt(encrypted_data, secret_key):
 
 if __name__ == '__main__':
     import json
-    test_details = { 'labCrypt': 'me' }
+    test_details = { 'cryptolab': 'me' }
     test_data = json.dumps(test_details).encode('utf-8')
     encrypted_data, secret_key = encrypt(test_data)
     decrypted_data = decrypt(encrypted_data, secret_key)
     decrypted_details = json.loads(decrypted_data.decode())
-    assert decrypted_details['labCrypt'] == test_details['labCrypt']
+    assert decrypted_details['cryptolab'] == test_details['cryptolab']
     print(decrypted_details)

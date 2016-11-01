@@ -9,7 +9,7 @@ except:
     exit()
 
 from labpack.storage.appdata import appdataClient, appdataModel
-from labpack.performance import labPerform
+from labpack.performance import performlab
 from jsonmodel.exceptions import InputValidationError
 from copy import deepcopy
 
@@ -103,7 +103,7 @@ class testAppdataClient(appdataClient):
                 last_key = deepcopy(seed_key)
         path_filters = [{ 1:{'must_contain':['^log']}}]
         filter_function = self.conditionalFilter(path_filters=path_filters)
-        labPerform.repeat(self.list(filter_function=filter_function, max_results=100, previous_key=last_key), 'appdataClient.list(filter_function=self.conditionalFilter(%s), max_results=100, previous_key=%s)' % (path_filters, last_key), 10000)
+        performlab.repeat(self.list(filter_function=filter_function, max_results=100, previous_key=last_key), 'appdataClient.list(filter_function=self.conditionalFilter(%s), max_results=100, previous_key=%s)' % (path_filters, last_key), 10000)
         self.remove()
 
         return self

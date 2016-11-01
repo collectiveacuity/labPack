@@ -10,7 +10,7 @@ except:
 
 from datetime import datetime
 from dateutil import tz
-from labpack.performance import labPerform
+from labpack.performance import performlab
 from labpack.records.time import labDT
 
 class testlabDT(object):
@@ -44,7 +44,7 @@ class testlabDT(object):
 
     def performanceTests(self):
 
-        labPerform.repeat(labDT.new(), 'labDT.new()', 10000)
+        performlab.repeat(labDT.new(), 'labDT.new()', 10000)
 
         return self
 
