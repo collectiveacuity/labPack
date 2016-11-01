@@ -1,6 +1,14 @@
 ChangeLog
 =========
 
+0.5 (2016.11.01)
+----------------
+* [REFACTOR] Packages have been refactored to lowercase to avoid class syntax
+* [FEATURE ADDED] classes compiler package for generating class attributes
+* [FEATURE ADDED] flask parsing package for parsing request and response data
+* [FEATURE ADDED] settings package for handling local configuration settings
+* {WIP] Packages for interaction with moves and telegram api are included
+
 0.4 (2016.10.11)
 ----------------
 * [REFACTOR] All previous methods have been refactored to sub-folders

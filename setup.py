@@ -86,7 +86,8 @@ setup(
         'tzlocal>=1.2',
         'python-dateutil>=2.4.2',
         'pyyaml>=3.12',
-        'jsonmodel'
+        'jsonmodel',
+        'requests'
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
