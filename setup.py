@@ -14,7 +14,7 @@ pip install twine
 
 Build Distributions:
 python setup.py sdist --format=gztar,zip
-pip wheel --no-index --no-deps --wheel-dir dist dist/labpack-0.3.tar.gz
+pip wheel --no-index --no-deps --wheel-dir dist dist/labpack-0.5.tar.gz
 
 Upload Distributions to PyPi:
 python setup.py register
