@@ -4,7 +4,7 @@ __license__ = 'MIT'
 
 import re
 from jsonmodel.validators import jsonModel
-from labpack.compilers.classes import _method_constructor
+from labpack.compilers.objects import _method_constructor
 
 class labRegex(object):
 

@@ -235,14 +235,93 @@ def ingest_environ(model_path=''):
 
     return typed_dict
 
+def compile_settings(model_path, file_path, ignore_errors=False):
+
+    '''
+        a method to compile configuration values from different sources
+
+        NOTE:   method searches the environment variables, a local
+                configuration path and the default values for a jsonmodel
+                object for valid configuration values. if an environmental
+                variable or key inside a local config file matches the key
+                for a configuration setting declared in the jsonmodel schema,
+                its value will be added to the configuration file as long
+                as the value is model valid. SEE jsonmodel module.
+
+        NOTE:   the order of assignment:
+                    first:  environment variable
+                    second: configuration file
+                    third:  default value
+                    fourth: empty value
+
+        NOTE:   method is guaranteed to produce a full set of top-level keys
+
+    :param model_path: string with path to jsonmodel valid model data
+    :param file_path: string with path to local configuration file
+    :param ignore_errors: [optional] boolean to ignore any invalid values
+    :return: dictionary with settings
+    '''
+
+# construct configuration model and default details
+    from jsonmodel.validators import jsonModel
+    config_model = jsonModel(load_settings(model_path))
+    default_details = config_model.ingest(**{})
+
+# retrieve environmental variables and file details
+    environ_details = ingest_environ()
+
+    try:
+        file_details = load_settings(file_path)
+    except:
+        file_details = {}
+
+# construct config details from (first) envvar, (second) file, (third) default
+    config_details = {}
+    for key in default_details.keys():
+        test_file = True
+        test_default = True
+        if key.upper() in environ_details.keys():
+            test_file = False
+            test_default = False
+            try:
+                config_details[key] = config_model.validate(environ_details[key.upper()], '.%s' % key)
+            except:
+                if ignore_errors:
+                    test_file = True
+                    test_default = True
+                else:
+                    raise
+        if key in file_details.keys() and test_file:
+            test_default = False
+            try:
+                config_details[key] = config_model.validate(file_details[key], '.%s' % key)
+            except:
+                if ignore_errors:
+                    test_default = True
+                else:
+                    raise
+        if test_default:
+            config_details[key] = default_details[key]
+
+    return config_details
+
 if __name__ == '__main__':
+
+# define arguments
     import os
     os.environ['labpack_records_settings'] = '2'
-    assert ingest_environ()['LABPACK_RECORDS_SETTINGS'] == 2
     model_path = '../../tests/test-model.json'
+    file_path = '../../tests/test-settings.yaml'
+
+# test ingest environ
+    assert ingest_environ()['LABPACK_RECORDS_SETTINGS'] == 2
     model_env = ingest_environ(model_path)
     assert model_env['labpack_records_settings'] == 2
+
+# test load settings from module path
     assert load_settings(file_path='model-rules.json', module_name='jsonmodel')
+
+# test save settings
     test_details = load_settings(model_path)
     try:
         import pytest
@@ -252,3 +331,13 @@ if __name__ == '__main__':
     with pytest.raises(Exception):
         save_settings(test_details, model_path)
     assert save_settings(test_details, model_path, overwrite=True)
+
+# test compile settings
+    from jsonmodel.exceptions import InputValidationError
+    with pytest.raises(InputValidationError): # exception for not a string
+        test_details = compile_settings(model_path, file_path)
+    test_details = compile_settings(model_path, file_path, ignore_errors=True)
+    assert not test_details['labpack_records_details'] # empty value
+    assert test_details['labpack_records_settings'] == 2 # environment variable
+    assert test_details['labpack_records_creds'] == 'sunlight' # default value
+    assert test_details['labpack_records_configs'] == 'days' # cred file
