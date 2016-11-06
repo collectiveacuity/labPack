@@ -2,6 +2,24 @@ __author__ = 'rcj1492'
 __created__ = '2016.10'
 __license__ = 'MIT'
 
+'''
+app.test_request_context(**kwargs):
+# query_string=None,
+# method='GET'
+# input_stream=None
+# content_type=None
+# content_length=None
+# errors_stream=None
+# multithread=False,
+# multiprocess=False
+# run_once=False
+# headers=None
+# data=None
+# environ_base=None
+# environ_overrides=None
+# charset='utf-8'
+'''
+
 def extract_request_details(request_object, session_object=None):
 
     '''
