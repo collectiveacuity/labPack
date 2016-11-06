@@ -574,4 +574,6 @@ class apschedulerClient(object):
 
     # send delete request
         url = '%s/scheduler/jobs/%s' % (self.url, id)
-        return self._delete_request(url, title)
+        status_code = self._delete_request(url, title)
+
+        return status_code
