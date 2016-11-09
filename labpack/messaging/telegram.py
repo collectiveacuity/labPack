@@ -202,6 +202,7 @@ class TelegramBotError(Exception):
                 self.error = error_dict
         super(TelegramBotError, self).__init__(text)
 
+# TODO: test all different errors
 class telegramBotHandler(object):
 
     def __init__(self):
@@ -221,6 +222,8 @@ class telegramBotHandler(object):
     # handle different codes
         if details['code'] == 200:
             details['json'] = response.json()
+        elif details['code'] == 403:
+            details['error'] = response.json()['description']
         else:
             details['error'] = response.content.decode()
 
@@ -265,7 +268,8 @@ class telegramBotClient(object):
             'access_token': '',
             'last_update': 0,
             'user_id': 0,
-            'user_name': ''
+            'user_name': '',
+            'message_text': ''
         },
         'components': {
             '.bot_id': {
@@ -304,7 +308,7 @@ class telegramBotClient(object):
         self.requests_handler = requests_handler
         self.telegram_handler = telegramBotHandler()
 
-    def _post_request(self, url, json=None):
+    def _post_request(self, url, data=None, files=None, json=None):
 
         import requests
 
@@ -314,6 +318,10 @@ class telegramBotClient(object):
         }
         if json:
             request_kwargs['json'] = json
+        if data:
+            request_kwargs['data'] = data
+        if files:
+            request_kwargs['files'] = files
 
     # send request
         try:
@@ -325,21 +333,184 @@ class telegramBotClient(object):
                 raise
 
     # handle response
-        response_details = response.json()
+        response_details = self.telegram_handler.handle(response)
 
         return response_details
 
     def get_me(self):
 
+        ''' a method to retrieve details about the bot from telegram api
+
+        :return: dictionary of response details with bot details in 'json' key
+
+        {
+            'headers': { ... },
+            'url': 'https://api.telegram.org/bot.../getUpdates',
+            'code': 200,
+            'error': '',
+            'json': {
+                'ok': True,
+                'result': {
+                    'id': 1234567890,
+                    'first_name': 'my Bot',
+                    'username': 'myBot'
+                }
+            }
+        }
+        '''
+
     # construct request fields
         url = '%s/getMe' % self.endpoint
 
     # send request
-        bot_details = self._post_request(url)
+        response_details = self._post_request(url)
 
-        return bot_details
+        return response_details
 
     def get_updates(self, last_update=0):
+
+        ''' a method to retrieve messages for bot from telegram api
+
+        :param last_update: integer with update id of last message received
+        :return: dictionary of response details with update list in [json][result]
+
+        {
+            'headers': { ... },
+            'url': 'https://api.telegram.org/bot.../getUpdates',
+            'code': 200,
+            'error': '',
+            'json': {
+                'ok': True,
+                'result': [
+                    {
+                        'update_id': 667652176,
+                        'message': {
+                            'chat': {
+                                'first_name': 'First',
+                                'type': 'private',
+                                'id': 1234567890,
+                                'last_name': 'Last'
+                            },
+                            'text': 'Hey',
+                            'from': {
+                                'first_name': 'First',
+                                'id': 1234567890,
+                                'last_name': 'Last'
+                            },
+                            'message_id': 173,
+                            'date': 1478729313
+                        }
+                    },
+                    {
+                        'update_id': 667652176,
+                        'message': {
+                            'chat': {
+                                'first_name': 'First',
+                                'type': 'private',
+                                'id': 1234567890,
+                                'last_name': 'Last'
+                            },
+                            'caption': 'Interesting song',
+                            'photo': [
+                                {
+                                    'file_id': 'AgADAQ...EC',
+                                    'width': 51,
+                                    'file_size': 1238,
+                                    'height': 90
+                                },
+                                {
+                                    'file_id': 'AgADAQ...Ag',
+                                    'width': 180,
+                                    'file_size': 13151,
+                                    'height': 320
+                                },
+                                {
+                                    'file_id': 'AgADAQ...VC',
+                                    'width': 449,
+                                    'file_size': 51134,
+                                    'height': 800
+                                },
+                                {
+                                    'file_id': 'AgADAQ...AC',
+                                    'width': 719,
+                                    'file_size': 82609,
+                                    'height': 1280
+                                }
+                            ],
+                            'from': {
+                                'first_name': 'First',
+                                'id': 1234567890,
+                                'last_name': 'Last'
+                            },
+                            'message_id': 175,
+                            'date': 1478729799
+                        }
+                    },
+                    {
+                        'update_id': 667652179,
+                        'message': {
+                            'chat': {
+                                'first_name': 'First',
+                                'type': 'private',
+                                'id': 1234567890,
+                                'last_name': 'Last'
+                            },
+                            'caption': 'Snow in slow mo',
+                            'document': {
+                                'file_name': 'IMG_0010.MOV',
+                                'thumb': {
+                                    'file_id': 'AAQB...IC',
+                                    'file_size': 2547,
+                                    'width': 90,
+                                    'height': 50
+                                },
+                                'file_size': 51588899,
+                                'file_id': 'BQAD...QI'
+                            }
+                            'from': {
+                                'first_name': 'First',
+                                'id': 1234567890,
+                                'last_name': 'Last'
+                            },
+                            'message_id': 176,
+                            'date': 1478729313
+                        }
+                    },
+                    {
+                        'update_id': 667652180,
+                        'message': {
+                            'chat': {
+                                'first_name': 'First',
+                                'type': 'private',
+                                'id': 1234567890,
+                                'last_name': 'Last'
+                            },
+                            'location': {
+                                'latitude': 12.345678,
+                                'longitude': -23.456789
+                            },
+                            'venue': {'
+                                location': {
+                                    'latitude': 12.345678,
+                                    'longitude': -23.456789
+                                },
+                                'address': '1 Laboratory Rd',
+                                'title': 'Collective Acuity Labs',
+                                'foursquare_id': '4a...e3'
+                            },
+                            'from': {
+                                'first_name': 'First',
+                                'id': 1234567890,
+                                'last_name': 'Last'
+                            },
+                            'message_id': 177,
+                            'date': 1478729313
+                        }
+                    },
+                ]
+            }
+        }
+        '''
 
         title = '%s.get_updates' % self.__class__.__name__
 
@@ -357,15 +528,72 @@ class telegramBotClient(object):
             }
 
     # send request
-        response_details = requests.post(**request_kwargs)
+        response_details = self._post_request(**request_kwargs)
 
-    # construct update list
-        update_list = []
-        if response['result']:
-            for i in range(len(response['result'])):
-                update_list.append(response['result'][i])
+        return response_details
 
-        return update_list
+    def send_message(self, user_id, message_text):
+
+        ''' a method to send a message using telegram api
+
+        :param user_id: integer with id of telegram user
+        :param message_text: string with message to user
+        :return: dictionary of response details with message details in [json][result]
+
+        {
+            'headers': { ... },
+            'url': 'https://api.telegram.org/bot.../sendMessage',
+            'code': 200,
+            'error': '',
+            'json': {
+                'ok': True,
+                'result': {
+                    'chat': {
+                        'first_name': 'First',
+                        'type': 'private',
+                        'id': 1234567890,
+                        'last_name': 'Last'
+                    },
+                    'text': 'text me again',
+                    'from': {
+                        'first_name': 'First',
+                        'id': 1234567890,
+                        'last_name': 'Last'
+                    },
+                    'message_id': 178,
+                    'date': 1478729313
+                }
+            }
+        }
+        '''
+        title = '%s.send_message' % self.__class__.__name__
+
+    # validate inputs
+        input_fields = {
+            'user_id': user_id,
+            'message_text': message_text
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+
+    # construct key word arguments
+        request_kwargs = {
+            'url': 'https://api.telegram.org/bot%s:%s/sendMessage' % (bot_id, access_token),
+            'data': {
+                'chat_id': user_id,
+                'text': message_text
+            }
+        }
+
+    # send request
+        response_details = self._post_request(**request_kwargs)
+
+        return response_details
+
+    def send_photo(self, user_id, photo_id='', photo_path='', photo_url='', caption=''):
+
+        return response_details
 
     def request(self, bot_method, **kwargs):
 
@@ -467,13 +695,24 @@ class telegramBotClient(object):
         return response_dict
 
 if __name__ == '__main__':
-    from labpack.records.settings import load_settings
-    telegram_cred = load_settings('../../../cred/telegram.yaml')
-    bot_id = telegram_cred['telegram_bot_id']
-    access_token = telegram_cred['telegram_access_token']
+    from labpack.records.settings import load_settings, save_settings
+    telegram_config = load_settings('../../../cred/telegram.yaml')
+    update_path = '../../tests/test_telegram/update.json'
+    update_id = load_settings(update_path)['last_update']
+    bot_id = telegram_config['telegram_bot_id']
+    access_token = telegram_config['telegram_access_token']
+    user_id = telegram_config['telegram_admin_id']
     telegram_bot = telegramBotClient(bot_id, access_token)
-    bot_details = telegram_bot.get_me()
-    print(bot_details)
+    details = telegram_bot.get_me()
+    assert details['json']['result']['id'] == bot_id
+    updates_details = telegram_bot.get_updates(update_id)
+    if updates_details['json']['result']:
+        update_list = sorted(updates_details['json']['result'], key=lambda k: k['update_id'])
+        offset_details = { 'last_update': update_list[-1]['update_id']}
+        save_settings(offset_details, update_path, overwrite=True)
+    details = telegram_bot.send_message(user_id, 'text me again')
+    print(details)
+
     # assert get_me(bot_id, access_token)['result']
     # update_list = get_updates(bot_id, access_token)
     # if update_list:
