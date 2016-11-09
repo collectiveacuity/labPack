@@ -77,7 +77,7 @@ class labDT(datetime):
         delta_time = self - epoch_dt
         return delta_time.total_seconds()
 
-    def pyLocal(self, time_zone=False):
+    def pyLocal(self, time_zone=''):
 
         '''
             a method to report a python datetime from a labDT object
@@ -107,7 +107,7 @@ class labDT(datetime):
             tzinfo=dT.tzinfo
         )
 
-    def jsLocal(self, time_zone=False):
+    def jsLocal(self, time_zone=''):
 
         '''
             a method to report a javascript string from a labDT object
@@ -129,7 +129,7 @@ class labDT(datetime):
         dtLocal = self.astimezone(get_tz)
         return format(dtLocal, js_format)
 
-    def humanFriendly(self, time_zone=False):
+    def humanFriendly(self, time_zone=''):
 
         '''
             a method to report a human friendly string from a labDT object
@@ -195,7 +195,7 @@ class labDT(datetime):
 
     # validate input
         title = 'ISO time input for labDT.fromISO'
-        isopattern = re.compile('\d{4}-\d{2}-\d{2}T.*')
+        isopattern = re.compile('\d{4}-?\d{2}-?\d{2}T.*')
         if not isopattern.search(iso_string):
             raise ValueError('\n%s is not a valid ISO string.' % title)
         python_datetime = dTparser.parse(iso_string)

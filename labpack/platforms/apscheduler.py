@@ -152,35 +152,35 @@ class apschedulerClient(object):
         }
         self.job_model = jsonModel(job_schema)
 
-    def _get_request(self, url, title):
+    def _get_request(self, url):
 
         try:
             response = requests.get(url=url)
         except Exception as err:
             if self.handler:
-                return self.handler(err, title)
+                return self.handler(err)
             else:
                 raise
         return response.json()
 
-    def _post_request(self, url, json_kwargs, title):
+    def _post_request(self, url, json_kwargs):
 
         try:
             response = requests.post(url=url, json=json_kwargs)
         except Exception as err:
             if self.handler:
-                return self.handler(err, title)
+                return self.handler(err)
             else:
                 raise
         return response.json()
 
-    def _delete_request(self, url, title):
+    def _delete_request(self, url):
 
         try:
             response = requests.delete(url=url)
         except Exception as err:
             if self.handler:
-                return self.handler(err, title)
+                return self.handler(err)
             else:
                 raise
         return response.status_code
@@ -319,7 +319,7 @@ class apschedulerClient(object):
 
     # send request to get jobs
         url = '%s/scheduler/jobs' % self.url
-        job_list = self._get_request(url, title)
+        job_list = self._get_request(url)
 
     # construct filter function
         def query_function(**kwargs):
@@ -385,7 +385,7 @@ class apschedulerClient(object):
             json_kwargs['name'] = name
 
     # send post request
-        response_details = self._post_request(url, json_kwargs, title)
+        response_details = self._post_request(url, json_kwargs)
 
         return self._construct_details(response_details)
 
@@ -465,7 +465,7 @@ class apschedulerClient(object):
             json_kwargs['end_date'] = datetime.utcfromtimestamp(end).isoformat()
 
     # send post request
-        response_details = self._post_request(url, json_kwargs, title)
+        response_details = self._post_request(url, json_kwargs)
 
         return self._construct_details(response_details)
 
@@ -559,7 +559,7 @@ class apschedulerClient(object):
             json_kwargs['end_date'] = datetime.utcfromtimestamp(end).isoformat()
 
     # send post request
-        response_details = self._post_request(url, json_kwargs, title)
+        response_details = self._post_request(url, json_kwargs)
 
         return self._construct_details(response_details)
 
@@ -574,6 +574,6 @@ class apschedulerClient(object):
 
     # send delete request
         url = '%s/scheduler/jobs/%s' % (self.url, id)
-        status_code = self._delete_request(url, title)
+        status_code = self._delete_request(url)
 
         return status_code
