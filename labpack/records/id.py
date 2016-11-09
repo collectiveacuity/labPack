@@ -56,7 +56,7 @@ class labID(object):
         v = t / 1e7
         self.epoch = float(str(v)[0:17])
         self.datetime = datetime.utcfromtimestamp(self.epoch).replace(tzinfo=pytz.utc)
-        self.iso = self.datetime.isoformat().replace('+00:00', 'Z')
+        self.iso = self.datetime.isoformat()
 
 
     # create byte ids of various lengths using hash of uuid

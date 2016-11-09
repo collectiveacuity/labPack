@@ -32,7 +32,7 @@ class testlabDT(object):
         assert labDT.new()
         assert labDT.fromEpoch(epochDT).pyLocal() == labDT.fromISO(isoDT).pyLocal()
         assert labDT.fromPython(pyDT).epoch() == labDT.fromJavascript(jsDT).epoch()
-        assert labDT.fromPattern(humanDT, pattern, 'Pacific/Palau').iso() == labDT.fromPython(pyDT).iso()
+        assert labDT.fromPattern(humanDT, pattern, 'Pacific/Palau').zulu() == labDT.fromPython(pyDT).zulu()
         assert labDT.fromEpoch(epochDT).humanFriendly() == labDT.fromJavascript(jsDT).humanFriendly()
         assert labDT.fromPattern(humanDT, pattern, 'Pacific/Palau').jsLocal() == labDT.fromISO(isoDT).jsLocal()
 

@@ -52,10 +52,12 @@ class labDT(datetime):
             tzinfo=dT.tzinfo
         )
 
-    def iso(self):
+    def zulu(self):
 
-        '''
-            a method to report ISO UTC datetime string from a labDT object
+        ''' a method to report ISO UTC datetime string from a labDT object
+
+        NOTE: for timezone offset string use .isoformat() instead
+
         :return: string in ISO UTC format
         '''
 
