@@ -3,9 +3,6 @@ __created__ = '2016.09'
 __license__ = 'MIT'
 
 '''
-    classes to interact with telegram bot api
-    https://core.telegram.org/bots/api
-
     python module for bot api
     https://github.com/luckydonald/pytgbot
 
@@ -14,9 +11,7 @@ __license__ = 'MIT'
 
     telegram cli
     https://github.com/vysheng/tg
-'''
 
-'''
     telegram with OAUTH
     http://stackoverflow.com/questions/37264827/telegram-bot-oauth-authorization
 
@@ -192,7 +187,7 @@ def send_photo(bot_id, access_token, user_id, photo_path='', photo_id='', photo_
 
     return response.json()
 
-class TelegramConnectionError(Exception):
+class TelegramBotError(Exception):
 
     def __init__(self, message='', error_dict=None):
 
@@ -205,9 +200,24 @@ class TelegramConnectionError(Exception):
         if error_dict:
             if isinstance(error_dict, dict):
                 self.error = error_dict
-        super(TelegramConnectionError, self).__init__(text)
+        super(TelegramBotError, self).__init__(text)
+
+class telegramBotHandler(object):
+    def __init__(self):
+        pass
+
+class telegramBotRegister(object):
+    ''' currently must be done manually
+    https://core.telegram.org/bots#6-botfather
+    '''
+    def __init__(self):
+        pass
 
 class telegramBotClient(object):
+
+    ''' a class of methods for interacting with telegram bot api '''
+
+    # https://core.telegram.org/bots/api
 
     _class_methods = {
         'schema': {

@@ -396,10 +396,11 @@ class movesOAuth(object):
 
 class movesClient(object):
 
-    ''' the main class for retrieving user data from moves api'''
+    ''' a class of methods for retrieving user data from moves api'''
 
-# TODO: incorporate ETags & LastModified
-# TODO: https://dev.moves-app.com/docs/api
+    # https://dev.moves-app.com/docs/api
+
+    # TODO: incorporate ETags & LastModified headers
 
     _class_fields = {
         'schema': {
