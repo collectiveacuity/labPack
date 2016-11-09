@@ -207,11 +207,30 @@ class telegramBotHandler(object):
         pass
 
 class telegramBotRegister(object):
-    ''' currently must be done manually
+
+    ''' a class of methods to register a new bot with telegram bot api
+
+    currently must be done manually
     https://core.telegram.org/bots#6-botfather
+
+    botfather_url = 'https://web.telegram.org/#/im?p=@BotFather'
+    setup_sequence = [
+        'tg://bot_command?command=start',
+        'tg://bot_command?command=newbot&bot=BotFather',
+        'message with name',
+        'message with username',
+        'tg://bot_command?command=cancel&bot=BotFather'
+    ]
     '''
-    def __init__(self):
+
+    def __init__(self, bot_settings):
         pass
+
+    def setup(self):
+        return self
+
+    def update(self):
+        return self
 
 class telegramBotClient(object):
 
@@ -219,271 +238,85 @@ class telegramBotClient(object):
 
     # https://core.telegram.org/bots/api
 
-    _class_methods = {
+    _class_fields = {
         'schema': {
-            '__init__': {
-                'bot_settings': {
-                    'commands': {
-                        'start': '',
-                        'help': '',
-                        'settings': ''
-                    },
-                    'first_name': 'Telegram',
-                    'id': 123456789,
-                    'username': 'TelegramBot',
-                    'callback_url': '',
-                    'description': '',
-                    'about_text': '',
-                    'user_pic': ''
-                },
-                'telegram_credentials': {
-                    'access_token': '123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11'
-                }
-            },
-            'request': {
-                'bot_method': 'getMe'
-            },
-            'getMe': {},
-            'getUpdates': {
-                'offset': 0,
-                'limit': 0,
-                'timeout': 0
-            },
-            'setWebhook': {
-                'url': '',
-                'certificate': ''
-            },
-            'sendMessage': {
-                'chat_id': 123456,
-                'text': 'text me again',
-                'parse_mode': '',
-                'disable_web_page_preview': False,
-                'disable_notification': False,
-                'reply_to_message_id': 0,
-                'reply_markup': {}
-            },
-            'sendPhoto': {
-                'chat_id': 123456,
-                'photo': 'AgADAQADqqcIlRwG3Q-cUsx5sAQADqT5y8BAAEgpr3t_b1ajggpr3I4C',
-                'caption': '',
-                'disable_notification': False,
-                'reply_to_message_id': 0,
-                'reply_markup': {}
-            },
-            'forwardMessage': {
-                'chat_id': 123456,
-                'from_chat_id': 234567,
-                'disable_notification': False,
-                'message_id': 567890212
-            },
-            'sendAudio': {
-                'chat_id': 123456,
-                'audio': '../data/audio.mp3',
-                'caption': '',
-                'duration': 0,
-                'performer': '',
-                'title': '',
-                'disable_notification': False,
-                'reply_to_message_id': 0,
-                'reply_markup': {}
-            },
-            'sendDocument': {
-                'chat_id': 123456,
-                'document': 'https://pbs.twimg.com/profile_images/479475632158408704/Zelyz-xr_400x400.png',
-                'caption': '',
-                'disable_notification': False,
-                'reply_to_message_id': 0,
-                'reply_markup': {}
-            },
-            'sendSticker': {
-                'chat_id': 123456,
-                'document': 'https://pbs.twimg.com/profile_images/479475632158408704/Zelyz-xr_400x400.webp',
-                'disable_notification': False,
-                'reply_to_message_id': 0,
-                'reply_markup': {}
-            },
-            'sendVideo': {
-                'chat_id': 123456,
-                'video': '../data/video.mp4',
-                'caption': '',
-                'duration': 0,
-                'width': 0,
-                'height': 0,
-                'disable_notification': False,
-                'reply_to_message_id': 0,
-                'reply_markup': {}
-            },
-            'sendVoice': {
-                'chat_id': 123456,
-                'voice': '../data/voice.ogg',
-                'caption': '',
-                'duration': 0,
-                'disable_notification': False,
-                'reply_to_message_id': 0,
-                'reply_markup': {}
-            },
-            'sendLocation': {
-                'chat_id': 123456,
-                'latitude': 45.8742031,
-                'longitude': 34.9874612,
-                'disable_notification': False,
-                'reply_to_message_id': 0,
-                'reply_markup': {}
-            }
+            'api_endpoint': 'https://api.telegram.org/bot',
+            'bot_id': 0,
+            'access_token': '',
+            'last_update': 0,
+            'user_id': 0,
+            'user_name': ''
         },
         'components': {
-            '.__init__.telegram_credentials': {
-                'extra_fields': True
+            '.bot_id': {
+                'integer_data': True
             },
-            '.setWebhook': {
-                'field_metadata': {
-                    'file_type': 'certificate',
-                    'file_extensions': {
-                        'pem': '.+\\.pem$'
-                    }
-                }
+            '.last_update': {
+                'integer_data': True
             },
-            '.sendMessage.parse_mode': {
-                'discrete_values': [ 'Markdown', 'HTML' ]
-            },
-            '.sendPhoto': {
-                'field_metadata': {
-                    'file_type': 'photo',
-                    'file_extensions': {
-                        'jpg': '.+\\.jpg$',
-                        'jpeg': '.+\\.jpeg$',
-                        'gif': '.+\\.gif$',
-                        'png': '.+\\.png$',
-                        'tif': '.+\\.tif$',
-                        'bmp': '.+\\.bmp$'
-                    }
-                }
-            },
-            '.sendPhoto.caption': {
-                'max_length': 200
-            },
-            '.sendAudio': {
-                'field_metadata': {
-                    'file_type': 'audio',
-                    'file_extensions': {
-                        'mp3': '.+\\.mp3$'
-                    },
-                    'file_size': 50000000
-                }
-            },
-            '.sendAudio.caption': {
-                'max_length': 200
-            },
-            '.sendDocument': {
-                'field_metadata': {
-                    'file_type': 'document',
-                    'file_extensions': {
-                        'doc': '.+\\.docx?$'
-                    },
-                    'file_size': 50000000
-                }
-            },
-            '.sendDocument.caption': {
-                'max_length': 200
-            },
-            '.sendSticker': {
-                'field_metadata': {
-                    'file_type': 'sticker',
-                    'file_extensions': {
-                        'webp': '.+\\.webp$'
-                    }
-                }
-            },
-            '.sendVideo': {
-                'field_metadata': {
-                    'file_type': 'video',
-                    'file_extensions': {
-                        'mp4': '.+\\.mp4$'
-                    },
-                    'file_size': 50000000
-                }
-            },
-            '.sendVideo.caption': {
-                'max_length': 200
-            },
-            '.sendVoice': {
-                'field_metadata': {
-                    'file_type': 'voice',
-                    'file_extensions': {
-                        'ogg': '.+\\.ogg$'
-                    },
-                    'file_size': 50000000
-                }
-            },
-            '.sendVoice.caption': {
-                'max_length': 200
+            '.user_id': {
+                'integer_data': True
             }
         }
     }
 
-    def __init__(self, bot_settings, telegram_credentials):
+    def __init__(self, bot_id, access_token, requests_handler=None):
 
-    # construct input validation method
-        self.fields = jsonModel(self._class_methods)
+        ''' initialization method for moves client class
 
-    # construct file extensions map method
-        file_extensions = {}
-        for key, value in self.fields.keyMap.items():
-            if 'field_metadata' in value.keys():
-                meta_data = value['field_metadata']
-                if 'file_type' in meta_data.keys() and 'file_extensions' in meta_data.keys():
-                    if meta_data['file_type'] and meta_data['file_extensions']:
-                        file_extensions[meta_data['file_type']] = labRegex(meta_data['file_extensions'])
-        self.ext =  file_extensions
+        :param bot_id: integer with telegram id number for bot
+        :param access_token: string with access token for bot provided by telegram botfather
+        :param requests_handler: callable that handles requests errors
+        '''
 
-    # construct file source map method
-        file_patterns = {
-            'file_id': '[\\w-]{52}',
-            'file_url': '^https?://',
-            'file_path': '\\.'
+    # construct class field model
+        from jsonmodel.validators import jsonModel
+        self.fields = jsonModel(self._class_fields)
+
+    # construct client attributes
+        object_title = '%s.__init__(bot_id=%s)' % (self.__class__.__name__, str(bot_id))
+        self.bot_id = self.fields.validate(bot_id, '.bot_id', object_title)
+        object_title = '%s.__init__(access_token=%s)' % (self.__class__.__name__, str(access_token))
+        self.access_token = self.fields.validate(access_token, '.access_token', object_title)
+        self.endpoint = '%s%s:%s' % (self.fields.schema['api_endpoint'], self.bot_id, self.access_token)
+
+    # construct handlers
+        self.requests_handler = requests_handler
+
+    def _post_request(self, url, json=None):
+
+        import requests
+
+    # construct request fields
+        request_kwargs = {
+            'url': url
         }
-        self.sources = labRegex(file_patterns)
+        if json:
+            request_kwargs['json'] = json
 
-    # validate inputs
-        # bot_settings = self.fields.validate(bot_settings, '.__init__.bot_settings')
-        telegram_credentials = self.fields.validate(telegram_credentials, '.__init__.telegram_credentials')
+    # send request
+        try:
+            response = requests.post(**request_kwargs)
+        except Exception as err:
+            if self.requests_handler:
+                return self.requests_handler(err)
+            else:
+                raise
 
-    # construct core methods
-        self.accessToken = telegram_credentials['access_token']
-        self.endpoint = 'https://api.telegram.org/bot'
+    # handle response
+        response_details = response.json()
 
-    def setup(self):
+        return response_details
 
-        botfather_url = 'https://web.telegram.org/#/im?p=@BotFather'
-        setup_sequence = [
-            'tg://bot_command?command=start',
-            'tg://bot_command?command=newbot&bot=BotFather',
-            'message with name',
-            'message with username',
-            'tg://bot_command?command=cancel&bot=BotFather'
-        ]
+    def get_me(self):
 
-        auth_token = ''
+    # construct request fields
+        url = '%s/getMe' % self.endpoint
 
-        return self
+    # send request
+        bot_details = self._post_request(url)
 
-    def update(self):
-
-        return self
-
-    def parseSource(self, file_string):
-
-        file_source = ''
-
-        file_map = self.sources.map(file_string)[0]
-        if file_map['file_url']:
-            file_source = 'file_url'
-        elif file_map['file_id']:
-            file_source = 'file_id'
-        elif file_map['file_path']:
-            file_source = 'file_path'
-
-        return file_source
+        return bot_details
 
     def request(self, bot_method, **kwargs):
 
@@ -589,9 +422,12 @@ if __name__ == '__main__':
     telegram_cred = load_settings('../../../cred/telegram.yaml')
     bot_id = telegram_cred['telegram_bot_id']
     access_token = telegram_cred['telegram_access_token']
-    assert get_me(bot_id, access_token)['result']
-    update_list = get_updates(bot_id, access_token)
-    if update_list:
-        user_id = update_list[0]['message']['from']['id']
-        photo_url = 'https://pbs.twimg.com/profile_images/479475632158408704/Zelyz-xr_400x400.png'
-        # send_photo(bot_id, access_token, user_id, photo_url=photo_url)
+    telegram_bot = telegramBotClient(bot_id, access_token)
+    bot_details = telegram_bot.get_me()
+    print(bot_details)
+    # assert get_me(bot_id, access_token)['result']
+    # update_list = get_updates(bot_id, access_token)
+    # if update_list:
+    #     user_id = update_list[0]['message']['from']['id']
+    #     photo_url = 'https://pbs.twimg.com/profile_images/479475632158408704/Zelyz-xr_400x400.png'
+    #     # send_photo(bot_id, access_token, user_id, photo_url=photo_url)
