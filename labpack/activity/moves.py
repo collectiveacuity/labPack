@@ -18,6 +18,7 @@ class MovesError(Exception):
                     self.error[key] = value
         super(MovesError, self).__init__(text)
 
+# TODO: test all different errors
 class movesHandler(object):
 
     ''' handles responses from moves api and usage data'''
@@ -50,19 +51,18 @@ class movesHandler(object):
 
     # construct default response details
         details = {
-            'code': 200,
-            'msg': 'ok',
-            'content': {},
+            'code': response.status_code,
+            'url': response.url,
+            'error': '',
+            'json': None,
             'headers': response.headers
         }
-        status = response.status_code
 
     # handle different codes
-        if status == 401:
-            details['code'] = 401
-            details['msg'] = 'Unauthorized'
+        if details['code'] == 200:
+            details['json'] = response.json()
         else:
-            details['content'] = response.json()
+            details['error'] = response.content.decode()
 
         return details
 
@@ -280,7 +280,7 @@ class movesOAuth(object):
         token_details = self._post_request(url_string, params=request_params)
 
     # convert expiration info to epoch time
-        details = token_details['content']
+        details = token_details['json']
         if details:
             details['expires_at'] = int(current_time) + details['expires_in']
             del details['expires_in']
@@ -338,7 +338,7 @@ class movesOAuth(object):
         token_details = self._post_request(url_string, params=request_params)
 
     # convert expiration info to epoch time
-        details = token_details['content']
+        details = token_details['json']
         if details:
             details['expires_at'] = int(current_time) + details['expires_in']
             del details['expires_in']
@@ -383,7 +383,7 @@ class movesOAuth(object):
         status_details = self._get_request(url_string, params=request_params)
 
     # convert expiration info to epoch time
-        details = status_details['content']
+        details = status_details['json']
         if details:
             details['expires_at'] = int(current_time) + details['expires_in']
             del details['expires_in']
@@ -394,13 +394,12 @@ class movesOAuth(object):
 
         return status_details
 
+# TODO: incorporate ETags & LastModified headers
 class movesClient(object):
 
     ''' a class of methods for retrieving user data from moves api'''
 
     # https://dev.moves-app.com/docs/api
-
-    # TODO: incorporate ETags & LastModified headers
 
     _class_fields = {
         'schema': {
@@ -557,10 +556,14 @@ class movesClient(object):
 
         ''' a method to retrieve the details for all activities currently supported
 
-        :return: list of dictionaries with activities details
+        :return: dictionary of response details with activities list inside json key
 
-        {
-            'content': [
+         {
+            'headers': { ... },
+            'code': 200,
+            'error': '',
+            'url': 'https://api.moves-app.com/api/1.1/activities'
+            'json': [
                 {
                     "activity": "aerobics",
                     "geo": false,
@@ -579,18 +582,22 @@ class movesClient(object):
         url_string = '%s/activities' % self.url
 
     # send request
-        activities_list = self._get_request(url_string)
+        response_details = self._get_request(url_string)
 
-        return activities_list
+        return response_details
 
     def get_profile(self):
 
         ''' a method to retrieve profile details of user
 
-        :return: dictionary with profile details
+        :return: dictionary of response details with profile details inside json key
 
-        {
-            'content': {
+         {
+            'headers': { ... },
+            'code': 200,
+            'error': '',
+            'url': 'https://api.moves-app.com/api/1.1/user/profile'
+            'json': {
                 "userId": 23138311640030064,
                 "profile": {
                     "firstDate": "20121211",
@@ -617,9 +624,9 @@ class movesClient(object):
         url_string = '%s/user/profile' % self.url
 
     # send request
-        profile_details = self._get_request(url_string)
+        response_details = self._get_request(url_string)
 
-        return profile_details
+        return response_details
 
     def get_summary(self, timezone_offset, first_date, start=0.0, end=0.0):
 
@@ -631,9 +638,15 @@ class movesClient(object):
         :param first_date: string with ISO date from user profile details firstDate
         :param start: [optional] float with starting datetime for daily summaries
         :param end: [optional] float with ending datetime for daily summaries
-        :return: dictionary with list of daily summary dictionaries inside content key
+        :return: dictionary of response details with summary list inside json key
 
-         { 'content':  [ SEE RESPONSE in https://dev.moves-app.com/docs/api_summaries ] }
+         {
+            'headers': { ... },
+            'code': 200,
+            'error': '',
+            'url': 'https://api.moves-app.com/api/1.1/user/summary/daily'
+            'json': [ SEE RESPONSE in https://dev.moves-app.com/docs/api_summaries ]
+        }
         '''
 
         title = '%s.get_summary' % self.__class__.__name__
@@ -647,9 +660,9 @@ class movesClient(object):
         parameters = self._process_dates(timezone_offset, first_date, start, end, title)
 
     # send request
-        summary_details = self._get_request(url_string, params=parameters)
+        response_details = self._get_request(url_string, params=parameters)
 
-        return summary_details
+        return response_details
 
     def get_activities(self, timezone_offset, first_date, start=0.0, end=0.0):
 
@@ -661,10 +674,15 @@ class movesClient(object):
         :param first_date: string with ISO date from user profile details firstDate
         :param start: [optional] float with starting datetime for daily summaries
         :param end: [optional] float with ending datetime for daily summaries
-        :return: dictionary with list of daily activities dictionaries inside content key
+        :return: dictionary of response details with user activities list inside json key
 
-        { 'content':  [ SEE RESPONSE in https://dev.moves-app.com/docs/api_activities ] }
-
+         {
+            'headers': { ... },
+            'code': 200,
+            'error': '',
+            'url': 'https://api.moves-app.com/api/1.1/user/activities/daily'
+            'json': [ SEE RESPONSE in https://dev.moves-app.com/docs/api_activities ]
+        }
         '''
 
         title = '%s.get_activities' % self.__class__.__name__
@@ -678,9 +696,9 @@ class movesClient(object):
         parameters = self._process_dates(timezone_offset, first_date, start, end, title)
 
     # send request
-        activities_details = self._get_request(url_string, params=parameters)
+        response_details = self._get_request(url_string, params=parameters)
 
-        return activities_details
+        return response_details
 
     def get_places(self, timezone_offset, first_date, start=0.0, end=0.0):
 
@@ -692,9 +710,15 @@ class movesClient(object):
         :param first_date: string with ISO date from user profile details firstDate
         :param start: [optional] float with starting datetime for daily summaries
         :param end: [optional] float with ending datetime for daily summaries
-        :return: dictionary with list of daily places dictionaries inside content key
+        :return: dictionary of response details with places list inside json key
 
-        { 'content':  [ SEE RESPONSE in https://dev.moves-app.com/docs/api_places ] }
+         {
+            'headers': { ... },
+            'code': 200,
+            'error': '',
+            'url': 'https://api.moves-app.com/api/1.1/user/places/daily'
+            'json': [ SEE RESPONSE in https://dev.moves-app.com/docs/api_places ]
+        }
         '''
 
         title = '%s.get_places' % self.__class__.__name__
@@ -708,9 +732,9 @@ class movesClient(object):
         parameters = self._process_dates(timezone_offset, first_date, start, end, title)
 
     # send request
-        places_details = self._get_request(url_string, params=parameters)
+        response_details = self._get_request(url_string, params=parameters)
 
-        return places_details
+        return response_details
 
     def get_storyline(self, timezone_offset, first_date, start=0.0, end=0.0, track_points=False):
 
@@ -725,9 +749,15 @@ class movesClient(object):
         :param start: [optional] float with starting datetime for daily summaries
         :param end: [optional] float with ending datetime for daily summaries
         :param track_points: [optional] boolean to provide detailed tracking of user movement
-        :return: dictionary with list of daily places dictionaries inside content key
+        :return: dictionary of response details with storyline list inside json key
 
-        { 'content':  [ SEE RESPONSE in https://dev.moves-app.com/docs/api_storyline ] }
+         {
+            'headers': { ... },
+            'code': 200,
+            'error': '',
+            'url': 'https://api.moves-app.com/api/1.1/user/storyline/daily'
+            'json': [ SEE RESPONSE in https://dev.moves-app.com/docs/api_storyline ]
+        }
         '''
 
         title = '%s.get_storyline' % self.__class__.__name__
@@ -747,5 +777,14 @@ class movesClient(object):
 
         return storyline_details
 
-
-
+if __name__ == '__main__':
+    config_path = '../../../cred/moves.yaml'
+    token_path = '../../keys/moves-token.yaml'
+    from labpack.records.settings import load_settings, save_settings
+    moves_cred = load_settings(config_path)
+    moves_token = load_settings(token_path)
+    access_token = moves_token['access_token']
+    service_scope = moves_token['service_scope']
+    moves_client = movesClient(access_token, service_scope)
+    profile_details = moves_client.get_profile()
+    print(profile_details)

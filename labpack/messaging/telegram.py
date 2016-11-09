@@ -203,8 +203,28 @@ class TelegramBotError(Exception):
         super(TelegramBotError, self).__init__(text)
 
 class telegramBotHandler(object):
+
     def __init__(self):
         pass
+
+    def handle(self, response):
+
+    # construct default response details
+        details = {
+            'code': response.status_code,
+            'url': response.url,
+            'error': '',
+            'json': None,
+            'headers': response.headers
+        }
+
+    # handle different codes
+        if details['code'] == 200:
+            details['json'] = response.json()
+        else:
+            details['error'] = response.content.decode()
+
+        return details
 
 class telegramBotRegister(object):
 
@@ -282,6 +302,7 @@ class telegramBotClient(object):
 
     # construct handlers
         self.requests_handler = requests_handler
+        self.telegram_handler = telegramBotHandler()
 
     def _post_request(self, url, json=None):
 
@@ -317,6 +338,34 @@ class telegramBotClient(object):
         bot_details = self._post_request(url)
 
         return bot_details
+
+    def get_updates(self, last_update=0):
+
+        title = '%s.get_updates' % self.__class__.__name__
+
+    # construct request fields
+        request_kwargs = {
+            'url': '%s/getUpdates' % self.endpoint
+        }
+
+    # add offset to kwargs
+        if last_update:
+            object_title = '%s(last_update=%s)' % (title, str(last_update))
+            self.fields.validate(last_update, '.last_update', object_title)
+            request_kwargs['data'] = {
+                'offset': last_update + 1
+            }
+
+    # send request
+        response_details = requests.post(**request_kwargs)
+
+    # construct update list
+        update_list = []
+        if response['result']:
+            for i in range(len(response['result'])):
+                update_list.append(response['result'][i])
+
+        return update_list
 
     def request(self, bot_method, **kwargs):
 

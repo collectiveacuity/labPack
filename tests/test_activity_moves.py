@@ -8,8 +8,8 @@ if __name__ == '__main__':
 
 # import configs
     from time import sleep, time
-    config_path = '../../../cred/moves.yaml'
-    token_path = '../../keys/moves-token.yaml'
+    config_path = '../../cred/moves.yaml'
+    token_path = '../../labPack/keys/moves-token.yaml'
     from labpack.records.settings import load_settings, save_settings
     moves_cred = load_settings(config_path)
     moves_token = load_settings(token_path)
@@ -22,15 +22,15 @@ if __name__ == '__main__':
     auth_url = moves_oauth.generate_url('web', redirect_uri, ['location', 'activity'])
     assert auth_url.find('code') > 0
     status_details = moves_oauth.validate_token(moves_token['access_token'])
-    old_expiration = status_details['content']['expires_at']
+    old_expiration = status_details['json']['expires_at']
     assert isinstance(old_expiration, int)
     token_details = moves_oauth.renew_token(moves_token['refresh_token'])
     new_token = { 'contact_id': moves_token['contact_id'] }
-    new_token.update(token_details['content'])
+    new_token.update(token_details['json'])
     print(new_token)
     status_details = moves_oauth.validate_token(new_token['access_token'])
-    assert status_details['content']['expires_at'] > old_expiration
-    new_token['service_scope'] = status_details['content']['service_scope']
+    assert status_details['json']['expires_at'] > old_expiration
+    new_token['service_scope'] = status_details['json']['service_scope']
     save_settings(new_token, token_path, overwrite=True)
     sleep(.1)
     moves_token = load_settings(token_path)
@@ -40,12 +40,12 @@ if __name__ == '__main__':
     service_scope = moves_token['service_scope']
     moves_client = movesClient(access_token, service_scope)
     activities_list = moves_client.list_activities()
-    assert isinstance(activities_list['content'], list)
+    assert isinstance(activities_list['json'], list)
 
 # retrieve use profile and construct test kwargs
     profile_details = moves_client.get_profile()
-    first_date = profile_details['content']['profile']['firstDate']
-    timezone_offset = profile_details['content']['profile']['currentTimeZone']['offset']
+    first_date = profile_details['json']['profile']['firstDate']
+    timezone_offset = profile_details['json']['profile']['currentTimeZone']['offset']
     prior_dt = time() - (40 * 24 * 3600)
     next_dt = prior_dt + (30 * 24 * 60 * 60 + 1)
     track_dt = prior_dt + (6 * 24 * 60 * 60 + 1)
@@ -65,15 +65,15 @@ if __name__ == '__main__':
 
 # test individual methods
     details = moves_client.get_summary(**empty_kwargs)
-    assert isinstance(activities_list['content'], list)
+    assert isinstance(activities_list['json'], list)
     details = moves_client.get_activities(**start_kwargs)
-    assert isinstance(activities_list['content'], list)
+    assert isinstance(activities_list['json'], list)
     details = moves_client.get_places(**end_kwargs)
-    assert isinstance(activities_list['content'], list)
+    assert isinstance(activities_list['json'], list)
     details = moves_client.get_places(**both_kwargs)
-    assert isinstance(activities_list['content'], list)
+    assert isinstance(activities_list['json'], list)
     details = moves_client.get_storyline(**story_kwargs)
-    assert isinstance(activities_list['content'], list)
+    assert isinstance(activities_list['json'], list)
 
 # test all data retrieval methods
     test_list = [ moves_client.get_summary, moves_client.get_places, moves_client.get_activities ]
@@ -81,7 +81,7 @@ if __name__ == '__main__':
     for test in test_list:
         for kwargs in kwargs_list:
             details = test(**kwargs)
-            assert isinstance(details['content'], list)
+            assert isinstance(details['json'], list)
             sleep(.2)
     for kwargs in kwargs_list:
         new_kwargs = deepcopy(kwargs)
@@ -89,14 +89,14 @@ if __name__ == '__main__':
         if 'start' in new_kwargs and 'end' in new_kwargs:
             new_kwargs['end'] = track_dt
         details = moves_client.get_storyline(**new_kwargs)
-        assert isinstance(details['content'], list)
+        assert isinstance(details['json'], list)
         sleep(.2)
 
 # test recent location
     current_dt = time()
     yesterday_dt = time() - (24 * 60 * 60)
     details = moves_client.get_places(timezone_offset, first_date, yesterday_dt, current_dt)
-    sorted_days = sorted(details['content'], key=lambda k: k['date'])
+    sorted_days = sorted(details['json'], key=lambda k: k['date'])
     recent_day = sorted_days.pop()
     sorted_segments = sorted(recent_day['segments'], key=lambda k: k['endTime'])
     recent_segment = sorted_segments.pop()
@@ -118,7 +118,7 @@ if __name__ == '__main__':
         'track_points': True
     }
     details = moves_client.get_storyline(**story_kwargs)
-    sorted_days = sorted(details['content'], key=lambda k: k['date'])
+    sorted_days = sorted(details['json'], key=lambda k: k['date'])
     tracked_segment = {}
     for day in sorted_days:
         stop = False
