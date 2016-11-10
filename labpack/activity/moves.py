@@ -51,6 +51,7 @@ class movesHandler(object):
 
     # construct default response details
         details = {
+            'method': response.request.method,
             'code': response.status_code,
             'url': response.url,
             'error': '',
@@ -151,9 +152,10 @@ class movesOAuth(object):
     # send request
         try:
             response = requests.get(url=url, params=params)
-        except Exception as err:
+        except Exception:
             if self.requests_handler:
-                return self.requests_handler(err)
+                request_object = requests.Request(method='GET', url=url, params=params)
+                return self.requests_handler(request_object)
             else:
                 raise
 
@@ -169,9 +171,10 @@ class movesOAuth(object):
     # send request
         try:
             response = requests.post(url=url, params=params)
-        except Exception as err:
+        except Exception:
             if self.requests_handler:
-                return self.requests_handler(err)
+                request_object = requests.Request(method='POST', url=url, params=params)
+                return self.requests_handler(request_object)
             else:
                 raise
 
@@ -456,20 +459,25 @@ class movesClient(object):
 
         import requests
 
-    # construct headers
-        header_fields = {'Authorization': 'Bearer %s' % self.access_token}
+    # construct request kwargs
+        request_kwargs = {
+            'url': url,
+            'headers': {'Authorization': 'Bearer %s' % self.access_token},
+            'params': {}
+        }
         if headers:
-            header_fields.update(headers)
-        parameter_fields = {}
+            request_kwargs['headers'].update(headers)
         if params:
-            parameter_fields.update(params)
+            request_kwargs['params'].update(params)
 
     # send request
         try:
-            response = requests.get(url=url, headers=header_fields, params=parameter_fields)
-        except Exception as err:
+            response = requests.get(**request_kwargs)
+        except Exception:
             if self.requests_handler:
-                return self.requests_handler(err)
+                request_kwargs['method'] = 'GET'
+                request_object = requests.Request(**request_kwargs)
+                return self.requests_handler(request_object)
             else:
                 raise
 

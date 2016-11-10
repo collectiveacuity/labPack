@@ -45,11 +45,12 @@ class telegramBotHandler(object):
 
     # construct default response details
         details = {
+            'method': response.request.method,
             'code': response.status_code,
             'url': response.url,
             'error': '',
             'json': None,
-            'headers': response.headers
+            'headers': response.headers,
         }
 
     # handle different codes
@@ -97,6 +98,7 @@ class telegramBotClient(object):
     _class_fields = {
         'schema': {
             'api_endpoint': 'https://api.telegram.org/bot',
+            'file_endpoint': 'https://api.telegram.org/file/bot',
             'bot_id': 0,
             'access_token': '',
             'last_update': 0,
@@ -109,6 +111,7 @@ class telegramBotClient(object):
             'photo_path': '',
             'photo_url': '',
             'caption_text': '',
+            'file_id': '',
             'photo_extensions': {
                 'jpg': '.+\\.jpg$',
                 'jpeg': '.+\\.jpeg$',
@@ -158,16 +161,36 @@ class telegramBotClient(object):
         self.bot_id = self.fields.validate(bot_id, '.bot_id', object_title)
         object_title = '%s.__init__(access_token=%s)' % (self.__class__.__name__, str(access_token))
         self.access_token = self.fields.validate(access_token, '.access_token', object_title)
-        self.endpoint = '%s%s:%s' % (self.fields.schema['api_endpoint'], self.bot_id, self.access_token)
+        self.api_endpoint = '%s%s:%s' % (self.fields.schema['api_endpoint'], self.bot_id, self.access_token)
+        self.file_endpoint = '%s%s:%s/' % (self.fields.schema['file_endpoint'], self.bot_id, self.access_token)
 
     # construct handlers
         self.requests_handler = requests_handler
         self.telegram_handler = telegramBotHandler()
 
-    def _get_file(self, file_url, file_name, method_title, argument_title):
+    def _get_data(self, file_url, file_name='', method_title='', argument_title=''):
+
+        ''' a helper method to retrieve data buffer for a file url
+
+        :param file_url: string with url to file
+        :param file_name: [optional] string with name to affix to file buffer
+        :param method_title: [optional] string with name of class method calling
+        :param argument_title: [optional] string with name of method argument key
+        :return: byte data buffer with file data
+        '''
+
+        # https://docs.python.org/3/library/io.html#io.BytesIO
 
         import io
         import requests
+
+    # fill empty values
+        if not file_name:
+            file_name = 'file'
+        if not method_title:
+            method_title = '%s._get_data' % self.__class__.__name__
+        if not argument_title:
+            argument_title = 'file_url'
 
     # request file from url
         try:
@@ -262,9 +285,11 @@ class telegramBotClient(object):
     # send request
         try:
             response = requests.post(**request_kwargs)
-        except Exception as err:
+        except Exception:
             if self.requests_handler:
-                return self.requests_handler(err)
+                request_kwargs['method'] = 'POST'
+                request_object = requests.Request(**request_kwargs)
+                return self.requests_handler(request_object)
             else:
                 raise
 
@@ -296,7 +321,7 @@ class telegramBotClient(object):
         '''
 
     # construct request fields
-        url = '%s/getMe' % self.endpoint
+        url = '%s/getMe?test=me' % self.api_endpoint
 
     # send request
         response_details = self._post_request(url)
@@ -476,7 +501,7 @@ class telegramBotClient(object):
 
     # construct request fields
         request_kwargs = {
-            'url': '%s/getUpdates' % self.endpoint
+            'url': '%s/getUpdates' % self.api_endpoint
         }
 
     # add offset to kwargs
@@ -492,9 +517,55 @@ class telegramBotClient(object):
 
         return response_details
 
-    def get_file(self, file_id):
-        file_data = b''
-        return file_data
+    def get_route(self, file_id):
+
+        ''' a method to retrieve route information for file on telegram api
+
+        :param file_id: string with id of file in a message send to bot
+        :return: dictionary of response details with route details in [json][result]
+        '''
+
+        title = '%s.get_route' % self.__class__.__name__
+
+    # validate inputs
+        input_fields = {
+            'file_id': file_id,
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+
+    # construct key word arguments
+        request_kwargs = {
+            'url': '%s/getFile' % self.api_endpoint,
+            'data': {
+                'file_id': file_id
+            }
+        }
+
+    # send request
+        response_details = self._post_request(**request_kwargs)
+
+        return response_details
+
+    def get_file(self, file_route):
+
+        ''' a method to retrieve data for a file housed on telegram api
+
+        :param file_route: string with route to file endpoint on telegram api
+        :return: byte data stream with file data
+        '''
+
+        title = '%s.get_file' % self.__class__.__name__
+
+    # construct file url
+        file_url = '%s%s' % (telegram_bot.file_endpoint, file_route)
+
+    # send request for file data
+        data_buffer = self._get_data(file_url, method_title=title)
+
+        return data_buffer
 
     def send_message(self, user_id, message_text, message_style='', button_list=None, small_buttons=True, persist_buttons=False):
 
@@ -534,6 +605,7 @@ class telegramBotClient(object):
             }
         }
         '''
+
         title = '%s.send_message' % self.__class__.__name__
 
     # validate inputs
@@ -550,7 +622,7 @@ class telegramBotClient(object):
 
     # construct key word arguments
         request_kwargs = {
-            'url': '%s/sendMessage' % self.endpoint,
+            'url': '%s/sendMessage' % self.api_endpoint,
             'data': {
                 'chat_id': user_id,
                 'text': message_text
@@ -654,7 +726,7 @@ class telegramBotClient(object):
 
     # construct key word arguments
         request_kwargs = {
-            'url': '%s/sendPhoto' % self.endpoint,
+            'url': '%s/sendPhoto' % self.api_endpoint,
             'data': {
                 'chat_id': user_id
             }
@@ -675,7 +747,7 @@ class telegramBotClient(object):
             request_kwargs['data']['photo'] = photo_id
         elif photo_url:
             file_extension = self._validate_type(photo_url, extension_map, title, 'photo_url')
-            file_buffer = self._get_file(photo_url, 'photo%s' % file_extension, title, 'photo_url')
+            file_buffer = self._get_data(photo_url, 'photo%s' % file_extension, title, 'photo_url')
             request_kwargs['files'] = { 'photo': file_buffer }
         else:
             raise IndexError('%s(...) requires either a photo_path, photo_id or photo_url argument' % title)
@@ -685,21 +757,27 @@ class telegramBotClient(object):
 
         return response_details
 
+    def send_voice(self, user_id, voice_id='', voice_path='', voice_url='', caption_text='', button_list=None, small_buttons=True, persist_buttons=False):
+
+        return True
+
 if __name__ == '__main__':
     from labpack.records.settings import load_settings, save_settings
+    from labpack.handlers.requests import handle_requests
     telegram_config = load_settings('../../../cred/telegram.yaml')
     photo_url = 'https://pbs.twimg.com/profile_images/479475632158408704/Zelyz-xr_400x400.png'
     photo_id = 'AgADAQADsKcxG4RH3Q85DF_-VgGr___A5y8ABVzwsrRBb8xF-wEAAQI'
     photo_path = '../../data/test_photo.png'
+    file_path = '../../data/test_voice.ogg'
     update_path = '../../data/telegram-update.json'
     update_id = load_settings(update_path)['last_update']
     bot_id = telegram_config['telegram_bot_id']
     access_token = telegram_config['telegram_access_token']
     user_id = telegram_config['telegram_admin_id']
-    telegram_bot = telegramBotClient(bot_id, access_token)
+    telegram_bot = telegramBotClient(bot_id, access_token, requests_handler=handle_requests)
     details = telegram_bot.get_me()
     assert details['json']['result']['id'] == bot_id
-    updates_details = telegram_bot.get_updates(update_id)
+    updates_details = telegram_bot.get_updates()
     if updates_details['json']['result']:
         update_list = sorted(updates_details['json']['result'], key=lambda k: k['update_id'])
         offset_details = { 'last_update': update_list[-1]['update_id']}
@@ -711,5 +789,9 @@ if __name__ == '__main__':
     # details = telegram_bot.send_message(user_id, '*Select a Number:*\n\t_1_\n\t\t`2`\n\t\t\t[3](http://collectiveacuity.com)', message_style='markdown')
     # details = telegram_bot.send_message(user_id, 'Select a Number:', button_list=['1','2','3'])
     # details = telegram_bot.send_message(user_id, 'Select a Letter:', button_list=['ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEF'], small_buttons=False, persist_buttons=True)
-    # print(details)
-    print(updates_details)
+    details = telegram_bot.get_route('AwADAQADAwADXGbcCxP7_eEhVMEeAg')
+    file_route = details['json']['result']['file_path']
+    file_buffer = telegram_bot.get_file(file_route)
+    with open(file_path, 'wb') as f:
+        f.write(file_buffer.getvalue())
+        f.close()
