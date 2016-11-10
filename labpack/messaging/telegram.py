@@ -20,173 +20,6 @@ __license__ = 'MIT'
     http://nginx.2469901.n2.nabble.com/SSL-pass-through-td7583170.html
 '''
 
-import io
-import os
-import requests
-from jsonmodel.validators import jsonModel
-from labpack.parsing.regex import labRegex
-
-def validate_type(file_name, extension_map):
-
-    title = 'validate_type'
-
-# validate file extension
-    file_extension = ''
-    ext_types = labRegex(extension_map)
-    file_mapping = ext_types.map(file_name)[0]
-    extension_list = []
-    for key, value in file_mapping.items():
-        if isinstance(value, bool):
-            extension_list.append('.%s' % key)
-        if value and isinstance(value, bool):
-            file_extension = '.%s' + key
-    if not file_extension:
-        raise ValueError('%s(file_name=%s) must be one of %s file types.' % (title, file_name, extension_list))
-
-    return file_extension
-
-def get_file(file_url, file_name=''):
-
-    title = 'get_file'
-
-# request file from url
-    try:
-        remote_file = requests.get(file_url)
-    except:
-        raise ValueError('%s(%s=%s) is not a valid url.' % (title, file_url, file_url))
-    if not file_name:
-        file_name = 'file'
-
-# add contents to buffer
-    import io
-    file_buffer = io.BytesIO(remote_file.content)
-    file_buffer.name = '%s' % file_name
-
-    return file_buffer
-
-def load_offset(file_path):
-
-    record_details = {
-        'last_update': 0
-    }
-
-    from labpack.records.settings import load_settings
-    record_details = load_settings(file_path)
-
-    return record_details['last_update']
-
-def save_offset(update_value, file_path):
-
-    if not isinstance(update_value, int):
-        raise ValueError('Update value must be an integer')
-
-    record_details = {
-        'last_update': update_value
-    }
-
-    from labpack.records.settings import save_settings
-    return_path = save_settings(record_details, file_path, overwrite=True)
-
-    return return_path
-
-def get_me(bot_id, access_token):
-
-# construct key word arguments
-    request_kwargs = {
-        'url': 'https://api.telegram.org/bot%s:%s/getMe' % (bot_id, access_token),
-    }
-
-# send get update request
-    response_object = requests.post(**request_kwargs)
-    response = response_object.json()
-
-    return response
-
-def get_updates(bot_id, access_token, last_update=0):
-
-# construct key word arguments
-    request_kwargs = {
-        'url': 'https://api.telegram.org/bot%s:%s/getUpdates' % (bot_id, access_token),
-    }
-
-# add offset to kwargs
-    if last_update:
-        request_kwargs['data'] = {
-            'offset': last_update + 1
-        }
-
-# send get update request
-    response_object = requests.post(**request_kwargs)
-    response = response_object.json()
-
-# construct update list
-    update_list = []
-    if response['result']:
-        for i in range(len(response['result'])):
-            update_list.append(response['result'][i])
-
-    return update_list
-
-def send_message(bot_id, access_token, user_id, message_text):
-
-# construct key word arguments
-    request_kwargs = {
-        'url': 'https://api.telegram.org/bot%s:%s/sendMessage' % (bot_id, access_token),
-        'data': {
-            'chat_id': user_id,
-            'text': message_text
-        }
-    }
-
-# send message
-    response = requests.post(**request_kwargs)
-
-    return response.json()
-
-def send_photo(bot_id, access_token, user_id, photo_path='', photo_id='', photo_url='', caption_text=''):
-
-    title = 'send_photo'
-
-# construct valid file extensions
-    extension_map = {
-        'jpg': '.+\\.jpg$',
-        'jpeg': '.+\\.jpeg$',
-        'gif': '.+\\.gif$',
-        'png': '.+\\.png$',
-        'tif': '.+\\.tif$',
-        'bmp': '.+\\.bmp$'
-    }
-
-# construct key word arguments
-    request_kwargs = {
-        'url': 'https://api.telegram.org/bot%s:%s/sendPhoto' % (bot_id, access_token),
-        'data': {
-            'chat_id': user_id
-        }
-    }
-    if caption_text:
-        request_kwargs['data']['caption'] = caption_text
-
-# add photo to request keywords
-    if photo_path:
-        validate_type(photo_path, extension_map)
-        if not os.path.exists(photo_path):
-            raise ValueError('%s is not a valid file path.' % photo_path)
-        request_kwargs['files'] = { 'photo': open(photo_path, 'rb') }
-    elif photo_id:
-        request_kwargs['data']['photo'] = photo_id
-    elif photo_url:
-        file_extension = validate_type(photo_url, extension_map)
-        file_buffer = get_file(photo_url, 'photo%s' % file_extension)
-        request_kwargs['files'] = { 'photo': file_buffer }
-    else:
-        raise IndexError('%s(...) requires either a photo_path, photo_id or photo_url argument' % title)
-
-# send welcome message
-    response = requests.post(**request_kwargs)
-
-    return response.json()
-
 class TelegramBotError(Exception):
 
     def __init__(self, message='', error_dict=None):
@@ -222,7 +55,7 @@ class telegramBotHandler(object):
     # handle different codes
         if details['code'] == 200:
             details['json'] = response.json()
-        elif details['code'] == 403:
+        elif details['code'] == 403 or details['code'] == 400:
             details['error'] = response.json()['description']
         else:
             details['error'] = response.content.decode()
@@ -269,7 +102,21 @@ class telegramBotClient(object):
             'last_update': 0,
             'user_id': 0,
             'user_name': '',
-            'message_text': ''
+            'message_text': 'am i too needy?',
+            'message_style': 'markdown',
+            'button_list': [ 'yes' ],
+            'photo_id': '',
+            'photo_path': '',
+            'photo_url': '',
+            'caption_text': '',
+            'photo_extensions': {
+                'jpg': '.+\\.jpg$',
+                'jpeg': '.+\\.jpeg$',
+                'gif': '.+\\.gif$',
+                'png': '.+\\.png$',
+                'tif': '.+\\.tif$',
+                'bmp': '.+\\.bmp$'
+            }
         },
         'components': {
             '.bot_id': {
@@ -280,6 +127,15 @@ class telegramBotClient(object):
             },
             '.user_id': {
                 'integer_data': True
+            },
+            '.message_style': {
+                'discrete_values': [ 'markdown' ]
+            },
+            '.button_list[0]': {
+                'max_length': 32
+            },
+            '.caption_text': {
+                'max_length': 200
             }
         }
     }
@@ -308,7 +164,89 @@ class telegramBotClient(object):
         self.requests_handler = requests_handler
         self.telegram_handler = telegramBotHandler()
 
-    def _post_request(self, url, data=None, files=None, json=None):
+    def _get_file(self, file_url, file_name, method_title, argument_title):
+
+        import io
+        import requests
+
+    # request file from url
+        try:
+            remote_file = requests.get(file_url)
+        except requests.exceptions.ConnectionError as err:
+            if self.requests_handler:
+                return self.requests_handler(err)
+            else:
+                raise
+        except:
+            raise ValueError('%s(%s=%s) is not a valid url.' % (method_title, argument_title, file_url))
+
+    # add contents to buffer
+        file_buffer = io.BytesIO(remote_file.content)
+        file_buffer.name = '%s' % file_name
+
+        return file_buffer
+
+    def _validate_type(self, file_name, extension_map, method_title, argument_title):
+
+        ''' a helper method to validate extension type of file
+
+        :param file_name: string with file name to test
+        :param extension_map: dictionary with extensions names and regex patterns
+        :param method_title: string with title of feeder method
+        :param argument_title: string with title of argument key from feeder method
+        :return: string with file extension
+        '''
+
+    # validate file extension
+        from labpack.parsing.regex import labRegex
+        file_extension = ''
+        ext_types = labRegex(extension_map)
+        file_mapping = ext_types.map(file_name)[0]
+        extension_list = []
+        for key, value in file_mapping.items():
+            if isinstance(value, bool):
+                extension_list.append('.%s' % key)
+            if value and isinstance(value, bool):
+                file_extension = '.%s' + key
+        if not file_extension:
+            raise ValueError('%s(%s=%s) must be one of %s file types.' % (method_title, argument_title, file_name, extension_list))
+
+        return file_extension
+
+    def _compile_buttons(self, button_list, small_buttons, persist_buttons):
+
+        ''' a helper method to compile buttons to telegram api format
+
+        :param button_list: list of strings with button values
+        :param small_buttons: boolean to resize buttons to fit text size
+        :param persist_buttons: boolean to keep buttons around after exiting
+        :return: byte object in json serial format
+        '''
+
+        import json
+        keyboard_list = []
+        for item in button_list:
+            keyboard_list.append([{'text': item}])
+        keyboard_kwargs = {
+            'keyboard': keyboard_list,
+            'one_time_keyboard': not persist_buttons,
+            'resize_keyboard': small_buttons
+        }
+        json_data = json.dumps(keyboard_kwargs)
+        return json_data
+
+    def _post_request(self, url, data=None, files=None):
+
+        ''' a helper method for sending post requests to telegram api
+
+        https://core.telegram.org/bots/api#making-requests
+        https://requests.readthedocs.io/en/master/user/quickstart/
+
+        :param url: string with url for post request
+        :param data: [optional] dictionary with data to add to request
+        :param files: [optional] byte data to add to request
+        :return: dictionary with response details
+        '''
 
         import requests
 
@@ -316,8 +254,6 @@ class telegramBotClient(object):
         request_kwargs = {
             'url': url
         }
-        if json:
-            request_kwargs['json'] = json
         if data:
             request_kwargs['data'] = data
         if files:
@@ -507,6 +443,30 @@ class telegramBotClient(object):
                             'date': 1478729313
                         }
                     },
+                    {
+                        'update_id': 667652191,
+                        'message': {
+                            'chat': {
+                                'first_name': 'First',
+                                'type': 'private',
+                                'id': 1234567890,
+                                'last_name': 'Last'
+                            },
+                            'voice': {
+                                'duration': 3,
+                                'mime_type': 'audio/ogg',
+                                'file_id': 'AwADAQADAgADXGbcC3hOFYsqDDtKAg',
+                                'file_size': 7008
+                            },
+                            'from': {
+                                'first_name': 'First',
+                                'id': 1234567890,
+                                'last_name': 'Last'
+                            },
+                            'message_id': 224,
+                            'date': 1478729313
+                        }
+                    }
                 ]
             }
         }
@@ -532,12 +492,20 @@ class telegramBotClient(object):
 
         return response_details
 
-    def send_message(self, user_id, message_text):
+    def get_file(self, file_id):
+        file_data = b''
+        return file_data
+
+    def send_message(self, user_id, message_text, message_style='', button_list=None, small_buttons=True, persist_buttons=False):
 
         ''' a method to send a message using telegram api
 
         :param user_id: integer with id of telegram user
         :param message_text: string with message to user
+        :param message_style: [optional] string with style to apply to text, only 'markdown'
+        :param button_list: [optional] list of string to include as buttons in message
+        :param small_buttons: [optional] boolean to resize buttons to single line
+        :param persist_buttons: [optional] boolean to keep buttons around after exiting
         :return: dictionary of response details with message details in [json][result]
 
         {
@@ -556,9 +524,9 @@ class telegramBotClient(object):
                     },
                     'text': 'text me again',
                     'from': {
-                        'first_name': 'First',
-                        'id': 1234567890,
-                        'last_name': 'Last'
+                        'first_name': 'my Bot',
+                        'id': 987654310,
+                        'username': 'myBot'
                     },
                     'message_id': 178,
                     'date': 1478729313
@@ -571,133 +539,159 @@ class telegramBotClient(object):
     # validate inputs
         input_fields = {
             'user_id': user_id,
-            'message_text': message_text
+            'message_text': message_text,
+            'message_style': message_style,
+            'button_list': button_list
         }
         for key, value in input_fields.items():
-            object_title = '%s(%s=%s)' % (title, key, str(value))
-            self.fields.validate(value, '.%s' % key, object_title)
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
 
     # construct key word arguments
         request_kwargs = {
-            'url': 'https://api.telegram.org/bot%s:%s/sendMessage' % (bot_id, access_token),
+            'url': '%s/sendMessage' % self.endpoint,
             'data': {
                 'chat_id': user_id,
                 'text': message_text
             }
         }
+        if message_style:
+            if message_style == 'markdown':
+                request_kwargs['data']['parse_mode'] = 'Markdown'
+            elif message_style == 'html':
+                request_kwargs['data']['parse_mode'] = 'HTML'
+        if button_list:
+            request_kwargs['data']['reply_markup'] = self._compile_buttons(button_list, small_buttons, persist_buttons)
 
     # send request
         response_details = self._post_request(**request_kwargs)
 
         return response_details
 
-    def send_photo(self, user_id, photo_id='', photo_path='', photo_url='', caption=''):
+    def send_photo(self, user_id, photo_id='', photo_path='', photo_url='', caption_text='', button_list=None, small_buttons=True, persist_buttons=False):
 
-        return response_details
+        ''' a method to send a photo using telegram api
 
-    def request(self, bot_method, **kwargs):
+        :param user_id: integer with id of telegram user
+        :param photo_id: [optional] string with id of file stored with telegram api
+        :param photo_path: [optional] string with local path to file
+        :param photo_url: [optional] string with url of file
+        :param caption_text: [optional] string with caption to add to photo
+        :return: dictionary of response details with message detail in [json][result]
 
+        {
+            'headers': { ... },
+            'url': 'https://api.telegram.org/bot.../sendPhoto',
+            'code': 200,
+            'error': '',
+            'json': {
+                'ok': True,
+                'result': {
+                    'chat': {
+                        'first_name': 'First',
+                        'type': 'private',
+                        'id': 1234567890,
+                        'last_name': 'Last'
+                    },
+                    'caption': 'lab logo',
+                    'photo': [
+                        {
+                            'file_id': 'AgADAQ...EC',
+                            'width': 51,
+                            'file_size': 1238,
+                            'height': 90
+                        },
+                        {
+                            'file_id': 'AgADAQ...Ag',
+                            'width': 180,
+                            'file_size': 13151,
+                            'height': 320
+                        },
+                        {
+                            'file_id': 'AgADAQ...VC',
+                            'width': 449,
+                            'file_size': 51134,
+                            'height': 800
+                        },
+                        {
+                            'file_id': 'AgADAQ...AC',
+                            'width': 719,
+                            'file_size': 82609,
+                            'height': 1280
+                        }
+                    ],
+                    'from': {
+                        'first_name': 'my Bot',
+                        'id': 987654310,
+                        'username': 'myBot'
+                    },
+                    'message_id': 179,
+                    'date': 1478729413
+                }
+            }
+        }
         '''
-            a method to make a post request to the telegram bot api
 
-        :param bot_method: string with bot method name
-        :param **kwargs: additional keyword arguments for bot method
-        :return: (json valid) dictionary with response (or error)
-
-        bot methods:
-        https://core.telegram.org/bots/api#making-requests
-
-        requests documentation:
-        https://requests.readthedocs.io/en/master/user/quickstart/
-        '''
-
-        title = '%s.request' % self.__class__.__name__
+        title = '%s.send_photo' % self.__class__.__name__
 
     # validate inputs
-        if bot_method not in self.fields.schema.keys():
-            raise ValueError('%s(bot_method=%s) is not a valid telegram api method.' % (title, bot_method))
-
-    # construct post request key word arguments
-        request_kwargs = {
-            'url': '%s%s/%s' % (self.endpoint, self.accessToken, bot_method),
-            'data': {}
+        input_fields = {
+            'user_id': user_id,
+            'caption_text': caption_text,
+            'photo_id': photo_id,
+            'photo_path': photo_path,
+            'photo_url': photo_url,
+            'button_list': button_list
         }
-        method_key = '.' + bot_method
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
 
-    # validate keyword arguments
-        data_kwargs = {}
-        for key, value in kwargs.items():
-            argument_key = '%s.%s' % (method_key, key)
-            if argument_key in self.fields.keyMap.keys():
-                object_title = '%s(%s=%s)' % (title, key, value)
-                data_kwargs[key] = self.fields.validate(value, argument_key, object_title)
+    # construct extension map
+        extension_map = self.fields.schema['photo_extensions']
 
-    # validate requirements
-        object_title = '%s(bot_method=%s, **kwargs)' % (title, bot_method)
-        self.fields.validate(data_kwargs, method_key, object_title)
+    # construct key word arguments
+        request_kwargs = {
+            'url': '%s/sendPhoto' % self.endpoint,
+            'data': {
+                'chat_id': user_id
+            }
+        }
+        if caption_text:
+            request_kwargs['data']['caption'] = caption_text
+        if button_list:
+            request_kwargs['data']['reply_markup'] = self._compile_buttons(button_list, small_buttons, persist_buttons)
 
-    # add keywords to request kwargs
-        if data_kwargs:
-            request_kwargs['data'] = data_kwargs
-
-    # retrieve file type from arguments
-        file_type = ''
-        file_value = ''
-        for key in self.ext.keys():
-            if key in request_kwargs['data'].keys():
-                file_type = key
-                file_value = request_kwargs['data'][key]
-                del request_kwargs['data'][key]
-
-    # add file to request kwargs
-        if file_type:
-            file_field = self.parseSource(file_value)
-            if file_field == 'file_id':
-                request_kwargs['data'][file_type] = file_value
-            elif file_field == 'file_path':
-                if not os.path.exists(file_value):
-                    raise ValueError('%s(%s=%s) is not a valid file path.' % (title, file_type, file_value))
-                request_kwargs['files'] = { file_type: open(file_value, 'rb') }
-            elif file_field == 'file_url':
-                file_extension = ''
-                try:
-                    remote_file = requests.get(file_value)
-                except:
-                    raise ValueError('%s(%s=%s) is not a valid url.' % (title, file_type, file_value))
-                file_mapping = self.ext[file_type].map(file_value)[0]
-                extension_list = []
-                for key, value in file_mapping.items():
-                    if isinstance(value, bool):
-                        extension_list.append('.' % key)
-                    if value and isinstance(value, bool):
-                        file_extension = '.' + key
-                if not file_extension:
-                    raise ValueError('%s(%s=%s) must be one of %s file types.' % (title, file_type, file_value, extension_list))
-                file_buffer = io.BytesIO(remote_file.content)
-                file_buffer.name = '%s%s' % (file_type, file_extension)
-                request_kwargs['files'] = { file_type: file_buffer }
-            else:
-                raise IndexError('%s(bot_method=%s) requires a "%s" argument.' % (title, bot_method, file_type))
-
-    # remove data from request if empty
-        if not request_kwargs['data']:
-            del request_kwargs['data']
+    # add photo to request keywords
+        if photo_path:
+            import os
+            self._validate_type(photo_path, extension_map, title, 'photo_path')
+            if not os.path.exists(photo_path):
+                raise ValueError('%s is not a valid file path.' % photo_path)
+            request_kwargs['files'] = { 'photo': open(photo_path, 'rb') }
+        elif photo_id:
+            request_kwargs['data']['photo'] = photo_id
+        elif photo_url:
+            file_extension = self._validate_type(photo_url, extension_map, title, 'photo_url')
+            file_buffer = self._get_file(photo_url, 'photo%s' % file_extension, title, 'photo_url')
+            request_kwargs['files'] = { 'photo': file_buffer }
+        else:
+            raise IndexError('%s(...) requires either a photo_path, photo_id or photo_url argument' % title)
 
     # send request
-        try:
-            response = requests.post(**request_kwargs)
-        except:
-            raise TelegramConnectionError('%s requests.post(%s)' % (title, bot_method), error_dict=request_kwargs)
+        response_details = self._post_request(**request_kwargs)
 
-    # unwrap and return json response
-        response_dict = response.json()
-
-        return response_dict
+        return response_details
 
 if __name__ == '__main__':
     from labpack.records.settings import load_settings, save_settings
     telegram_config = load_settings('../../../cred/telegram.yaml')
-    update_path = '../../tests/test_telegram/update.json'
+    photo_url = 'https://pbs.twimg.com/profile_images/479475632158408704/Zelyz-xr_400x400.png'
+    photo_id = 'AgADAQADsKcxG4RH3Q85DF_-VgGr___A5y8ABVzwsrRBb8xF-wEAAQI'
+    photo_path = '../../data/test_photo.png'
+    update_path = '../../data/telegram-update.json'
     update_id = load_settings(update_path)['last_update']
     bot_id = telegram_config['telegram_bot_id']
     access_token = telegram_config['telegram_access_token']
@@ -710,12 +704,12 @@ if __name__ == '__main__':
         update_list = sorted(updates_details['json']['result'], key=lambda k: k['update_id'])
         offset_details = { 'last_update': update_list[-1]['update_id']}
         save_settings(offset_details, update_path, overwrite=True)
-    details = telegram_bot.send_message(user_id, 'text me again')
-    print(details)
-
-    # assert get_me(bot_id, access_token)['result']
-    # update_list = get_updates(bot_id, access_token)
-    # if update_list:
-    #     user_id = update_list[0]['message']['from']['id']
-    #     photo_url = 'https://pbs.twimg.com/profile_images/479475632158408704/Zelyz-xr_400x400.png'
-    #     # send_photo(bot_id, access_token, user_id, photo_url=photo_url)
+    # details = telegram_bot.send_message(user_id, 'text me again')
+    # details = telegram_bot.send_photo(user_id, photo_url=photo_url, caption_text='Lab Logo')
+    # details = telegram_bot.send_photo(user_id, photo_id=photo_id)
+    # details = telegram_bot.send_photo(user_id, photo_path=photo_path)
+    # details = telegram_bot.send_message(user_id, '*Select a Number:*\n\t_1_\n\t\t`2`\n\t\t\t[3](http://collectiveacuity.com)', message_style='markdown')
+    # details = telegram_bot.send_message(user_id, 'Select a Number:', button_list=['1','2','3'])
+    # details = telegram_bot.send_message(user_id, 'Select a Letter:', button_list=['ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEF'], small_buttons=False, persist_buttons=True)
+    # print(details)
+    print(updates_details)
