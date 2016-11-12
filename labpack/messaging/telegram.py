@@ -549,7 +549,7 @@ class telegramBotClient(object):
 
         return response_details
 
-    def get_file(self, file_route):
+    def get_file(self, file_route, file_name=''):
 
         ''' a method to retrieve data for a file housed on telegram api
 
@@ -563,7 +563,7 @@ class telegramBotClient(object):
         file_url = '%s%s' % (telegram_bot.file_endpoint, file_route)
 
     # send request for file data
-        data_buffer = self._get_data(file_url, method_title=title)
+        data_buffer = self._get_data(file_url, file_name, method_title=title)
 
         return data_buffer
 
@@ -789,9 +789,16 @@ if __name__ == '__main__':
     # details = telegram_bot.send_message(user_id, '*Select a Number:*\n\t_1_\n\t\t`2`\n\t\t\t[3](http://collectiveacuity.com)', message_style='markdown')
     # details = telegram_bot.send_message(user_id, 'Select a Number:', button_list=['1','2','3'])
     # details = telegram_bot.send_message(user_id, 'Select a Letter:', button_list=['ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEF'], small_buttons=False, persist_buttons=True)
-    details = telegram_bot.get_route('AwADAQADAwADXGbcCxP7_eEhVMEeAg')
+    file_id = 'AwADAQADAwADXGbcCxP7_eEhVMEeAg'
+    details = telegram_bot.get_route(file_id)
     file_route = details['json']['result']['file_path']
-    file_buffer = telegram_bot.get_file(file_route)
-    with open(file_path, 'wb') as f:
-        f.write(file_buffer.getvalue())
+    file_buffer = telegram_bot.get_file(file_route, file_name='test_voice')
+    file_data = file_buffer.getvalue()
+    file_name = file_buffer.name
+    from labpack.parsing.magic import labMagic
+    lab_magic = labMagic('../../data/magic.mgc')
+    file_details = lab_magic.analyze(byte_data=file_data)
+    save_path = '../../data/%s%s' % (file_name, file_details['extension'])
+    with open(save_path, 'wb') as f:
+        f.write(file_data)
         f.close()

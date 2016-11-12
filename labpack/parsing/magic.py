@@ -39,12 +39,6 @@ PLEASE NOTE:    magic package requires the python-magic module.
 # text_url = 'https://www.iana.org/assignments/media-types/text.csv'
 # video_url = 'https://www.iana.org/assignments/media-types/video.csv'
 
-import os
-import requests
-import mimetypes
-from labpack.handlers.requests import handle_requests
-from labpack.storage.appdata import appdataClient
-
 class labMagic(object):
 
     _class_fields = {
@@ -64,6 +58,11 @@ class labMagic(object):
     }
 
     def __init__(self, magic_file=''):
+
+        ''' initialization method for labMagic class
+
+        :param magic_file: [optional] string with local path to magic.mgc file
+        '''
 
         title = '%s.__init__' % self.__class__.__name__
 
@@ -89,7 +88,8 @@ class labMagic(object):
         sys_name = localhostClient().os.sysname
         if sys_name == 'Windows':
             if not magic_file:
-                raise IndexError('Path to magic file must be provided on Windows systems.')
+                raise IndexError('%s(magic_file="...") is required on Windows systems.')
+        import os
         if magic_file:
             if not os.path.exists(magic_file):
                 raise ValueError('%s(magic_file=%s) is not a valid file path.' % (title, magic_file))
@@ -105,8 +105,12 @@ class labMagic(object):
             raise Exception('\nmagiclab requires the python-magic module. try: pip install python-magic\npython-magic requires the C library libmagic. See documentation in labpack.parsing.magic.')
 
     # construct mimetypes method
+        import mimetypes
         self.mimetypes = mimetypes.MimeTypes()
+
+    # retrieve updates to mimetypes
         mimetype_urls = self.fields.schema['mimetype_urls']
+        from labpack.storage.appdata import appdataClient
         mime_collection = appdataClient('Mime Types')
         mime_filter = mime_collection.conditionalFilter([{-1:{'must_contain': ['mime.types']}}])
         mime_list = mime_collection.list(mime_filter)
@@ -116,9 +120,11 @@ class labMagic(object):
                 file_dir = os.path.split(file_path)[0]
                 if not os.path.exists(file_dir):
                     os.makedirs(file_dir)
+                import requests
                 try:
                     response = requests.get(mimetype_urls[key])
                 except Exception:
+                    from labpack.handlers.requests import handle_requests
                     request_kwargs = {'url': mimetype_urls[key]}
                     response_details = handle_requests(requests.Request(**request_kwargs))
                     print('magiclab attempted to retrieve latest mimetype registry resource at %s but ran into this non-fatal error: %s' % (mimetype_urls[key], response_details['error']))
@@ -130,13 +136,13 @@ class labMagic(object):
             for key, value in ext_map.items():
                 self.mimetypes.add_type(value, key)
 
-    def analyze(self, file_path='', file_url='', file_buffer=None):
+    def analyze(self, file_path='', file_url='', byte_data=None):
 
-        ''' a method to determine the mimetype and extension of file from its byte data
+        ''' a method to determine the mimetype and extension of a file from its byte data
 
         :param file_path: [optional] string with local path to file
         :param file_url: [optional] string with url of file
-        :param file_buffer: [optional] byte data in buffer
+        :param byte_data: [optional] byte data from a file
         :return: dictionary with file details
 
         {
@@ -157,9 +163,9 @@ class labMagic(object):
             if value:
                 object_title = '%s(%s=%s)' % (title, key, str(value))
                 self.fields.validate(value, '.%s' % key, object_title)
-        if file_buffer:
-            if not isinstance(file_buffer, bytes):
-                raise ValueError("%s(file_buffer=b'...') must be byte data" % title)
+        if byte_data:
+            if not isinstance(byte_data, bytes):
+                raise ValueError("%s(byte_data=b'...') must be byte data" % title)
 
     # construct empty type map
         file_details = {
@@ -171,6 +177,7 @@ class labMagic(object):
 
     # analyze file
         if file_path:
+            import os
             if not os.path.exists(file_path):
                 raise ValueError('%s(file_path=%s) is not a valid path.' % (title, file_path))
             split_file = os.path.split(file_path)
@@ -185,19 +192,21 @@ class labMagic(object):
             url_path = urlsplit(file_url).path
             path_segments = url_path.split('/')
             file_details['name'] = path_segments[-1]
+            import requests
             try:
                 response = requests.get(file_url)
             except Exception:
+                from labpack.handlers.requests import handle_requests
                 response_details = handle_requests(requests.Request(url=file_url))
                 raise ValueError('%s(file_url=%s) created this error: %s' % (title, file_url, response_details['error']))
             magic_results = self.magic.from_buffer(response.content)
 
     # analyze buffer
-        elif file_buffer:
-            magic_results = self.magic.from_buffer(file_buffer)
+        elif byte_data:
+            magic_results = self.magic.from_buffer(byte_data)
 
         else:
-            raise IndexError('%s(...) requires either a file_path, file_url or file_buffer argument' % title)
+            raise IndexError('%s(...) requires either a file_path, file_url or byte_data argument' % title)
 
         if magic_results:
             file_details['mimetype'] = magic_results
@@ -206,15 +215,3 @@ class labMagic(object):
                 file_details['extension'] = mime_results
 
         return file_details
-
-if __name__ == '__main__':
-    file_path = '../data/test_photo.diy'
-    file_url = 'https://pbs.twimg.com/profile_images/479475632158408704/Zelyz-xr_400x400.png'
-    file_buffer = open('../data/test_pdf.pde', 'rb').read()
-    lab_magic = labMagic('../data/magic.mgc')
-    analysis = lab_magic.analyze(file_path)
-    assert analysis['extension'] == '.png'
-    analysis = lab_magic.analyze(file_url=file_url)
-    assert analysis['name'] == 'Zelyz-xr_400x400.png'
-    analysis = lab_magic.analyze(file_buffer=file_buffer)
-    assert analysis['mimetype'] == 'application/pdf'
