@@ -4,7 +4,23 @@ __license__ = 'MIT'
 
 '''
 PLEASE NOTE:    cryptolab package requires both the cryptography and pycrypto modules.
-                pycrypto requires a C compiler to install.
+                pycrypto requires a number of C libraries to install.
+
+(alpine)        apk add gcc
+                apk add g++
+                apk add make
+                apk add libffi-dev
+                apk add openssl-dev
+                apk add python3-dev build-base --update-cache
+                pip3 install pycrypto
+
+(debian)        apt-get --fix-missing install -y python
+                apt-get install -y build-essential
+                apt-get install -y libssl-dev
+                apt-get install -y libffi-dev
+                apt-get install -y python-dev
+                apt-get install -y python3-pip
+                pip3 install cryptography
 '''
 
 import hashlib
