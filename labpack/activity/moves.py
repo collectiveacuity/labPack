@@ -19,6 +19,7 @@ class MovesError(Exception):
         super(MovesError, self).__init__(text)
 
 # TODO: test all different errors
+# TODO: add rate tracking
 class movesHandler(object):
 
     ''' handles responses from moves api and usage data'''
