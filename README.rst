@@ -28,7 +28,7 @@ From GitHub::
 
 Getting Started
 ---------------
-This module is designed to make the process of retrieving, managing and processing data more uniform across a variety of different sources and structures. The methods in this module aggregate and curate python resources and online APIs to provide a set of best practices for handling data across laboratory projects.
+This module is designed to make the process of retrieving, managing and processing data more uniform across a variety of different sources and structures. The classes and methods in this module aggregate and curate python resources and online APIs to provide a set of best practices for handling data across laboratory projects.
 
 Create an unique ID for records::
 

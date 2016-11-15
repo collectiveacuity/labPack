@@ -177,8 +177,9 @@ def save_settings(record_details, file_path, secret_key='', overwrite=False):
 
 # create directories in path to file
     dir_path = os.path.split(file_path)
-    if not os.path.exists(dir_path[0]):
-        os.makedirs(dir_path[0])
+    if dir_path[0]:
+        if not os.path.exists(dir_path[0]):
+            os.makedirs(dir_path[0])
 
 # write data to file
     with open(file_path, 'wb') as f:
@@ -192,6 +193,18 @@ def save_settings(record_details, file_path, secret_key='', overwrite=False):
     return file_path
 
 def ingest_environ(model_path=''):
+
+    ''' a method to convert environment variables to python dictionary
+
+    :param model_path: [optional] string with path to jsonmodel of data to ingest
+    :return: dictionary with environmental variables
+
+    NOTE:   if a model is provided, then only those fields in the model will be
+            added to the output and the value of any environment variable which
+            matches the uppercase name of each field in the model will be added
+            to the dictionary if its value is valid according to the model. if
+            a value is not valid, the method will throw a InputValidationError
+    '''
 
 # convert environment variables into json typed data
     from os import environ, path
@@ -304,40 +317,3 @@ def compile_settings(model_path, file_path, ignore_errors=False):
             config_details[key] = default_details[key]
 
     return config_details
-
-if __name__ == '__main__':
-
-# define arguments
-    import os
-    os.environ['labpack_records_settings'] = '2'
-    model_path = '../../tests/test-model.json'
-    file_path = '../../tests/test-settings.yaml'
-
-# test ingest environ
-    assert ingest_environ()['LABPACK_RECORDS_SETTINGS'] == 2
-    model_env = ingest_environ(model_path)
-    assert model_env['labpack_records_settings'] == 2
-
-# test load settings from module path
-    assert load_settings(file_path='model-rules.json', module_name='jsonmodel')
-
-# test save settings
-    test_details = load_settings(model_path)
-    try:
-        import pytest
-    except:
-        print('pytest module required to perform unittests. try: pip install pytest')
-        exit()
-    with pytest.raises(Exception):
-        save_settings(test_details, model_path)
-    assert save_settings(test_details, model_path, overwrite=True)
-
-# test compile settings
-    from jsonmodel.exceptions import InputValidationError
-    with pytest.raises(InputValidationError): # exception for not a string
-        test_details = compile_settings(model_path, file_path)
-    test_details = compile_settings(model_path, file_path, ignore_errors=True)
-    assert not test_details['labpack_records_details'] # empty value
-    assert test_details['labpack_records_settings'] == 2 # environment variable
-    assert test_details['labpack_records_creds'] == 'sunlight' # default value
-    assert test_details['labpack_records_configs'] == 'days' # cred file

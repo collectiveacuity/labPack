@@ -1,8 +1,20 @@
 ChangeLog
 =========
 
+0.7 (2016.11.15)
+----------------
+* [FEATURE ADDED] handle_requests method added to handler package to handle requests errors
+* [FEATURE ADDED] validate_request_details method added to flask package
+* [BUG FIX] makedir error for files without path information
+
 0.6 (2016.11.12)
 ----------------
+* [REFACTOR] classes compiler package renamed to objects for future clarity
+* [FEATURE ADDED] telegramBotClient class for interacting with telegram bot API **
+* [FEATURE ADDED] movesClient class for retrieving user data from moves app API
+* [FEATURE ADDED] apschedulerClient class for interacting with a flask apscheduler service
+* [FEATURE ADDED] labMagic class for retrieving metadata information about data
+* ** telegram client only covers updates, messages and photos
 
 0.5 (2016.11.01)
 ----------------

@@ -8,8 +8,15 @@ Classes
 * **labID**: A class of methods for uniquely identifying records
 * **labDT**: A class of methods for transforming datetime data
 * **labRegex**: A class of methods for matching regex patterns in strings
-* **appdataClient**: A class of methods for managing file storage in home dir
-* **localhostClient**: A class of methods for negotiating OS specific configuration
+* **labMagic**: A class of methods for retrieving metadata information about data
+
+Clients
+-------
+* **appdataClient**: A client class for managing file storage in home dir
+* **localhostClient**: A client class for negotiating OS specific configuration
+* **movesClient**: A client class for retrieving user data from moves-app API
+* **telegramBotClient**: A client class for interacting with the telegram bot API
+* **apschedulerClient**: A client class for interacting with a flask apscheduler service
 
 Packages
 --------
@@ -18,7 +25,8 @@ Packages
 * **drep**: A file storage protocol for encrypted record data
 * **cryptolab**: A package for encrypting/decrypting data using AES256 sha512
 * **settings**: A package of methods for handling local configuration settings
-* **flask**: A package of methods for parsing request and response data
+* **flask**: A package of methods for parsing flask request and response data
+* **requests**: A package of methods for handling requests errors
 * **classes**: A package of methods for generating class attributes
 
 Features
@@ -38,6 +46,7 @@ Features
 
 Nothin' Yet
 -----------
+Roadmap to infinity...
 
 
 
