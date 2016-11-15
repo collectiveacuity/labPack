@@ -35,9 +35,9 @@ def handle_requests(request_object):
         import socket
         try:
             socket.getaddrinfo('www.google.com', '80', 0, 0, socket.SOCK_STREAM)
-            request_details['error'] = 'Airplane mode off.'
+            request_details['error'] = '%s is not available.' % request_details['url']
         except socket.gaierror:
-            request_details['error'] = 'Airplane mode on.'
+            request_details['error'] = 'Cannot connect to the internet. Check connectivity.'
         except:
             raise
 

@@ -39,6 +39,10 @@ PLEASE NOTE:    magic package requires the python-magic module.
 # text_url = 'https://www.iana.org/assignments/media-types/text.csv'
 # video_url = 'https://www.iana.org/assignments/media-types/video.csv'
 
+# EXIFTOOL
+# http://www.sno.phy.queensu.ca/~phil/exiftool/
+# https://github.com/smarnach/pyexiftool
+
 class labMagic(object):
 
     _class_fields = {

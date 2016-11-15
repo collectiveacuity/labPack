@@ -84,6 +84,33 @@ def extract_request_details(request_object, session_object=None):
 
     return request_details
 
+def validate_request_details(request_details, request_model):
+
+    from jsonmodel.exceptions import InputValidationError
+
+    status_details = {
+        'code': 200,
+        'status': 'ok',
+        'error': ''
+    }
+
+    for key in request_model.schema.keys():
+        if not key in request_details.keys():
+            status_details['code'] = 400
+            status_details['status'] = 'error'
+            status_details['error'] = "request is missing a value for field '%s'" % key
+            break
+        try:
+            object_title = "request field '%s'" % key
+            request_model.validate(request_details[key], '.%s' % key, object_title)
+        except InputValidationError as err:
+            status_details['error'] = err.message.replace('\n',' ').lstrip()
+            status_details['code'] = 400
+            status_details['status'] = 'error'
+            break
+
+    return status_details
+
 if __name__ == '__main__':
 # work around for namespace collision
     from sys import path as sys_path

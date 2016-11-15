@@ -12,7 +12,7 @@ if __name__ == '__main__':
     scheduler_info = scheduler_client.get_info()
     assert scheduler_info['running']
     from time import time, sleep
-    job_function = 'launch:app.logger.debug'
+    job_function = 'init:app.logger.debug'
     date_kwargs = {
         'id': '%s.%s' % (job_function, str(time())),
         'function': job_function,

@@ -244,7 +244,7 @@ class movesOAuth(object):
         :return: dictionary with token details
 
         {
-            'content': {
+            'json': {
                 "access_token": "1j0v33o6c5b34cVPqIiB_M2LYb_iM5S9Vcy7Rx7jA2630pK7HIjEXvJoiE8V5rRF",
                 "token_type": "bearer",
                 "expires_at": 1478559072,

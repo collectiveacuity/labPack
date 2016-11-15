@@ -1,6 +1,9 @@
 ChangeLog
 =========
 
+0.6 (2016.11.12)
+----------------
+
 0.5 (2016.11.01)
 ----------------
 * [REFACTOR] Packages have been refactored to lowercase to avoid class syntax

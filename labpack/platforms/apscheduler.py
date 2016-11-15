@@ -222,10 +222,81 @@ class apschedulerClient(object):
 
         return job_details
 
+    def _construct_fields(self, id, function, dt=0.0, interval=0, month=None, day=None, weekday=None, hour=None, minute=None, second=None, args=None, kwargs=None, start=0.0, end=0.0, name=''):
+
+        from datetime import datetime
+
+    # determine interval fields
+        weeks = None
+        days = None
+        hours = None
+        minutes = None
+        seconds = None
+        if interval:
+            weeks = interval // 604800
+            remainder = interval % 604800
+            days = remainder // 86400
+            remainder = interval % 86400
+            hours = remainder // 3600
+            remainder = remainder % 3600
+            minutes = remainder // 60
+            seconds = remainder % 60
+
+    # construct request fields
+        json_kwargs = {
+            'id': id,
+            'func': function,
+            'trigger': 'date'
+        }
+        if interval:
+            json_kwargs['trigger'] = 'interval'
+        if args:
+            json_kwargs['args'] = args
+        if kwargs:
+            json_kwargs['kwargs'] = kwargs
+        if name:
+            json_kwargs['name'] = name
+        if isinstance(weekday, int):
+            json_kwargs['trigger'] = 'cron'
+            json_kwargs['day_of_week'] = weekday
+        if isinstance(month, int):
+            json_kwargs['trigger'] = 'cron'
+            json_kwargs['month'] = month
+        if isinstance(day, int):
+            json_kwargs['trigger'] = 'cron'
+            json_kwargs['day'] = day
+        if isinstance(hour, int):
+            json_kwargs['trigger'] = 'cron'
+            json_kwargs['hour'] = hour
+        if isinstance(minute, int):
+            json_kwargs['trigger'] = 'cron'
+            json_kwargs['minute'] = minute
+        if isinstance(second, int):
+            json_kwargs['trigger'] = 'cron'
+            json_kwargs['second'] = second
+        if weeks:
+            json_kwargs['weeks'] = weeks
+        if days:
+            json_kwargs['days'] = days
+        if hours:
+            json_kwargs['hours'] = hours
+        if minutes:
+            json_kwargs['minutes'] = minutes
+        if seconds:
+            json_kwargs['seconds'] = seconds
+        if start:
+            json_kwargs['start_date'] = datetime.utcfromtimestamp(start).isoformat()
+        if end:
+            json_kwargs['end_date'] = datetime.utcfromtimestamp(end).isoformat()
+        if dt:
+            json_kwargs['run_date'] = datetime.utcfromtimestamp(dt).isoformat()
+
+        return json_kwargs
+
     def get_info(self):
         title = '%s.get_info' % self.__class__.__name__
         url = '%s/scheduler' % self.url
-        return self._get_request(url, title)
+        return self._get_request(url)
 
     def list_jobs(self, argument_filters=None):
 
@@ -369,20 +440,7 @@ class apschedulerClient(object):
                 raise ValueError('%s(args=[...] must be a list datatype.' % title)
 
     # construct request fields
-        json_kwargs = {
-            'id': id,
-            'func': function,
-            'trigger': 'date'
-        }
-        if args:
-            json_kwargs['args'] = args
-        if kwargs:
-            json_kwargs['kwargs'] = kwargs
-        if dt:
-            from datetime import datetime
-            json_kwargs['run_date'] = datetime.utcfromtimestamp(dt).isoformat()
-        if name:
-            json_kwargs['name'] = name
+        json_kwargs = self._construct_fields(id, function, dt=dt, args=args, kwargs=kwargs, name=name)
 
     # send post request
         response_details = self._post_request(url, json_kwargs)
@@ -427,42 +485,8 @@ class apschedulerClient(object):
             if end < start:
                 raise ValueError('%s(start=%s, end=%s) must have a start datetime after the end datetime.' % (title, start, end))
 
-    # determine interval fields
-        weeks = interval // 604800
-        remainder = interval % 604800
-        days = remainder // 86400
-        remainder = interval % 86400
-        hours = remainder // 3600
-        remainder = remainder % 3600
-        minutes = remainder // 60
-        seconds = remainder % 60
-
     # construct request fields
-        json_kwargs = {
-            'id': id,
-            'func': function,
-            'trigger': 'interval'
-        }
-        if args:
-            json_kwargs['args'] = args
-        if kwargs:
-            json_kwargs['kwargs'] = kwargs
-        if name:
-            json_kwargs['name'] = name
-        if weeks:
-            json_kwargs['weeks'] = weeks
-        if days:
-            json_kwargs['days'] = days
-        if hours:
-            json_kwargs['hours'] = hours
-        if minutes:
-            json_kwargs['minutes'] = minutes
-        if seconds:
-            json_kwargs['seconds'] = seconds
-        if start:
-            json_kwargs['start_date'] = datetime.utcfromtimestamp(start).isoformat()
-        if end:
-            json_kwargs['end_date'] = datetime.utcfromtimestamp(end).isoformat()
+        json_kwargs = self._construct_fields(id, function, interval=interval, args=args, kwargs=kwargs, start=start, end=end, name=name)
 
     # send post request
         response_details = self._post_request(url, json_kwargs)
@@ -530,33 +554,7 @@ class apschedulerClient(object):
                 raise ValueError('%s(start=%s, end=%s) must have a start datetime after the end datetime.' % (title, start, end))
 
     # construct request fields
-        json_kwargs = {
-            'id': id,
-            'func': function,
-            'trigger': 'cron'
-        }
-        if args:
-            json_kwargs['args'] = args
-        if kwargs:
-            json_kwargs['kwargs'] = kwargs
-        if name:
-            json_kwargs['name'] = name
-        if weekday:
-            json_kwargs['day_of_week'] = weekday
-        if month:
-            json_kwargs['month'] = month
-        if day:
-            json_kwargs['day'] = day
-        if hour:
-            json_kwargs['hour'] = hour
-        if minute:
-            json_kwargs['minute'] = minute
-        if second:
-            json_kwargs['second'] = second
-        if start:
-            json_kwargs['start_date'] = datetime.utcfromtimestamp(start).isoformat()
-        if end:
-            json_kwargs['end_date'] = datetime.utcfromtimestamp(end).isoformat()
+        json_kwargs = self._construct_fields(id, function, month=month, day=day, weekday=weekday, hour=hour, minute=minute, second=second, args=args, kwargs=kwargs, start=start, end=end, name=name)
 
     # send post request
         response_details = self._post_request(url, json_kwargs)
