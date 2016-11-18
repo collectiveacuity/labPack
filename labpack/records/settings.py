@@ -144,7 +144,7 @@ def save_settings(record_details, file_path, secret_key='', overwrite=False):
     key_map = ext_types.map(file_path)[0]
     if key_map['json']:
         import json
-        file_data = json.dumps(record_details).encode('utf-8')
+        file_data = json.dumps(record_details, indent=2).encode('utf-8')
     elif key_map['yaml']:
         import yaml
         file_data = yaml.dump(record_details).encode('utf-8')

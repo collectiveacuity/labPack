@@ -19,6 +19,17 @@ class _walk_constructor(object):
 
 def retrieve_function(function_string, global_scope=None, root_path='./'):
 
+# determine if function is pickled
+    import pickle
+    from base64 import b64decode
+    try:
+        byte_data = b64decode(function_string)
+        isinstance(byte_data, bytes) == True
+        function_object = pickle.loads(byte_data)
+        return function_object
+    except:
+        pass
+
 # parse function string
     import re
     python_pattern = re.compile('\\.pyc?$')
@@ -33,9 +44,24 @@ def retrieve_function(function_string, global_scope=None, root_path='./'):
         function_tokens = function_string.split('.')
 
 # define attribute walk function
+    import pkgutil
+    from importlib import import_module
     def _walk_attributes(func_obj, func_tokens):
         attr_name = func_tokens.pop(0)
-        new_obj = getattr(func_obj, attr_name)
+        new_obj = None
+        try:
+            new_obj = getattr(func_obj, attr_name)
+        except AttributeError as err:
+            try:
+                for loader, name, is_package in pkgutil.walk_packages(func_obj.__path__):
+                    if name == attr_name:
+                        full_name = func_obj.__name__ + '.' + name
+                        new_obj = import_module(full_name)
+                        break
+            except:
+                pass
+            if not new_obj:
+                raise err
         if func_tokens:
             return _walk_attributes(new_obj, func_tokens)
         return new_obj
@@ -67,3 +93,5 @@ def retrieve_function(function_string, global_scope=None, root_path='./'):
         function_object = _walk_attributes(function_object, function_tokens)
 
     return function_object
+
+

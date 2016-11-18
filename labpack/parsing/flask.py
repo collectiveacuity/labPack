@@ -86,18 +86,27 @@ def extract_request_details(request_object, session_object=None):
 
 def validate_request_details(request_details, request_model):
 
+    from jsonmodel.validators import jsonModel
     from jsonmodel.exceptions import InputValidationError
 
+    title = 'validate_request_details'
+
+# validate inputs
+    if not isinstance(request_details, dict):
+        raise TypeError('%s(request_details={...}) must be a dictionary.' % title)
+    elif not isinstance(request_model, jsonModel):
+        raise TypeError('%s(request_model=<...>) must be a %s object.' % (title, jsonModel.__class__))
+
+# construct default status details
     status_details = {
         'code': 200,
-        'status': 'ok',
         'error': ''
     }
 
+# validate request details
     for key in request_model.schema.keys():
         if not key in request_details.keys():
             status_details['code'] = 400
-            status_details['status'] = 'error'
             status_details['error'] = "request is missing a value for field '%s'" % key
             break
         try:
@@ -106,7 +115,6 @@ def validate_request_details(request_details, request_model):
         except InputValidationError as err:
             status_details['error'] = err.message.replace('\n',' ').lstrip()
             status_details['code'] = 400
-            status_details['status'] = 'error'
             break
 
     return status_details

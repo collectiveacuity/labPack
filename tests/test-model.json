@@ -1,1 +1,13 @@
-{"components": {".labpack_records_creds": {"default_value": "sunlight"}}, "schema": {"labpack_records_configs": "happy", "labpack_records_details": true, "labpack_records_creds": "instant", "labpack_records_settings": 4}}
+{
+  "schema": {
+    "labpack_records_configs": "happy",
+    "labpack_records_creds": "instant",
+    "labpack_records_settings": 4,
+    "labpack_records_details": true
+  },
+  "components": {
+    ".labpack_records_creds": {
+      "default_value": "sunlight"
+    }
+  }
+}
