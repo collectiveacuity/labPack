@@ -100,7 +100,7 @@ def load_settings(file_path, module_name='', secret_key=''):
 
     return file_details
 
-def save_settings(record_details, file_path, secret_key='', overwrite=False):
+def save_settings(file_path, record_details, secret_key='', overwrite=False):
 
     '''
         a method to save dictionary typed data to a local file

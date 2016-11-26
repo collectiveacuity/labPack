@@ -28,8 +28,8 @@ if __name__ == '__main__':
         print('pytest module required to perform unittests. try: pip install pytest')
         exit()
     with pytest.raises(Exception):
-        save_settings(test_details, model_path)
-    assert save_settings(test_details, model_path, overwrite=True)
+        save_settings(model_path, test_details)
+    assert save_settings(model_path, test_details, overwrite=True)
 
 # test compile settings
     from jsonmodel.exceptions import InputValidationError

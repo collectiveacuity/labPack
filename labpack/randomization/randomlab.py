@@ -46,4 +46,4 @@ def random_characters(character_set, length):
 if __name__ == '__main__':
     from string import ascii_lowercase
     print(random_fraction())
-    print(random_characters(ascii_lowercase, 5))
+    print(random_characters(ascii_lowercase, 32))

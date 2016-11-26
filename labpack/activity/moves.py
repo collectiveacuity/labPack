@@ -245,11 +245,11 @@ class movesOAuth(object):
 
         {
             'json': {
-                "access_token": "1j0v33o6c5b34cVPqIiB_M2LYb_iM5S9Vcy7Rx7jA2630pK7HIjEXvJoiE8V5rRF",
-                "token_type": "bearer",
-                "expires_at": 1478559072,
-                "refresh_token": "A27CSzZXKf2EPB45lvLQyT56sZ80dXNtp_lA7lvZ6UIKAy94GNvW9g9aGmJtbl28",
-                "user_id": 23138311640030064
+                'access_token': '1j0v33o6c5b34cVPqIiB_M2LYb_iM5S9Vcy7Rx7jA2630pK7HIjEXvJoiE8V5rRF',
+                'token_type': 'bearer',
+                'expires_at': 1478559072,
+                'refresh_token': 'A27CSzZXKf2EPB45lvLQyT56sZ80dXNtp_lA7lvZ6UIKAy94GNvW9g9aGmJtbl28',
+                'user_id': 23138311640030064
             }
         }
         '''
@@ -301,12 +301,12 @@ class movesOAuth(object):
         :return: dictionary with token details
 
         {
-            'content': {
-                "access_token": "1j0v33o6c5b34cVPqIiB_M2LYb_iM5S9Vcy7Rx7jA2630pK7HIjEXvJoiE8V5rRF",
-                "token_type": "bearer",
-                "expires_at": 1478559072,
-                "refresh_token": "A27CSzZXKf2EPB45lvLQyT56sZ80dXNtp_lA7lvZ6UIKAy94GNvW9g9aGmJtbl28",
-                "user_id": 23138311640030064
+            'json': {
+                'access_token': '1j0v33o6c5b34cVPqIiB_M2LYb_iM5S9Vcy7Rx7jA2630pK7HIjEXvJoiE8V5rRF',
+                'token_type': 'bearer',
+                'expires_at': 1478559072,
+                'refresh_token': 'A27CSzZXKf2EPB45lvLQyT56sZ80dXNtp_lA7lvZ6UIKAy94GNvW9g9aGmJtbl28',
+                'user_id': 23138311640030064
             }
         }
         '''
@@ -358,11 +358,11 @@ class movesOAuth(object):
         :return: dictionary with status details
 
         {
-            'content': {
-                "client_id": "4j_HGYX1K166lC7Q83m5w0MYXYl45Aj6",
-                "service_scope": [ 'activity' ],
-                "expires_in": 4468335,
-                "user_id": 23138311640030064
+            'json': {
+                'client_id': '4j_HGYX1K166lC7Q83m5w0MYXYl45Aj6',
+                'service_scope': [ 'activity' ],
+                'expires_in': 4468335,
+                'user_id': 23138311640030064
             }
         }
         '''

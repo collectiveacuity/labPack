@@ -158,7 +158,12 @@ class apschedulerClient(object):
             response = requests.get(url=url)
         except Exception as err:
             if self.handler:
-                return self.handler(err)
+                request_kwargs = {
+                    'method': 'GET',
+                    'url': url
+                }
+                request_object = requests.Request(**request_kwargs)
+                return self.handler(request_object)
             else:
                 raise
         return response.json()
@@ -169,7 +174,13 @@ class apschedulerClient(object):
             response = requests.post(url=url, json=json_kwargs)
         except Exception as err:
             if self.handler:
-                return self.handler(err)
+                request_kwargs = {
+                    'method': 'POST',
+                    'url': url,
+                    'json': json_kwargs
+                }
+                request_object = requests.Request(**request_kwargs)
+                return self.handler(request_object)
             else:
                 raise
         return response.json()

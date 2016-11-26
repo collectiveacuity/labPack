@@ -6,19 +6,23 @@ def handle_requests(request_object):
 
     import requests
 
-# retrieve low level request objects
-    prepared_request = request_object.prepare()
-    request_session = requests.Session()
-
 # construct request details
     request_details = {
         'method': request_object.method,
         'headers': request_object.headers,
-        'url': prepared_request.url,
+        'url': request_object.url,
         'error': '',
         'json': request_object.json,
         'code': 105
     }
+
+# retrieve low level request objects
+    try:
+        prepared_request = request_object.prepare()
+    except requests.exceptions.InvalidURL:
+        request_details['error'] = '%s is an invalid url.' % request_details['url']
+        return request_details
+    request_session = requests.Session()
 
 # add headers from requests preparation
     request_details['headers'].update(prepared_request.headers)
@@ -28,7 +32,7 @@ def handle_requests(request_object):
     try:
         raise
     except requests.exceptions.InvalidURL:
-        request_details['error'] = 'invalid url'
+        request_details['error'] = '%s is an invalid url' % request_details['url']
 
 # troubleshoot local connectivity problems
     except:
