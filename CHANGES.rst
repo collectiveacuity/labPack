@@ -1,6 +1,15 @@
 ChangeLog
 =========
 
+0.8 (2016.11.26)
+----------------
+* [FEATURE ADDED] twilioClient class for interacting with twilio messaging api
+* [WIP] meetupClient class for interacting with meetup event api
+* [UPDATE] apschedulerClient incorporates requests_handler argument
+* [UPDATE] retrieve_function incorporates pkgutil module for walking packages
+* [BUG FIX] invalid url error on Request.prepare() method in handle_requests
+* [REFACTOR] file_path argument in save_settings function moved to first positional
+
 0.7 (2016.11.15)
 ----------------
 * [FEATURE ADDED] handle_requests method added to handler package to handle requests errors

@@ -105,7 +105,7 @@ class movesOAuth(object):
             'redirect_uri': '',
             'service_scope': [ 'location' ],
             'state_value': '',
-            'access_code': ''
+            'auth_code': ''
         },
         'components': {
             '.device_type': {
@@ -191,7 +191,7 @@ class movesOAuth(object):
 
         :param device_type: string with type of device receiving authorization url
         :param redirect_uri: string with redirect uri registered with moves
-        :param service_scope: dictionary with service type permissions
+        :param service_scope: list with service type permissions
         :param state_value: [optional] string with unique url-safe variable
         :return: string with authorization url
         '''
@@ -234,12 +234,12 @@ class movesOAuth(object):
 
         return url_string
 
-    def get_token(self, access_code, redirect_uri):
+    def get_token(self, auth_code, redirect_uri):
 
         '''
             a method to get an access token from moves api
 
-        :param access_code: string with authentication code received from client
+        :param auth_code: string with authentication code received from client
         :param redirect_uri: string with redirect uri registered with moves
         :return: dictionary with token details
 
@@ -258,7 +258,7 @@ class movesOAuth(object):
 
     # validate inputs
         input_args = {
-            'access_code': access_code,
+            'auth_code': auth_code,
             'redirect_uri': redirect_uri
         }
         for key, value in input_args.items():
@@ -272,7 +272,7 @@ class movesOAuth(object):
     # construct request params
         request_params = {
             'grant_type': 'authorization_code',
-            'code': access_code,
+            'code': auth_code,
             'client_id': self.client_id,
             'client_secret': self.client_secret,
             'redirect_uri': redirect_uri
