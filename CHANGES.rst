@@ -1,8 +1,8 @@
 ChangeLog
 =========
 
-0.8 (2016.11.26)
-----------------
+0.8 (TBD)
+---------
 * [FEATURE ADDED] twilioClient class for interacting with twilio messaging api
 * [WIP] meetupClient class for interacting with meetup event api
 * [UPDATE] apschedulerClient incorporates requests_handler argument

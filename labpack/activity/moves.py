@@ -432,25 +432,26 @@ class movesClient(object):
 
     def __init__(self, access_token, service_scope, usage_client=None, requests_handler=None):
 
-        '''
-            initialization method for moves client class
+        ''' initialization method for moves client class
 
         :param access_token: string with access token for user provided by moves oauth
         :param service_scope: dictionary with service type permissions
         :param usage_client: callable that records usage data
         :param requests_handler: callable that handles requests errors
         '''
+        
+        title = '%s.__init__' % self.__class__.__name__
 
     # construct class field model
         from jsonmodel.validators import jsonModel
         self.fields = jsonModel(self._class_fields)
 
     # construct client attributes
-        object_title = '%s.__init__(access_token=%s)' % (self.__class__.__name__, str(access_token))
+        object_title = '%s(access_token=%s)' % (title, str(access_token))
         self.access_token = self.fields.validate(access_token, '.access_token', object_title)
-        object_title = '%s.__init__(service_scope=[...])' % self.__class__.__name__
+        object_title = '%s(service_scope=[...])' % title
         self.service_scope = self.fields.validate(service_scope, '.service_scope', object_title)
-        self.url = self.fields.schema['api_endpoint']
+        self.endpoint = self.fields.schema['api_endpoint']
 
     # construct handlers
         self.moves_handler = movesHandler(usage_client)
@@ -588,7 +589,7 @@ class movesClient(object):
         title = '%s.list_activities' % self.__class__.__name__
 
     # construct request parameters
-        url_string = '%s/activities' % self.url
+        url_string = '%s/activities' % self.endpoint
 
     # send request
         response_details = self._get_request(url_string)
@@ -630,7 +631,7 @@ class movesClient(object):
         title = '%s.get_profile' % self.__class__.__name__
 
     # construct request parameters
-        url_string = '%s/user/profile' % self.url
+        url_string = '%s/user/profile' % self.endpoint
 
     # send request
         response_details = self._get_request(url_string)
@@ -665,7 +666,7 @@ class movesClient(object):
             raise ValueError('%s requires service scope to contain "activity".' % title)
 
     # construct request fields
-        url_string = '%s/user/summary/daily' % self.url
+        url_string = '%s/user/summary/daily' % self.endpoint
         parameters = self._process_dates(timezone_offset, first_date, start, end, title)
 
     # send request
@@ -701,7 +702,7 @@ class movesClient(object):
             raise ValueError('%s requires service scope to contain "activity".' % title)
 
     # construct request fields
-        url_string = '%s/user/activities/daily' % self.url
+        url_string = '%s/user/activities/daily' % self.endpoint
         parameters = self._process_dates(timezone_offset, first_date, start, end, title)
 
     # send request
@@ -737,7 +738,7 @@ class movesClient(object):
             raise ValueError('%s requires service scope to contain "location".' % title)
 
     # construct request fields
-        url_string = '%s/user/places/daily' % self.url
+        url_string = '%s/user/places/daily' % self.endpoint
         parameters = self._process_dates(timezone_offset, first_date, start, end, title)
 
     # send request
@@ -776,7 +777,7 @@ class movesClient(object):
             raise ValueError('%s requires service scope to contain "location" and "activity".' % title)
 
     # construct request fields
-        url_string = '%s/user/storyline/daily' % self.url
+        url_string = '%s/user/storyline/daily' % self.endpoint
         parameters = self._process_dates(timezone_offset, first_date, start, end, title, track_points)
         if track_points:
             parameters['trackPoints'] = 'true'

@@ -28,7 +28,7 @@ class meetupHandler(object):
     _class_fields = {
         'schema': {
             'rate_limits': [
-                {'requests': 3, 'period': 1}
+                {'requests': 30, 'period': 10}
             ]
         }
     }
@@ -48,8 +48,31 @@ class meetupHandler(object):
         self.rate_limits = self.fields.schema['rate_limits']
         self.usage_client = usage_client
 
-    def handle(self, err):
-        return err
+    def handle(self, response):
+
+    # construct default response details
+        details = {
+            'method': response.request.method,
+            'code': response.status_code,
+            'url': response.url,
+            'error': '',
+            'json': None,
+            'headers': response.headers
+        }
+
+    # rate limit headers:
+        # https://www.meetup.com/meetup_api/docs/#limits
+        # X-RateLimit-Limit
+        # X-RateLimit-Remaining
+        # X-RateLimit-Reset
+
+    # handle different codes
+        if details['code'] == 200:
+            details['json'] = response.json()
+        else:
+            details['error'] = response.content.decode()
+
+        return details
 
 class meetupRegister(object):
     ''' currently must be done manually '''
@@ -76,15 +99,8 @@ class meetupOAuth(object):
             'token_details': {
                 'access_token': '',
                 'token_type': '',
-                'expires_in': 0,
-                'refresh_token': '',
-                'user_id': 0
-            },
-            'token_status': {
-                'client_id': '',
-                'scope': '',
-                'expires_in': 0,
-                'user_id': 0
+                'expires_at': 0,
+                'refresh_token': ''
             },
             'client_id': '',
             'client_secret': '',
@@ -119,36 +135,17 @@ class meetupOAuth(object):
         :param requests_handler: callable that handles requests errors
         '''
 
-        # construct class field model
+    # construct class field model
         from jsonmodel.validators import jsonModel
         self.fields = jsonModel(self._class_fields)
 
-        # construct client attributes
+    # construct client attributes
         self.client_id = self.fields.validate(client_id, '.client_id')
         self.client_secret = self.fields.validate(client_secret, '.client_secret')
 
-        # construct handlers
-        self.meetup_handler = meetupHandler()
+    # construct handlers
+        self.service_handler = meetupHandler()
         self.requests_handler = requests_handler
-
-    def _get_request(self, url, params):
-
-        import requests
-
-    # send request
-        try:
-            response = requests.get(url=url, params=params)
-        except Exception:
-            if self.requests_handler:
-                request_object = requests.Request(method='GET', url=url, params=params)
-                return self.requests_handler(request_object)
-            else:
-                raise
-
-    # handle response
-        response_details = self.meetup_handler.handle(response)
-
-        return response_details
 
     def _post_request(self, url, data):
 
@@ -165,7 +162,7 @@ class meetupOAuth(object):
                 raise
 
     # handle response
-        response_details = self.meetup_handler.handle(response)
+        response_details = self.service_handler.handle(response)
 
         return response_details
 
@@ -267,6 +264,7 @@ class meetupOAuth(object):
         from time import time
         current_time = time()
         token_details = self._post_request(url_string, data=request_form)
+        print(token_details)
 
     # convert expiration info to epoch time
         details = token_details['json']
@@ -291,7 +289,6 @@ class meetupOAuth(object):
                 'token_type': 'bearer',
                 'expires_at': 1478559072,
                 'refresh_token': 'A27CSzZXKf2EPB45lvLQyT56sZ80dXNtp_lA7lvZ6UIKAy94GNvW9g9aGmJtbl28',
-                'user_id': 23138311640030064
             }
         }
         '''
@@ -331,348 +328,1013 @@ class meetupOAuth(object):
 
 class meetupClient(object):
 
-    def __init__(self, access_token):
+    _class_fields = {
+        'schema': {
+            'api_endpoint': 'https://api.meetup.com',
+            'access_token': '1350d78219f4dc9ded18c7fbda86a19e',
+            'service_scope': ['ageless'],
+            'requests_handler': 'labpack.handlers.requests.handle_requests',
+            'usage_client': 'labpack.storage.appdata.appdataClient.__init__',
+            'member_id': 12345678,
+            'group_url': 'myfavoritegroup',
+            'group_id': 23456789,
+            'event_id': 23454321,
+            'max_results': 4
+        },
+        'components': {
+            '.service_scope': {
+                'unique_values': True
+            },
+            '.service_scope[0]': {
+                'discrete_values': ['ageless', 'basic', 'event_management', 'group_edit', 'group_content', 'group_join', 'profile_edit', 'reporting', 'rsvp']
+            },
+            '.max_results': {
+                'integer_data': True
+            },
+            '.member_id': {
+                'integer_data': True
+            },
+            '.event_id': {
+                'integer_data': True
+            },
+            '.group_id': {
+                'integer_data': True
+            }
+        }
+    }
+
+    def __init__(self, access_token, service_scope, usage_client=None, requests_handler=None):
 
         ''' initialization method for meetup client class
 
-        :param: access_token
+        :param access_token: string with access token for user provided by meetup oauth
+        :param service_scope: dictionary with service type permissions
+        :param usage_client: [optional] callable that records usage data
+        :param requests_handler: [optional] callable that handles requests errors
         '''
 
-        pass
+        title = '%s.__init__' % self.__class__.__name__
 
-    def memberGroups(meetup_user_id, meetup_user_key):
-        '''
-            function to discover info about a group
-            interprets JSON response to GET request to Meetup API for group info
-            dependencies:
-            import json
-            import urllib.request
-            import urllib.parse
-        '''
-        meetup_url = 'https://api.meetup.com/2/groups?%s'
-        params = {
-            'key': meetup_user_key,
-            'member_id': str(meetup_user_id)
+    # construct class field model
+        from jsonmodel.validators import jsonModel
+        self.fields = jsonModel(self._class_fields)
+
+    # validate inputs
+        input_fields = {
+            'access_token': access_token,
+            'service_scope': service_scope
         }
-        response = urllib.request.urlopen(meetup_url % urllib.parse.urlencode(params))
-        return json.loads(response.read().decode("utf-8"))
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
 
-    def groupInfo(groupID, meetup_user_key):
-        '''
-            function to discover info about a group
-            interprets JSON response to GET request to Meetup API for group info
-            dependencies:
-            import json
-            import urllib.request
-            import urllib.parse
-        '''
-        meetup_url = 'https://api.meetup.com/2/groups?%s'
-        params = {
-            'key': meetup_user_key,
-            'group_id': str(groupID)
+    # construct class properties
+        self.access_token = access_token
+        self.service_scope = service_scope
+        self.endpoint = self.fields.schema['api_endpoint']
+    
+    # construct method handlers
+        self.requests_handler = requests_handler
+        self.service_handler = meetupHandler(usage_client)
+    
+    def _get_request(self, url, headers=None, params=None):
+
+        import requests
+
+    # construct request kwargs
+        request_kwargs = {
+            'url': url,
+            'headers': {'Authorization': 'Bearer %s' % self.access_token},
+            'params': {}
         }
-        response = urllib.request.urlopen(meetup_url % urllib.parse.urlencode(params))
-        return json.loads(response.read().decode("utf-8"))
+        if headers:
+            request_kwargs['headers'].update(headers)
+        if params:
+            request_kwargs['params'].update(params)
 
-    def groupEvents(groupID, meetup_user_key):
-        '''
-            function to discover upcoming events for a group
-            interprets JSON response to GET request to Meetup API for group's event list
-            dependencies:
-            import json
-            import urllib.request
-            import urllib.parse
-        '''
-        meetup_url = 'https://api.meetup.com/2/events?%s'
-        params = {
-            'key': meetup_user_key,
-            'group_id': groupID
-        }
-        response = urllib.request.urlopen(meetup_url % urllib.parse.urlencode(params))
-        return json.loads(response.read().decode("utf-8"))
-
-    def eventInfo(eventID, meetup_user_key):
-        '''
-            function to discover info about a Meetup event
-            interprets JSON response to GET request to Meetup API for event info
-            dependencies:
-            import json
-            import urllib.request
-            import urllib.parse
-            response (mand):
-            ['rsvpable'] = true # boolean
-            response (optional):
-            ['rsvp_rules']['guest_limit'] = 2 # int
-            ['fee']['amount'] = 10 # int
-            ['fee']['required'] = "1" # string
-            ['survey_questions'][0]['id'] = 22529716 # int
-            ['survey_guestions'][0]['required'] = false # boolean
-            ['survey_questions'][0]['question'] = "What is your name?" # string
-            ['yes_rsvp_count'] = 86 # int
-            ['rsvp_limit'] = 150 # int
-        '''
-        meetup_url = 'https://api.meetup.com/2/event/' + str(eventID) + '/?%s'
-        params = {
-            'key': meetup_user_key,
-            'fields': 'rsvpable,rsvp_rules,fee,survey_questions'
-        }
-        response = urllib.request.urlopen(meetup_url % urllib.parse.urlencode(params))
-        return json.loads(response.read().decode("utf-8"))
-
-    def eventRSVPs(eventID, meetup_user_key):
-        '''
-            function to check info of all RSVPs to a Meetup event by eventID
-            interprets JSON response to GET request to Meetup API for RSVPs status
-            dependencies:
-            import json
-            import urllib.request
-            import urllib.parse
-            returns:
-            ['results'] = list of dictionaries of users
-                [0]['member']['member_id'] # int
-                [0]['member']['name'] # str
-                [0]['rsvp_id'] # int
-                [0]['response'] # yes or no
-                [0]['member_photo']['highres_link'] # str
-            ['meta'] = api responsiveness data
-        '''
-        meetup_url = 'https://api.meetup.com/2/rsvps?%s'
-        params = {
-            'key': meetup_user_key,
-            'event_id': str(eventID)
-        }
-        response = urllib.request.urlopen(meetup_url % urllib.parse.urlencode(params))
-        return json.loads(response.read().decode("utf-8"))
-
-    def memberInfo(meetup_user_id, meetup_user_key):
-        '''
-            function to discover info about a Meetup member
-            interprets JSON response to GET request to Meetup API for member info
-            dependencies:
-            import json
-            import urllib.request
-            import urllib.parse
-            response (mand):
-            response (optional):
-        '''
-        meetup_url = 'https://api.meetup.com/2/member/' + str(meetup_user_id) + '/?%s'
-        params = {
-            'key': meetup_user_key
-        }
-        response = urllib.request.urlopen(meetup_url % urllib.parse.urlencode(params))
-        return json.loads(response.read().decode("utf-8"))
-
-    def memberRSVPStatus(rsvpID, meetup_user_key):
-        '''
-            function to check status of RSVP to a Meetup event by RSVPID
-            interprets JSON response to GET request to Meetup API for member RSVP status
-            requires:
-            RSVPID number for member from a previous event RSVP
-            meetup_user_key for member
-            dependencies:
-            import json
-            import urllib.request
-            import urllib.parse
-        '''
-        meetup_url = 'https://api.meetup.com/2/rsvp/' + str(rsvpID) + '?%s'
-        params = {
-            'key': meetup_user_key
-        }
-        response = urllib.request.urlopen(meetup_url % urllib.parse.urlencode(params))
-        return json.loads(response.read().decode("utf-8"))
-
-    def RSVPYes(eventID, meetup_user_key, guests = None):
-        '''
-            function to RSVP to a Meetup event on behalf of member
-            creates a POST to Meetup API to RSVP with member key
-            requires:
-            event_id of event
-            user key of member
-            user to be a member of the group
-            optional:
-            guest limit determined by meetupEventInfo ['rsvp_rules']['guest_limit']
-            dependencies:
-            import json
-            import urllib.request
-            import urllib.parse
-        '''
-        params = {
-            'event_id': str(eventID),
-            'rsvp': 'yes',
-            'key': meetup_user_key
-        }
-        if guests:
-            params['guests'] = str(guests)
-        else:
-            pass
-        url = 'https://api.meetup.com/2/rsvp'
-        post_params = urllib.parse.urlencode(params).encode('utf-8')
-        response = urllib.request.urlopen(url, post_params)
-        return json.loads(response.read().decode("utf-8"))
-
-    def RSVPNo(eventID, meetup_user_key):
-        '''
-            function to decline RSVP to a Meetup event on behalf of member
-            creates a POST to Meetup API to RSVP with member key
-            requires:
-            event_id of event
-            user key of member
-            user to be a member of the group
-            dependencies:
-            import json
-            import urllib.request
-            import urllib.parse
-        '''
-        params = {
-            'event_id': str(eventID),
-            'rsvp': 'no',
-            'key': meetup_user_key
-        }
-        headers = {
-            'Content-type': 'application/x-www-form-urlencoded'
-        }
-        meetup_url = 'https://api.meetup.com/2/rsvp'
-        post_argument = urllib.parse.urlencode(params).encode('utf-8')
-        response = urllib.request.urlopen(meetup_url, post_argument)
-        return json.loads(response.read().decode("utf-8"))
-
-    def memberEventList(meetup_user_id, meetup_user_key, api_throttle, searchDepth=False):
-        '''
-            returns a chronological list of events in user's Meetup groups
-            searchDepth default is all
-            dependencies:
-            import json
-            import urllib.request
-            import urllib.parse
-            returns list of dictionaries:
-            [0]['eventID']
-            [0]['eventName']
-            [0]['eventURL']
-            [0]['eventDT']
-            [0]['groupID']
-        '''
-        member_groups = meetupAPI.memberGroups(meetup_user_id, meetup_user_key)
-        member_events = []
-        for i in range(0,len(member_groups['results'])):
-            t1 = timer()
-            try:
-                group_events = meetupAPI.groupEvents(member_groups['results'][i]['id'], meetup_user_key)
-                if group_events['results']:
-                    searchLength = len(group_events['results'])
-                    if searchDepth:
-                        searchLength = int(searchDepth)
-                    else:
-                        pass
-                    for j in range(0,searchLength):
-                        event = {}
-                        eventURL = group_events['results'][j]['event_url'].replace('\/', '/')
-                        event['eventURL'] = eventURL
-                        if isinstance(group_events['results'][j]['id'],int):
-                            event['eventID'] = group_events['results'][j]['id']
-                        else:
-                            event['eventID'] = eventURL[eventURL.find('events/') + 7:\
-                                eventURL.rfind('/')]
-                        event['eventName'] = group_events['results'][j]['name']
-                        event['groupID'] = group_events['results'][j]['group']['id']
-                        event['eventDT'] = int(group_events['results'][j]['time']) / 1000
-                        member_events.append(event)
-                else:
-                    pass
-            except:
-                pass
-            t2 = timer()
-            time_split = t2 - t1
-            wait_time = api_throttle - time_split
-            if wait_time > 0:
-                time.sleep(wait_time)
-        return sorted(member_events, key=lambda k: k['eventDT'])
-
-    def nextRSVP(meetup_user_id, meetup_user_key, api_throttle, searchDepth=False):
-        '''
-            looks for the next available event in user's Meetup groups & RSVPs for it
-            dependencies:
-            import json
-            import urllib.request
-            import urllib.parse
-            returns dictionary:
-            ['rsvpID']
-            ['meetup_user_key']
-            ['eventID']
-            ['eventName']
-            ['eventURL']
-            ['eventDT']
-            ['groupID']
-        '''
-        eventFound = False
-        eventCounter = 0
-        if searchDepth:
-            searchDepth = int(searchDepth)
-        else:
-            searchDepth = 3
-        eventList = meetupAPI.memberEventList(meetup_user_id, meetup_user_key, api_throttle, searchDepth)
-        eventRSVP = {}
-        while not eventFound:
-            t1 = timer()
-            pE = meetupAPI.eventInfo(eventList[eventCounter]['eventID'], meetup_user_key)
-            if not 'rsvp_limit' in pE.keys():
-                pE['rsvp_limit'] = 1000000
-            if not 'yes_rsvp_count' in pE.keys():
-                pE['yes_rsvp_count'] = 0
-            if not 'survey_questions' in pE.keys():
-                reqQ = False
+    # send request
+        try:
+            response = requests.get(**request_kwargs)
+        except Exception:
+            if self.requests_handler:
+                request_kwargs['method'] = 'GET'
+                request_object = requests.Request(**request_kwargs)
+                return self.requests_handler(request_object)
             else:
-                for i in range(0,len(pE['survey_questions'])):
-                    if not pE['survey_questions'][i]['required']:
-                        reqQ = False
-                    else:
-                        reqQ = True
-                        i = len(pE['survey_questions'])
-            if pE['rsvpable'] and pE['yes_rsvp_count'] < pE['rsvp_limit'] and \
-                    not 'fees' in pE.keys() and not reqQ:
-                try:
-                    rsvp = meetupAPI.RSVPYes(eventList[eventCounter]['eventID'], meetup_user_key)
-                    eventFound = True
-                    eventRSVP['rsvpID'] = rsvp['rsvp_id']
-                    eventRSVP['meetup_user_key'] = meetup_user_key
-                    eventRSVP['eventID'] = eventList[eventCounter]['eventID']
-                    eventRSVP['groupID'] = eventList[eventCounter]['groupID']
-                    eventRSVP['eventName'] = eventList[eventCounter]['eventName']
-                    eventRSVP['eventDT'] = eventList[eventCounter]['eventDT']
-                    eventRSVP['eventURL'] = eventList[eventCounter]['eventURL']
-                except:
-                    print('RSVP failed')
-                    pass
-            eventCounter += 1
-            t2 = timer()
-            time_split = t2 - t1
-            wait_time = api_throttle - time_split
-            if wait_time > 0:
-                time.sleep(wait_time)
-        return eventRSVP
+                raise
 
-    def methodTest(meetup_user_id, meetup_user_key, api_throttle):
+    # handle response
+        response_details = self.service_handler.handle(response)
+
+        return response_details
+
+    def _post_request(self, url, headers=None, params=None):
+
+        import requests
+
+    # construct request kwargs
+        request_kwargs = {
+            'url': url,
+            'headers': {'Authorization': 'Bearer %s' % self.access_token},
+            'params': {}
+        }
+        if headers:
+            request_kwargs['headers'].update(headers)
+        if params:
+            request_kwargs['params'].update(params)
+
+    # send request
+        try:
+            response = requests.post(**request_kwargs)
+        except Exception:
+            if self.requests_handler:
+                request_kwargs['method'] = 'POST'
+                request_object = requests.Request(**request_kwargs)
+                return self.requests_handler(request_object)
+            else:
+                raise
+
+    # handle response
+        response_details = self.service_handler.handle(response)
+
+        return response_details
+
+    def get_member_profile(self, member_id=0):
+
+        ''' a method to retrieve member profile info
+
+        :param member_id: [optional] integer with member id from member profile
+        :return: dictionary with member profile inside [json] key
+
+        {
+            'json': {
+                'name': 'First Last'
+                'photo_url': 'http://photos1.meetupstatic.com/photos/member/member_12.jpeg',
+                'other_services': {},
+                'lon': '-12.34567890',
+                'lat': '87.65432109',
+                'id': '123456789',
+                'visited': '2015-10-23 13:12:44 PST',
+                'city': 'Sacramento',
+                'joined': 'Tue Oct 08 14:25:56 PDT 2012',
+                'zip': '95660',
+                'bio': 'my info',
+                'link': 'http://www.meetup.com/members/12345678',
+                'state': 'CA',
+                'country': 'us',
+                'lang': 'en_US'
+            }
+        }
         '''
-            unit test for the meetup methods
+
+    # https://www.meetup.com/meetup_api/docs/members/:member_id/#get
+
+        title = '%s.get_member_profile' % self.__class__.__name__
+
+    # validate inputs
+        input_fields = {
+            'member_id': member_id
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+
+    # construct request fields
+        url = '%s/members/' % self.endpoint
+        params = {
+            'member_id': 'self'
+        }
+        if member_id:
+            params['member_id'] = member_id
+
+    # send request
+        response_details = self._get_request(url, params=params)
+
+    # construct method output dictionary
+        profile_details = {
+            'json': {}
+        }
+        for key, value in response_details.items():
+            if not key == 'json':
+                profile_details[key] = value
+
+    # parse response
+        if response_details['json']:
+            if 'results' in response_details['json'].keys():
+                if response_details['json']['results']:
+                    details = response_details['json']['results'][0]
+                    for key, value in details.items():
+                        if key != 'topics':
+                            profile_details['json'][key] = value
+
+        return profile_details
+
+    def get_member_settings(self, member_id):
+
+        ''' a method to retrieve member settings details
+
+        :param member_id: integer with member id from member profile
+        :return: dictionary with member settings inside [json] key
+
+        {
+            'json': {
+                'name': 'First Last',
+                'status': 'active',
+                'gender: 'none',
+                'messaging_pref': 'all_members',
+                'lon': '-12.34',
+                'lat': '87.65',
+                'id': '123456789',
+                'city': 'Sacramento',
+                'joined': 1234567890000,
+                'bio': 'my info',
+                'state': 'CA',
+                'country': 'us',
+                'localized_country_name': 'USA',
+                'privacy': {
+                    'bio': 'visible',
+                    'groups': 'hidden',
+                    'topics': 'visible'
+                },
+                'stats': {
+                    'groups': 123,
+                    'rsvps': 234,
+                    'topics': 12
+                },
+                'photo': {
+                    'type': 'member',
+                    'id': 12,
+                    'highres_link': 'http://photos1.meetupstatic.com/photos/member/highres_12.jpeg',
+                    'photo_link': 'http://photos1.meetupstatic.com/photos/member/member_12.jpeg',
+                    'thumb_link': 'http://photos1.meetupstatic.com/photos/member/thumb_12.jpeg'
+                }
+            }
+        }
         '''
-        urlTitle = 'Meetup API'
-        t1 = timer()
-        eventRSVP = meetupAPI.nextRSVP(meetup_user_id, meetup_user_key, api_throttle, 3)
-        assert meetupAPI.groupInfo(eventRSVP['groupID'], meetup_user_key)
-        eventAttendees = meetupAPI.eventRSVPs(eventRSVP['eventID'], meetup_user_key)
-        assert meetupAPI.memberInfo(eventAttendees['results'][0]['member']['member_id'], meetup_user_key)
-        rsvpStatus = meetupAPI.memberRSVPStatus(eventRSVP['rsvpID'], meetup_user_key)
-        if str(rsvpStatus['response']) == 'yes':
-            meetupAPI.RSVPNo(eventRSVP['eventID'], meetup_user_key)
-            print('Meetup Methods Working')
+
+    # https://www.meetup.com/meetup_api/docs/members/:member_id/#get
+
+        title = '%s.get_member_settings' % self.__class__.__name__
+
+    # validate inputs
+        input_fields = {
+            'member_id': member_id
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+
+    # construct member id
+        if not member_id:
+            raise IndexError('%s requires member id argument.' % title)
+
+    # compose request fields
+        url = '%s/members/%s' % (self.endpoint, str(member_id))
+        params = {
+            'fields': 'gender,birthday,messaging_pref,other_services,privacy,self,stats'
+        }
+
+    # send requests
+        member_settings = self._get_request(url, params=params)
+
+        return member_settings
+
+    def get_member_topics(self, member_id):
+
+        ''' a method to retrieve a list of topics member follows
+
+        :param member_id: integer with meetup member id
+        :return: dictionary with list of topics inside [json] key
+
+        {
+            'json': [
+                {
+                  'urlkey': 'diningout',
+                  'lang': 'en_US',
+                  'id': 713,
+                  'name': 'Dining Out'
+                }
+            ]
+        }
+        '''
+
+    # https://www.meetup.com/meetup_api/docs/members/:member_id/#get
+
+        title = '%s.get_member_topics' % self.__class__.__name__
+
+    # validate inputs
+        input_fields = {
+            'member_id': member_id
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+
+    # construct member id
+        if not member_id:
+            raise IndexError('%s requires member id argument.' % title)
+
+    # compose request fields
+        url = '%s/members/%s' % (self.endpoint, str(member_id))
+        params = {
+            'fields': 'topics'
+        }
+
+    # send requests
+        response_details = self._get_request(url, params=params)
+
+    # construct method output dictionary
+        member_topics = {
+            'json': []
+        }
+        for key, value in response_details.items():
+            if not key == 'json':
+                member_topics[key] = value
+
+    # parse response
+        if response_details['json']:
+            if 'topics' in response_details['json'].keys():
+                member_topics['json'] = response_details['json']['topics']
+
+        return member_topics
+
+    def get_member_groups(self, member_id):
+
+        ''' a method to retrieve a list of meetup groups member belongs to
+
+        :param member_id: integer with meetup member id
+        :return: dictionary with list of groups in [json]
+
+        {
+            'json': [
+                {
+                    'status': 'active',
+                    'updated': 1234567891000,
+                    'visited': 1234567891000,
+                    'created': 1234567891000,
+                    'group': {
+                        'id': 12334567,
+                        'join_mode': 'open',
+                        'group_photo': { ... PHOTO OBJECT ... },
+                        'urlname': 'myfavoritegroup',
+                        'members': 123,
+                        'key_photo': { ... },
+                        'who': 'Team Us',
+                        'name': 'My Favorite Group'
+                    }
+                }
+            ]
+        }
+        '''
+
+    # https://www.meetup.com/meetup_api/docs/members/:member_id/#get
+
+        title = '%s.get_member_groups' % self.__class__.__name__
+
+    # validate inputs
+        input_fields = {
+            'member_id': member_id
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+
+    # construct member id
+        if not member_id:
+            raise IndexError('%s requires member id argument.' % title)
+
+    # compose request fields
+        url = '%s/members/%s' % (self.endpoint, str(member_id))
+        params = {
+            'fields': 'memberships'
+        }
+
+    # send requests
+        response_details = self._get_request(url, params=params)
+
+    # construct method output dictionary
+        member_groups = {
+            'json': []
+        }
+        for key, value in response_details.items():
+            if not key == 'json':
+                member_groups[key] = value
+
+    # parse response
+        if response_details['json']:
+            if 'memberships' in response_details['json'].keys():
+                member_groups['json'] = response_details['json']['memberships']['member']
+
+        return member_groups
+
+    def get_member_events(self, upcoming=True):
+
+        ''' a method to retrieve a list of events member attended or will attend
+
+        :param upcoming: [optional] boolean to filter list to only future events
+        :return: dictionary with event list results within [json]
+
+        {
+            'json': [
+                {
+                    'id': '123456789',
+                    'name': 'My Favorite Event',
+                    'created': 1234567890000,
+                    'updated': 1234567890000,
+                    'visibility': 'public',
+                    'status': 'upcoming',
+                    'time': 1234567890000,
+                    'utc_offset': -28800000,
+                    'duration': 11700000,
+                    'fee': {
+                        'accepts': 'paypal',
+                        'required': True,
+                        'label': 'price',
+                        'currency': 'USD',
+                        'description': 'per person',
+                        'amount': 5.0
+                    },
+                    'rsvp_rules': {
+                        'close_time': 1234567890000,
+                        'closed': False,
+                        'guest_limit': 0,
+                        'open_time': 1234567890000,
+                        'refund_policy': { 'days': 3, 'notes': '', 'policies': [] },
+                        'waitlisting': 'auto'
+                    },
+                    'survey_questions': [
+                        {
+                            'id': 234567890,
+                            'question': 'tell me something i want to know'
+                        }
+                    ],
+                    'rsvp_limit': 200,
+                    'yes_rsvp_count': 200,
+                    'waitlist_count': 123,
+                    'rsvpable': True,
+                    'rsvpable_after_join': True,
+                    'rsvp_after_join': True,
+                    'description': '<p>A long description</p>',
+                    'comment_count': 1,
+                    'how_to_find_us': 'open the door',
+                    'group': { ... GROUP OBJECT ... },
+                    'venue': { ... VENUE OBJECT ... },
+                    'event_hosts': [ { ... HOST OBJECT ... }]
+                    'short_link': 'http://meetu.ps/e/df6Ju/GlGy/i'
+                    'link': 'https://www.meetup.com/mygroup/events/123456789/'
+                }
+            ]
+        }
+        '''
+
+    # https://www.meetup.com/meetup_api/docs/self/events/
+
+    # construct request fields
+        url = '%s/self/events' % self.endpoint
+        params = {
+            'status': 'past',
+            'fields': 'comment_count,event_hosts,rsvp_rules,short_link,survey_questions,rsvpable'
+        }
+        if upcoming:
+            params['status'] = 'upcoming'
+
+    # send requests
+        member_events = self._get_request(url, params=params)
+        for event in member_events['json']:
+            if not 'fee' in event.keys():
+                event['fee'] = {}
+            if not 'rsvpable_after_join' in event.keys():
+                event['rsvpable_after_join'] = True
+
+        return member_events
+
+    def get_member_calendar(self, max_results=0):
+
+        ''' a method to retrieve the upcoming events for all groups member belongs to
+
+        :param max_results: [optional] integer with number of events to include
+        :return: dictionary with event list results within [json]
+
+        {
+            'json': [
+                {
+                    'id': '123456789',
+                    'name': 'My Favorite Event',
+                    'created': 1234567890000,
+                    'updated': 1234567890000,
+                    'visibility': 'public',
+                    'status': 'upcoming',
+                    'time': 1234567890000,
+                    'utc_offset': -28800000,
+                    'duration': 11700000,
+                    'fee': {
+                        'accepts': 'paypal',
+                        'required': True,
+                        'label': 'price',
+                        'currency': 'USD',
+                        'description': 'per person',
+                        'amount': 5.0
+                    },
+                    'rsvp_rules': {
+                        'close_time': 1234567890000,
+                        'closed': False,
+                        'guest_limit': 0,
+                        'open_time': 1234567890000,
+                        'refund_policy': { 'days': 3, 'notes': '', 'policies': [] },
+                        'waitlisting': 'auto'
+                    },
+                    'survey_questions': [
+                        {
+                            'id': 234567890,
+                            'question': 'tell me something i want to know'
+                        }
+                    ],
+                    'rsvp_limit': 200,
+                    'yes_rsvp_count': 200,
+                    'waitlist_count': 123,
+                    'rsvpable': True,
+                    'rsvpable_after_join': True,
+                    'rsvp_after_join': True,
+                    'description': '<p>A long description</p>',
+                    'comment_count': 1,
+                    'how_to_find_us': 'open the door',
+                    'group': { ... GROUP OBJECT ... },
+                    'venue': { ... VENUE OBJECT ... },
+                    'event_hosts': [ { ... HOST OBJECT ... }]
+                    'short_link': 'http://meetu.ps/e/df6Ju/GlGy/i'
+                    'link': 'https://www.meetup.com/mygroup/events/123456789/'
+                }
+            ]
+        }
+        '''
+
+    #
+        title = '%s.get_member_calendar' % self.__class__.__name__
+
+    # validate inputs
+        input_fields = {
+            'max_results': max_results
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+
+    # construct request fields
+        url = '%s/self/calendar' % self.endpoint
+        params = {
+            'fields': 'comment_count,event_hosts,rsvp_rules,short_link,survey_questions,rsvpable'
+        }
+        if max_results:
+            params['page'] = str(max_results)
+
+    # send requests
+        member_calender = self._get_request(url, params=params)
+
+    # construct method output
+        for event in member_calender['json']:
+            if not 'fee' in event.keys():
+                event['fee'] = {}
+            if not 'rsvpable_after_join' in event.keys():
+                event['rsvpable_after_join'] = True
+
+        return member_calender
+
+    def get_group_details(self, group_url='', group_id=0):
+
+        ''' a method to retrieve details about a meetup group
+
+        :param group_url: string with meetup urlname of group
+        :param group_id: int with meetup id for group
+        :return: dictionary with group details inside [json] key
+
+        {
+            'json': {
+                'category': {
+                    'id': 34,
+                    'name': 'Tech',
+                    'shortname': 'Tech',
+                    'sort_name': 'Tech'
+                },
+                'city': 'Sacramento',
+                'country': 'US',
+                'created': 1234567890000,
+                'description': '',
+                'id': 12345678,
+                'join_mode': 'open',
+                'key_photo': { ... PHOTO OBJECT ... },
+                'lat': 12.34,
+                'link': 'https://www.meetup.com/myfavoritegroup/',
+                'localized_country_name': 'USA',
+                'lon': -12.34,
+                'members': 201,
+                'name': 'My Favorite Group',
+                'next_event': { ... EVENT OBJECT ... },
+                'organizer': { ... HOST OBJECT ... },
+                'photos': [ { ... PHOTO OBJECT ... } ],
+                'state': 'CA',
+                'timezone': 'US/Western',
+                'urlname': 'myfavoritegroup',
+                'visibility': 'public',
+                'who': 'Team Us'
+            }
+        }
+        '''
+
+    # https://www.meetup.com/meetup_api/docs/:urlname/#get
+
+        title = '%s.get_group_details' % self.__class__.__name__
+
+    # validate inputs
+        input_fields = {
+            'group_url': group_url,
+            'group_id': group_id
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+        if not group_url and not group_id:
+            raise IndexError('%s requires either a group_url or group_id argument.' % title)
+
+    # construct request fields
+        if group_id:
+            url = '%s/2/groups?group_id=%s' % (self.endpoint, group_id)
         else:
-            print('failure')
-        t2 = timer()
-        print(urlTitle + ': ' + format((t2 - t1), '.5f') + ' seconds')
-        return True
+            url = '%s/%s' % (self.endpoint, group_url)
+
+    # send request
+        response_details = self._get_request(url)
+
+    # cosntruct method output
+        group_details = response_details
+        if group_id:
+            if response_details['json']:
+                if 'results' in response_details['json'].keys():
+                    if response_details['json']['results']:
+                        group_details['json'] = response_details['json']['results'][0]
+
+        return group_details
+
+    def get_group_events(self, group_url):
+
+        ''' a method to retrieve a list of upcoming events hosted by group
+
+        :param group_url: string with meetup urlname field of group
+        :return: dictionary with event list results within [json]
+
+        {
+            'json': [
+                {
+                    'id': '123456789',
+                    'name': 'My Favorite Event',
+                    'created': 1234567890000,
+                    'updated': 1234567890000,
+                    'visibility': 'public',
+                    'status': 'upcoming',
+                    'time': 1234567890000,
+                    'utc_offset': -28800000,
+                    'duration': 11700000,
+                    'fee': {
+                        'accepts': 'paypal',
+                        'required': True,
+                        'label': 'price',
+                        'currency': 'USD',
+                        'description': 'per person',
+                        'amount': 5.0
+                    },
+                    'rsvp_rules': {
+                        'close_time': 1234567890000,
+                        'closed': False,
+                        'guest_limit': 0,
+                        'open_time': 1234567890000,
+                        'refund_policy': { 'days': 3, 'notes': '', 'policies': [] },
+                        'waitlisting': 'auto'
+                    },
+                    'survey_questions': [
+                        {
+                            'id': 234567890,
+                            'question': 'tell me something i want to know'
+                        }
+                    ],
+                    'rsvp_limit': 200,
+                    'yes_rsvp_count': 200,
+                    'waitlist_count': 123,
+                    'rsvpable': True,
+                    'rsvpable_after_join': True,
+                    'rsvp_after_join': True,
+                    'description': '<p>A long description</p>',
+                    'comment_count': 1,
+                    'how_to_find_us': 'open the door',
+                    'group': { ... GROUP OBJECT ... },
+                    'venue': { ... VENUE OBJECT ... },
+                    'event_hosts': [ { ... HOST OBJECT ... }]
+                    'short_link': 'http://meetu.ps/e/df6Ju/GlGy/i'
+                    'link': 'https://www.meetup.com/mygroup/events/123456789/'
+                }
+            ]
+        }
+        '''
+
+    # https://www.meetup.com/meetup_api/docs/:urlname/events/#list
+
+
+        title = '%s.get_group_events' % self.__class__.__name__
+
+    # validate inputs
+        input_fields = {
+            'group_url': group_url
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+
+    # construct request fields
+        url = '%s/%s/events' % (self.endpoint, group_url)
+        params = {
+            'fields': 'comment_count,event_hosts,rsvp_rules,short_link,survey_questions,rsvpable'
+        }
+
+    # send request
+        group_events = self._get_request(url, params=params)
+
+    # construct method output
+        for event in group_events['json']:
+            if not 'fee' in event.keys():
+                event['fee'] = {}
+            if not 'rsvpable_after_join' in event.keys():
+                event['rsvpable_after_join'] = True
+
+        return group_events
+
+    def get_event_details(self, group_url, event_id):
+
+        ''' a method to retrieve details for an event
+
+        :param group_url: string with meetup urlname for host group
+        :param event_id: integer with meetup id for event
+        :return: dictionary with event details inside [json] key
+
+        {
+            'json': {
+                'id': '123456789',
+                'name': 'My Favorite Event',
+                'created': 1234567890000,
+                'updated': 1234567890000,
+                'visibility': 'public',
+                'status': 'upcoming',
+                'time': 1234567890000,
+                'utc_offset': -28800000,
+                'duration': 11700000,
+                'fee': {
+                    'accepts': 'paypal',
+                    'required': True,
+                    'label': 'price',
+                    'currency': 'USD',
+                    'description': 'per person',
+                    'amount': 5.0
+                },
+                'rsvp_rules': {
+                    'close_time': 1234567890000,
+                    'closed': False,
+                    'guest_limit': 0,
+                    'open_time': 1234567890000,
+                    'refund_policy': { 'days': 3, 'notes': '', 'policies': [] },
+                    'waitlisting': 'auto'
+                },
+                'survey_questions': [
+                    {
+                        'id': 234567890,
+                        'question': 'tell me something i want to know'
+                    }
+                ],
+                'rsvp_limit': 200,
+                'yes_rsvp_count': 200,
+                'waitlist_count': 123,
+                'rsvpable': True,
+                'rsvpable_after_join': True,
+                'rsvp_after_join': True,
+                'description': '<p>A long description</p>',
+                'comment_count': 1,
+                'how_to_find_us': 'open the door',
+                'group': { ... GROUP OBJECT ... },
+                'venue': { ... VENUE OBJECT ... },
+                'event_hosts': [ { ... HOST OBJECT ... }]
+                'short_link': 'http://meetu.ps/e/df6Ju/GlGy/i'
+                'link': 'https://www.meetup.com/mygroup/events/123456789/'
+            }
+        }
+        '''
+
+    # https://www.meetup.com/meetup_api/docs/:urlname/events/:id/#get
+
+        title = '%s.get_event_details' % self.__class__.__name__
+
+    # validate inputs
+        input_fields = {
+            'group_url': group_url,
+            'event_id': event_id
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+
+    # construct request fields
+        url = '%s/%s/events/%s' % (self.endpoint, group_url, str(event_id))
+        params = {
+            'fields': 'comment_count,event_hosts,rsvp_rules,short_link,survey_questions,rsvpable,rsvpable_after_join'
+        }
+
+    # send request
+        response_details = self._get_request(url, params=params)
+
+    # construct event details
+        event_details = {
+            'json': {
+                'fee': {},
+                'rsvpable_after_join': True
+            }
+        }
+        for key, value in response_details.items():
+            if key != 'json':
+                event_details[key] = value
+
+    # parse response
+        if response_details['json']:
+            event_details['json'].update(**response_details['json'])
+
+        return event_details
+
+    def get_event_attendees(self, group_url, event_id):
+
+        ''' a method to retrieve attendee list for event from meetup api
+
+        :param group_url: string with meetup urlname for host group
+        :param event_id: integer with meetup id for event
+        :return: dictionary with attendee list inside [json] key
+
+        {
+            'json': [
+                {
+                    'created': 1234567891000,
+                    'updated': 1234567891000,
+                    'response': 'yes',
+                    'guests': 0,
+                    'member': {
+                        'event_context': { 'host': False },
+                        'id': 12334567,
+                        'name': 'First',
+                        'photo': { ... PHOTO OBJECT ... }
+                    },
+                    'venue': { ... VENUE OBJECT ... },
+                    'group': { ... GROUP OBJECT ... },
+                    'event': { ... EVENT OBJECT ... }
+                }
+            ]
+        }
+        '''
+
+    # https://www.meetup.com/meetup_api/docs/:urlname/events/:event_id/rsvps/#list
+
+        title = '%s.get_event_attendees' % self.__class__.__name__
+
+    # validate inputs
+        input_fields = {
+            'group_url': group_url,
+            'event_id': event_id
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+
+    # construct request fields
+        url = '%s/%s/events/%s/rsvps' % (self.endpoint, group_url, str(event_id))
+
+    # send request
+        response_details = self._get_request(url)
+
+        return response_details
+
+    def update_rsvp_details(self, group_url, event_id):
+
+    # https://www.meetup.com/meetup_api/docs/:urlname/events/:event_id/rsvps/
+
+        url = '%s/%s/events/%s/rsvps' % (self.endpoint, group_url, event_id)
+        response_details = self._post_request(url)
+
+        return response_details
+
+    def list_groups(self, categories=None, topics=None, text='', country='', latitude=0, longitude=0, location='', radius=10, zip_code=''):
+
+    # https://www.meetup.com/meetup_api/docs/find/groups/
+
+        url = '%s/find/groups' % self.endpoint
+        params = {
+            'category': '',
+            'topic_id': '',
+            'text': '',
+            'country': '',
+            'lat': '',
+            'lon': '',
+            'location': '',
+            'radius': '',
+            'zip': '',
+            'self_groups': 'exclude'
+        }
+
+        group_list = self._get_request(url, params=params)
+
+        return group_list
+
+    def scan_groups(self):
+
+        ''' a method to iterate over all ID permutations to discover meetup groups '''
+
+        group_list = []
+
+        return group_list
+
+    def get_group_members(self, group_url):
+
+    # https://www.meetup.com/meetup_api/docs/:urlname/members/#list
+
+        group_members = []
+
+        return group_members
+
+    def join_group(self, group_url):
+
+    # https://www.meetup.com/meetup_api/docs/:urlname/members/#create
+
+        url = '%s/%s/members' % (self.endpoint, group_url)
+        response_details = self._post_request(url)
+
+        return response_details
+
+    def list_locations(self, latitude, longitude, results=100):
+
+        ''' a method to retrieve location names based upon latitude and longitude '''
+
+    # https://www.meetup.com/meetup_api/docs/find/locations/
+
+        location_list = []
+
+        return location_list
+
+    def get_venue_details(self, venue_id):
+        venue_details = {}
+        return venue_details
+
+    def update_member_profile(self, profile_details):
+
+        return profile_details
 
 if __name__ == '__main__':
+    from pprint import pprint
+    from time import time
     from labpack.records.settings import load_settings
     meetup_config = load_settings('../../../cred/meetup.yaml')
     meetup_oauth = meetupOAuth(meetup_config['meetup_client_id'], meetup_config['meetup_client_secret'])
     auth_url = meetup_oauth.generate_url(meetup_config['meetup_redirect_uri'], service_scope=['ageless', 'profile_edit', 'basic'], state_value='unittest')
-    print(auth_url)
+    assert auth_url.find('oauth2') > 0
+    from labpack.storage.appdata import appdataClient
+    log_client = appdataClient(collection_name='Logs', prod_name='Fitzroy')
+    path_filters = [{0: {'discrete_values': ['knowledge']}, 1: {'discrete_values': ['tokens']}, 2: {'discrete_values':['meetup']}}]
+    token_list = log_client.list(log_client.conditionalFilter(path_filters), reverse_search=True)
+    token_details = log_client.read(token_list[0])
+    # new_details = meetup_oauth.renew_token(token_details['refresh_token'])
+    # token_details.update(**new_details['json'])
+    # new_key = 'knowledge/tokens/meetup/%s/%s.yaml' % (token_details['user_id'], token_details['expires_at'])
+    # log_client.create(new_key, token_details)
+    meetup_client = meetupClient(token_details['access_token'], token_details['service_scope'])
+    # profile_details = meetup_client.get_member_profile()
+    # member_id = int(profile_details['json']['id'])
+    # settings_details = meetup_client.get_member_settings(member_id)
+    # topic_details = meetup_client.get_member_topics(member_id)
+    # group_details = meetup_client.get_member_groups(member_id)
+    # event_details = meetup_client.get_member_events()
+    event_details = meetup_client.get_member_calendar(max_results=10)
+    group_url = event_details['json'][0]['group']['urlname']
+    event_id = int(event_details['json'][0]['id'])
+    group_id = int(event_details['json'][0]['group']['id'])
+    print(event_details['json'][0])
+    # group_details = meetup_client.get_group_details(group_id=group_id)
+    # group_events = meetup_client.get_group_events(group_url)
+    # event_id = int(group_events['json'][0]['id'])
+    # event_details = meetup_client.get_event_details(group_url, event_id)
+    # event_attendees = meetup_client.get_event_attendees(group_url, event_id)
+    # member_id = event_attendees['json'][0]['member']['id']
+    # profile_details = meetup_client.get_member_profile(member_id)
+    # print(profile_details)
+
+
+
+
