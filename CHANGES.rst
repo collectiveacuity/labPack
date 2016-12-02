@@ -4,7 +4,7 @@ ChangeLog
 0.8 (TBD)
 ---------
 * [FEATURE ADDED] twilioClient class for interacting with twilio messaging api
-* [WIP] meetupClient class for interacting with meetup event api
+* [FEATURE ADDED] meetupClient class for interacting with meetup event api
 * [UPDATE] apschedulerClient incorporates requests_handler argument
 * [UPDATE] retrieve_function incorporates pkgutil module for walking packages
 * [BUG FIX] invalid url error on Request.prepare() method in handle_requests
