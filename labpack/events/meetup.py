@@ -264,7 +264,6 @@ class meetupOAuth(object):
         from time import time
         current_time = time()
         token_details = self._post_request(url_string, data=request_form)
-        print(token_details)
 
     # convert expiration info to epoch time
         details = token_details['json']

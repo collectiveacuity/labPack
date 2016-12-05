@@ -13,10 +13,10 @@ if __name__ == '__main__':
     meetup_config = load_settings('../../cred/meetup.yaml')
 
 # test oauth construction
-    meetup_oauth = meetupOAuth(meetup_config['meetup_client_id'], meetup_config['meetup_client_secret'])
+    meetup_oauth = meetupOAuth(meetup_config['oauth_client_id'], meetup_config['oauth_client_secret'])
 
 # test generate url
-    auth_url = meetup_oauth.generate_url(meetup_config['meetup_redirect_uri'], service_scope=['ageless', 'profile_edit', 'basic'], state_value='unittest')
+    auth_url = meetup_oauth.generate_url(meetup_config['oauth_redirect_uri'], meetup_config['oauth_service_scope'].split(), state_value='unittest')
     assert auth_url.find('oauth2') > 0
 
 # retrieve access token
