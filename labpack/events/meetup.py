@@ -70,7 +70,7 @@ class meetupClient(object):
 
     ''' a class of methods for managing user events, groups and profile on Meetup API '''
 
-    # use labpack.authentication.oauth2.oauth2Client for obtaining access token
+    # use labpack.authentication.oauth2.oauth2Client to obtain access token
 
     _class_fields = {
         'schema': {
