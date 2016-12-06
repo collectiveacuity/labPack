@@ -10,45 +10,64 @@ if __name__ == '__main__':
     from pprint import pprint
     from time import time
     from labpack.records.settings import load_settings
+    from labpack.handlers.requests import handle_requests
     meetup_config = load_settings('../../cred/meetup.yaml')
 
 # test oauth construction
-    meetup_oauth = meetupOAuth(meetup_config['oauth_client_id'], meetup_config['oauth_client_secret'])
+    from labpack.authentication.oauth2 import oauth2Client
+    oauth_kwargs = {
+        'client_id': meetup_config['oauth_client_id'],
+        'client_secret': meetup_config['oauth_client_secret'],
+        'redirect_uri': meetup_config['oauth_redirect_uri'],
+        'auth_endpoint': meetup_config['oauth_auth_endpoint'],
+        'token_endpoint': meetup_config['oauth_token_endpoint'],
+        'request_mimetype': meetup_config['oauth_request_mimetype'],
+        'requests_handler': handle_requests
+    }
+    meetup_oauth = oauth2Client(**oauth_kwargs)
 
 # test generate url
-    auth_url = meetup_oauth.generate_url(meetup_config['oauth_redirect_uri'], meetup_config['oauth_service_scope'].split(), state_value='unittest')
+    url_kwargs = {
+        'service_scope': meetup_config['oauth_service_scope'].split(),
+        'state_value': 'unittest_%s' % str(time())
+    }
+    auth_url = meetup_oauth.generate_url(**url_kwargs)
     assert auth_url.find('oauth2') > 0
 
 # retrieve access token
     from labpack.storage.appdata import appdataClient
     log_client = appdataClient(collection_name='Logs', prod_name='Fitzroy')
-    path_filters = [{0: {'discrete_values': ['knowledge']}, 1: {'discrete_values': ['tokens']}, 2: {'discrete_values':['meetup']}}]
+    path_filters = [{
+        0: {'discrete_values': ['knowledge']},
+        1: {'discrete_values': ['tokens']},
+        2: {'discrete_values':['meetup']}
+    }]
     token_list = log_client.list(log_client.conditionalFilter(path_filters), reverse_search=True)
     token_details = log_client.read(token_list[0])
 
 # test access token renewal
-    new_details = meetup_oauth.renew_token(token_details['refresh_token'])
-    token_details.update(**new_details['json'])
-    new_key = 'knowledge/tokens/meetup/%s/%s.yaml' % (token_details['user_id'], token_details['expires_at'])
-    log_client.create(new_key, token_details)
+#     new_details = meetup_oauth.renew_token(token_details['refresh_token'])
+#     token_details.update(**new_details['json'])
+#     new_key = 'knowledge/tokens/meetup/%s/%s.yaml' % (token_details['user_id'], token_details['expires_at'])
+#     log_client.create(new_key, token_details)
 
 # test client construction
     meetup_client = meetupClient(token_details['access_token'], token_details['service_scope'])
 
 # test member profile, settings, topics, groups and events
-#     profile_details = meetup_client.get_member_brief()
-#     member_id = int(profile_details['json']['id'])
-#     assert isinstance(profile_details['json']['id'], str)
-#     profile_details = meetup_client.get_member_profile(member_id)
-#     assert isinstance(profile_details['json']['id'], int)
-#     member_topics = meetup_client.list_member_topics(member_id)
-#     assert isinstance(member_topics['json'][0]['id'], int)
-#     member_groups = meetup_client.list_member_groups(member_id)
-#     assert member_groups['json'][5]['group']['name']
-#     if len(member_groups['json']) <= 200:
-#         assert len(member_groups['json']) == profile_details['json']['stats']['groups']
-#     member_events = meetup_client.list_member_events()
-#     assert isinstance(member_events['json'], list)
+    profile_details = meetup_client.get_member_brief()
+    member_id = int(profile_details['json']['id'])
+    assert isinstance(profile_details['json']['id'], str)
+    profile_details = meetup_client.get_member_profile(member_id)
+    assert isinstance(profile_details['json']['id'], int)
+    member_topics = meetup_client.list_member_topics(member_id)
+    assert isinstance(member_topics['json'][0]['id'], int)
+    member_groups = meetup_client.list_member_groups(member_id)
+    assert member_groups['json'][5]['group']['name']
+    if len(member_groups['json']) <= 200:
+        assert len(member_groups['json']) == profile_details['json']['stats']['groups']
+    member_events = meetup_client.list_member_events()
+    assert isinstance(member_events['json'], list)
 
 # test member calendar, event attendees & other member profile, settings, topics & groups
 #     event_details = meetup_client.get_member_calendar(max_results=10)
