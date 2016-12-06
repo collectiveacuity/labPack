@@ -116,10 +116,10 @@ class labMagic(object):
         mimetype_urls = self.fields.schema['mimetype_urls']
         from labpack.storage.appdata import appdataClient
         mime_collection = appdataClient('Mime Types')
-        mime_filter = mime_collection.conditionalFilter([{-1:{'must_contain': ['mime.types']}}])
+        mime_filter = mime_collection.conditional_filter([{-1:{'must_contain': ['mime.types']}}])
         mime_list = mime_collection.list(mime_filter)
         for key in mimetype_urls.keys():
-            file_path = os.path.join(mime_collection.collectionFolder, key)
+            file_path = os.path.join(mime_collection.collection_folder, key)
             if key not in mime_list:
                 file_dir = os.path.split(file_path)[0]
                 if not os.path.exists(file_dir):

@@ -42,7 +42,7 @@ if __name__ == '__main__':
         1: {'discrete_values': ['tokens']},
         2: {'discrete_values':['moves']}
     }]
-    token_list = log_client.list(log_client.conditionalFilter(path_filters), reverse_search=True)
+    token_list = log_client.list(log_client.conditional_filter(path_filters), reverse_search=True)
     token_details = log_client.read(token_list[0])
 
 # test access token renewal

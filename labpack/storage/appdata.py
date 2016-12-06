@@ -3,39 +3,16 @@ __created__ = '2016.03'
 __license__ = 'MIT'
 
 import os
-import yaml
-import gzip
-import json
 import hashlib
 from jsonmodel.validators import jsonModel
-from jsonmodel.exceptions import InputValidationError
 from labpack import __team__, __module__
-from labpack.parsing.regex import labRegex
 from labpack.platforms.localhost import localhostClient
-
-class appdataConnectionError(Exception):
-    def __init__(self, message='', request_name='', error_dict=None):
-        generic_msg = 'Failure connecting to app data'
-        self.error = {
-            'message': message,
-            'request_name': request_name
-        }
-        if error_dict:
-            if isinstance(error_dict, dict):
-                for key, value in error_dict.items():
-                    self.error[key] = value
-        if self.error['message']:
-            text = self.error['message']
-        elif self.error['request_name']:
-            text = '%s with %s request.' % (generic_msg, self.error['request_name'])
-        else:
-            text = '%s.' % generic_msg
-        super(appdataConnectionError, self).__init__(text)
 
 class appdataModel(object):
 
-    '''
-        a schema-enforceable class for managing record collections in local app data
+    ''' a schema-enforceable class for managing record collections in local app data
+
+        NOTE: class is still WIP
 
         NOTE:   class is designed to store json valid data nested in a dictionary
                 structure. acceptable data types include:
@@ -73,8 +50,7 @@ class appdataModel(object):
     
     def __init__(self, record_schema=None, collection_settings=None, appdata_model=None):
 
-        '''
-            a method to initialize the appdata file storage class
+        ''' initialization method for the appdata file storage class
 
         :param record_schema: dictionary with record schema in jsonModel format
         :param collection_settings: dictionary with collection settings
@@ -192,8 +168,7 @@ class appdataModel(object):
             
     def new(self, **kwargs):
 
-        '''
-            a method to create a new record in the object model using keyword arguments
+        ''' a method to create a new record in the object model using keyword arguments
 
         :param kwargs: keyword arguments with fields to add to record
         :return: appdataModel
@@ -238,8 +213,7 @@ class appdataModel(object):
     
     def save(self, overwrite=True):
 
-        '''
-            a method to save the values of a record to a file in local app data
+        ''' a method to save the values of a record to a file in local app data
 
         :param overwrite: [optional] boolean to force a consistency check
         :return: primary key (or float with latest updated time if overwrite = False)
@@ -303,8 +277,7 @@ class appdataModel(object):
 
     def _extract_value(self, dot_path):
 
-        '''
-            a helper method to extract the value for an indexed field from a record
+        ''' a helper method to extract the value for an indexed field from a record
 
         :param dot_path: string with dot path to indexed field
         :return: string that is URL safe and less than 256 characters
@@ -367,8 +340,7 @@ class appdataModel(object):
 
 class appdataClient(object):
 
-    '''
-        a low-level class of methods for managing file storage in local app data
+    ''' a low-level class of methods for managing file storage in local app data
 
         NOTE:   class is designed to store json valid data nested in a dictionary
                 structure. acceptable data types include:
@@ -465,7 +437,14 @@ class appdataClient(object):
         }
     }
 
-    def __init__(self, collection_name='', org_name='', prod_name=''):
+    def __init__(self, collection_name='', prod_name='', org_name=''):
+
+        ''' initialization method of appdata client class
+
+        :param collection_name: [optional] string with name of collection to store records
+        :param prod_name: [optional] string with name of application product
+        :param org_name: [optional] string with name of organization behind product
+        '''
 
     # add localhost property to class
         self.localhost = localhostClient()
@@ -486,28 +465,17 @@ class appdataClient(object):
             prod_name = __module__
 
     # validate existence of file data folder in app data (or create)
-        self.appFolder = self.localhost.appData(org_name=org_name, prod_name=prod_name)
+        self.app_folder = self.localhost.app_data(org_name=org_name, prod_name=prod_name)
         if self.localhost.os in ('Linux', 'FreeBSD', 'Solaris'):
             collection_name = collection_name.replace(' ', '-').lower()
-        self.collectionFolder = os.path.join(self.appFolder, collection_name)
-        self.fields.validate(self.collectionFolder, '.key_string_path')
-        if not os.path.exists(self.collectionFolder):
-            os.makedirs(self.collectionFolder)
-
-    # construct supported file type regex patterns
-        file_extensions = {
-            "json": ".+\\.json$",
-            "json.gz": ".+\\.json\\.gz$",
-            "yaml": ".+\\.ya?ml$",
-            "yaml.gz": ".+\\.ya?ml\\.gz$",
-            "drep": ".+\\.drep$"
-        }
-        self.ext = labRegex(file_extensions)
+        self.collection_folder = os.path.join(self.app_folder, collection_name)
+        self.fields.validate(self.collection_folder, '.key_string_path')
+        if not os.path.exists(self.collection_folder):
+            os.makedirs(self.collection_folder)
         
     def create(self, key_string, body_dict, overwrite=True, secret_key=''):
 
-        '''
-            a method to create a file in the collection folder
+        ''' a method to create a file in the collection folder
 
         :param key_string: string with name to assign file (see NOTE below)
         :param body_dict: dictionary with file body details
@@ -545,63 +513,30 @@ class appdataClient(object):
         key_string = self.fields.validate(key_string, '.key_string')
         body_dict = self.fields.validate(body_dict, '.body_dict')
 
-    # construct file path
-        file_path = os.path.join(self.collectionFolder, key_string)
+    # construct and validate file path
+        file_path = os.path.join(self.collection_folder, key_string)
         file_path = self.fields.validate(file_path, '.key_string_path')
         current_path = os.path.split(file_path)
         self.fields.validate(current_path[1], '.key_string_comp')
-        while current_path[0] != self.collectionFolder:
+        while current_path[0] != self.collection_folder:
             current_path = os.path.split(current_path[0])
             self.fields.validate(current_path[1], '.key_string_comp')
 
     # construct file data
-        file_time = 0
-        file_data = ''.encode('utf-8')
-        key_map = self.ext.map(key_string)[0]
-        if key_map['json']:
-            file_data = json.dumps(body_dict).encode('utf-8')
-        elif key_map['yaml']:
-            file_data = yaml.dump(body_dict).encode('utf-8')
-        elif key_map['json.gz']:
-            file_bytes = json.dumps(body_dict).encode('utf-8')
-            file_data = gzip.compress(file_bytes)
-        elif key_map['yaml.gz']:
-            file_bytes = yaml.dump(body_dict).encode('utf-8')
-            file_data = gzip.compress(file_bytes)
-        elif key_map['drep']:
-            from labpack.compilers import drep
-            secret_key = self.fields.validate(secret_key, '.secret_key')
-            file_data = drep.dump(body_dict, secret_key)
-            file_time = 1
+        from labpack.records.settings import save_settings
+        save_kwargs = {
+            'file_path': file_path,
+            'record_details': body_dict,
+            'overwrite': overwrite,
+            'secret_key': secret_key
+        }
+        save_settings(**save_kwargs)
 
-    # check overwrite exception
-        if not overwrite:
-            if os.path.exists(file_path):
-                raise Exception('%s already exists. To overwrite %s, set overwrite=True' % (_key_arg, key_string))
-
-    # create directories in path to file
-        dir_path = os.path.split(file_path)
-        if not os.path.exists(dir_path[0]):
-            os.makedirs(dir_path[0])
-
-    # write data to file
-        with open(file_path, 'wb') as f:
-            f.write(file_data)
-            f.close()
-
-    # eliminate update and access time metadata (for drep files)
-        if file_time:
-            os.utime(file_path, times=(file_time, file_time))
-
-    # TODO add windows creation time wiping
-    # http://stackoverflow.com/questions/4996405/how-do-i-change-the-file-creation-date-of-a-windows-file-from-python
-
-        return self
+        return key_string
 
     def read(self, key_string, secret_key=''):
 
-        '''
-            a method to retrieve body details from a file
+        ''' a method to retrieve body details from a file
 
         :param key_string: string with name of file
         :param secret_key: [optional] string used to decrypt data
@@ -616,60 +551,25 @@ class appdataClient(object):
         key_string = self.fields.validate(key_string, '.key_string')
 
     # construct path to file
-        file_path = os.path.join(self.collectionFolder, key_string)
+        file_path = os.path.join(self.collection_folder, key_string)
 
     # validate existence of file
         if not os.path.exists(file_path):
             raise Exception('%s does not exist.' % _key_arg)
 
     # retrieve file details
-        file_details = {}
-        key_map = self.ext.map(key_string)[0]
-        if key_map['json']:
-            try:
-                file_data = open(file_path, 'rt')
-                file_details = json.loads(file_data.read())
-            except:
-                raise Exception('%s is not valid json data.' % _key_arg)
-        elif key_map['yaml']:
-            try:
-                file_data = open(file_path, 'rt')
-                file_details = yaml.load(file_data.read())
-            except:
-                raise Exception('%s is not valid yaml data.' % _key_arg)
-        elif key_map['json.gz']:
-            try:
-                file_data = gzip.open(file_path, 'rb')
-            except:
-                raise Exception('%s is not valid gzip compressed data.' % _key_arg)
-            try:
-                file_details = json.loads(file_data.read().decode())
-            except:
-                raise Exception('%s is not valid json data.' % _key_arg)
-        elif key_map['yaml.gz']:
-            try:
-                file_data = gzip.open(file_path, 'rb')
-            except:
-                raise Exception('%s is not valid gzip compressed data.' % _key_arg)
-            try:
-                file_details = yaml.load(file_data.read().decode())
-            except:
-                raise Exception('%s is not valid yaml data.' % _key_arg)
-        elif key_map['drep']:
-            from labpack.compilers import drep
-            secret_key = self.fields.validate(secret_key, '.secret_key')
-            try:
-                file_data = open(file_path, 'rb').read()
-                file_details = drep.load(encrypted_data=file_data, secret_key=secret_key)
-            except:
-                raise Exception('%s is not valid drep data.' % _key_arg)
+        from labpack.records.settings import load_settings
+        load_kwargs = {
+            'file_path': file_path,
+            'secret_key': secret_key
+        }
+        file_details = load_settings(**load_kwargs)
 
         return file_details
 
-    def conditionalFilter(self, path_filters):
+    def conditional_filter(self, path_filters):
 
-        '''
-            a method to construct a conditional filter function for the list method
+        ''' a method to construct a conditional filter function for class list method
 
         :param path_filters: list with query criteria dictionaries
         :return: filter_function object
@@ -764,8 +664,7 @@ class appdataClient(object):
 
     def list(self, filter_function=None, max_results=1, reverse_search=True, previous_key=''):
 
-        '''
-            a method to list keys in the collection
+        ''' a method to list keys in the collection
 
         :param filter_function: (positional arguments) function used to filter results
         :param max_results: integer with maximum number of results to return
@@ -815,12 +714,12 @@ class appdataClient(object):
 
     # construct empty results list
         results_list = []
-        root_segments = self.collectionFolder.split(os.sep)
+        root_segments = self.collection_folder.split(os.sep)
         if previous_key:
-            previous_key = os.path.join(self.collectionFolder, previous_key)
+            previous_key = os.path.join(self.collection_folder, previous_key)
 
     # walk collection folder to find files
-        for file_path in self.localhost.walk(self.collectionFolder, reverse_search, previous_key):
+        for file_path in self.localhost.walk(self.collection_folder, reverse_search, previous_key):
             path_segments = file_path.split(os.sep)
             for i in range(len(root_segments)):
                 del path_segments[0]
@@ -842,8 +741,7 @@ class appdataClient(object):
 
     def delete(self, key_string):
 
-        '''
-            a method to delete a file
+        ''' a method to delete a file
 
         :param key_string: string with name of file
         :return: string reporting outcome
@@ -856,7 +754,7 @@ class appdataClient(object):
         key_string = self.fields.validate(key_string, '.key_string')
 
     # construct path to file
-        file_path = os.path.join(self.collectionFolder, key_string)
+        file_path = os.path.join(self.collection_folder, key_string)
 
     # validate existence of file
         if not os.path.exists(file_path):
@@ -874,7 +772,7 @@ class appdataClient(object):
     #         os.removedirs(current_dir)
 
     # remove empty directories in path to file
-        while current_dir != self.collectionFolder:
+        while current_dir != self.collection_folder:
             if not os.listdir(current_dir):
                 os.rmdir(current_dir)
                 current_dir = os.path.split(current_dir)[0]
@@ -885,8 +783,7 @@ class appdataClient(object):
 
     def remove(self):
 
-        '''
-            a method to remove all records in the collection
+        ''' a method to remove collection and all records in the collection
 
         :return: string with confirmation of deletion
         '''
@@ -899,11 +796,11 @@ class appdataClient(object):
     # remove collection tree
         try:
             import shutil
-            shutil.rmtree(self.collectionFolder, ignore_errors=True)
+            shutil.rmtree(self.collection_folder, ignore_errors=True)
         except:
-            raise Exception('%s failed to remove %s collection from app data.' % (__name__, self.collectionFolder))
+            raise Exception('%s failed to remove %s collection from app data.' % (__name__, self.collection_folder))
 
-        return '%s collection has been removed from app data.' % self.collectionFolder
+        return '%s collection has been removed from app data.' % self.collection_folder
 
 if __name__ == '__main__':
     appdataClient()

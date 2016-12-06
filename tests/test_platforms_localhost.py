@@ -20,19 +20,19 @@ class testLocalhostClient(localhostClient):
         assert ip
         home = deepcopy(self.home)
         assert home
-        data_path = self.appData('Collective Acuity', 'labpack')
+        data_path = self.app_data('Collective Acuity', 'labpack')
         assert data_path
         self.os.sysname = 'Linux'
         self.home = '~/'
-        data_path = self.appData('Collective Acuity', 'labpack')
-        assert data_path.find('.config')
+        data_path = self.app_data('Collective Acuity', 'labpack')
+        assert data_path.find('.config') > 0
         self.os.sysname = 'Darwin'
         self.home = '~/'
-        data_path = self.appData('Collective Acuity', 'labpack')
-        assert data_path.find('Library')
+        data_path = self.app_data('Collective Acuity', 'labpack')
+        assert data_path.find('Library') > 0
         self.os.sysname = os_name
         self.home = home
-        assert 'file_path' in self.fileModel.schema.keys()
+        assert 'file_path' in self.file_model.schema.keys()
 
     # test walk generator and metadata
         for file_path in self.walk(walk_root='../'):
@@ -69,7 +69,7 @@ class testLocalhostClient(localhostClient):
 
     # test filter function
         metadata_filters = [{'.file_name': {'must_not_contain': ['localhost']}}]
-        filter_function = self.conditionalFilter(metadata_filters=metadata_filters)
+        filter_function = self.conditional_filter(metadata_filters=metadata_filters)
         assert filter_function(**{'file_name': 'test.json'})
         assert not filter_function(**{'file_name': 'localhost.py'})
 
@@ -77,27 +77,27 @@ class testLocalhostClient(localhostClient):
         filter_list = self.list(filter_function=filter_function)
         assert filter_list
         metadata_filters = [{'.file_name': {'discrete_values': ['__init__.py']}}]
-        filter_function = self.conditionalFilter(metadata_filters=metadata_filters)
+        filter_function = self.conditional_filter(metadata_filters=metadata_filters)
         filter_list = self.list(filter_function=filter_function, list_root='../')
         assert filter_list
         metadata_filters = [{'.file_size': {'max_value': 500}}]
-        filter_function = self.conditionalFilter(metadata_filters=metadata_filters)
+        filter_function = self.conditional_filter(metadata_filters=metadata_filters)
         filter_list = self.list(filter_function=filter_function, list_root='../')
         assert filter_list
         metadata_filters = [{'.file_path': {'must_contain': ['labpack']}}]
-        filter_function = self.conditionalFilter(metadata_filters=metadata_filters)
+        filter_function = self.conditional_filter(metadata_filters=metadata_filters)
         filter_list = self.list(filter_function=filter_function, list_root='../')
         assert filter_list
         metadata_filters = [{'.create_date': {'min_value': 1467334000.674533}}]
-        filter_function = self.conditionalFilter(metadata_filters=metadata_filters)
+        filter_function = self.conditional_filter(metadata_filters=metadata_filters)
         filter_list = self.list(filter_function=filter_function, list_root='../')
         assert filter_list
         metadata_filters = [{'.update_date': {'less_than': 1467334000.674533}}]
-        filter_function = self.conditionalFilter(metadata_filters=metadata_filters)
+        filter_function = self.conditional_filter(metadata_filters=metadata_filters)
         filter_list = self.list(filter_function=filter_function, list_root='../')
         assert filter_list
         metadata_filters = [{'.access_date': {'greater_than': 1467334000.674533}}]
-        filter_function = self.conditionalFilter(metadata_filters=metadata_filters)
+        filter_function = self.conditional_filter(metadata_filters=metadata_filters)
         filter_list = self.list(filter_function=filter_function, list_root='../')
         assert filter_list
         print(filter_list)

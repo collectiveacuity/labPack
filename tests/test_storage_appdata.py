@@ -29,7 +29,7 @@ class testAppdataClient(appdataClient):
         seed_details['time'] = time()
         seed_key = '%s/%s%s' % (testKey, str(seed_details['time']), seed_details['type'])
         self.create(key_string=seed_key, body_dict=seed_details)
-        file_types = set(self.ext.__dir__()) - set(self.ext.builtins)
+        file_types = [ 'json', 'json.gz', 'yaml', 'yaml.gz', 'drep' ]
         for type in file_types:
             test_dt = time()
             file_type = type.replace('_','.')
@@ -44,7 +44,7 @@ class testAppdataClient(appdataClient):
             assert self.read(key_string=test_key, secret_key=secret_key)
             assert test_key in self.list(max_results=100, reverse_search=False)
             path_filters = [{0: {'must_contain': ['^lab']}, 2:{'discrete_values': ['unittest']}}]
-            filter_function = self.conditionalFilter(path_filters=path_filters)
+            filter_function = self.conditional_filter(path_filters=path_filters)
             assert test_key in self.list(filter_function=filter_function, max_results=100)
             assert self.delete(key_string=test_key)
         self.delete(key_string=seed_key)
@@ -53,33 +53,33 @@ class testAppdataClient(appdataClient):
     # test filter method
         path_segments = ['lab', 'unittests', '1473719695.2165067', '.json']
         path_filters = [ { 0: { 'must_contain': [ '^lab' ] } } ]
-        filter_function = self.conditionalFilter(path_filters=path_filters)
+        filter_function = self.conditional_filter(path_filters=path_filters)
         assert filter_function(*path_segments)
 
     # test filter false results
         path_filters = [{0: {'must_not_contain': ['^lab']}}]
-        filter_function = self.conditionalFilter(path_filters=path_filters)
+        filter_function = self.conditional_filter(path_filters=path_filters)
         assert not filter_function(*path_segments)
         path_filters = [{0: {'must_contain': ['^lab']}, 1:{'excluded_values': ['unittests']} }]
-        filter_function = self.conditionalFilter(path_filters=path_filters)
+        filter_function = self.conditional_filter(path_filters=path_filters)
         assert not filter_function(*path_segments)
         path_filters = [{0: {'must_contain': ['^lab']}, 2: {'discrete_values': ['unittests']}}]
-        filter_function = self.conditionalFilter(path_filters=path_filters)
+        filter_function = self.conditional_filter(path_filters=path_filters)
         assert not filter_function(*path_segments)
         path_filters = [{4: {'must_contain': ['^lab']}}]
-        filter_function = self.conditionalFilter(path_filters=path_filters)
+        filter_function = self.conditional_filter(path_filters=path_filters)
         assert not filter_function(*path_segments)
 
     # test filter exceptions
         path_filters = [{ '0': {'must_contain': ['^lab']}}]
         with pytest.raises(TypeError):
-            self.conditionalFilter(path_filters=path_filters)
+            self.conditional_filter(path_filters=path_filters)
         path_filters = [{ 0: 'string' }]
         with pytest.raises(TypeError):
-            self.conditionalFilter(path_filters=path_filters)
+            self.conditional_filter(path_filters=path_filters)
         path_filters = [{ 0: {'must_contai': ['^lab']}}]
         with pytest.raises(InputValidationError):
-            self.conditionalFilter(path_filters=path_filters)
+            self.conditional_filter(path_filters=path_filters)
 
         return self
 
@@ -102,8 +102,8 @@ class testAppdataClient(appdataClient):
             if count == 2:
                 last_key = deepcopy(seed_key)
         path_filters = [{ 1:{'must_contain':['^log']}}]
-        filter_function = self.conditionalFilter(path_filters=path_filters)
-        performlab.repeat(self.list(filter_function=filter_function, max_results=100, previous_key=last_key), 'appdataClient.list(filter_function=self.conditionalFilter(%s), max_results=100, previous_key=%s)' % (path_filters, last_key), 10000)
+        filter_function = self.conditional_filter(path_filters=path_filters)
+        performlab.repeat(self.list(filter_function=filter_function, max_results=100, previous_key=last_key), 'appdataClient.list(filter_function=self.conditional_filter(%s), max_results=100, previous_key=%s)' % (path_filters, last_key), 10000)
         self.remove()
 
         return self

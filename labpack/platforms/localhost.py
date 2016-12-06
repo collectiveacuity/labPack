@@ -120,8 +120,8 @@ class localhostClient(object):
             self.home = os.path.expanduser('~')
 
     # retrieve path to shell configs
-        self.bashConfig = ''
-        self.shConfig = ''
+        self.bash_config = ''
+        self.sh_config = ''
         if self.os.sysname == 'Windows':
             bash_config = '.bash_profile'
             sh_config = ''
@@ -129,9 +129,9 @@ class localhostClient(object):
             bash_config = '.bashrc'
             sh_config = '.cshrc'
         if bash_config:
-            self.bashConfig = os.path.join(self.home, bash_config)
+            self.bash_config = os.path.join(self.home, bash_config)
         if sh_config:
-            self.shConfig = os.path.join(self.home, sh_config)
+            self.sh_config = os.path.join(self.home, sh_config)
     # TODO check different terminal protocols
 
     # construct file record model property
@@ -150,20 +150,20 @@ class localhostClient(object):
                 }
             }
         }
-        self.fileModel = jsonModel(file_model)
+        self.file_model = jsonModel(file_model)
 
-    def appData(self, org_name, prod_name):
+    def app_data(self, org_name, prod_name):
 
-        '''
-            a method to retrieve the os appropriate path to user app data
-            https://www.chromium.org/user-experience/user-data-directory
+        ''' a method to retrieve the os appropriate path to user app data
+
+        # https://www.chromium.org/user-experience/user-data-directory
 
         :param org_name: string with name of product/service creator
         :param prod_name: string with name of product/service
         :return: string with path to app data
         '''
 
-        __name__ = '%s.appData' % self.__class__.__name__
+        __name__ = '%s.app_data' % self.__class__.__name__
 
     # validate inputs
         org_name = self.fields.validate(org_name, '.org_name')
@@ -196,8 +196,7 @@ class localhostClient(object):
 
     def walk(self, walk_root='', reverse_order=False, previous_file=''):
 
-        '''
-            a method which generates file paths on localhost from walk of directories
+        ''' a generator method of file paths on localhost from walk of directories
 
         :param walk_root: string with path from which to root walk of localhost directories
         :param reverse_order: boolean to determine alphabetical direction of walk
@@ -266,8 +265,7 @@ class localhostClient(object):
 
     def metadata(self, file_path):
 
-        '''
-            a method to retrieve the metadata of a file on the localhost
+        ''' a method to retrieve the metadata of a file on the localhost
 
         :param file_path: string with path to file
         :return: dictionary with file properties
@@ -300,10 +298,9 @@ class localhostClient(object):
 
         return file_metadata
 
-    def conditionalFilter(self, metadata_filters):
+    def conditional_filter(self, metadata_filters):
 
-        '''
-            a method to construct a conditional filter function for the list method
+        ''' a method to construct a conditional filter function for the list method
 
         :param metadata_filters: list with query criteria dictionaries
         :return: filter_function object
@@ -377,10 +374,10 @@ class localhostClient(object):
         def query_function(**kwargs):
             file_metadata = {}
             for key, value in kwargs.items():
-                if key in self.fileModel.schema.keys():
+                if key in self.file_model.schema.keys():
                     file_metadata[key] = value
             for query_criteria in metadata_filters:
-                if self.fileModel.query(query_criteria, file_metadata):
+                if self.file_model.query(query_criteria, file_metadata):
                     return True
             return False
 
@@ -406,7 +403,7 @@ class localhostClient(object):
                     results.
 
                     fields produced by the metadata function are listed in the
-                    self.fileModel.schema
+                    self.file_model.schema
         '''
 
         __name__ = '%s.list(...)' % self.__class__.__name__
@@ -421,7 +418,7 @@ class localhostClient(object):
     # validate filter function
         if filter_function:
             try:
-                filter_function(**self.fileModel.schema)
+                filter_function(**self.file_model.schema)
             except:
                 err_msg = __name__.replace('...', 'filter_function=%s' % filter_function.__class__.__name__)
                 raise TypeError('%s must accept key word arguments.' % err_msg)

@@ -4,8 +4,7 @@ __license__ = 'MIT'
 
 def load_settings(file_path, module_name='', secret_key=''):
 
-    '''
-        a method to load data from dictionary typed files
+    ''' a method to load data from json valid files
 
     :param file_path: string with path to settings file
     :param module_name: [optional] string with name of module containing file path
@@ -16,7 +15,7 @@ def load_settings(file_path, module_name='', secret_key=''):
 # validate inputs
     title = 'load_settings'
     try:
-        _key_arg = '%s(file_path=%s)' % (title, str(file_path))
+        _path_arg = '%s(file_path=%s)' % (title, str(file_path))
     except:
         raise ValueError('%s(file_path=...) must be a string.' % title)
 
@@ -24,7 +23,7 @@ def load_settings(file_path, module_name='', secret_key=''):
     from os import path
     if module_name:
         try:
-            _key_arg = _key_arg.replace(')', ', module_name=%s)' % str(module_name))
+            _path_arg = _path_arg.replace(')', ', module_name=%s)' % str(module_name))
         except:
             raise ValueError('%s(module_name=...) must be a string.' % title)
         from importlib.util import find_spec
@@ -33,82 +32,82 @@ def load_settings(file_path, module_name='', secret_key=''):
 
 # validate existence of file
     if not path.exists(file_path):
-        raise ValueError('%s is not a valid file path.' % _key_arg)
+        raise ValueError('%s is not a valid file path.' % _path_arg)
 
-# create extension parser
-    from labpack.parsing.regex import labRegex
+# parse extension type
+    ext_map = {}
     file_extensions = {
-            "json": ".+\\.json$",
-            "json.gz": ".+\\.json\\.gz$",
-            "yaml": ".+\\.ya?ml$",
-            "yaml.gz": ".+\\.ya?ml\\.gz$",
-            "drep": ".+\\.drep$"
-        }
-    ext_types = labRegex(file_extensions)
+        "json": ".+\\.json$",
+        "json.gz": ".+\\.json\\.gz$",
+        "yaml": ".+\\.ya?ml$",
+        "yaml.gz": ".+\\.ya?ml\\.gz$",
+        "drep": ".+\\.drep$"
+    }
+    import re
+    for key, value in file_extensions.items():
+        file_pattern = re.compile(value)
+        if file_pattern.findall(file_path):
+            ext_map[key] = True
+        else:
+            ext_map[key] = False
 
 # retrieve file details
-    key_map = ext_types.map(file_path)[0]
-    if key_map['json']:
+    if ext_map['json']:
         import json
         try:
             file_data = open(file_path, 'rt')
             file_details = json.loads(file_data.read())
         except:
-            raise ValueError('%s is not valid json data.' % _key_arg)
-    elif key_map['yaml']:
+            raise ValueError('%s is not valid json data.' % _path_arg)
+    elif ext_map['yaml']:
         import yaml
         try:
             file_data = open(file_path, 'rt')
             file_details = yaml.load(file_data.read())
         except:
-            raise ValueError('%s is not valid yaml data.' % _key_arg)
-    elif key_map['json.gz']:
+            raise ValueError('%s is not valid yaml data.' % _path_arg)
+    elif ext_map['json.gz']:
         import gzip
         import json
         try:
             file_data = gzip.open(file_path, 'rb')
         except:
-            raise ValueError('%s is not valid gzip compressed data.' % _key_arg)
+            raise ValueError('%s is not valid gzip compressed data.' % _path_arg)
         try:
             file_details = json.loads(file_data.read().decode())
         except:
-            raise ValueError('%s is not valid json data.' % _key_arg)
-    elif key_map['yaml.gz']:
+            raise ValueError('%s is not valid json data.' % _path_arg)
+    elif ext_map['yaml.gz']:
         import gzip
         import yaml
         try:
             file_data = gzip.open(file_path, 'rb')
         except:
-            raise ValueError('%s is not valid gzip compressed data.' % _key_arg)
+            raise ValueError('%s is not valid gzip compressed data.' % _path_arg)
         try:
             file_details = yaml.load(file_data.read().decode())
         except:
-            raise ValueError('%s is not valid yaml data.' % _key_arg)
-    elif key_map['drep']:
+            raise ValueError('%s is not valid yaml data.' % _path_arg)
+    elif ext_map['drep']:
         from labpack.compilers import drep
         try:
             file_data = open(file_path, 'rb').read()
             file_details = drep.load(encrypted_data=file_data, secret_key=secret_key)
         except:
-            raise ValueError('%s is not valid drep data.' % _key_arg)
+            raise ValueError('%s is not valid drep data.' % _path_arg)
     else:
-        ext_names = []
-        ext_methods = set(ext_types.__dir__()) - set(ext_types.builtins)
-        for method in ext_methods:
-            ext_names.append(getattr(method, 'name'))
-        raise ValueError('%s must be one of %s file types.' % (_key_arg, ext_names))
+        raise ValueError('%s must be one of %s file types.' % (_path_arg, list(ext_map.keys())))
 
     return file_details
 
-def save_settings(file_path, record_details, secret_key='', overwrite=False):
+def save_settings(file_path, record_details, overwrite=False, secret_key=''):
 
-    '''
-        a method to save dictionary typed data to a local file
+    ''' a method to save dictionary typed data to a local file
 
     :param file_path: string with path to settings file
     :param record_details: dictionary with record details
-    :param secret_key: [optional] string with key to decrypt drep file
     :param overwrite: [optional] boolean to overwrite existing file data
+    :param secret_key: [optional] string with key to decrypt drep file
     :return: string with file path
     '''
 
@@ -127,47 +126,48 @@ def save_settings(file_path, record_details, secret_key='', overwrite=False):
         except:
             raise ValueError('%s(secret_key=...) must be a string.' % title)
 
-# create extension parser
-    from labpack.parsing.regex import labRegex
+# parse extension type
+    ext_map = {}
     file_extensions = {
-            "json": ".+\\.json$",
-            "json.gz": ".+\\.json\\.gz$",
-            "yaml": ".+\\.ya?ml$",
-            "yaml.gz": ".+\\.ya?ml\\.gz$",
-            "drep": ".+\\.drep$"
-        }
-    ext_types = labRegex(file_extensions)
+        "json": ".+\\.json$",
+        "json.gz": ".+\\.json\\.gz$",
+        "yaml": ".+\\.ya?ml$",
+        "yaml.gz": ".+\\.ya?ml\\.gz$",
+        "drep": ".+\\.drep$"
+    }
+    import re
+    for key, value in file_extensions.items():
+        file_pattern = re.compile(value)
+        if file_pattern.findall(file_path):
+            ext_map[key] = True
+        else:
+            ext_map[key] = False
 
-## construct file data
+# construct file data
     file_time = 0
     file_data = ''.encode('utf-8')
-    key_map = ext_types.map(file_path)[0]
-    if key_map['json']:
+    if ext_map['json']:
         import json
         file_data = json.dumps(record_details, indent=2).encode('utf-8')
-    elif key_map['yaml']:
+    elif ext_map['yaml']:
         import yaml
         file_data = yaml.dump(record_details).encode('utf-8')
-    elif key_map['json.gz']:
+    elif ext_map['json.gz']:
         import json
         import gzip
         file_bytes = json.dumps(record_details).encode('utf-8')
         file_data = gzip.compress(file_bytes)
-    elif key_map['yaml.gz']:
+    elif ext_map['yaml.gz']:
         import yaml
         import gzip
         file_bytes = yaml.dump(record_details).encode('utf-8')
         file_data = gzip.compress(file_bytes)
-    elif key_map['drep']:
+    elif ext_map['drep']:
         from labpack.compilers import drep
         file_data = drep.dump(record_details, secret_key)
         file_time = 1
     else:
-        ext_names = []
-        ext_methods = set(ext_types.__dir__()) - set(ext_types.builtins)
-        for method in ext_methods:
-            ext_names.append(getattr(method, 'name'))
-        raise ValueError('%s must be one of %s file types.' % (_path_arg, ext_names))
+        raise ValueError('%s must be one of %s file types.' % (_path_arg, list(ext_map.keys())))
 
 # check overwrite exception
     import os
@@ -189,6 +189,9 @@ def save_settings(file_path, record_details, secret_key='', overwrite=False):
 # eliminate update and access time metadata (for drep files)
     if file_time:
         os.utime(file_path, times=(file_time, file_time))
+
+# TODO add windows creation time wiping
+# http://stackoverflow.com/questions/4996405/how-do-i-change-the-file-creation-date-of-a-windows-file-from-python
 
     return file_path
 
