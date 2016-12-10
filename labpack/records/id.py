@@ -15,8 +15,7 @@ import pytz
 
 class labID(object):
 
-    '''
-        a class of methods for uniquely identifying objects
+    ''' a class of methods for uniquely identifying objects
 
         dependencies:
             import uuid
@@ -39,13 +38,9 @@ class labID(object):
             self.datetime: current python datetime
     '''
 
-    __name__ = 'labID'
-
     def __init__(self):
 
-        '''
-            a method to initialize a unique ID based upon the UUID1 method
-        '''
+        ''' a method to initialize a unique ID based upon the UUID1 method '''
 
     # retrieve UUID
         self.uuid = uuid.uuid1()

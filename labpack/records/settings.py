@@ -197,7 +197,7 @@ def save_settings(file_path, record_details, overwrite=False, secret_key=''):
 
 def ingest_environ(model_path=''):
 
-    ''' a method to convert environment variables to python dictionary
+    ''' a method to convert environment variables to a python dictionary
 
     :param model_path: [optional] string with path to jsonmodel of data to ingest
     :return: dictionary with environmental variables
@@ -253,8 +253,7 @@ def ingest_environ(model_path=''):
 
 def compile_settings(model_path, file_path, ignore_errors=False):
 
-    '''
-        a method to compile configuration values from different sources
+    ''' a method to compile configuration values from different sources
 
         NOTE:   method searches the environment variables, a local
                 configuration path and the default values for a jsonmodel

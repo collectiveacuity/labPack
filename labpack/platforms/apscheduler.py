@@ -86,6 +86,12 @@ class apschedulerClient(object):
 
     def __init__(self, scheduler_url, requests_handler=None):
 
+        ''' initialization method for apschedulerClient class
+
+        :param scheduler_url: string with url of scheduler service
+        :param requests_handler: [optional] callable for handling requests errors
+        '''
+
     # construct model
         from jsonmodel.validators import jsonModel
         self.fields = jsonModel(self._class_fields)
