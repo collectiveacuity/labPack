@@ -77,7 +77,7 @@ class oauth2Client(object):
         }
     }
 
-    def __init__(self, client_id, client_secret, auth_endpoint, token_endpoint, redirect_uri, request_mimetype='', authorization_header='', status_endpoint='', requests_handler=None, error_map=None):
+    def __init__(self, client_id, client_secret, auth_endpoint, token_endpoint, redirect_uri, request_mimetype='', status_endpoint='', requests_handler=None, error_map=None):
 
         ''' the initialization method for oauth2 client class
 
@@ -87,7 +87,6 @@ class oauth2Client(object):
         :param token_endpoint: string with service endpoint for token post requests
         :param redirect_uri: string with url for redirect callback registered with service
         :param request_mimetype: [optional] string with mimetype for token post requests
-        :param authorization_header: [optional] string for authorization field in headers
         :param status_endpoint: [optional] string with service endpoint to retrieve status of token
         :param requests_handler: [optional] callable that handles requests errors
         :param error_map: [optional] dictionary with key value strings for service error msgs
@@ -114,7 +113,6 @@ class oauth2Client(object):
             'token_endpoint': token_endpoint,
             'redirect_uri': redirect_uri,
             'request_mimetype': request_mimetype,
-            'authorization_header': authorization_header,
             'status_endpoint': status_endpoint,
             'error_map': error_map
         }
@@ -130,7 +128,6 @@ class oauth2Client(object):
         self.token_endpoint = token_endpoint
         self.redirect_uri = redirect_uri
         self.request_mimetype = request_mimetype
-        self.authorization_header = authorization_header
         self.status_endpoint = status_endpoint
 
     # construct handlers
@@ -298,12 +295,6 @@ class oauth2Client(object):
             request_kwargs['json'] = token_fields
         else:
             request_kwargs['params'] = token_fields
-
-    # construct authorization header
-        if self.authorization_header:
-            request_kwargs['headers'] = {
-                'Authorization': self.authorization_header
-            }
 
     # send request
         from time import time
