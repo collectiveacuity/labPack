@@ -16,41 +16,32 @@ class labDT(datetime):
 
     ''' a class of methods for datetime conversion
 
-        for list of timezones:
-            https://stackoverflow.com/questions/13866926/python-pytz-list-of-timezones
-        for list of datetime directives:
-            https://docs.python.org/2/library/datetime.html#strftime-and-strptime-behavior
-
-        dependencies:
-            from datetime import datetime
-            import re
-            import pytz
-            from tzlocal import get_localzone
-            from dateutil import parser as dTparser
-            from dateutil import tz
+    for list of timezones:
+        https://stackoverflow.com/questions/13866926/python-pytz-list-of-timezones
+    for list of datetime directives:
+        https://docs.python.org/2/library/datetime.html#strftime-and-strptime-behavior
     '''
 
-    __name__ = 'labDT'
-
     @classmethod
-    def new(self):
+    def new(cls):
 
-        '''
-            a method to generate the current datetime as a labDT object
-        :return: labDT
+        ''' a method to generate the current datetime as a labDT object
+        
+        :return: labDT object
         '''
 
         dT = datetime.utcnow().replace(tzinfo=pytz.utc)
-        return labDT(
-            year=dT.year,
-            month=dT.month,
-            day=dT.day,
-            hour=dT.hour,
-            minute=dT.minute,
-            second=dT.second,
-            microsecond=dT.microsecond,
-            tzinfo=dT.tzinfo
-        )
+        dt_kwargs = {
+            'year': dT.year,
+            'month': dT.month,
+            'day': dT.day,
+            'hour': dT.hour,
+            'minute': dT.minute,
+            'second': dT.second,
+            'microsecond': dT.microsecond,
+            'tzinfo': dT.tzinfo
+        }
+        return labDT(**dt_kwargs)
 
     def zulu(self):
 
@@ -68,8 +59,8 @@ class labDT(datetime):
 
     def epoch(self):
 
-        '''
-            a method to report posix epoch timestamp from a labDT object
+        ''' a method to report posix epoch timestamp from a labDT object
+
         :return: float with timestamp
         '''
 
@@ -80,8 +71,8 @@ class labDT(datetime):
 
     def pyLocal(self, time_zone=''):
 
-        '''
-            a method to report a python datetime from a labDT object
+        ''' a method to report a python datetime from a labDT object
+
         :param time_zone: [optional] string with timezone to report in
         :return: string with date and time info
         '''
@@ -99,21 +90,22 @@ class labDT(datetime):
 
     # construct python datetime from labDT
         dT = self.astimezone(get_tz)
-        return labDT(
-            year=dT.year,
-            month=dT.month,
-            day=dT.day,
-            hour=dT.hour,
-            minute=dT.minute,
-            second=dT.second,
-            microsecond=dT.microsecond,
-            tzinfo=dT.tzinfo
-        )
+        dt_kwargs = {
+            'year': dT.year,
+            'month': dT.month,
+            'day': dT.day,
+            'hour': dT.hour,
+            'minute': dT.minute,
+            'second': dT.second,
+            'microsecond': dT.microsecond,
+            'tzinfo': dT.tzinfo
+        }
+        return labDT(**dt_kwargs)
 
     def jsLocal(self, time_zone=''):
 
-        '''
-            a method to report a javascript string from a labDT object
+        ''' a method to report a javascript string from a labDT object
+
         :param time_zone: [optional] string with timezone to report in
         :return: string with date and time info
         '''
@@ -136,8 +128,8 @@ class labDT(datetime):
 
     def humanFriendly(self, time_zone=''):
 
-        '''
-            a method to report a human friendly string from a labDT object
+        ''' a method to report a human friendly string from a labDT object
+
         :param time_zone: [optional] string with timezone to report in
         :return: string with date and time info
         '''
@@ -165,12 +157,12 @@ class labDT(datetime):
         return dtString
 
     @classmethod
-    def fromEpoch(self, epoch_time):
+    def fromEpoch(cls, epoch_time):
 
-        '''
-            a method for constructing a labDT object from epoch timestamp
+        ''' a method for constructing a labDT object from epoch timestamp
+
         :param epoch_time: number with epoch timestamp info
-        :return: labDT
+        :return: labDT object
         '''
 
     # validate input
@@ -180,24 +172,25 @@ class labDT(datetime):
 
     # construct labDT from epoch time
         dT = datetime.utcfromtimestamp(epoch_time).replace(tzinfo=pytz.utc)
-        return labDT(
-            year=dT.year,
-            month=dT.month,
-            day=dT.day,
-            hour=dT.hour,
-            minute=dT.minute,
-            second=dT.second,
-            microsecond=dT.microsecond,
-            tzinfo=dT.tzinfo
-        )
+        dt_kwargs = {
+            'year': dT.year,
+            'month': dT.month,
+            'day': dT.day,
+            'hour': dT.hour,
+            'minute': dT.minute,
+            'second': dT.second,
+            'microsecond': dT.microsecond,
+            'tzinfo': dT.tzinfo
+        }
+        return labDT(**dt_kwargs)
 
     @classmethod
-    def fromISO(self, iso_string):
+    def fromISO(cls, iso_string):
 
-        '''
-            a method for constructing a labDT object from a timezone aware ISO string
+        ''' a method for constructing a labDT object from a timezone aware ISO string
+        
         :param iso_string: string with date and time info in ISO format
-        :return: labDT
+        :return: labDT object
         '''
 
     # validate input
@@ -211,24 +204,25 @@ class labDT(datetime):
 
     # construct labDT from parsed string
         dT = python_datetime.astimezone(pytz.utc)
-        return labDT(
-            year=dT.year,
-            month=dT.month,
-            day=dT.day,
-            hour=dT.hour,
-            minute=dT.minute,
-            second=dT.second,
-            microsecond=dT.microsecond,
-            tzinfo=dT.tzinfo
-        )
+        dt_kwargs = {
+            'year': dT.year,
+            'month': dT.month,
+            'day': dT.day,
+            'hour': dT.hour,
+            'minute': dT.minute,
+            'second': dT.second,
+            'microsecond': dT.microsecond,
+            'tzinfo': dT.tzinfo
+        }
+        return labDT(**dt_kwargs)
 
     @classmethod
-    def fromPython(self, python_datetime):
+    def fromPython(cls, python_datetime):
 
-        '''
-            a method for constructing a labDT from a python datetime with timezone info
+        ''' a method for constructing a labDT from a python datetime with timezone info
+        
         :param python_datetime: datetime object with timezone info
-        :return: labDT
+        :return: labDT object
         '''
 
     # validate inputs
@@ -240,24 +234,25 @@ class labDT(datetime):
 
     # construct labDT from python datetime
         dT = python_datetime.astimezone(pytz.utc)
-        return labDT(
-            year=dT.year,
-            month=dT.month,
-            day=dT.day,
-            hour=dT.hour,
-            minute=dT.minute,
-            second=dT.second,
-            microsecond=dT.microsecond,
-            tzinfo=dT.tzinfo
-        )
+        dt_kwargs = {
+            'year': dT.year,
+            'month': dT.month,
+            'day': dT.day,
+            'hour': dT.hour,
+            'minute': dT.minute,
+            'second': dT.second,
+            'microsecond': dT.microsecond,
+            'tzinfo': dT.tzinfo
+        }
+        return labDT(**dt_kwargs)
 
     @classmethod
-    def fromJavascript(self, javascript_datetime):
+    def fromJavascript(cls, javascript_datetime):
 
-        '''
-            a method to construct labDT from a javascript datetime string
+        ''' a method to construct labDT from a javascript datetime string
+        
         :param javascript_datetime: string with datetime info in javascript formatting
-        :return: labDT
+        :return: labDT object
         '''
 
     # validate inputs
@@ -275,19 +270,20 @@ class labDT(datetime):
             adj_input = adj_input.replace('+','-')
         python_datetime = dTparser.parse(adj_input)
         dT = python_datetime.astimezone(pytz.utc)
-        return labDT(
-            year=dT.year,
-            month=dT.month,
-            day=dT.day,
-            hour=dT.hour,
-            minute=dT.minute,
-            second=dT.second,
-            microsecond=dT.microsecond,
-            tzinfo=dT.tzinfo
-        )
+        dt_kwargs = {
+            'year': dT.year,
+            'month': dT.month,
+            'day': dT.day,
+            'hour': dT.hour,
+            'minute': dT.minute,
+            'second': dT.second,
+            'microsecond': dT.microsecond,
+            'tzinfo': dT.tzinfo
+        }
+        return labDT(**dt_kwargs)
 
     @classmethod
-    def fromPattern(self, datetime_string, datetime_pattern, time_zone):
+    def fromPattern(cls, datetime_string, datetime_pattern, time_zone):
 
         '''
             a method for constructing labDT from a strptime pattern in a string
@@ -319,16 +315,17 @@ class labDT(datetime):
         python_datetime = datetime.strptime(datetime_string, datetime_pattern)
         python_datetime = python_datetime.replace(tzinfo=tz.gettz(time_zone))
         dT = python_datetime.astimezone(pytz.utc)
-        return labDT(
-            year=dT.year,
-            month=dT.month,
-            day=dT.day,
-            hour=dT.hour,
-            minute=dT.minute,
-            second=dT.second,
-            microsecond=dT.microsecond,
-            tzinfo=dT.tzinfo
-        )
+        dt_kwargs = {
+            'year': dT.year,
+            'month': dT.month,
+            'day': dT.day,
+            'hour': dT.hour,
+            'minute': dT.minute,
+            'second': dT.second,
+            'microsecond': dT.microsecond,
+            'tzinfo': dT.tzinfo
+        }
+        return labDT(**dt_kwargs)
 
 if __name__ == '__main__':
     dt = labDT.new()

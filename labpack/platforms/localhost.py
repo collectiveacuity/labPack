@@ -8,7 +8,11 @@ from socket import gethostname, gethostbyname
 
 class osClient(object):
 
+    ''' a class of methods for retrieving local os properties '''
+
     def __init__(self):
+
+        ''' initialization method for osClient class '''
 
     # construct empty methods
         self.sysname = ''
@@ -47,9 +51,7 @@ class osClient(object):
 
 class localhostClient(object):
 
-    '''
-        a class of methods to interact with the localhost
-    '''
+    ''' a class of methods to interact with the localhost '''
 
     _class_fields = {
         'schema': {
@@ -85,6 +87,8 @@ class localhostClient(object):
     }
 
     def __init__(self):
+
+        ''' a method to initialize a client class to interact with the localhost '''
 
     # construct class field input validation property
         self.fields = jsonModel(self._class_fields)
@@ -201,7 +205,7 @@ class localhostClient(object):
         :param walk_root: string with path from which to root walk of localhost directories
         :param reverse_order: boolean to determine alphabetical direction of walk
         :param previous_file: string with path of file after which to start walk
-        :yield: string with absolute path to file
+        :return: string with absolute path to file
         '''
 
         __name__ = '%s.walk(...)' % self.__class__.__name__
@@ -385,8 +389,7 @@ class localhostClient(object):
 
     def list(self, filter_function=None, list_root='', max_results=1, reverse_order=False, previous_file=''):
 
-        '''
-            a method to list files on localhost from walk of directories
+        ''' a method to list files on localhost from walk of directories
 
         :param filter_function: (keyword arguments) function used to filter results
         :param list_root: string with localhost path from which to root list of files

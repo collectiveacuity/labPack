@@ -1,3 +1,4 @@
+''' A Collection of Methods for Data Collection & Processing '''
 __author__ = 'rcj1492'
 __created__ = '2015.11'
 __module__ = 'labpack'

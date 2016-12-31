@@ -190,7 +190,7 @@ class appdataModel(object):
                     included in the record as well.
         '''
 
-        method_name = '%s.new' % self.__class__.__name__
+        _title = '%s.new' % self.__class__.__name__
 
         record = appdataModel(appdata_model=self)
         record_data = {}
@@ -238,7 +238,7 @@ class appdataModel(object):
             access_ids
         '''
 
-        method_name = '%s.new' % self.__class__.__name__
+        _title = '%s.new' % self.__class__.__name__
 
     # check to see if data changed between last load
         if not overwrite:
@@ -504,14 +504,14 @@ class appdataClient(object):
                     [ 'lab', 'unittests', '1473719695.2165067', '.json' ]
         '''
 
-        method_name = '%s.create' % self.__class__.__name__
-        _key_arg = '%s(key_string="%s")' % (method_name, key_string)
-        _body_arg = '%s(body_dict={...}' % {method_name}
-        _secret_arg = '%s(secret_key="%s")' % (method_name, secret_key)
+        _title = '%s.create' % self.__class__.__name__
+        _key_arg = '%s(key_string="%s")' % (_title, key_string)
+        _body_arg = '%s(body_dict={...}' % {_title}
+        _secret_arg = '%s(secret_key="%s")' % (_title, secret_key)
 
     # validate inputs
-        key_string = self.fields.validate(key_string, '.key_string')
-        body_dict = self.fields.validate(body_dict, '.body_dict')
+        key_string = self.fields.validate(key_string, '.key_string', _key_arg)
+        body_dict = self.fields.validate(body_dict, '.body_dict', _body_arg)
 
     # construct and validate file path
         file_path = os.path.join(self.collection_folder, key_string)
@@ -543,12 +543,12 @@ class appdataClient(object):
         :return: dictionary with file content details
         '''
 
-        method_name = '%s.create' % self.__class__.__name__
-        _key_arg = '%s(key_string="%s")' % (method_name, key_string)
-        _secret_arg = '%s(secret_key="%s")' % (method_name, secret_key)
+        _title = '%s.create' % self.__class__.__name__
+        _key_arg = '%s(key_string="%s")' % (_title, key_string)
+        _secret_arg = '%s(secret_key="%s")' % (_title, secret_key)
 
     # validate inputs
-        key_string = self.fields.validate(key_string, '.key_string')
+        key_string = self.fields.validate(key_string, '.key_string', _key_arg)
 
     # construct path to file
         file_path = os.path.join(self.collection_folder, key_string)
@@ -621,8 +621,8 @@ class appdataClient(object):
                 "contains_either": [ "" ]
         '''
 
-        __name__ = '%s.filter' % self.__class__.__name__
-        _filter_arg = '%s(path_filters=[...])' % __name__
+        _title = '%s.filter' % self.__class__.__name__
+        _filter_arg = '%s(path_filters=[...])' % _title
 
     # validate input
         if not isinstance(path_filters, list):
@@ -694,7 +694,7 @@ class appdataClient(object):
                     results.
         '''
 
-        __name__ = '%s.list(...)' % self.__class__.__name__
+        _title = '%s.list(...)' % self.__class__.__name__
 
     # validate input
         input_kwargs = [max_results, previous_key]
@@ -709,7 +709,7 @@ class appdataClient(object):
                 path_segments = [ 'lab', 'unittests', '1473719695.2165067', '.json' ]
                 filter_function(*path_segments)
             except:
-                err_msg = __name__.replace('...', 'filter_function=%s' % filter_function.__class__.__name__)
+                err_msg = _title.replace('...', 'filter_function=%s' % filter_function.__class__.__name__)
                 raise TypeError('%s must accept positional arguments.' % err_msg)
 
     # construct empty results list
@@ -747,8 +747,8 @@ class appdataClient(object):
         :return: string reporting outcome
         '''
 
-        __name__ = '%s.delete' % self.__class__.__name__
-        _key_arg = '%s(key_string="%s")' % (__name__, key_string)
+        _title = '%s.delete' % self.__class__.__name__
+        _key_arg = '%s(key_string="%s")' % (_title, key_string)
 
     # validate inputs
         key_string = self.fields.validate(key_string, '.key_string')
@@ -788,7 +788,7 @@ class appdataClient(object):
         :return: string with confirmation of deletion
         '''
 
-        __name__ = '%s.remove' % self.__class__.__name__
+        _title = '%s.remove' % self.__class__.__name__
 
     # TODO  error handling is turned off to avoid system blocking
     #       fix potential to create artifacts in the system
@@ -798,7 +798,7 @@ class appdataClient(object):
             import shutil
             shutil.rmtree(self.collection_folder, ignore_errors=True)
         except:
-            raise Exception('%s failed to remove %s collection from app data.' % (__name__, self.collection_folder))
+            raise Exception('%s failed to remove %s collection from app data.' % (_title, self.collection_folder))
 
         return '%s collection has been removed from app data.' % self.collection_folder
 
