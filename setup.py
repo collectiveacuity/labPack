@@ -87,7 +87,8 @@ setup(
         'python-dateutil>=2.4.2',
         'pyyaml>=3.12',
         'jsonmodel',
-        'requests'
+        'requests',
+        'PyJWT>=1.4.2'
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',

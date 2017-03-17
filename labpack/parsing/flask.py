@@ -20,7 +20,7 @@ app.test_request_context(**kwargs):
 # charset='utf-8'
 '''
 
-def extract_request_details(request_object, session_header='', secret_key=''):
+def extract_request_details(request_object, session_object=None):
 
     '''
         a method for extracting request details from request and session objects
@@ -54,22 +54,8 @@ def extract_request_details(request_object, session_header='', secret_key=''):
     request_details['params'].update(**request_object.args)
 
 # retrieve session details
-    if session_header and secret_key:
-        if session_header in request_details['headers']:
-            import jwt
-            session_token = request_details['headers'][session_header]
-            session_details = {}
-            try:
-                session_details = jwt.decode(session_token, secret_key)
-            except jwt.DecodeError as err:
-                request_details['error'] = 'Session token is invalid.'
-                request_details['code'] = 400
-            except jwt.ExpiredSignatureError as err:
-                request_details['error'] = 'Session token has expired.'
-                request_details['code'] = 400
-            except Exception:
-                pass
-            request_details['session'] = session_details
+    if session_object:
+        request_details['session'].update(**session_object)
 
 # add data based upon type
     if request_object.is_json:
@@ -96,6 +82,43 @@ def extract_request_details(request_object, session_header='', secret_key=''):
 # TODO: status code and error handling
 
     return request_details
+
+def extract_jwt_session(request_headers, session_header, secret_key):
+
+    '''
+        a method to extract and validate jwt session token from request headers
+
+    :param request_headers: dictionary with header fields from request
+    :param session_header: string with name of session token header key
+    :param secret_key: string with secret key to json web token encryption
+    :return: dictionary with request details with session details or error coding
+    '''
+
+    session_details = {
+        'error': '',
+        'code': 200,
+        'session': {}
+    }
+
+    if not session_header in request_headers.keys():
+        session_details['error'] = '%s is missing.' % session_header
+        session_details['code'] = 400
+    else:
+        import jwt
+        session_token = request_headers[session_header]
+        try:
+            session_details = jwt.decode(session_token, secret_key)
+        except jwt.DecodeError as err:
+            session_details['error'] = 'Session token is invalid.'
+            session_details['code'] = 400
+        except jwt.ExpiredSignatureError as err:
+            session_details['error'] = 'Session token has expired.'
+            session_details['code'] = 400
+        except Exception:
+            pass
+        session_details['session'] = session_details
+
+    return session_details
 
 def validate_request_details(request_details, request_model):
 
