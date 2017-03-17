@@ -20,7 +20,7 @@ app.test_request_context(**kwargs):
 # charset='utf-8'
 '''
 
-def extract_request_details(request_object, session_object=None):
+def extract_request_details(request_object, session_header='', secret_key=''):
 
     '''
         a method for extracting request details from request and session objects
@@ -38,6 +38,7 @@ def extract_request_details(request_object, session_object=None):
         'error': '',
         'status': 'ok',
         'code': 200,
+        'method': request_object.method,
         'session': {},
         'root': request_object.url_root,
         'route': request_object.path,
@@ -48,16 +49,27 @@ def extract_request_details(request_object, session_object=None):
         'data': ''
     }
 
-# retrieve session details
-    if session_object:
-        for key, value in session_object.items():
-            request_details['session'][key] = value
-
 # automatically add header and query field data
-    for key, value in request_object.headers.items():
-        request_details['headers'][key] = value
-    for key, value in request_object.args.items():
-        request_details['params'][key] = value
+    request_details['headers'].update(**request_object.headers)
+    request_details['params'].update(**request_object.args)
+
+# retrieve session details
+    if session_header and secret_key:
+        if session_header in request_details['headers']:
+            import jwt
+            session_token = request_details['headers'][session_header]
+            session_details = {}
+            try:
+                session_details = jwt.decode(session_token, secret_key)
+            except jwt.DecodeError as err:
+                request_details['error'] = 'Session token is invalid.'
+                request_details['code'] = 400
+            except jwt.ExpiredSignatureError as err:
+                request_details['error'] = 'Session token has expired.'
+                request_details['code'] = 400
+            except Exception:
+                pass
+            request_details['session'] = session_details
 
 # add data based upon type
     if request_object.is_json:
@@ -105,18 +117,21 @@ def validate_request_details(request_details, request_model):
     }
 
 # validate request details
-    for key in request_model.schema.keys():
-        if not key in request_details.keys():
-            status_details['code'] = 400
-            status_details['error'] = "request is missing a value for field '%s'" % key
-            break
-        try:
-            object_title = "request field '%s'" % key
-            request_model.validate(request_details[key], '.%s' % key, object_title)
-        except InputValidationError as err:
-            status_details['error'] = err.message.replace('\n',' ').lstrip()
-            status_details['code'] = 400
-            break
+    for key, value in request_model.schema.items():
+        comp_key = '.%s' % key
+        if request_model.keyMap[comp_key]['required_field']:
+            if not key in request_details.keys():
+                status_details['code'] = 400
+                status_details['error'] = "request is missing a value for required field '%s'" % key
+                break
+        elif key in request_details.keys():
+            try:
+                object_title = "request field '%s'" % key
+                request_model.validate(request_details[key], '.%s' % key, object_title)
+            except InputValidationError as err:
+                status_details['error'] = err.message.replace('\n',' ').lstrip()
+                status_details['code'] = 400
+                break
 
     return status_details
 
