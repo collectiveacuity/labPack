@@ -83,7 +83,7 @@ def extract_request_details(request_object, session_object=None):
 
     return request_details
 
-def extract_jwt_session(request_headers, session_header, secret_key):
+def extract_session_details(request_headers, session_header, secret_key):
 
     '''
         a method to extract and validate jwt session token from request headers
@@ -107,29 +107,38 @@ def extract_jwt_session(request_headers, session_header, secret_key):
         import jwt
         session_token = request_headers[session_header]
         try:
-            session_details = jwt.decode(session_token, secret_key)
+            session_details['session'] = jwt.decode(session_token, secret_key)
         except jwt.DecodeError as err:
-            session_details['error'] = 'Session token is invalid.'
+            session_details['error'] = 'Session token decoding error.'
             session_details['code'] = 400
         except jwt.ExpiredSignatureError as err:
             session_details['error'] = 'Session token has expired.'
             session_details['code'] = 400
         except Exception:
-            pass
-        session_details['session'] = session_details
+            session_details['error'] = 'Session token is invalid.'
+            session_details['code'] = 400
 
     return session_details
 
-def validate_request_details(request_details, request_model):
+def validate_request_content(request_content, request_model):
+    
+    '''
+        a method to validate the content fields of a flask request
+        
+    :param request_content: dictionary with content fields to validate 
+    :param request_model: object with jsonmodel class properties
+    :return: dictionary with validation status details
+    '''
 
+# import dependencies
     from jsonmodel.validators import jsonModel
     from jsonmodel.exceptions import InputValidationError
 
-    title = 'validate_request_details'
+    title = 'validate_request_content'
 
 # validate inputs
-    if not isinstance(request_details, dict):
-        raise TypeError('%s(request_details={...}) must be a dictionary.' % title)
+    if not isinstance(request_content, dict):
+        raise TypeError('%s(request_content={...}) must be a dictionary.' % title)
     elif not isinstance(request_model, jsonModel):
         raise TypeError('%s(request_model=<...>) must be a %s object.' % (title, jsonModel.__class__))
 
@@ -143,14 +152,14 @@ def validate_request_details(request_details, request_model):
     for key, value in request_model.schema.items():
         comp_key = '.%s' % key
         if request_model.keyMap[comp_key]['required_field']:
-            if not key in request_details.keys():
+            if not key in request_content.keys():
                 status_details['code'] = 400
                 status_details['error'] = "request is missing a value for required field '%s'" % key
                 break
-        elif key in request_details.keys():
+        elif key in request_content.keys():
             try:
                 object_title = "request field '%s'" % key
-                request_model.validate(request_details[key], '.%s' % key, object_title)
+                request_model.validate(request_content[key], '.%s' % key, object_title)
             except InputValidationError as err:
                 status_details['error'] = err.message.replace('\n',' ').lstrip()
                 status_details['code'] = 400

@@ -195,6 +195,61 @@ def save_settings(file_path, record_details, overwrite=False, secret_key=''):
 
     return file_path
 
+def _remove_settings(_file_path, _retry_count=10):
+
+    '''
+        a helper method for removing settings file
+        
+    :param _file_path: string with path to file to remove 
+    :param _retry_count: integer with number of attempts before error is raised
+    :return: None
+    '''
+
+    import os
+    from time import sleep
+
+    count = 0
+    while True:
+        try:
+            os.remove(_file_path)
+            break
+        except PermissionError:
+            sleep(.05)
+            count += 1
+            if count > _retry_count:
+                raise
+
+    os._exit(0)
+
+def remove_settings(file_path, retry_count=10):
+
+    '''
+        a method to remove a file using a child process
+
+        http://www.petercollingridge.co.uk/blog/running-multiple-processes-python
+        https://docs.python.org/3.5/library/multiprocessing.html
+
+    :param file_path: string with path to file to remove
+    :param retry_count: integer with number of attempts to remove before error is thrown
+    :return: None
+    '''
+
+# validate inputs
+    title = 'remove_settings'
+    try:
+        _path_arg = '%s(file_path=%s)' % (title, str(file_path))
+    except:
+        raise ValueError('%s(file_path=...) must be a string.' % title)
+    if not isinstance(retry_count, int):
+        raise ValueError('%s(retry_count=...) must be an integer.' % title)
+    elif retry_count < 1:
+        raise ValueError('%s(retry_count=%s) must be greater than 0.' % (title, retry_count))
+
+# create a child process to remove file
+    from multiprocessing import Process
+    child_process = Process(target=_remove_settings, args=(file_path, retry_count))
+    child_process.start()
+
 def ingest_environ(model_path=''):
 
     ''' a method to convert environment variables to a python dictionary

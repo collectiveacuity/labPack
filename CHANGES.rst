@@ -1,6 +1,11 @@
 ChangeLog
 =========
 
+0.9 (2017.03.16)
+----------------
+* [UPDATE] added jwt session token extraction method to flask parsing package
+* [REFACTOR] changed validate_request_details to validate_request_content
+
 0.8 (2016.12.31)
 ----------------
 * [FEATURE ADDED] oauth2Client class for interacting with oauth2 standard APIs
