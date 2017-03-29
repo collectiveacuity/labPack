@@ -762,6 +762,7 @@ class telegramBotClient(object):
         return True
 
 if __name__ == '__main__':
+
     from labpack.records.settings import load_settings, save_settings
     from labpack.handlers.requests import handle_requests
     telegram_config = load_settings('../../../cred/telegram.yaml')

@@ -1,8 +1,12 @@
 ChangeLog
 =========
 
-0.9 (2017.03.16)
+0.9 (2017.03.28)
 ----------------
+* [FEATURE ADDED] mailgunClient class for interacting with mailgun email api
+* [FEATURE ADDED] mandrillClient class for interacting with mandrill email api
+* [UPDATE] added rfc2822 method to labDT class to output compliant format
+* [UPDATE] added remove method to settings package to handle async deletion
 * [UPDATE] added jwt session token extraction method to flask parsing package
 * [REFACTOR] changed validate_request_details to validate_request_content
 

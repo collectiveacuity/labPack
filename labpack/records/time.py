@@ -69,6 +69,22 @@ class labDT(datetime):
         delta_time = self - epoch_dt
         return delta_time.total_seconds()
 
+    def rfc2822(self):
+
+        ''' 
+            a method to report a RFC-2822 Compliant Date from a labDT object
+
+            https://tools.ietf.org/html/rfc2822.html#page-14
+
+        :return: string with RFC-2822 compliant date time
+        '''
+
+    # define format
+        js_format = '%a, %d %b %Y %H:%M:%S GMT'
+        utc_time = self.astimezone(pytz.utc)
+
+        return format(utc_time, js_format)
+
     def pyLocal(self, time_zone=''):
 
         ''' a method to report a python datetime from a labDT object
@@ -111,7 +127,7 @@ class labDT(datetime):
         '''
 
     # validate inputs
-        js_format = '%a %b %d %Y %H:%M:%S.%f GMT%z (%Z)'
+        js_format = '%a %b %d %Y %H:%M:%S GMT%z (%Z)'
         title = 'Timezone input for labDT.jsLocal'
         get_tz = get_localzone()
         if time_zone:
@@ -330,3 +346,5 @@ class labDT(datetime):
 if __name__ == '__main__':
     dt = labDT.new()
     print(dt.humanFriendly('America/Seattle'))
+    print(dt.rfc2822())
+    print(dt.isoformat().replace('T', ' ')[0:19])

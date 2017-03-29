@@ -5,7 +5,7 @@ __license__ = 'MIT'
 # TODO: incorporate rate limiting logic
 class movesHandler(object):
 
-    ''' handles responses from moves api and usage data'''
+    ''' handles responses from moves api and usage data '''
 
     _class_fields = {
         'schema': {
