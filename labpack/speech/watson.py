@@ -2,8 +2,6 @@ __author__ = 'rcj1492'
 __created__ = '2017.04'
 __license__ = 'MIT'
 
-text_2_speech = 'https://stream.watsonplatform.net/text-to-speech/api'
-
 ''' 
     pip install watson-developer-cloud
     pip install moviepy 
@@ -24,6 +22,7 @@ PLEASE NOTE:    convert audio method requires ffmpeg library
                 unzip folder
                 add bin subfolder to system path
 '''
+# https://stream.watsonplatform.net/text-to-speech/api
 
 from labpack import __team__, __module__
 from watson_developer_cloud.speech_to_text_v1 import SpeechToTextV1
