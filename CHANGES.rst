@@ -1,13 +1,16 @@
 ChangeLog
 =========
 
-0.9 (2017.03.28)
+0.9 (2017.04.13)
 ----------------
+* [FEATURE ADDED] watsonSpeechClient class for interacting with watson api
 * [FEATURE ADDED] mailgunClient class for interacting with mailgun email api
 * [FEATURE ADDED] mandrillClient class for interacting with mandrill email api
 * [UPDATE] added rfc2822 method to labDT class to output compliant format
 * [UPDATE] added remove method to settings package to handle async deletion
 * [UPDATE] added jwt session token extraction method to flask parsing package
+* [UPDATE] added documentation for installation of libmagic on windows 64 bits
+* [BUG FIX] error in get_file method of telegramClient class
 * [REFACTOR] changed validate_request_details to validate_request_content
 
 0.8 (2016.12.31)

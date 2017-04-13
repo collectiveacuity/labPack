@@ -83,7 +83,8 @@ class labID(object):
         self.mac = local_mac
 
 if __name__ == '__main__':
-    print(labID().id24)
+    print(labID().id12)
+    print(labID().uuid)
     print(labID().epoch)
 
 

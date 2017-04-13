@@ -560,7 +560,7 @@ class telegramBotClient(object):
         title = '%s.get_file' % self.__class__.__name__
 
     # construct file url
-        file_url = '%s%s' % (telegram_bot.file_endpoint, file_route)
+        file_url = '%s%s' % (self.file_endpoint, file_route)
 
     # send request for file data
         data_buffer = self._get_data(file_url, file_name, method_title=title)

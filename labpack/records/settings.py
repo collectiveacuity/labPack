@@ -195,13 +195,14 @@ def save_settings(file_path, record_details, overwrite=False, secret_key=''):
 
     return file_path
 
-def _remove_settings(_file_path, _retry_count=10):
+def _remove_settings(_file_path, _retry_count=10, _remove_dir=False):
 
     '''
         a helper method for removing settings file
         
     :param _file_path: string with path to file to remove 
     :param _retry_count: integer with number of attempts before error is raised
+    :param _remove_dir: [optional] boolean to remove empty parent directories
     :return: None
     '''
 
@@ -212,6 +213,14 @@ def _remove_settings(_file_path, _retry_count=10):
     while True:
         try:
             os.remove(_file_path)
+            if _remove_dir:
+                path_segments = os.path.split(_file_path)
+                if len(path_segments) > 1:
+                    file_folders = path_segments[0]
+                    try:
+                        os.removedirs(file_folders)
+                    except:
+                        pass
             break
         except PermissionError:
             sleep(.05)
@@ -221,7 +230,7 @@ def _remove_settings(_file_path, _retry_count=10):
 
     os._exit(0)
 
-def remove_settings(file_path, retry_count=10):
+def remove_settings(file_path, retry_count=10, remove_dir=False):
 
     '''
         a method to remove a file using a child process
@@ -231,6 +240,7 @@ def remove_settings(file_path, retry_count=10):
 
     :param file_path: string with path to file to remove
     :param retry_count: integer with number of attempts to remove before error is thrown
+    :param remove_dir: [optional] boolean to remove empty parent directories
     :return: None
     '''
 
@@ -247,7 +257,7 @@ def remove_settings(file_path, retry_count=10):
 
 # create a child process to remove file
     from multiprocessing import Process
-    child_process = Process(target=_remove_settings, args=(file_path, retry_count))
+    child_process = Process(target=_remove_settings, args=(file_path, retry_count, remove_dir))
     child_process.start()
 
 def ingest_environ(model_path=''):

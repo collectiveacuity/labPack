@@ -16,8 +16,9 @@ PLEASE NOTE:    magic package requires the python-magic module.
 (macOS):        brew install libmagic
                 pip install python-magic
 
-(windows):      http://gnuwin32.sourceforge.net/packages/file.htm
+(windows):      (32bit) http://gnuwin32.sourceforge.net/packages/file.htm
                 http://downloads.sourceforge.net/gnuwin32/file-5.03-bin.zip
+                (64bit) https://github.com/pidydx/libmagicwin64
                 add dll files to path in systems settings
                 copy magic and magic.mgc files to project path
                 pip install python-magic
