@@ -243,11 +243,13 @@ class watsonSpeechClient(object):
             if mimetype_text not in magic_details['mimetype']:
                 raise ValueError('%s byte data mimetype %s does not match %s file extension.' % (file_arg, magic_details['mimetype'], file_details['extension']))
 
-    # import dependencies and create clip folder
+    # import dependencies
         from math import ceil
         from moviepy.editor import AudioFileClip
         from labpack.platforms.localhost import localhostClient
         from labpack.records.id import labID
+
+    # create temporary clip folder
         record_id = labID()
         collection_name='Watson Speech2Text'
         localhost_client = localhostClient()

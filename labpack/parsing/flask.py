@@ -51,7 +51,8 @@ def extract_request_details(request_object, session_object=None):
 
 # automatically add header and query field data
     request_details['headers'].update(**request_object.headers)
-    request_details['params'].update(**request_object.args)
+    for key in request_object.args.keys():
+        request_details['params'][key] = request_object.args.get(key)
 
 # retrieve session details
     if session_object:
