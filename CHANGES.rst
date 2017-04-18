@@ -10,6 +10,7 @@ ChangeLog
 * [UPDATE] added remove method to settings package to handle async deletion
 * [UPDATE] added jwt session token extraction method to flask parsing package
 * [UPDATE] added documentation for installation of libmagic on windows 64 bits
+* [BUG FIX] fixed key error on oauth2Client.get_token on failed request
 * [BUG FIX] weird feature in flask.Request.args which returns values as lists
 * [BUG FIX] error in get_file method of telegramClient class
 * [REFACTOR] changed validate_request_details to validate_request_content

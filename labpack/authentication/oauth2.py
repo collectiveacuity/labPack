@@ -303,8 +303,8 @@ class oauth2Client(object):
 
     # convert expiration info to epoch timestamp
         details = token_details['json']
-        details['expires_at'] = 0
         if details:
+            details['expires_at'] = 0
             if 'expires_in' in details.keys():
                 details['expires_at'] = int(current_time) + details['expires_in']
                 del details['expires_in']
