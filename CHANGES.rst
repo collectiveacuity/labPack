@@ -1,7 +1,7 @@
 ChangeLog
 =========
 
-0.9 (2017.04.13)
+0.9 (2017.04.18)
 ----------------
 * [FEATURE ADDED] watsonSpeechClient class for interacting with watson api
 * [FEATURE ADDED] mailgunClient class for interacting with mailgun email api
