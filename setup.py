@@ -88,7 +88,8 @@ setup(
         'pyyaml>=3.12',
         'jsonmodel',
         'requests',
-        'PyJWT>=1.4.2'
+        'PyJWT>=1.4.2',
+        'watson-developer-cloud'
     ],
     classifiers=[
         'Development Status :: 3 - Alpha',
