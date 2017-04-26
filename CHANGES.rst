@@ -1,6 +1,10 @@
 ChangeLog
 =========
 
+0.10 (TBD)
+----------
+* [UPDATE] added validate_extension function to regex package
+
 0.9 (2017.04.18)
 ----------------
 * [FEATURE ADDED] watsonSpeechClient class for interacting with watson api

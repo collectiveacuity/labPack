@@ -6,6 +6,61 @@ import re
 from jsonmodel.validators import jsonModel
 from labpack.compilers.objects import _method_constructor
 
+def validate_extension(self, file_name, extension_map, method_title, argument_title):
+
+    ''' 
+        a method to extract (and test) the extension type of a file
+
+    :param file_name: string with name of file
+    :param extension_map: dictionary with regex patterns, extensions and mimetypes
+    :param method_title: string with title of feeder method
+    :param argument_title: string with title of argument key from feeder method
+    :return: dictionary with mimetype and extension details
+    '''
+
+    title = 'validate_extension'
+    ext_arg = '%s(extension_map={...})' % title
+
+# validate inputs
+    input_fields = {
+        'file_name': file_name,
+        'method_title': method_title,
+        'argument_title': argument_title
+    }
+    for key, value in input_fields.items():
+        if not isinstance(value, str):
+            raise ValueError('%s(%s="...") must be a string' % (title, key))
+    if not isinstance(extension_map, dict):
+        raise ValueError('%s must be a dictionary.' % ext_arg)
+
+# import dependencies
+    import re
+
+# construct default response
+    file_details = {
+        'mimetype': '',
+        'extension': ''
+    }
+
+# test file name against regex
+    type_list = []
+    for key, value in extension_map.items():
+        if not isinstance(value, dict):
+            raise ValueError('%s %s key must be a dictionary.' % (ext_arg, key))
+        elif not 'extension' in value.keys():
+            raise ValueError('%s %s dict must have an "extension" key.' % (ext_arg, key))
+        type_list.append(value['extension'])
+        regex_pattern = re.compile(key)
+        if regex_pattern.findall(file_name):
+            file_details.update(**value)
+
+# validate extension
+    if not file_details['extension']:
+        raise ValueError(
+            '%s(%s=%s) must be one of %s extension types.' % (method_title, argument_title, file_name, type_list))
+
+    return file_details
+
 class labRegex(object):
 
     _class_methods = {
@@ -129,6 +184,17 @@ class labRegex(object):
         return word_list
 
 if __name__ == '__main__':
+
+    audio_extensions = {
+        '.+\\.flac$': {'mimetype': 'audio/flac', 'extension': '.flac'},
+        '.+\\.l16$': {'mimetype': 'audio/l16', 'extension': '.l16'},
+        '.+\\.wav$': {'mimetype': 'audio/wav', 'extension': '.wav'},
+        '.+\\.ogg$': {'mimetype': 'audio/ogg', 'extension': '.ogg'},
+        '.+\\.mulaw$': {'mimetype': 'audio/mulaw', 'extension': '.mulaw'},
+        '.+\\.au$': {'mimetype': 'audio/basic', 'extension': '.au'},
+        '.+\\.snd$': {'mimetype': 'audio/basic', 'extension': '.snd'}
+    }
+
     test_schema = {
         "valid email": "^[\\w\\-_\\.\\+]{1,36}?@[\\w\\-\\.]{1,36}?\\.[a-z]{2,10}$",
         "valid url": "[\\w\\-\\.]+\\.[a-z]{2,10}$",

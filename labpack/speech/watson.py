@@ -3,10 +3,11 @@ __created__ = '2017.04'
 __license__ = 'MIT'
 
 '''
-PLEASE NOTE:    multithreading, compression and audio conversion 
-                require ffmpeg library:
+PLEASE NOTE:    watson package requires watson-cloud-developer, moviepy 
+                and ffmpy module along with ffmpeg C dependency
 
-(install)       pip install moviepy
+(install)       pip install watson-cloud-developer
+                pip install moviepy
                 pip install ffmpy
                 
                 python -m imageio.plugins.ffmpeg.download
@@ -16,13 +17,23 @@ PLEASE NOTE:    multithreading, compression and audio conversion
 '''
 
 from labpack import __team__, __module__
-from watson_developer_cloud.speech_to_text_v1 import SpeechToTextV1
-from watson_developer_cloud.text_to_speech_v1 import TextToSpeechV1
-from watson_developer_cloud import WatsonException
+try:
+    from watson_developer_cloud.speech_to_text_v1 import SpeechToTextV1
+    from watson_developer_cloud.text_to_speech_v1 import TextToSpeechV1
+    from watson_developer_cloud import WatsonException
+except:
+    print('watson package requires watson-cloud-developer module and ffmpeg dependencies.')
+    exit(1)
+
+# TODO watson text to speech methods
 
 class watsonSpeechClient(object):
 
-    ''' a class of methods to convert speech to text using IBM Watson api '''
+    ''' 
+        a class of methods to convert speech to text using IBM Watson api 
+    
+        reference: https://console.ng.bluemix.net/catalog/services/text-to-speech
+    '''
 
     _class_fields = {
         'schema': {
@@ -91,6 +102,10 @@ class watsonSpeechClient(object):
             from labpack.parsing.magic import labMagic
             self.magic = labMagic(magic_file)
 
+    # import validate extension
+        from labpack.parsing.regex import validate_extension
+        self._validate_extension = validate_extension
+
     def _get_data(self, file_url, file_name='', method_title='', argument_title=''):
 
         ''' a helper method to retrieve data buffer for a file url
@@ -131,42 +146,6 @@ class watsonSpeechClient(object):
         file_buffer.name = '%s' % file_name
 
         return file_buffer
-
-    def _validate_extension(self, file_name, extension_map, method_title, argument_title):
-
-        ''' a helper method to extract extension type of file
-
-        :param file_name: string with name of file
-        :param extension_map: dictionary with regex patterns, extensions and mimetypes
-        :param method_title: string with title of feeder method
-        :param argument_title: string with title of argument key from feeder method
-        :return: dictionary with mimetype and extension details
-        '''
-
-        title = '%s._validate_extension' % self.__class__.__name__
-
-    # import dependencies
-        import re
-
-    # construct default response
-        file_details = {
-            'mimetype': '',
-            'extension': ''
-        }
-
-    # test file name against regex
-        type_list = []
-        for key, value in extension_map.items():
-            type_list.append(value['extension'])
-            regex_pattern = re.compile(key)
-            if regex_pattern.findall(file_name):
-                file_details.update(**value)
-
-    # validate extension
-        if not file_details['extension']:
-            raise ValueError('%s(%s=%s) must be one of %s extension types.' % (method_title, argument_title, file_name, type_list))
-
-        return file_details
 
     def _create_folder(self):
 
@@ -245,14 +224,71 @@ class watsonSpeechClient(object):
 
         return transcript_details
 
-    def convert_audio(self, file_path, new_mimetype):
+    def convert_audio(self, file_path, new_mimetype, overwrite=False):
 
-    # TODO conversion of audio file into new type
-    # https://github.com/Ch00k/ffmpy
+        '''
+            a method to convert an audio file into a different codec
+            
+        :param file_path: string with path to file on localhost 
+        :param new_mimetype: string with mimetype for new file
+        :param overwrite: [optional] boolean to overwrite existing file
+        :return: string with path to new file on localhost
+        
+            SEE: https://github.com/Ch00k/ffmpy
+        '''
 
-        return True
+        title = '%s.convert_audio' % self.__class__.__name__
 
-    def transcribe_file(self, file_path, clip_length=10):
+    # validate inputs
+        input_fields = {
+            'file_path': file_path,
+            'new_mimetype': new_mimetype
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+
+    # retrieve file extension
+        new_extension = ''
+        mimetype_list = []
+        mime_arg = '%s(new_mimetype=%s)' % (title, new_mimetype)
+        for key, value in self.fields.schema['audio_extensions'].items():
+            mimetype_list.append(value['mimetype'])
+            if value['mimetype'] == new_mimetype:
+                new_extension = value['extension']
+                break
+        if not new_extension:
+            raise ValueError('%s must be one of %s mimetypes' % (mime_arg, mimetype_list))
+
+    # import dependencies
+        from os import path
+        import ffmpy
+
+    # validate existence of file
+        file_arg = '%s(file_path=%s)' % (title, file_path)
+        if not path.exists(file_path):
+            raise ValueError('%s is not a valid path', file_arg)
+
+    # construct new file
+        file_name, file_extension = path.splitext(file_path)
+        output_path = file_name + new_extension
+
+    # construct inputs
+        ffmpeg_kwargs = {
+            'inputs': {file_path: None},
+            'outputs': {output_path: None},
+            'global_options': [ '-v error']
+        }
+        if overwrite:
+            ffmpeg_kwargs['global_options'].append('-y')
+        ffmpeg_client = ffmpy.FFmpeg(**ffmpeg_kwargs)
+
+    # run conversion
+        ffmpeg_client.run()
+
+        return output_path
+
+    def transcribe_file(self, file_path, clip_length=10, compress=True):
 
         '''
             a method to transcribe the text from an audio file
@@ -260,12 +296,12 @@ class watsonSpeechClient(object):
         EXAMPLE: https://github.com/dannguyen/watson-word-watcher
         
         :param file_path: string with path to audio file on localhost
-        :param clip_length: integer with seconds to divide clips into
+        :param clip_length: [optional] integer with seconds to divide clips into
+        :param compress: [optional] boolean to convert file to audio/ogg
         :return: dictionary with transcribed text segments in 'segments' key
         '''
 
         title = '%s.transcribe_file' % self.__class__.__name__
-        file_arg = '%s(file_path=%s)' % (title, str(file_path))
 
     # validate inputs
         input_fields = {
@@ -276,6 +312,13 @@ class watsonSpeechClient(object):
             object_title = '%s(%s=%s)' % (title, key, str(value))
             self.fields.validate(value, '.%s' % key, object_title)
 
+    # run conversion
+        import os
+        if compress:
+            file_name, file_extension = os.path.splitext(file_path)
+            if file_extension != '.ogg':
+                file_path = self.convert_audio(file_path, 'audio/ogg', True)
+
     # construct empty file details
         file_details = {
             'name': '',
@@ -284,7 +327,7 @@ class watsonSpeechClient(object):
         }
 
     # retrieve file name
-        import os
+        file_arg = '%s(file_path=%s)' % (title, str(file_path))
         split_file = os.path.split(file_path)
         file_details['name'] = split_file[0]
         if len(split_file) > 1:
@@ -355,18 +398,18 @@ class watsonSpeechClient(object):
 
         return transcription_result
 
-    def transcribe_url(self, file_url, clip_length=None):
+    def transcribe_url(self, file_url, clip_length=None, compress=True):
 
         '''
             a method to transcribe the text from an audio url
 
         :param file_path: string with url to audio file on web
-        :param clip_length: integer with seconds to divide clips into
+        :param clip_length: [optional] integer with seconds to divide clips into
+        :param compress: [optional] boolean to convert file to audio/ogg
         :return: dictionary with transcribed text segments in 'segments' key
         '''
 
         title = '%s.transcribe_url' % self.__class__.__name__
-        file_arg = '%s(file_url=%s)' % (title, str(file_url))
 
     # validate inputs
         input_fields = {
@@ -387,6 +430,7 @@ class watsonSpeechClient(object):
 
     # retrieve file name
         from urllib.parse import urlsplit
+        file_arg = '%s(file_url=%s)' % (title, str(file_url))
         url_path = urlsplit(file_url).path
         path_segments = url_path.split('/')
         file_details['name'] = path_segments[-1]
@@ -447,6 +491,17 @@ class watsonSpeechClient(object):
                 f.write(file_buffer.getvalue())
                 f.close()
 
+        # convert file
+            if compress:
+                file_name, file_extension = os.path.splitext(full_path)
+                if file_extension != '.ogg':
+                    full_path = self.convert_audio(full_path, 'audio/ogg', True)
+                    file_details = {
+                        'name': 'audio_full.ogg',
+                        'extension': '.ogg',
+                        'mimetype': 'audio/ogg'
+                    }
+
         # open audio file
             count = 0
             retry_count = 10
@@ -495,13 +550,14 @@ class watsonSpeechClient(object):
 
         return transcript_details
 
-    def transcribe_bytes(self, byte_data, clip_length=None, audio_mimetype=''):
+    def transcribe_bytes(self, byte_data, clip_length=None, audio_mimetype='', compress=True):
 
         '''
             a method to transcribe text from audio byte data
             
         :param byte_data: byte data in buffer with audio data 
-        :param clip_length: integer with seconds to divide clips into
+        :param clip_length: [optional] integer with seconds to divide clips into
+        :param compress: [optional] boolean to convert file to audio/ogg
         :param audio_mimetype: [optional] string with byte data mimetype
         :return: dictionary with transcribed text segments in 'segments' key
         '''
@@ -575,6 +631,19 @@ class watsonSpeechClient(object):
                 f.write(byte_data)
                 f.close()
 
+        # convert file
+            if compress:
+                file_name, file_extension = os.path.splitext(full_path)
+                if file_extension != '.ogg':
+                    full_path = self.convert_audio(full_path, 'audio/ogg', True)
+                    file_details = {
+                        'name': 'audio_full.ogg',
+                        'extension': '.ogg',
+                        'mimetype': 'audio/ogg'
+                    }
+                    audio_mimetype = file_details['mimetype']
+                    file_extension = file_details['extension']
+
         # open audio file
             count = 0
             retry_count = 10
@@ -625,38 +694,6 @@ class watsonSpeechClient(object):
 
     def transcribe_stream(self, data_stream):
 
+        ''' a method to perform rolling transcription '''
+
         return True
-
-if __name__ == '__main__':
-
-    from labpack.records.settings import load_settings
-    from labpack.handlers.requests import handle_requests
-    config_path = '../../../cred/watson.yaml'
-    audio_path = '../../data/watson_test2.ogg'
-    magic_path = '../../data/magic.mgc'
-    audio_path2 = '../../data/test_voice.ogg'
-    bluemix_config = load_settings(config_path)
-    username = bluemix_config['watson_speech2text_username']
-    password = bluemix_config['watson_speech2text_password']
-
-    # from watson_developer_cloud.speech_to_text_v1 import SpeechToTextV1
-    # watson_client = SpeechToTextV1(username=username, password=password)
-    # transcript = watson_client.recognize(open(audio_path, 'rb'), 'audio/ogg', continuous=True)
-    # print(transcript)
-
-    watson_client = watsonSpeechClient(username, password, magic_file=magic_path)
-    details = watson_client.transcribe_file(audio_path)
-    print(details)
-
-    byte_data = open(audio_path2, 'rb').read()
-    details = watson_client.transcribe_bytes(byte_data, audio_mimetype='audio/ogg')
-    print(details)
-
-    # token_details = bluemix_token(username, password)
-    # auth_token = token_details['json']['token']
-    #
-    # file_name = 'watson_test'
-    # file_path = '../data/%s.ogg' % file_name
-    # file_data = open(file_path, 'rb')
-    # transcribed_text = bluemix_speech2text(file_data, file_path, auth_token)
-    # print(transcribed_text)
