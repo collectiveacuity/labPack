@@ -360,7 +360,8 @@ class appdataClient(object):
             'org_name': 'Collective Acuity',
             'prod_name': 'labPack',
             'collection_name': 'User Data',
-            'key_string': 'obs/terminal/2016-03-17T17-24-51-687845Z.yaml',
+            'key_string': 'obs/terminal/2016-03-17T17-24-51-687845Z.ogg',
+            'key_string_dict': 'obs/terminal/2016-03-17T17-24-51-687845Z.yaml',
             'key_string_path': '/home/user/.config/collective-acuity-labpack/user-data/obs/terminal',
             'key_string_comp': 'obs',
             'previous_key': 'obs/terminal/2016-03-17T17-24-51-687845Z.yaml',
@@ -397,7 +398,9 @@ class appdataClient(object):
                 'must_not_contain': ['/', '^\\.']
             },
             '.key_string': {
-                'must_not_contain': [ '[^\\w\\-\\./]', '^\\.', '\\.$', '^/', '//' ],
+                'must_not_contain': [ '[^\\w\\-\\./]', '^\\.', '\\.$', '^/', '//' ]
+            },
+            '.key_string_dict': {
                 'contains_either': [ '\\.json$', '\\.ya?ml$', '\\.json\\.gz$', '\\.ya?ml\\.gz$', '\\.drep$' ]
             },
             '.key_string_path': {
@@ -472,21 +475,58 @@ class appdataClient(object):
         self.fields.validate(self.collection_folder, '.key_string_path')
         if not os.path.exists(self.collection_folder):
             os.makedirs(self.collection_folder)
-        
-    def create(self, key_string, body_dict, overwrite=True, secret_key=''):
+
+    def _delete(self, _file_path, _key_arg, _key_string):
+
+        '''
+            a helper method for non-blocking deletion of files
+            
+        :param _file_path: string with path to file to remove  
+        :return: None
+        '''
+
+        import os
+        from time import sleep
+
+        current_dir = os.path.split(_file_path)[0]
+        count = 0
+        retry_count = 10
+        while True:
+            try:
+                os.remove(_file_path)
+                while current_dir != self.collection_folder:
+                    if not os.listdir(current_dir):
+                        os.rmdir(current_dir)
+                        current_dir = os.path.split(current_dir)[0]
+                    else:
+                        break
+                break
+            except PermissionError:
+                sleep(.05)
+                count += 1
+                if count > retry_count:
+                    raise Exception('%s failed to delete %s' % (_key_arg, _key_string))
+
+        os._exit(0)
+
+    def create(self, key_string, body_dict=None, byte_data=None, overwrite=True, secret_key=''):
 
         ''' a method to create a file in the collection folder
 
         :param key_string: string with name to assign file (see NOTE below)
         :param body_dict: dictionary with file body details
+        :param byte_data: byte data to save under key string
         :param overwrite: boolean to overwrite files with same name
         :param secret_key: [optional] string with key to encrypt body data
         :return: self
 
             NOTE:   key_string may only contain alphanumeric, /, _, . or -
                     characters and may not begin with the . or / character.
-                    key_string must end with one of the acceptable file
-                    extensions:
+            
+            NOTE:   body_dict and byte_data arguments cannot both be empty
+                    if creating a record with dictionary data, then the
+                    key_string must end with one of the following acceptable 
+                    file extensions:
                         .json
                         .yaml
                         .yml
@@ -494,6 +534,10 @@ class appdataClient(object):
                         .yaml.gz
                         .yml.gz
                         .drep
+                    if creating a record with byte data, then neither the
+                    key_string file_extension nor the byte data will be
+                    validated. it is up to the saving method to ensure that
+                    mimetype of the data is correct.
 
             NOTE:   using one or more / characters splits the key into
                     separate segments. these segments will appear as a
@@ -511,7 +555,13 @@ class appdataClient(object):
 
     # validate inputs
         key_string = self.fields.validate(key_string, '.key_string', _key_arg)
-        body_dict = self.fields.validate(body_dict, '.body_dict', _body_arg)
+        if body_dict:
+            key_string = self.fields.validate(key_string, '.key_string_dict', _key_arg)
+            body_dict = self.fields.validate(body_dict, '.body_dict', _body_arg)
+        elif byte_data:
+            pass
+        else:
+            raise IndexError('%s must contain either a body_dict or byte_data argument' % _title)
 
     # construct and validate file path
         file_path = os.path.join(self.collection_folder, key_string)
@@ -522,15 +572,29 @@ class appdataClient(object):
             current_path = os.path.split(current_path[0])
             self.fields.validate(current_path[1], '.key_string_comp')
 
-    # construct file data
-        from labpack.records.settings import save_settings
-        save_kwargs = {
-            'file_path': file_path,
-            'record_details': body_dict,
-            'overwrite': overwrite,
-            'secret_key': secret_key
-        }
-        save_settings(**save_kwargs)
+    # save dictionary data
+        if body_dict:
+            from labpack.records.settings import save_settings
+            save_kwargs = {
+                'file_path': file_path,
+                'record_details': body_dict,
+                'overwrite': overwrite,
+                'secret_key': secret_key
+            }
+            save_settings(**save_kwargs)
+
+    # save byte data
+        elif byte_data:
+            if not overwrite:
+                if os.path.exists(file_path):
+                    raise Exception('%s already exists. To overwrite %s, set overwrite=True' % (key_string, key_string))
+            dir_path = os.path.split(file_path)
+            if dir_path[0]:
+                if not os.path.exists(dir_path[0]):
+                    os.makedirs(dir_path[0])
+            with open(file_path, 'wb') as f:
+                f.write(byte_data)
+                f.close()
 
         return key_string
 
@@ -543,12 +607,13 @@ class appdataClient(object):
         :return: dictionary with file content details
         '''
 
-        _title = '%s.create' % self.__class__.__name__
+        _title = '%s.read' % self.__class__.__name__
         _key_arg = '%s(key_string="%s")' % (_title, key_string)
         _secret_arg = '%s(secret_key="%s")' % (_title, secret_key)
 
     # validate inputs
         key_string = self.fields.validate(key_string, '.key_string', _key_arg)
+        key_string = self.fields.validate(key_string, '.key_string_dict', _key_arg)
 
     # construct path to file
         file_path = os.path.join(self.collection_folder, key_string)

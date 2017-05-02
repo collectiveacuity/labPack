@@ -53,10 +53,18 @@ git push github public
 git checkout -f master
 
 Git Public Updates:
+https://stackoverflow.com/questions/14369378/how-to-make-git-ignore-a-directory-while-merging
 git checkout public
-git merge master
+git merge --no-commit --no-ff master
+git reset -- dev/*
+git commit -m 'master into public'
 git push github public
 git checkout -f master
+
+Git Remove History:
+https://stackoverflow.com/questions/2004024/how-to-permanently-delete-a-file-stored-in-git
+[Run as admin and pause syncing]
+git filter-branch --force --index-filter 'git rm -rf --cached --ignore-unmatch dev/*' --prune-empty --tag-name-filter cat -- --all
 '''
 
 config_file = open('labpack/__init__.py').read()

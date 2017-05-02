@@ -166,8 +166,16 @@ if __name__ == '__main__':
         'dt': 1474509314.419702,
         'deviceID': '2Pp8d9lpsappm8QPv_Ps6cL0'
     }
-    testAppdataClient().unitTests()
-    testAppdataClient().performanceTests()
+    test_client = testAppdataClient()
+# TODO retrieve data from stable url
+    test_data = open('../data/test_voice.ogg', 'rb').read()
+    test_key = 'lab/voice/unittest.ogg'
+    test_client.create(test_key, byte_data=test_data)
+    test_filter = test_client.conditional_filter([{2:{'must_contain':['unittest\.ogg$']}}])
+    test_search = test_client.list(test_filter)
+    assert test_client.delete(test_search[0])
+    test_client.unitTests()
+    test_client.performanceTests()
     # test_kwargs = { 'record_schema': test_schema, 'collection_settings': test_settings }
     # test_appdata_model = testAppdataModel(**test_kwargs)
     # testAppdataModel(appdata_model=test_appdata_model).unitTests()
