@@ -9,6 +9,11 @@ publicity/
 data/
 
 ############### distro files  ##################
+.webassets-cache/
+docs/site/
+hooks/
+platforms/
+plugins/
 build/
 .Python
 develop-eggs/
@@ -41,4 +46,12 @@ desktop.ini
 *.gdoc
 
 ############## tinkering scripts ###############
-tinker/
+tinker/#################   data files    #################
+appdata/
+
+#################  dependencies   #################
+node_modules/
+
+#################   backup sync   #################
+.dropbox
+Thumbs.db
