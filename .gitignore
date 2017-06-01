@@ -12,7 +12,6 @@ data/
 .webassets-cache/
 docs/site/
 hooks/
-platforms/
 plugins/
 build/
 .Python
@@ -46,7 +45,8 @@ desktop.ini
 *.gdoc
 
 ############## tinkering scripts ###############
-tinker/#################   data files    #################
+tinker/
+#################   data files    #################
 appdata/
 
 #################  dependencies   #################
