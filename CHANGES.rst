@@ -5,6 +5,7 @@ ChangeLog
 ----------
 * [UPDATE] added byte_data argument to appdataClient.create method
 * [UPDATE] added validate_extension function to regex package
+* [BUG FIX] fixed localhostClient.os.release redeclared as uname().version
 
 0.9 (2017.04.18)
 ----------------

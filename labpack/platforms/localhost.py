@@ -20,35 +20,37 @@ class osClient(object):
         self.release = ''
         self.version = ''
         self.machine = ''
+        self.processor = ''
 
     # reconstruct class methods from system call
-        try:
-            from os import uname
-            local_os = uname()
-            if local_os.sysname:
-                self.sysname = local_os.sysname
-            if local_os.nodename:
-                self.nodename = local_os.nodename
-            if local_os.release:
-                self.release = local_os.release
-            if local_os.version:
-                self.release = local_os.version
-            if local_os.machine:
-                self.machine = local_os.machine
-        except:
-            from platform import uname
-            local_os = uname()
-            if local_os.system:
-                self.sysname = local_os.system
-            if local_os.node:
-                self.nodename = local_os.node
-            if local_os.release:
-                self.release = local_os.release
-            if local_os.version:
-                self.release = local_os.version
-            if local_os.machine:
-                self.machine = local_os.machine
+        from platform import uname
+        local_os = uname()
+        if local_os.system:
+            self.sysname = local_os.system
+        if local_os.node:
+            self.nodename = local_os.node
+        if local_os.release:
+            self.release = local_os.release
+        if local_os.version:
+            self.version = local_os.version
+        if local_os.machine:
+            self.machine = local_os.machine
+        if local_os.version:
+            self.processor = local_os.processor
 
+        # from os import uname
+        # local_os = uname()
+        # if local_os.sysname:
+        #     self.sysname = local_os.sysname
+        # if local_os.nodename:
+        #     self.nodename = local_os.nodename
+        # if local_os.release:
+        #     self.release = local_os.release
+        # if local_os.version:
+        #     self.release = local_os.version
+        # if local_os.machine:
+        #     self.machine = local_os.machine
+        
 class localhostClient(object):
 
     ''' a class of methods to interact with the localhost '''
