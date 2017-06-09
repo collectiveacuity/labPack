@@ -9,6 +9,7 @@ publicity/
 data/
 
 ############### distro files  ##################
+site/
 .webassets-cache/
 docs/site/
 hooks/
@@ -56,3 +57,14 @@ node_modules/
 #################   backup sync   #################
 .dropbox
 Thumbs.db
+
+#################  unit testing   #################
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+
+################# version control #################
