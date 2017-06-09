@@ -5,10 +5,15 @@ __license__ = 'MIT'
 from labpack.parsing.magic import labMagic
 
 if __name__ == '__main__':
+    from labpack.platforms.localhost import localhostClient
+    localhost_client = localhostClient()
     file_path = '../data/test_photo.diy'
     file_url = 'https://pbs.twimg.com/profile_images/479475632158408704/Zelyz-xr_400x400.png'
     byte_data = open('../data/test_pdf.pde', 'rb').read()
-    lab_magic = labMagic('../data/magic.mgc')
+    if localhost_client.os.sysname in ('Windows'):
+        lab_magic = labMagic('../data/magic.mgc')
+    else:
+        lab_magic = labMagic()
     analysis = lab_magic.analyze(file_path)
     assert analysis['extension'] == '.png'
     analysis = lab_magic.analyze(file_url=file_url)
