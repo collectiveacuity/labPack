@@ -46,7 +46,6 @@ desktop.ini
 
 ############## tinkering scripts ###############
 tinker/
-notes/
 
 #################   data files    #################
 appdata/
@@ -68,9 +67,3 @@ nosetests.xml
 coverage.xml
 
 ################# version control #################
-.hgignore
-.hg/
-dev/
-tests_dev/
-docs_dev/
-generate.py
