@@ -3,6 +3,7 @@ __created__ = '2016.12'
 __license__ = 'MIT'
 
 # https://datastax.github.io/python-driver/getting_started.html
+# pip install cassandra-driver
 
 class cassandraClient(object):
 

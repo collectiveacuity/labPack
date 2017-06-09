@@ -3,17 +3,17 @@ __created__ = '2017.04'
 __license__ = 'MIT'
 
 '''
-PLEASE NOTE:    watson package requires watson-cloud-developer, moviepy 
+PLEASE NOTE:    watson package requires watson-developer-cloud, moviepy 
                 and ffmpy module along with ffmpeg C dependency
 
-(install)       pip install watson-cloud-developer
+(install)       pip install watson-developer-cloud
                 pip install moviepy
                 pip install ffmpy
                 
                 python -m imageio.plugins.ffmpeg.download
                  - or -
                 from imageio.plugins import ffmpeg
-                ffmepg.download()
+                ffmpeg.download()
 '''
 
 from labpack import __team__, __module__
