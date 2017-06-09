@@ -1,5 +1,8 @@
-site_name: labpack
+site_name: Lab Pack
 pages:
   - Home: index.md
-  - Ref: mkdocs.md
+  - Classes: classes.md
+  - Clients: clients.md
+  - Packages: packages.md
+  - Roadmap: roadmap.md
 markdown_extensions: [ footnotes, smarty, abbr ]

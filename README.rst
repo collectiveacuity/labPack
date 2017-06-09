@@ -10,6 +10,12 @@ labPack
 
 :Downloads: http://pypi.python.org/pypi/labPack
 :Source: https://github.com/collectiveacuity/labPack
+:Documentation: https://collectiveacuity.github.io/labPack/
+
+============
+Introduction
+============
+Lab Pack is designed to make the process of retrieving, managing and processing data more uniform across a variety of different sources and structures. The classes and methods in this module aggregate and curate python resources and online APIs to provide a set of best practices for handling data across laboratory projects.
 
 ============
 Installation
@@ -20,13 +26,13 @@ From PyPi::
 
 From GitHub::
 
-    $ git clone https://github.com/collectiveacuity/labPack
+    $ git clone https://github.com/collectiveacuity/labpack
     $ cd labPack
     $ python setup.py install
 
 Getting Started
 ---------------
-This module is designed to make the process of retrieving, managing and processing data more uniform across a variety of different sources and structures. The classes and methods in this module aggregate and curate python resources and online APIs to provide a set of best practices for handling data across laboratory projects.
+This module contains a variety of classes, clients and packages for use in laboratory projects. For example to store records in an indexed file store on the local device, you can use the following methods:
 
 Create an unique ID for records::
 
@@ -48,4 +54,4 @@ Save record data in local user data::
 
 For more details about how to use labPack, refer to the
 `Reference Documentation on GitHub
-<https://github.com/collectiveacuity/labPack/blob/public/REFERENCE.rst>`_
+<https://collectiveacuity.github.io/labPack>`_

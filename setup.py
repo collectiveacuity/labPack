@@ -29,7 +29,6 @@ setup_kwargs = {
 setup_kwargs = inject_init(init_path, readme_path, setup_kwargs)
 setup(**setup_kwargs)
 
-
 ''' DOCUMENTATION
 References:
 https://docs.python.org/3.6/distutils/setupscript.html
@@ -91,4 +90,7 @@ git push origin master
 
 Git Remove History: [Run as admin and pause syncing]
 git filter-branch --force --index-filter 'git rm -rf --cached --ignore-unmatch dev/*' --prune-empty --tag-name-filter cat -- --all
+
+GitHub.io Documentation:
+mkdocs gh-deploy -r origin
 '''
