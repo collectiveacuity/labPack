@@ -67,3 +67,9 @@ nosetests.xml
 coverage.xml
 
 ################# version control #################
+.hgignore
+.hg/
+dev/
+tests_dev/
+docs_dev/
+generate.py
