@@ -4,5 +4,6 @@ pages:
   - Classes: classes.md
   - Clients: clients.md
   - Packages: packages.md
+  - Resources: resources.md
   - Roadmap: roadmap.md
 markdown_extensions: [ footnotes, smarty, abbr ]

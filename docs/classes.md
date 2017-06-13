@@ -1,3 +1,5 @@
+# Classes (WIP)
+
 Classes
 -------
 * **labID**: A class of methods for uniquely identifying records

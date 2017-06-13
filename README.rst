@@ -30,6 +30,7 @@ From GitHub::
     $ cd labPack
     $ python setup.py install
 
+
 Getting Started
 ---------------
 This module contains a variety of classes, clients and packages for use in laboratory projects. For example to store records in an indexed file store on the local device, you can use the following methods:
@@ -52,6 +53,9 @@ Save record data in local user data::
     msg_client = appdataClient('Outgoing', 'My Team', 'My App')
     mgs_client.create(msg_key, msg_details)
 
+
+Further Reading
+---------------
 For more details about how to use labPack, refer to the
 `Reference Documentation on GitHub
 <https://collectiveacuity.github.io/labPack>`_

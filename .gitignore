@@ -73,4 +73,3 @@ coverage.xml
 dev/
 tests_dev/
 docs_dev/
-generate.py

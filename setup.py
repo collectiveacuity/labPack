@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
-from pocketlab.methods.config import inject_init
+from .utils import inject_init
 
-init_path = 'pocketlab/__init__.py'
+init_path = 'labpack/__init__.py'
 readme_path = 'README.rst'
 setup_kwargs = {
     'include_package_data': True, # Checks MANIFEST.in for explicit rules
