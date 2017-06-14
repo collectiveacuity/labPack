@@ -22,8 +22,9 @@ try:
     from watson_developer_cloud.text_to_speech_v1 import TextToSpeechV1
     from watson_developer_cloud import WatsonException
 except:
+    import sys
     print('watson package requires watson-cloud-developer module and ffmpeg dependencies.')
-    exit(1)
+    sys.exit(1)
 
 # TODO watson text to speech methods
 
