@@ -1,0 +1,30 @@
+{
+    "table": {
+        "tableName": "test-user-table",
+        "primaryKey": "id",
+        "throughPut": { "read": 10, "write": 10 }
+    },
+    "indices": [
+      { "indexName": "MinimumIndex",
+        "indexKeys": { "hashKey": "dT" },
+        "indexFields": [],
+        "indexThroughPut": { "read": 1, "write": 1 } },
+      { "indexName": "MaximumIndex",
+        "indexKeys": { "hashKey": "lastName", "rangeKey": "dT" },
+        "indexFields": [ "emailAddress", "firstName", "activeStatus", "bonusPoints" ],
+        "indexThroughPut": { "read": 1, "write": 1 } }
+    ],
+    "attributes": {
+        "id": "qdXqZpDqQWE3xFkkwi3qep8n5Hd638Dis5nn",
+        "dT": 1440633460.567509,
+        "lastName": "Gunn",
+        "firstName": "Thomas",
+        "emailAddress": "thomas@gunn.me",
+        "activeStatus": true,
+        "bonusPoints": 4000,
+        "largeNum": -9.99999999999999e+125,
+        "address": { "street": "string", "city": "string", "postalCode": "string" },
+        "schools": [ { "schoolName": "string", "classes": [ "string" ] } ],
+        "nicknames": [ "string" ]
+    }
+}

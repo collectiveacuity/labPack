@@ -1,0 +1,18 @@
+{
+  "imageID": "ami-c16422a4",
+  "keyPair": "aws-keypair-useast1-test",
+  "securityGroupIDs": [ "sg-abcd1234" ],
+  "instanceType": "t2.micro",
+  "volumeType": "gp2",
+  "ebsOptimized": false,
+  "instanceMonitoring": false,
+  "iamProfileRole": "dbAccessRole",
+  "tags": [
+    { "Key": "Stack", "Value": "build" },
+    { "Key": "UserName", "Value": "ec2-user" },
+    { "Key": "BuildDate", "Value": "generated-by-start-script" },
+    { "Key": "Name", "Value": "ecs-optimized" },
+    { "Key": "OS", "Value": "amazon-linux-ami" },
+    { "Key": "BaseImage", "Value": "ami-c16422a4" }
+  ]
+}

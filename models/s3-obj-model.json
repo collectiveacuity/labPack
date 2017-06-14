@@ -1,0 +1,59 @@
+{
+  "bucket": {
+    "bucketName": "useast1-collective-acuity-test-records",
+    "accessControl": "private",
+    "versionControl": true,
+    "logDestination": {
+      "bucketName": "useast1-collective-acuity-test-log",
+      "prefix": "test/"
+    },
+    "lifecycleRules": [
+      { "action": "archive",
+        "prefix": "test/",
+        "longevity": 180,
+        "currentVersion": true }
+    ],
+    "bucketTags": [
+      { "Key": "Region", "Value": "us-east-1"},
+      { "Key": "Object", "Value": "test"}
+    ],
+    "notificationSettings": [
+      { "service": "lambda",
+        "arn": "arn:aws:lambda:us-west-2:444455556666:cloud-function-A",
+        "event": "s3:ObjectCreated:Put",
+        "filters": { "prefix": "test/", "suffix": ".json" } }
+    ],
+    "regionReplication": {},
+    "accessPolicy": {}
+  },
+  "indexing": {
+    "metadata": {
+      "object": "object",
+      "user": "userID",
+      "year": "year",
+      "month": "month",
+      "day": "day"
+    },
+    "aclID": "",
+    "key": [ "object", "/", "userID", "/", "year", "month", "day" ]
+  },
+  "details": {
+    "object": "test",
+    "userID": "57KnY9AYqCZe9nbL6txhrxzNkUyFAWePCGdg",
+    "year": "2015",
+    "month": "09",
+    "day": "16",
+    "observations": [
+      {
+        "userID": "57KnY9AYqCZe9nbL6txhrxzNkUyFAWePCGdg",
+        "assayID": "ty2ZCBSycYwMqLv4zyYrmpVSXMBxxzFZBQdp",
+        "metricID": "kk9QSvk2RtRHMcQdaaZ4WZji8rdBWdAnB9ru",
+        "value": 0.483317,
+        "units": "seconds",
+        "datetime": 1442269981.67345,
+        "latitude": 73.697928,
+        "longitude": 10.504929
+      }
+    ]
+  }
+}
