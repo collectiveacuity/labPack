@@ -63,25 +63,34 @@ class ec2Client(object):
         }
         self.connection = boto3.client(**client_kwargs)
 
-    def checkInstanceState(self, instance_id):
+    def check_instance_state(self, instance_id, wait=True):
         
         '''
             method for checking the state of an instance on AWS EC2
             
         :param instance_id: string with AWS id of instance
+        :param wait: [optional] boolean to wait for instances that are pending
         :return: string reporting state of instance
         '''
 
-        title = 'checkInstanceState'
+        title = 'check_instance_state'
 
-    # validate input
-        self.input.instanceID(instance_id)
-        
+    # validate inputs
+        input_fields = {
+            'instance_id': instance_id
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+
+    # notify state check
+        self.iam.printer('Querying AWS region %s for state of instance %s.' % (self.iam.region_name, instance_id))
+
     # check connection to API
         try:
             response = self.connection.describe_instances()
         except:
-            raise EC2ConnectionError('checkInstanceState describe_instances()')
+            raise AWSConnectionError(title)
                 
     # check existence of instance
         try:
@@ -101,10 +110,10 @@ class ec2Client(object):
                 
     # check into state of instance
         elif not 'State' in response['Reservations'][0]['Instances'][0].keys():
-            print('Checking into the status of instance %s' % instance_id, end='', flush=True)
+            self.iam.printer('Checking into the status of instance %s' % instance_id, flush=True)
             state_timeout = 0
             while not 'State' in response['Reservations'][0]['Instances'][0].keys():
-                print('.', end='', flush=True)
+                self.iam.printer('.', flush=True)
                 time.sleep(3)
                 state_timeout += 1
                 response = self.connection.describe_instances(
@@ -112,33 +121,40 @@ class ec2Client(object):
                 )
                 if state_timeout > 3:
                     raise Exception('\nFailure to determine status of instance %s.' % instance_id)
-            print(' Done.')
+            self.iam.printer(' done.')
             
     # return None if instance has already been terminated
         instance_state = response['Reservations'][0]['Instances'][0]['State']['Name']
         if instance_state == 'shutting-down' or instance_state == 'terminated':
-            print('Instance %s has already been terminated.' % instance_id)
+            self.iam.printer('Instance %s has already been terminated.' % instance_id)
             return None
             
     # wait while instance is pending
         elif instance_state == 'pending':
-            print('Instance %s is %s' % (instance_id, instance_state), end='', flush=True)
-            delay = 3
-            while instance_state == 'pending':
-                print('.', end='', flush=True)
-                time.sleep(delay)
-                t3 = timer()
-                response = self.connection.describe_instances(
-                    InstanceIds=[ instance_id ]
-                )
-                t4 = timer()
-                response_time = t4 - t3
-                if 3 - response_time > 0:
-                    delay = 3 - response_time
-                else:
-                    delay = 0
-                instance_state = response['Reservations'][0]['Instances'][0]['State']['Name']
-            print(' Done.')
+            self.iam.printer('Instance %s is %s.' % (instance_id, instance_state), flush=True)
+            if not wait:
+                return instance_state
+            else:
+                delay = 3
+                while instance_state == 'pending':
+                    self.iam.printer('.', flush=True)
+                    time.sleep(delay)
+                    t3 = timer()
+                    response = self.connection.describe_instances(
+                        InstanceIds=[ instance_id ]
+                    )
+                    t4 = timer()
+                    response_time = t4 - t3
+                    if 3 - response_time > 0:
+                        delay = 3 - response_time
+                    else:
+                        delay = 0
+                    instance_state = response['Reservations'][0]['Instances'][0]['State']['Name']
+                self.iam.printer(' done.')
+
+    # report outcome
+        self.iam.printer('Instance %s is %s.' % (instance_id, instance_state))
+
         return instance_state
 
     def checkImageState(self, image_id):
@@ -240,7 +256,7 @@ class ec2Client(object):
         self.input.tags(instance_tags, title + ' tag list')
 
     # check instance state
-        self.checkInstanceState(instance_id)
+        self.check_instance_state(instance_id)
 
     # tag instance with instance tags
         try:
@@ -374,7 +390,7 @@ class ec2Client(object):
 
         return instance_id
 
-    def instanceDetails(self, instance_id):
+    def read_instance(self, instance_id):
 
         '''
             a method to retrieving the details of a single instances on AWS EC2
@@ -383,24 +399,34 @@ class ec2Client(object):
         :return: dictionary with instance attributes
 
             instance attributes:
-                ['instanceID']
-                ['imageID']
-                ['instanceType']
+                ['instance_id']
+                ['image_id']
+                ['instance_type']
                 ['region']
                 ['state']
-                ['keyPair']
-                ['dnsName']
-                ['publicIP']
+                ['keypair']
+                ['dns_name']
+                ['public_ip']
                 ['tags']
         '''
 
-        title = 'instanceDetails'
+        title = '%s.read_instance' % self.__class__.__name__
 
-    # validate input
-        self.input.instanceID(instance_id, title + ' instance id')
+    # validate inputs
+        input_fields = {
+            'instance_id': instance_id
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+
+    # report query
+        self.iam.printer('Querying AWS region %s for properties of instance %s.' % (self.iam.region_name, instance_id))
 
     # check instance state
-        self.checkInstanceState(instance_id)
+        self.iam.printer_on = False
+        self.check_instance_state(instance_id)
+        self.iam.printer_on = True
 
     # discover details associated with instance id
         try:
@@ -408,46 +434,47 @@ class ec2Client(object):
                 InstanceIds=[ instance_id ]
             )
         except:
-            raise EC2ConnectionError(title)
+            raise AWSConnectionError(title)
         instance_info = response['Reservations'][0]['Instances'][0]
 
     # repeat request if any instances are currently pending
         if instance_info['State']['Name'] == 'pending':
-            self.checkInstanceState(instance_info['InstanceId'])
+            self.check_instance_state(instance_info['InstanceId'])
             try:
                 response = self.connection.describe_instances(
                     InstanceIds=[ instance_id ]
                 )
             except:
-                raise EC2ConnectionError(title)
+                raise AWSConnectionError(title)
             instance_info = response['Reservations'][0]['Instances'][0]
 
     # create dictionary of instance details
         instance = {}
-        instance['instanceID'] = instance_info['InstanceId']
-        instance['imageID'] = instance_info['ImageId']
+        instance['instance_id'] = instance_info['InstanceId']
+        instance['image_id'] = instance_info['ImageId']
         instance['state'] = instance_info['State']['Name']
-        instance['keyPair'] = instance_info['KeyName']
-        instance['instanceType'] = instance_info['InstanceType']
-        instance['region'] = os.environ['AWS_DEFAULT_REGION']
+        instance['keypair'] = instance_info['KeyName']
+        instance['instance_type'] = instance_info['InstanceType']
+        instance['region'] = self.iam.region_name
         instance['tags'] = []
-        instance['publicIP'] = ''
-        instance['dnsName'] = ''
+        instance['public_ip'] = ''
+        instance['dns_name'] = ''
         try:
             instance['tags'] = instance_info['Tags']
         except:
             pass
         try:
-            instance['publicIP'] = instance_info['PublicIpAddress']
+            instance['public_ip'] = instance_info['PublicIpAddress']
         except:
             pass
         try:
-            instance['dnsName'] = instance_info['PublicDnsName']
+            instance['dns_name'] = instance_info['PublicDnsName']
         except:
             pass
+
         return instance
 
-    def findInstances(self, tag_values=None):
+    def list_instances(self, tag_values=None):
 
         '''
             a method to retrieve the list of instances on AWS EC2
@@ -456,22 +483,32 @@ class ec2Client(object):
         :return: list of instance AWS ids
         '''
 
-        title = 'findInstances'
+        title = '%s.list_instances' % self.__class__.__name__
 
-    # validate input
+    # validate inputs
+        input_fields = {
+            'tag_values': tag_values
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+            
+    # add tags to method arguments
         kw_args = {}
+        tag_text = ''
         if tag_values:
-            self.input.tagValues(tag_values, title + ' tag values')
             kw_args = {
                 'Filters': [ { 'Name': 'tag-value', 'Values': tag_values } ]
             }
-
+            from labpack.parsing.grammar import join_words
+            plural_value = ''
+            if len(tag_values) > 1:
+                plural_value = 's'
+            tag_text = ' with tag value%s %s' % (plural_value, join_words(tag_values))
+            
     # request instance details from AWS
-        tag_text = ''
-        if tag_values:
-            tag_text = ' with tag values %s' % tag_values
-        query_text = 'Querying AWS region %s for instances%s.' % (os.environ['AWS_DEFAULT_REGION'], tag_text)
-        print(query_text)
+        self.iam.printer('Querying AWS region %s for instances%s.' % (self.iam.region_name, tag_text))
         instance_list = []
         try:
             if tag_values:
@@ -479,28 +516,28 @@ class ec2Client(object):
             else:
                 response = self.connection.describe_instances()
         except:
-            raise EC2ConnectionError(title)
+            raise AWSConnectionError(title)
 
     # repeat request if any instances are currently pending
         response_list = response['Reservations']
         for instance in response_list:
             instance_info = instance['Instances'][0]
             if instance_info['State']['Name'] == 'pending':
-                self.checkInstanceState(instance_info['InstanceId'])
+                self.check_instance_state(instance_info['InstanceId'])
                 try:
                     if tag_values:
                         response = self.connection.describe_instances(**kw_args)
                     else:
                         response = self.connection.describe_instances()
                 except:
-                    raise EC2ConnectionError(title)
+                    raise AWSConnectionError(title)
                 response_list = response['Reservations']
 
     # populate list of instances with instance details
         for instance in response_list:
             instance_info = instance['Instances'][0]
-            if instance_info['State']['Name'] != 'shutting-down' and \
-                            instance_info['State']['Name'] != 'terminated':
+            state_name = instance_info['State']['Name']
+            if state_name not in ('shutting-down', 'terminated'):
                 instance_list.append(instance_info['InstanceId'])
 
     # report results and return details
@@ -508,16 +545,12 @@ class ec2Client(object):
             print_out = 'Found instance'
             if len(instance_list) > 1:
                 print_out += 's'
-            i_counter = 0
-            for id in instance_list:
-                if i_counter > 0:
-                    print_out += ','
-                print_out += ' ' + str(id)
-                i_counter += 1
-            print_out += '.'
-            print(print_out)
+            from labpack.parsing.grammar import join_words
+            print_out += ' %s.' % join_words(instance_list)
+            self.iam.printer(print_out)
         else:
-            print('No instances found.')
+            self.iam.printer('No instances found.')
+
         return instance_list
 
     def removeInstance(self, instance_id):
@@ -536,7 +569,7 @@ class ec2Client(object):
 
     # check instance state
         print('Removing instance %s.' % instance_id)
-        old_state = self.checkInstanceState(instance_id)
+        old_state = self.check_instance_state(instance_id)
         new_state = deepcopy(old_state)
 
     # discover tags associated with instance id
@@ -609,7 +642,7 @@ class ec2Client(object):
 
     # check instance state
         print('Initiating image of instance %s.' % instance_id)
-        instance_state = self.checkInstanceState(instance_id)
+        instance_state = self.check_instance_state(instance_id)
 
     # stop instance
         if instance_state == 'running':
@@ -1169,7 +1202,7 @@ class ec2Client(object):
         for instance in instance_list:
             instance_info = instance['Instances'][0]
             if instance_info['State']['Name'] == 'pending':
-                self.checkInstanceState(instance_info['InstanceId'])
+                self.check_instance_state(instance_info['InstanceId'])
                 response = self.connection.describe_instances(
                     InstanceIds=[ instance_info['InstanceId'] ]
                 )
@@ -1290,7 +1323,7 @@ class ec2Client(object):
 
         return True
 
-    def waitToInitialize(self, instance_id):
+    def wait_for_initialization(self, instance_id):
 
         '''
             a method to wait until AWS instance reports an OK status
@@ -1299,13 +1332,20 @@ class ec2Client(object):
         :return: True
         '''
 
-        title = 'waitToInitialize'
+        title = 'wait_for_initialization'
 
-    # validate input
-        self.input.instanceID(instance_id, title + ' instance id')
+    # validate inputs
+        input_fields = {
+            'instance_id': instance_id
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
 
     # check state of instance
-        self.checkInstanceState(instance_id)
+        self.iam.printer_on = False
+        self.check_instance_state(instance_id)
+        self.iam.printer_off = True
 
     # wait for instance status to be 'ok'
         response = self.connection.describe_instance_status(
@@ -1316,14 +1356,14 @@ class ec2Client(object):
             response = self.connection.describe_instance_status(
                 InstanceIds=[ instance_id ]
             )
-            print(response)
+            self.iam.printer(response)
         instance_status = response['InstanceStatuses'][0]['InstanceStatus']['Status']
         if instance_status != 'ok':
-            print('Waiting for initialization of instance %s to stop' % instance_id, end='', flush=True)
+            self.iam.printer('Waiting for initialization of instance %s to stop' % instance_id, flush=True)
             delay = 3
             status_timeout = 0
             while instance_status != 'ok':
-                print('.', end='', flush=True)
+                self.iam.printer('.', flush=True)
                 time.sleep(delay)
                 t3 = timer()
                 response = self.connection.describe_instance_status(
@@ -1339,9 +1379,9 @@ class ec2Client(object):
                 if status_timeout > 300:
                     raise Exception('\nTimeout. Failure initializing instance %s on AWS in less than 15min' % instance_id)
                 instance_status = response['InstanceStatuses'][0]['InstanceStatus']['Status']
-            print(' Done.')
+            print(' done.')
 
-        return True
+        return instance_status
 
     def list_keypairs(self):
 
@@ -1354,12 +1394,12 @@ class ec2Client(object):
         title = '%s.list_keypairs' % self.__class__.__name__
 
     # request subnet list from AWS
-        print('Querying AWS region %s for key pairs.' % os.environ['AWS_DEFAULT_REGION'])
+        self.iam.printer('Querying AWS region %s for key pairs.' % self.iam.region_name)
         keypair_list = []
         try:
             response = self.connection.describe_key_pairs()
         except:
-            raise EC2ConnectionError(title + ' describe_key_pairs()')
+            raise AWSConnectionError(title)
         response_list = []
         if 'KeyPairs' in response:
             response_list = response['KeyPairs']
@@ -1373,16 +1413,11 @@ class ec2Client(object):
             print_out = 'Found key pair'
             if len(keypair_list) > 1:
                 print_out += 's'
-            i_counter = 0
-            for keypair in keypair_list:
-                if i_counter > 0:
-                    print_out += ','
-                print_out += ' ' + keypair
-                i_counter += 1
-            print_out += '.'
-            print(print_out)
+            from labpack.parsing.grammar import join_words
+            print_out += ' %s.' % join_words(keypair_list)
+            self.iam.printer(print_out)
         else:
-            print('No key pairs found.')
+            self.iam.printer('No key pairs found.')
 
         return keypair_list
 
@@ -1595,15 +1630,15 @@ class ec2Client(object):
         if sg_list:
             self.securityGroupDetails(sg_list[0])
         buildTag = 'method-unit-tests'
-        assert not self.findInstances([buildTag]) # prevent deletion of live instances
+        assert not self.list_instances([buildTag]) # prevent deletion of live instances
         assert not self.findImages([buildTag]) # prevent deletion of live images
         initParams = self.input.initParams(ec2_obj)
         initParams['tags'][0]['Value'] = buildTag
         instanceID = self.startInstance(initParams)
-        self.waitToInitialize(instanceID)
-        self.findInstances([buildTag])
-        instanceDetails = self.instanceDetails(instanceID)
-        assert instanceDetails['tags']
+        self.wait_for_initialization(instanceID)
+        self.list_instances([buildTag])
+        read_instance = self.read_instance(instanceID)
+        assert read_instance['tags']
         imageName = 'baby_needs_a_new_pair_of_shoes'
         imageID = self.imageInstance(instanceID, imageName)
         self.findImages([buildTag])
@@ -1617,14 +1652,36 @@ class ec2Client(object):
 
 if __name__ == '__main__':
 
+# test instantiation
     from labpack.records.settings import load_settings
-    test_cred = load_settings('../../../../cred/awsLab.yaml')
+    aws_cred = load_settings('../../../../cred/awsLab.yaml')
     client_kwargs = {
-        'access_id': test_cred['aws_access_key_id'],
-        'secret_key': test_cred['aws_secret_access_key'],
-        'region_name': test_cred['aws_default_region'],
-        'owner_id': test_cred['aws_owner_id'],
-        'user_name': test_cred['aws_user_name']
+        'access_id': aws_cred['aws_access_key_id'],
+        'secret_key': aws_cred['aws_secret_access_key'],
+        'region_name': aws_cred['aws_default_region'],
+        'owner_id': aws_cred['aws_owner_id'],
+        'user_name': aws_cred['aws_user_name']
     }
     ec2_client = ec2Client(**client_kwargs)
+
+# test list keypairs
+    keypair_list = ec2_client.list_keypairs()
+
+# test list instances
+    ec2_client.list_instances()
+    instance_list = ec2_client.list_instances(tag_values=['test'])
+
+# determine instance id
+    if not instance_list:
+        print('There are no test instances running for unittesting.')
+        import sys
+        sys.exit()
+    instance_id = instance_list[0]
+
+# test instance status
+    instance_status = ec2_client.check_instance_state(instance_id)
+
+# test read instance
+    instance_details = ec2_client.read_instance(instance_id)
+    print(instance_details)
 

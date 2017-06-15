@@ -4,6 +4,8 @@
     "instance_name": "lab-instance-useast1-20170614",
     "pem_file": "./lab-keypair-useast2-test-20170601.pem",
     "pem_name": "lab-keypair-useast2-test-20170601",
+    "tag_key": "env",
+    "tag_values": [ "test" ],
     "documentation": {
       "api": "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Welcome.html",
       "boto3": "https://boto3.readthedocs.org/en/latest/reference/services/ec2.html#client",
@@ -339,6 +341,17 @@
       "min_length": 1,
       "max_length": 251,
       "must_not_contain": [ "[^\\w\\-]+", "^\\-", "\\-$" ]
+    },
+    ".tag_key": {
+
+    },
+    ".tag_values": {
+      "max_size": 10
+    },
+    ".tag_values[0]": {
+      "min_length": 1,
+      "max_length": 255,
+      "must_not_contain": [ "aws:", "[^\\w\\s\\-\\._:/]+" ]
     }
   }
 }

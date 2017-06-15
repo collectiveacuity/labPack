@@ -88,14 +88,14 @@ class iamClient(object):
         self.connection = boto3.client(**client_kwargs)
 
     # construct verbose method
-        def _null_printer(msg):
-            pass
-        def _printer(msg):
-            if verbose:
-                print(msg)
-        self.printer_on = _printer
-        self.printer_off = _null_printer
-        self.printer = self.printer_on
+        self.printer_on = True
+        def _printer(msg, flush=False):
+            if verbose and self.printer_on:
+                if flush:
+                    print(msg, end='', flush=True)
+                else:
+                    print(msg)
+        self.printer = _printer
 
     def list_certificates(self):
 
@@ -125,13 +125,8 @@ class iamClient(object):
             print_out = 'Found server certificate'
             if len(cert_list) > 1:
                 print_out += 's'
-            i_counter = 0
-            for certificate in cert_list:
-                if i_counter > 0:
-                    print_out += ','
-                print_out += ' ' + certificate
-                i_counter += 1
-            print_out += '.'
+            from labpack.parsing.grammar import join_words
+            print_out += ' %s.' % join_words(cert_list)
             self.printer(print_out)
         else:
             self.printer('No server certificates found.')
@@ -158,9 +153,9 @@ class iamClient(object):
             self.fields.validate(value, '.%s' % key, object_title)
 
     # verify existence of server certificate
-        self.printer = self.printer_off
+        self.printer_on = False
         cert_list = self.list_certificates()
-        self.printer = self.printer_on
+        self.printer_on = True
         if not certificate_name in cert_list:
             raise Exception('\nServer certificate %s does not exist.' % certificate_name)
 

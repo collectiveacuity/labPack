@@ -45,7 +45,14 @@ class sshClient(object):
         NOTE:   SCP protocol requires SCP installed on Remote Host
     '''
 
-    def __init__(self, instance_id, pem_file, access_id, secret_key, region_name, owner_id, user_name, verbose=True):
+    _class_fields = {
+        'schema': {
+            'commands': [ 'ls -a' ],
+            'login_name': 'ec2-user'
+        }
+    }
+
+    def __init__(self, instance_id, pem_file, access_id, secret_key, region_name, owner_id, user_name, login_name='', verbose=True):
 
         '''
             a method for initializing the SSH connection parameters to the EC2 instance
@@ -57,10 +64,15 @@ class sshClient(object):
         :param region_name: string with name of aws region
         :param owner_id: string with aws account id
         :param user_name: string with name of user access keys are assigned to
+        :param login_name: [optional] string with name of login user
         :param verbose: boolean to enable process messages
         '''
 
         title = '%s.__init__' % self.__class__.__name__
+
+    # initialize model
+        from jsonmodel.validators import jsonModel
+        self.fields = jsonModel(self._class_fields)
 
     # validate credentials and construct ec2 method
         from labpack.platforms.aws.ec2 import ec2Client
@@ -68,9 +80,8 @@ class sshClient(object):
 
     # verify user has privileges
         try:
-            self.ec2.iam.printer = self.ec2.iam.printer_off
-            # self.ec2.list_keypairs()
-            self.ec2.iam.printer = self.ec2.iam.printer_on
+            self.ec2.iam.printer_on = False
+            self.ec2.list_keypairs()
         except:
             raise AWSConnectionError(title, 'You must have privileges to access EC2 to use sshClient')
 
@@ -83,19 +94,68 @@ class sshClient(object):
             object_title = '%s(%s=%s)' % (title, key, str(value))
             self.ec2.fields.validate(value, '.%s' % key, object_title)
 
+    # construct class properties
+        self.pem_file = pem_file
+        self.instance_id = instance_id
+
     # verify pem file exists
+        from os import path
+        if not path.exists(pem_file):
+            raise Exception('%s is not a valid path.' % pem_file)
 
     # verify instance exists
+        instance_list = self.ec2.list_instances()
+        if instance_id not in instance_list:
+            raise Exception('%s does not exist in this region or permission scope.' % instance_id)
 
     # verify instance has public ip
+        instance_details = self.ec2.read_instance(instance_id)
+        if not instance_details['public_ip']:
+            raise Exception('%s requires a public IP address to access through ssh.' % instance_id)
+        self.instance_ip = instance_details['public_ip']
+
+    # retrieve login name from tag
+        self.login_name = ''
+        input_fields = {
+            'login_name': login_name
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+                self.login_name = login_name
+        if not self.login_name:
+            for tag in instance_details['tags']:
+                if tag['Key'] == 'LoginName':
+                    self.login_name = tag['Value']
+        if not self.login_name:
+            raise Exception('SSH access to %s requires a login_name argument or LoginName tag' % instance_id)
 
     # verify local and remote pem file names match
-
-    # verify pem file has access
+        from os import path
+        pem_absolute = path.abspath(pem_file)
+        pem_root, pem_ext = path.splitext(pem_absolute)
+        pem_path, pem_name = path.split(pem_root)
+        if not instance_details['keypair'] == pem_name:
+            raise Exception('%s does not match name of keypair %s for instance %s.' % (pem_name, instance_details['keypair'], instance_id))
 
     # verify instance is ready
+        self.ec2.wait_for_initialization(instance_id)
 
+    # verify pem file has access
+        try:
+            ssh_key = paramiko.RSAKey.from_private_key_file(self.pem_file)
+            client = paramiko.SSHClient()
+            client.load_system_host_keys()
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            print(self.instance_ip)
+            client.connect(hostname=self.instance_ip, username=self.login_name, pkey=ssh_key)
+            client.close()
+        except:
+            raise AWSConnectionError(title, '%s does not have access to instance %s.' % (pem_name, instance_id))
 
+    # turn printer back on
+        self.ec2.iam.printer_on = True
 
     def terminal(self, confirmation=True):
 
@@ -126,52 +186,52 @@ class sshClient(object):
 
         return True
 
-    def script(self, commands, quiet=False, synopsis=False):
+    def script(self, commands, synopsis=False):
 
         '''
             a method to run a list of shell command scripts on AWS instance
 
         :param commands: list of strings with shell commands to pass through connection
-        :param quiet: [optional] boolean to silence command sequence
-        :param synopsis: [optional] boolean to simply responses to Done.
+        :param synopsis: [optional] boolean to simply responses to done.
         :return: string with response to last command
         '''
 
-        title = 'script'
+        title = '%s.script' % self.__class__.__name__
 
     # validate inputs
-        self.methods.input.shellCommands(commands, title + ' commands')
+        input_fields = {
+            'commands': commands
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
 
     # construct paramiko connection
-        ssh_key = paramiko.RSAKey.from_private_key_file(self.pemFile)
+        ssh_key = paramiko.RSAKey.from_private_key_file(self.pem_file)
         client = paramiko.SSHClient()
         client.load_system_host_keys()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        client.connect(hostname=self.instanceIP, username=self.userName, pkey=ssh_key)
+        client.connect(hostname=self.instance_ip, username=self.ec2.iam.user_name, pkey=ssh_key)
 
     # run command through connection
         response = ''
         for i in range(len(commands)):
-            if not quiet:
-                print('[%s]: %s ...' % (self.instanceIP, commands[i]), end='', flush=True)
+            self.ec2.iam.printer('[%s]: %s ...' % (self.instance_ip, commands[i]), flush=True)
             try:
                 stdin, stdout, stderr = client.exec_command(commands[i], get_pty=True)
             except:
-                raise Exception('\nFailure connecting to AWS instance ip %s with %s command [%s] request.' % (self.instanceIP, title, i))
+                raise AWSConnectionError('\nFailuring running %s command [%s] request on instance %s.' % (title, i, self.instance_ip))
 
     # report response to individual commands
             response = stdout.read().decode()
-            if quiet:
-                pass
+            if synopsis:
+                self.ec2.iam.printer(' done.')
             else:
-                if synopsis:
-                    print(' Done.')
+                if response:
+                    response = response.replace('\n', '')
+                    self.ec2.iam.printer('\n%s' % response)
                 else:
-                    if response:
-                        response = response.replace('\n', '')
-                        print('\n%s' % response)
-                    else:
-                        print(' Done.')
+                    self.ec2.iam.printer(' done.')
 
     # close connection and return last response
         client.close()
