@@ -21,11 +21,21 @@ class awsPrices(object):
             method for initializing the awsPrices class & retrieving pricing tables index
         '''
 
+    # construct downloads folder
+        from os import path
+        from labpack import __module__
+        from labpack.storage.appdata import appdataClient
+        client_kwargs = {
+            'collection_name': 'Downloads',
+            'prod_name': __module__
+        }
+        appdata_client = appdataClient(**client_kwargs)
+
     # define class parameters
         self.freshInstall = False
         self.baseURL = 'https://pricing.us-east-1.amazonaws.com'
         self.indexURL = '%s/offers/v1.0/aws/index.json' % self.baseURL
-        self.fileFolder = './tables'
+        self.fileFolder = path.join(appdata_client.collection_folder, 'tables')
         self.indexFile = 'aws-table-index.json'
         self.indexPath = '%s/%s' % (self.fileFolder, self.indexFile)
         self.regions = {

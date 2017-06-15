@@ -2,11 +2,11 @@
   "schema": {
     "access_id": "ABCDEFGHIJ0123456789",
     "secret_key": "abc-/_-DEFghiJKLmnoPQRstuVWXyz0123456789",
-    "default_region": "us-east-1",
+    "region_name": "us-east-1",
     "owner_id": "000123456789",
     "user_name": "user",
     "profile": "lab",
-    "certificate": "EFghiJKLmnoPQRstuVWXyz0123456789"
+    "certificate_name": "EFghiJKLmnoPQRstuVWXyz0123456789"
   },
   "components": {
     ".profile": {
@@ -14,12 +14,12 @@
         "max_length": 128,
         "must_not_contain": [ "aws:", "[^\\w\\-\\._]+" ]
     },
-    ".certificates": {
+    ".certificate_name": {
       "min_length": 1,
       "max_length": 128,
       "must_not_contain": [ "[^\\w\\.\\-\\+@=,]+" ]
     },
-    ".default_region": {
+    ".region_name": {
       "discrete_values": [
         "us-east-1",
         "us-east-2",

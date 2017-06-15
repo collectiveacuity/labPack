@@ -1,69 +1,67 @@
 __author__ = 'rcj1492'
 __created__ = '2015'
 
-# pip install pytz
-# https://pypi.python.org/pypi/pytz
+'''
+PLEASE NOTE:    ec2 package requires the boto3 module.
 
-# pip install boto3
-# https://pypi.python.org/pypi/boto3
-# https://boto3.readthedocs.org/en/latest/
+(all platforms) pip3 install boto3
+'''
 
-from awsDocker.awsValidation import ec2Input, iamInput
-import boto3
-import json
-import os
+try:
+    import boto3
+except:
+    import sys
+    print('ec2 package requires the boto3 module. try: pip3 install boto3')
+    sys.exit(1)
+
+from labpack.authentication.aws.iam import AWSConnectionError
 import time
 import re
 from copy import deepcopy
 from timeit import default_timer as timer
 
-class EC2ConnectionError(Exception):
-
-    def __init__(self, message='', errors=None):
-        text = '\nFailure connecting to AWS EC2 with %s request.' % message
-        super(EC2ConnectionError, self).__init__(text)
-        self.errors = errors
-
-class awsEC2(object):
+class ec2Client(object):
 
     '''
         a class of methods for interacting with AWS Elastic Computing Cloud
 
-        dependencies:
-            from labAWS.awsValidation import ec2Input, iamInput
-            import boto3
-            import json
-            import os
-            import time
-            import re
-            from copy import deepcopy
-            from timeit import default_timer as timer
+        https://boto3.readthedocs.org/en/latest/
     '''
 
-    def __init__(self, aws_credentials, aws_rules, aws_region=''):
+    def __init__(self, access_id, secret_key, region_name, owner_id, user_name, verbose=True):
 
         '''
             a method for initializing the connection to EC2
             
-        :param aws_credentials: dictionary with AWS credentials
-        :param aws_rules: dictionary with AWS data rules
-        :param aws_region: [optional] string with AWS region
+        :param access_id: string with access_key_id from aws IAM user setup
+        :param secret_key: string with secret_access_key from aws IAM user setup
+        :param region_name: string with name of aws region
+        :param owner_id: string with aws account id
+        :param user_name: string with name of user access keys are assigned to
+        :param verbose: boolean to enable process messages
         '''
 
-    # validate inputs and create base methods
-        self.cred = iamInput(aws_rules).credentials(aws_credentials)
-        self.input = ec2Input(aws_rules)
-        self.rules = aws_rules
+        title = '%s.__init__' % self.__class__.__name__
 
-    # change region environment variable
-        if aws_region:
-            self.input.region(aws_region)
-            self.cred['AWS_DEFAULT_REGION'] = aws_region
+    # initialize model
+        from labpack import __module__
+        from jsonmodel.loader import jsonLoader
+        from jsonmodel.validators import jsonModel
+        class_fields = jsonLoader(__module__, 'platforms/aws/ec2-rules.json')
+        self.fields = jsonModel(class_fields)
+
+    # construct iam connection
+        from labpack.authentication.aws.iam import iamClient
+        self.iam = iamClient(access_id, secret_key, region_name, owner_id, user_name, verbose)
 
     # construct ec2 client connection
-        for key, value in self.cred.items():
-            os.environ[key] = value
-        self.connection = boto3.client('ec2')
+        client_kwargs = {
+            'service_name': 'ec2',
+            'region_name': self.iam.region_name,
+            'aws_access_key_id': self.iam.access_id,
+            'aws_secret_access_key': self.iam.secret_key
+        }
+        self.connection = boto3.client(**client_kwargs)
 
     def checkInstanceState(self, instance_id):
         
@@ -1345,7 +1343,7 @@ class awsEC2(object):
 
         return True
 
-    def findKeyPairs(self):
+    def list_keypairs(self):
 
         '''
             a method to discover the list of key pairs on AWS
@@ -1353,7 +1351,7 @@ class awsEC2(object):
         :return: list of key pairs
         '''
 
-        title = 'findKeyPairs'
+        title = '%s.list_keypairs' % self.__class__.__name__
 
     # request subnet list from AWS
         print('Querying AWS region %s for key pairs.' % os.environ['AWS_DEFAULT_REGION'])
@@ -1589,7 +1587,7 @@ class awsEC2(object):
         return sg_details
 
     def unitTests(self, ec2_obj):
-        self.findKeyPairs()
+        self.list_keypairs()
         subnet_list = self.findSubnets()
         if subnet_list:
             self.subnetDetails(subnet_list[0])
@@ -1617,5 +1615,16 @@ class awsEC2(object):
         self.cleanupEC2()
         return self
 
-# TODO: More thorough awsEC2.unitTests()
+if __name__ == '__main__':
+
+    from labpack.records.settings import load_settings
+    test_cred = load_settings('../../../../cred/awsLab.yaml')
+    client_kwargs = {
+        'access_id': test_cred['aws_access_key_id'],
+        'secret_key': test_cred['aws_secret_access_key'],
+        'region_name': test_cred['aws_default_region'],
+        'owner_id': test_cred['aws_owner_id'],
+        'user_name': test_cred['aws_user_name']
+    }
+    ec2_client = ec2Client(**client_kwargs)
 

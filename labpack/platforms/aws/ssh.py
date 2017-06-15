@@ -1,83 +1,101 @@
+''' a class of methods to run commands on an active AWS instance '''
 __author__ = 'rcj1492'
 __created__ = '2015.10'
+__license__ = 'MIT'
 
 '''
-a class of methods to run commands on an active AWS instance
+PLEASE NOTE:    ssh package requires the paramiko and C package pycrypto.
 
-NOTE: Make sure that VPC rules allow SSH access to your local IP
-NOTE: SCP protocol requires SCP installed on Remote Host (sudo yum install -y git)
+(linux)         pip3 install paramiko
 
-pip install paramiko
-requires pycrypto
-requires visual studio C++ express (for windows)
-requires correction of errors in pycrypto:
-https://github.com/dlitz/pycrypto/issues/110
-\AppData\Local\Programs\Python\Python35-32\Lib\site-packages\Crypto\Random\OSRNG\nt.py
+(windows)       download Visual Studio C++ Express
+                pip3 install pycrypto
+
+PLEASE NOTE:    pycrypto import process is corrupted and requires a correction
+                https://github.com/dlitz/pycrypto/issues/110
+                ..\site-packages\Crypto\Random\OSRNG\nt.py
+                
+PLEASE NOTE:    SCP protocol requires SCP installed on Remote Host
+
+(aws-linux)     sudo yum install -y git
 '''
 
-from awsDocker.awsEC2 import *
+try:
+    import paramiko
+    import scp
+except:
+    import sys
+    print('ssh package requires the paramiko module. try: pip3 install paramiko')
+    sys.exit(1)
+
+from labpack.authentication.aws.iam import AWSConnectionError
 from urllib.request import urlopen, HTTPError
 from urllib.error import URLError
 import socket
 from timeit import default_timer as timer
 import time
 import tarfile
-import paramiko
-import scp
-import os
 
-class awsSSH(object):
+class sshClient(object):
 
     '''
         a class of methods to run commands on an active AWS instance
 
-        dependencies:
-            from labAWS.awsEC2 import *
-            from urllib.request import urlopen, HTTPError
-            from urllib.error import URLError
-            from timeit import default_timer as timer
-            import time
-            import tarfile
-            import paramiko
-            import scp
-            import os
-
-        NOTE: Make sure that VPC rules allow SSH access to your local IP
-        NOTE: SCP protocol requires SCP installed on Remote Host (sudo yum install -y git)
+        NOTE:   Make sure that VPC rules allow SSH access to your local IP
+        NOTE:   SCP protocol requires SCP installed on Remote Host
     '''
 
-    __name__ = 'awsSSH'
-    __rules__ = json.loads(open('aws-rules.json').read())
-
-    def __init__(self, instance_id, pem_file, aws_credentials, aws_region=''):
+    def __init__(self, instance_id, pem_file, access_id, secret_key, region_name, owner_id, user_name, verbose=True):
 
         '''
             a method for initializing the SSH connection parameters to the EC2 instance
 
         :param instance_id: string with AWS id of instance
         :param pem_file: string with path to keypair pem file
-        :param aws_credentials: dictionary with AWS credentials
-        :param aws_region: [optional] string with AWS region
+        :param access_id: string with access_key_id from aws IAM user setup
+        :param secret_key: string with secret_access_key from aws IAM user setup
+        :param region_name: string with name of aws region
+        :param owner_id: string with aws account id
+        :param user_name: string with name of user access keys are assigned to
+        :param verbose: boolean to enable process messages
         '''
 
+        title = '%s.__init__' % self.__class__.__name__
+
     # validate credentials and construct ec2 method
-        self.methods = awsEC2(aws_credentials, self.__rules__, aws_region)
+        from labpack.platforms.aws.ec2 import ec2Client
+        self.ec2 = ec2Client(access_id, secret_key, region_name, owner_id, user_name, verbose)
 
-    # validate instance input, check for instance existence and construct instance methods
-        self.instanceID = self.methods.input.instanceID(instance_id, self.__name__)
-        self.instanceDetails = self.methods.instanceDetails(self.instanceID)
-        if not self.instanceDetails['publicIP']:
-            raise Exception('\nawsSSH cannot be initialized without a public IP address.')
-        self.instanceIP = self.instanceDetails['publicIP']
-        for tag in self.instanceDetails['tags']:
-            if tag['Key'] == 'UserName':
-                self.userName = tag['Value']
+    # verify user has privileges
+        try:
+            self.ec2.iam.printer = self.ec2.iam.printer_off
+            # self.ec2.list_keypairs()
+            self.ec2.iam.printer = self.ec2.iam.printer_on
+        except:
+            raise AWSConnectionError(title, 'You must have privileges to access EC2 to use sshClient')
 
-    # validate pem file input and construct pem method
-        self.pemFile = self.methods.input.pemFile(pem_file, self.instanceDetails['keyPair'])
+    # validate inputs
+        input_fields = {
+            'instance_id': instance_id,
+            'pem_file': pem_file
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.ec2.fields.validate(value, '.%s' % key, object_title)
 
-    # make sure instance is in a state open to connections
-        self.methods.waitToInitialize(self.instanceID)
+    # verify pem file exists
+
+    # verify instance exists
+
+    # verify instance has public ip
+
+    # verify local and remote pem file names match
+
+    # verify pem file has access
+
+    # verify instance is ready
+
+
 
     def terminal(self, confirmation=True):
 
@@ -319,4 +337,18 @@ class awsSSH(object):
         # self.responsive()
         return self
 
-dummy = ''
+if __name__ == '__main__':
+
+    from labpack.records.settings import load_settings
+    test_cred = load_settings('../../../../cred/awsLab.yaml')
+    client_kwargs = {
+        'instance_id': 'i-04ab8722c7b2a3ea7',
+        'pem_file': '../../../keys/lab-keypair-useast2-test-20170601.pem',
+        'access_id': test_cred['aws_access_key_id'],
+        'secret_key': test_cred['aws_secret_access_key'],
+        'region_name': test_cred['aws_default_region'],
+        'owner_id': test_cred['aws_owner_id'],
+        'user_name': test_cred['aws_user_name']
+    }
+    ssh_client = sshClient(**client_kwargs)
+

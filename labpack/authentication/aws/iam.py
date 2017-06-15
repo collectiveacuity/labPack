@@ -14,12 +14,20 @@ except:
     print('iam package requires the boto3 module. try: pip3 install boto3')
     sys.exit(1)
 
-class IAMConnectionError(Exception):
+class AWSConnectionError(Exception):
 
-    def __init__(self, message='', errors=None):
-        text = '\nFailure connecting to AWS IAM with %s request.' % message
-        super(IAMConnectionError, self).__init__(text)
+    def __init__(self, request='', message='', errors=None):
+
         self.errors = errors
+        text = '\nFailure connecting to AWS with %s request.' % request
+        try:
+            raise
+        except Exception as err:
+            text += '\n%s' % err
+        if message:
+            text += '\n%s' % message
+
+        super(AWSConnectionError, self).__init__(text)
 
 class iamClient(object):
 
@@ -29,16 +37,17 @@ class iamClient(object):
         https://boto3.readthedocs.org/en/latest/
     '''
 
-    def __init__(self, access_id, secret_key, default_region, owner_id, user_name):
+    def __init__(self, access_id, secret_key, region_name, owner_id, user_name, verbose=True):
 
         '''
             a method for initializing the connection to AW IAM
 
         :param access_id: string with access_key_id from aws IAM user setup
         :param secret_key: string with secret_access_key from aws IAM user setup
-        :param default_region:
-        :param owner_id:
-        :param user_name:
+        :param region_name: string with name of aws region
+        :param owner_id: string with aws account id
+        :param user_name: string with name of user access keys are assigned to
+        :param verbose: boolean to enable process messages
         '''
 
         title = '%s.__init__' % self.__class__.__name__
@@ -54,24 +63,41 @@ class iamClient(object):
         input_fields = {
             'access_id': access_id,
             'secret_key': secret_key,
-            'default_region': default_region
+            'region_name': region_name,
+            'owner_id': owner_id,
+            'user_name': user_name
         }
         for key, value in input_fields.items():
             object_title = '%s(%s=%s)' % (title, key, str(value))
             self.fields.validate(value, '.%s' % key, object_title)
 
-    # validate inputs and create base methods
-        self.cred = iamInput(aws_rules).credentials(aws_credentials)
-        self.input = iamInput(aws_rules)
-        self.rules = aws_rules
+    # construct credential methods
+        self.access_id = access_id
+        self.secret_key = secret_key
+        self.region_name = region_name
+        self.owner_id = owner_id
+        self.user_name = user_name
 
     # construct iam client connection
-        import os
-        for key, value in self.cred.items():
-            os.environ[key] = value
-        self.connection = boto3.client('iam')
+        client_kwargs = {
+            'service_name': 'iam',
+            'region_name': self.region_name,
+            'aws_access_key_id': self.access_id,
+            'aws_secret_access_key': self.secret_key
+        }
+        self.connection = boto3.client(**client_kwargs)
 
-    def findCertificates(self):
+    # construct verbose method
+        def _null_printer(msg):
+            pass
+        def _printer(msg):
+            if verbose:
+                print(msg)
+        self.printer_on = _printer
+        self.printer_off = _null_printer
+        self.printer = self.printer_on
+
+    def list_certificates(self):
 
         '''
             a method to retrieve a list of server certificates
@@ -79,14 +105,14 @@ class iamClient(object):
         :return: list with certificate name strings
         '''
 
-        title = 'findCertificates'
+        title = '%s.list_certificates' % self.__class__.__name__
 
     # send request for list of certificates
-        print('Querying AWS for server certificates.')
+        self.printer('Querying AWS for server certificates.')
         try:
             response = self.connection.list_server_certificates()
         except:
-            raise IAMConnectionError(title + ' list_server_certificates()')
+            raise AWSConnectionError(title)
 
     # construct certificate list from response
         cert_list = []
@@ -106,69 +132,74 @@ class iamClient(object):
                 print_out += ' ' + certificate
                 i_counter += 1
             print_out += '.'
-            print(print_out)
+            self.printer(print_out)
         else:
-            print('No server certificates found.')
+            self.printer('No server certificates found.')
 
         return cert_list
 
-    def certificateDetails(self, cert_name):
+    def read_certificate(self, certificate_name):
 
         '''
             a method to retrieve the details about a server certificate
 
-        :param cert_name: string with name of certificate
+        :param certificate_name: string with name of server certificate
         :return: dictionary with certificate details
         '''
 
-        title = 'certificateDetails'
+        title = '%s.read_certificate' % self.__class__.__name__
 
     # validate inputs
-        self.input.certName('cert_name', title + ' certificate name')
+        input_fields = {
+            'certificate_name': certificate_name
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
 
     # verify existence of server certificate
-        try:
-            response = self.connection.list_server_certificates()
-        except:
-            raise IAMConnectionError(title + ' list_server_certificates()')
-        cert_list = []
-        if 'ServerCertificateMetadataList' in response:
-            for certificate in response['ServerCertificateMetadataList']:
-                cert_list.append(certificate['ServerCertificateName'])
-        if not cert_name in cert_list:
-            raise Exception('\nServer certificate %s does not exist.' % cert_name)
+        self.printer = self.printer_off
+        cert_list = self.list_certificates()
+        self.printer = self.printer_on
+        if not certificate_name in cert_list:
+            raise Exception('\nServer certificate %s does not exist.' % certificate_name)
 
-    # send requst for certificate details
+    # send request for certificate details
         try:
-            response = self.connection.get_server_certificate(
-                ServerCertificateName=cert_name
-            )
+            cert_kwargs = { 'ServerCertificateName': certificate_name }
+            response = self.connection.get_server_certificate(**cert_kwargs)
         except:
-            raise IAMConnectionError(title + ' get_server_certificate()')
+            raise AWSConnectionError(title)
 
     # construct certificate details from response
+        from labpack.records.time import labDT
         cert_dict = response['ServerCertificate']['ServerCertificateMetadata']
         date_time = cert_dict['Expiration']
-        iso_datetime = date_time.isoformat().replace('+00:00', 'Z')
+        epoch_time = labDT(date_time).epoch()
         cert_details = {
-            'certARN': cert_dict['Arn'],
-            'certName': cert_dict['ServerCertificateName'],
-            'expirationDate': iso_datetime,
-            'certBody': '',
-            'certChain': ''
+            'cert_arn': cert_dict['Arn'],
+            'cert_name': cert_dict['ServerCertificateName'],
+            'expiration_date': epoch_time,
+            'cert_body': '',
+            'cert_chain': ''
         }
         if 'CertificateBody' in response['ServerCertificate']:
-            cert_details['certBody'] = response['ServerCertificate']['CertificateBody']
+            cert_details['cert_body'] = response['ServerCertificate']['CertificateBody']
         if 'CertificateChain' in response['ServerCertificate']:
-            cert_details['certChain'] = response['ServerCertificate']['CertificateChain']
+            cert_details['cert_body'] = response['ServerCertificate']['CertificateChain']
 
         return cert_details
 
-    def unitTests(self):
-        certList = self.findCertificates()
-        print(certList)
-        if certList:
-            certDetails = self.certificateDetails(certList[1])
-            print(certDetails)
-            assert certDetails['certARN']
-        return self
+if __name__ == '__main__':
+
+    from labpack.records.settings import load_settings
+    test_cred = load_settings('../../../../cred/awsLab.yaml')
+    client_kwargs = {
+        'access_id': test_cred['aws_access_key_id'],
+        'secret_key': test_cred['aws_secret_access_key'],
+        'region_name': test_cred['aws_default_region'],
+        'owner_id': test_cred['aws_owner_id'],
+        'user_name': test_cred['aws_user_name']
+    }
+    iam_client = iamClient(**client_kwargs)
+    iam_client.list_certificates()

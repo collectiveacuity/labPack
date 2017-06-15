@@ -1,13 +1,4 @@
-recursive-exclude cred *
-recursive-exclude data *
-recursive-exclude dev *
-recursive-exclude docs *
-recursive-exclude keys *
-recursive-exclude models *
-recursive-exclude notes *
-recursive-exclude tests *
-recursive-exclude tests_dev *
-recursive-exclude tinker *
+recursive-include labpack/* *.json
 prune */__pycache__
 include *.rst
 include *.txt
