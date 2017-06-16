@@ -69,7 +69,7 @@ class ec2Client(object):
             method for checking the state of an instance on AWS EC2
             
         :param instance_id: string with AWS id of instance
-        :param wait: [optional] boolean to wait for instances that are pending
+        :param wait: [optional] boolean to wait for instance while pending
         :return: string reporting state of instance
         '''
 
@@ -156,6 +156,69 @@ class ec2Client(object):
         self.iam.printer('Instance %s is %s.' % (instance_id, instance_state))
 
         return instance_state
+
+    def check_instance_status(self, instance_id, wait=True):
+
+        '''
+            a method to wait until AWS instance reports an OK status
+
+        :param instance_id: string of instance id on AWS
+        :param wait: [optional] boolean to wait for instance while initializing
+        :return: True
+        '''
+
+        title = 'check_instance_status'
+
+    # validate inputs
+        input_fields = {
+            'instance_id': instance_id
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+
+    # check state of instance
+        self.iam.printer_on = False
+        self.check_instance_state(instance_id)
+        self.iam.printer_off = True
+
+    # check instance status
+        response = self.connection.describe_instance_status(
+            InstanceIds=[ instance_id ]
+        )
+        if not response['InstanceStatuses']:
+            time.sleep(1)
+            response = self.connection.describe_instance_status(
+                InstanceIds=[ instance_id ]
+            )
+            self.iam.printer(response)
+        instance_status = response['InstanceStatuses'][0]['InstanceStatus']['Status']
+
+    # wait for instance status to be ok
+        if instance_status != 'ok' and wait:
+            self.iam.printer('Waiting for initialization of instance %s to stop' % instance_id, flush=True)
+            delay = 3
+            status_timeout = 0
+            while instance_status != 'ok':
+                self.iam.printer('.', flush=True)
+                time.sleep(delay)
+                t3 = timer()
+                response = self.connection.describe_instance_status(
+                    InstanceIds=[ instance_id ]
+                )
+                t4 = timer()
+                response_time = t4 - t3
+                if 3 - response_time > 0:
+                    delay = 3 - response_time
+                else:
+                    delay = 0
+                status_timeout += 1
+                if status_timeout > 300:
+                    raise Exception('\nTimeout. Failure initializing instance %s on AWS in less than 15min' % instance_id)
+                instance_status = response['InstanceStatuses'][0]['InstanceStatus']['Status']
+            print(' done.')
+
+        return instance_status
 
     def checkImageState(self, image_id):
 
@@ -1323,66 +1386,6 @@ class ec2Client(object):
 
         return True
 
-    def wait_for_initialization(self, instance_id):
-
-        '''
-            a method to wait until AWS instance reports an OK status
-
-        :param instance_id: string of instance id on AWS
-        :return: True
-        '''
-
-        title = 'wait_for_initialization'
-
-    # validate inputs
-        input_fields = {
-            'instance_id': instance_id
-        }
-        for key, value in input_fields.items():
-            object_title = '%s(%s=%s)' % (title, key, str(value))
-            self.fields.validate(value, '.%s' % key, object_title)
-
-    # check state of instance
-        self.iam.printer_on = False
-        self.check_instance_state(instance_id)
-        self.iam.printer_off = True
-
-    # wait for instance status to be 'ok'
-        response = self.connection.describe_instance_status(
-            InstanceIds=[ instance_id ]
-        )
-        if not response['InstanceStatuses']:
-            time.sleep(1)
-            response = self.connection.describe_instance_status(
-                InstanceIds=[ instance_id ]
-            )
-            self.iam.printer(response)
-        instance_status = response['InstanceStatuses'][0]['InstanceStatus']['Status']
-        if instance_status != 'ok':
-            self.iam.printer('Waiting for initialization of instance %s to stop' % instance_id, flush=True)
-            delay = 3
-            status_timeout = 0
-            while instance_status != 'ok':
-                self.iam.printer('.', flush=True)
-                time.sleep(delay)
-                t3 = timer()
-                response = self.connection.describe_instance_status(
-                    InstanceIds=[ instance_id ]
-                )
-                t4 = timer()
-                response_time = t4 - t3
-                if 3 - response_time > 0:
-                    delay = 3 - response_time
-                else:
-                    delay = 0
-                status_timeout += 1
-                if status_timeout > 300:
-                    raise Exception('\nTimeout. Failure initializing instance %s on AWS in less than 15min' % instance_id)
-                instance_status = response['InstanceStatuses'][0]['InstanceStatus']['Status']
-            print(' done.')
-
-        return instance_status
-
     def list_keypairs(self):
 
         '''
@@ -1635,7 +1638,7 @@ class ec2Client(object):
         initParams = self.input.initParams(ec2_obj)
         initParams['tags'][0]['Value'] = buildTag
         instanceID = self.startInstance(initParams)
-        self.wait_for_initialization(instanceID)
+        self.check_instance_status(instanceID)
         self.list_instances([buildTag])
         read_instance = self.read_instance(instanceID)
         assert read_instance['tags']
@@ -1678,8 +1681,9 @@ if __name__ == '__main__':
         sys.exit()
     instance_id = instance_list[0]
 
-# test instance status
-    instance_status = ec2_client.check_instance_state(instance_id)
+# test instance state and status
+    instance_state = ec2_client.check_instance_state(instance_id)
+    instance_status = ec2_client.check_instance_status(instance_id)
 
 # test read instance
     instance_details = ec2_client.read_instance(instance_id)
