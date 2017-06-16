@@ -20,13 +20,15 @@ PLEASE NOTE:    SCP protocol requires SCP installed on Remote Host
 (aws-linux)     sudo yum install -y git
 '''
 
-try:
-    import paramiko
-    import scp
-except:
-    import sys
-    print('ssh package requires the paramiko module. try: pip3 install paramiko')
-    sys.exit(1)
+from platform import uname
+if uname().system in ('Windows'):
+    try:
+        import paramiko
+        import scp
+    except:
+        import sys
+        print('ssh package on Windows requires the paramiko module. try: pip3 install paramiko')
+        sys.exit(1)
 
 from labpack.authentication.aws.iam import AWSConnectionError
 from urllib.request import urlopen, HTTPError
