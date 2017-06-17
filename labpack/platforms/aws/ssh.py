@@ -31,9 +31,6 @@ if uname().system in ('Windows'):
         sys.exit(1)
 
 from labpack.authentication.aws.iam import AWSConnectionError
-from urllib.request import urlopen, HTTPError
-from urllib.error import URLError
-import socket
 from timeit import default_timer as timer
 import tarfile
 
@@ -51,7 +48,19 @@ class sshClient(object):
             'commands': [ 'ls -a' ],
             'login_name': 'ec2-user',
             'local_path': 'cred/dev/aws.yaml',
-            'remote_path': '~/cred/aws.yaml'
+            'remote_path': '~/cred/aws.yaml',
+            'port': 80,
+            'timeout': 600
+        },
+        'components': {
+            '.port': {
+                'integer_data': True,
+                'min_value': 1
+            },
+            '.timeout': {
+                'integer_data': True,
+                'min_value': 1
+            }
         }
     }
 
@@ -195,7 +204,7 @@ class sshClient(object):
             a method to run a list of shell command scripts on AWS instance
 
         :param commands: list of strings with shell commands to pass through connection
-        :param synopsis: [optional] boolean to simply responses to done.
+        :param synopsis: [optional] boolean to simplify progress messages to one line
         :return: string with response to last command
         '''
 
@@ -269,7 +278,7 @@ class sshClient(object):
 
         :param local_path: string with path to folder or file on local host
         :param remote_path: [optional] string with path to copy contents on remote host
-        :param synopsis: [optional] boolean to simply responses to done.
+        :param synopsis: [optional] boolean to simplify progress messages to one line
         :return: string with response
         '''
 
@@ -281,7 +290,7 @@ class sshClient(object):
             'remote_path': remote_path
         }
         for key, value in input_fields.items():
-            if remote_path:
+            if value:
                 object_title = '%s(%s=%s)' % (title, key, str(value))
                 self.fields.validate(value, '.%s' % key, object_title)
 
@@ -442,67 +451,61 @@ class sshClient(object):
 
         return response
 
-    def responsive(self, port=0):
+    def responsive(self, port=80, timeout=600):
 
         '''
             a method for waiting until web server on AWS instance has restarted
 
-        :return: True
+        :param port: integer with port number to check
+        :param timeout: integer with number of seconds to continue to check
+        :return: string with response code
         '''
 
-        title = 'wait'
+        title = '%s.wait' % self.__class__.__name__
 
-    # construct parameters of request loop
-        response_200 = False
-        print('Waiting for http 200 response from %s' % self.instanceIP, end='', flush=True)
-        delay = 3
-        status_timeout = 0
-        url = 'http://' + self.instanceIP
+        from time import sleep
+
+    # validate inputs
+        input_fields = {
+            'port': port,
+            'timeout': timeout
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+
+    # construct parameters for request loop
+        import requests
+        waiting_msg = 'Waiting for http 200 response from %s' % self.instance_ip
+        nonres_msg = 'Instance %s is not responding to requests at %s.' % ( self.instance_id, self.instance_ip)
+        server_url = 'http://%s' % self.instance_ip
         if port:
-            if isinstance(port, int):
-                url += ':%s' % port
+            server_url += ':%s' % str(port)
 
-    # repeat http requests to public ip until 200 response code
-        while not response_200:
-            print('.', end='', flush=True)
-            t3 = timer()
+    # initiate waiting loop
+        self.ec2.iam.printer(waiting_msg, flush=True)
+        t0 = timer()
+        while True:
+            t1 = timer()
+            self.ec2.iam.printer('.', flush=True)
             try:
-                response = urlopen(url, timeout=2)
-                response_code = response.getcode()
-                response.close()
-            except HTTPError as err:
-                response_code = err.getcode()
-            except URLError as err:
-                response_code = err.reason
-            except socket.timeout as err:
-                print(err.strerror)
-                response_code = err.strerror
-            t4 = timer()
-            response_time = t4 - t3
+                response = requests.get(server_url, timeout=2)
+                response_code = response.status_code
+                if response_code >= 200 and response_code < 300:
+                    self.ec2.iam.printer(' done.')
+                    return response_code
+            except:
+                pass
+            t2 = timer()
+            if t2 - t0 > timeout:
+                timeout_msg = 'Timeout [%ss]: %s' % (timeout, nonres_msg)
+                raise TimeoutError(timeout_msg)
+            response_time = t2 - t1
             if 3 - response_time > 0:
                 delay = 3 - response_time
             else:
                 delay = 0
-            if response_code == 200:
-                print(' Done.')
-                response_200 = True
-            else:
-                time.sleep(delay)
-
-    # set a timeout condition
-            status_timeout += 1
-            if status_timeout > 299:
-                total_sec = status_timeout * delay
-                raise Exception('\nTimeout [%ss]: Instance %s is not responding to requests at %s.' % (total_sec, self.instanceID, self.instanceIP))
-        return True
-
-    def unitTests(self):
-        # self.terminal(confirmation=False)
-        self.script(['sudo yum update -y', 'sudo yum install -y git'], synopsis=True)
-        self.script(['mkdir test'])
-        self.transfer('new', '../data/', 'test/')
-        # self.responsive()
-        return self
+            sleep(delay)
 
 if __name__ == '__main__':
 
@@ -539,6 +542,9 @@ if __name__ == '__main__':
     client_kwargs['pem_file'] = pem_file
     del client_kwargs['verbose']
     ssh_client = sshClient(**client_kwargs)
+
+# test responsive method
+    assert ssh_client.responsive() == 200
 
 # run test scripts
     ssh_client.script('mkdir test20170615; touch test20170615/newfile.txt')
