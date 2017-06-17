@@ -262,13 +262,14 @@ class sshClient(object):
     # close connection and return last response
         return response
 
-    def transfer(self, local_path, remote_path=''):
+    def transfer(self, local_path, remote_path='', synopsis=False):
 
         '''
             a method to copy a folder or file from local device to AWS instance
 
         :param local_path: string with path to folder or file on local host
         :param remote_path: [optional] string with path to copy contents on remote host
+        :param synopsis: [optional] boolean to simply responses to done.
         :return: string with response
         '''
 
@@ -294,20 +295,24 @@ class sshClient(object):
         self.ec2.iam.printer_on = False
         if remote_path:
             remote_node_root, remote_node_name = path.split(remote_path)
+            if not remote_node_root:
+                remote_node_root = '~/'
+                remote_path = path.join(remote_node_root, remote_node_name)
             test_root_cmd = 'cd %s' % remote_node_root
             try:
                 self.script(test_root_cmd)
             except:
-                raise ValueError('%s does not exist on remote host. Canceling transfer.' % remote_node_root)
+                raise ValueError('%s folder does not exist on remote host. Canceling transfer.' % remote_node_root)
         else:
-            remote_path = local_node_name
+            remote_node_name = local_node_name
+            remote_path = path.join('~/', local_node_name)
             remote_node_root = '~/'
 
     # verify remote path does not exist
         try:
             test_path_cmd = 'ls %s' % remote_path
             self.script(test_path_cmd)
-            raise ValueError('%s already exists on remote host. Canceling transfer.' % remote_host)
+            raise ValueError('%s already exists on remote host. Canceling transfer.' % remote_path)
         except:
             pass
 
@@ -319,7 +324,21 @@ class sshClient(object):
                 pass
             else:
                 raise Exception('\nSCP needs to be installed on remote host. Canceling transfer.\nOn remote host, try: sudo yum install -y git')
+
+    # determine sudo privileges
+        sudo_insert = 'sudo '
+        user_abs = self.script('readlink -f ~/')
+        remote_abs = self.script('readlink -f %s' % remote_node_root)
+        if remote_abs.find(user_abs) > -1:
+            sudo_insert = ''
         self.ec2.iam.printer_on = True
+
+    # initiate transfer process
+        remote_host = '[%s@%s]' % (self.login_name, self.instance_ip)
+        if synopsis:
+            self.ec2.iam.printer('Transferring %s to %s:%s ...' % (local_path, remote_host, remote_path), flush=True)
+            self.ec2.iam.printer_on = False
+        self.ec2.iam.printer('Initiating transfer of %s to %s:%s.' % (local_path, remote_host, remote_path))
 
     # construct temporary file folder
         from labpack import __module__
@@ -341,7 +360,7 @@ class sshClient(object):
                 kw_args['arcname'] = content_name
             with tarfile.open(output_file, 'w:gz') as tar:
                 tar.add(**kw_args)
-        _make_tar(local_path, tar_path, local_node_name)
+        _make_tar(local_path, tar_path, remote_node_name)
         self.ec2.iam.printer(' done.')
 
     # define cleanup function
@@ -351,8 +370,7 @@ class sshClient(object):
             self.ec2.iam.printer(' done.')
 
     # initiate scp transfer of tar file
-        remote_host = '[%s@%s]' % (self.login_name, self.instance_ip)
-        transfer_msg = 'Transferring %s to %s:~/%s ...' % (tar_file, remote_host, tar_file)
+        copy_msg = 'Copying %s to %s:~/%s ...' % (tar_file, remote_host, tar_file)
         error_msg = 'Failure copying file %s to ip %s.' % (tar_file, self.instance_ip)
 
     # use paramiko on windows systems
@@ -363,7 +381,7 @@ class sshClient(object):
             client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             client.connect(hostname=self.instance_ip, username=self.ec2.iam.user_name, pkey=ssh_key)
             scp_transport = scp.SCPClient(client.get_transport())
-            self.ec2.iam.printer(transfer_msg, flush=True)
+            self.ec2.iam.printer(copy_msg, flush=True)
             try:
                 response = scp_transport.put(tar_path, tar_file)
             except:
@@ -376,7 +394,7 @@ class sshClient(object):
     # use scp on other systems
         else:
             from subprocess import Popen, PIPE
-            self.ec2.iam.printer(transfer_msg, flush=True)
+            self.ec2.iam.printer(copy_msg, flush=True)
             escape_local = tar_path.replace(' ', '\ ')
             if escape_local != tar_path:
                 escape_local = '"%s"' % escape_local
@@ -386,19 +404,22 @@ class sshClient(object):
             if pipes.returncode != 0:
                 self.ec2.iam.printer(' ERROR.')
                 _cleanup_temp(tar_file)
-                print(std_err)
                 raise Exception(error_msg)
             else:
                 response = std_out.decode('utf-8')
                 self.ec2.iam.printer(' done.')
 
     # extract tar file to remote path
-        extract_cmd = 'sudo tar -C %s -xvf %s' % (remote_node_root, tar_file)
+        extract_cmd = '%star -C %s -xvf %s' % (sudo_insert, remote_node_root, tar_file)
         ext_kwargs = {
             'commands': extract_cmd,
             'synopsis': True
         }
-        self.script(**ext_kwargs)
+        try:
+            self.script(**ext_kwargs)
+        except:
+            _cleanup_temp(tar_file)
+            raise
 
     # cleanup temporary files on remote host
         rm_cmd = 'sudo rm -f %s' % tar_file
@@ -406,10 +427,18 @@ class sshClient(object):
             'commands': rm_cmd,
             'synopsis': True
         }
-        self.script(**rm_kwargs)
+        try:
+            self.script(**rm_kwargs)
+        except:
+            _cleanup_temp(tar_file)
+            raise
 
     # cleanup local temporary files and return response
         _cleanup_temp(tar_file)
+        self.ec2.iam.printer('Transfer of %s to %s:%s complete.' % (local_path, remote_host, remote_path))
+        if synopsis:
+            self.ec2.iam.printer_on = True
+            self.ec2.iam.printer(' done.')
 
         return response
 
@@ -519,6 +548,19 @@ if __name__ == '__main__':
     local_file = '../../../tests/test-model.json'
     local_folder = '../../../tests/testing'
     remote_file = 'test-model2.json'
-    remote_folder = 'testing/testing'
-    ssh_client.transfer(local_file)
+    remote_folder = 'testing2'
+    ssh_client.transfer(local_file, synopsis=True)
+    ssh_client.script('rm test-model.json')
+    ssh_client.transfer(local_folder, synopsis=True)
+    ssh_client.script('rm -r testing')
+    ssh_client.transfer(local_file, remote_file, synopsis=True)
+    ssh_client.script('rm test-model2.json')
+    ssh_client.transfer(local_folder, remote_folder, synopsis=True)
+    ssh_client.script('rm -r testing2')
+
+# run test transfer with sudo
+    ssh_client.transfer(local_folder, '/home/testing', synopsis=True)
+    ssh_client.script('sudo rm -r /home/testing')
+
+
 
