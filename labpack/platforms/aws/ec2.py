@@ -512,22 +512,40 @@ class ec2Client(object):
             instance_info = response['Reservations'][0]['Instances'][0]
 
     # create dictionary of instance details
-        instance = {}
-        instance['instance_id'] = instance_info['InstanceId']
-        instance['image_id'] = instance_info['ImageId']
-        instance['state'] = instance_info['State']['Name']
-        instance['keypair'] = instance_info['KeyName']
-        instance['instance_type'] = instance_info['InstanceType']
-        instance['region'] = self.iam.region_name
-        instance['tags'] = []
-        instance['public_ip'] = ''
-        instance['dns_name'] = ''
+        instance = {
+            'instance_id': instance_info['InstanceId'],
+            'image_id': instance_info['ImageId'],
+            'state': instance_info['State']['Name'],
+            'keypair': instance_info['KeyName'],
+            'instance_type': instance_info['InstanceType'],
+            'region': self.iam.region_name,
+            'tags': [],
+            'public_ip': '',
+            'private_ip': '',
+            'dns_name': '',
+            'security_groups': [],
+            'subnet_id': instance_info['SubnetId'],
+            'vpc_id': instance_info['VpcId']
+        }
         try:
             instance['tags'] = instance_info['Tags']
         except:
             pass
         try:
+            for group in instance_info['SecurityGroups']:
+                group_details = {
+                    'security_group_id': group['GroupId'],
+                    'security_group_name': group['GroupName']
+                }
+                instance['security_groups'].append(group_details)
+        except:
+            pass
+        try:
             instance['public_ip'] = instance_info['PublicIpAddress']
+        except:
+            pass
+        try:
+            instance['private_ip'] = instance_info['PrivateIpAddress']
         except:
             pass
         try:
@@ -1581,7 +1599,7 @@ class ec2Client(object):
 
         return subnet_details
 
-    def securityGroupDetails(self, security_group_id):
+    def read_security_group(self, security_group_id):
 
         '''
             a method to retrieve the details about a security group
@@ -1595,10 +1613,18 @@ class ec2Client(object):
         'tags': []
         '''
 
-        title = 'securityGroupDetails'
+        title = '%s.read_security_group' % self.__class__.__name__
 
     # validate inputs
-        self.input.sgID(security_group_id, title + ' security group id')
+        input_fields = {
+            'security_group_id': security_group_id
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+
+    # report query
+        self.iam.printer('Querying AWS region %s for properties of security group %s.' % (self.iam.region_name, security_group_id))
 
     # construct keyword definitions
         kw_args = { 'GroupIds': [ security_group_id ] }
@@ -1607,22 +1633,25 @@ class ec2Client(object):
         try:
             response = self.connection.describe_security_groups(**kw_args)
         except:
-            raise EC2ConnectionError('%s describe_security_groups(%s)' % (title, kw_args))
+            raise AWSConnectionError(title)
 
     # construct security group details from response
-        sg_dict = response['SecurityGroups'][0]
-        sg_details = {
-            'securityGroupID': sg_dict['GroupId'],
-            'vpcID': '',
-            'securityGroupName': sg_dict['GroupName'],
+        group_info = response['SecurityGroups'][0]
+        details = {
+            'security_group_id': group_info['GroupId'],
+            'vpc_id': '',
+            'security_group_name': group_info['GroupName'],
             'tags': []
         }
-        if 'VpcId' in sg_dict.keys():
-            sg_details['vpcID'] = sg_dict['VpcId']
-        if 'Tags' in sg_dict.keys():
-            sg_details['tags'] = sg_dict['Tags']
+        if 'VpcId' in group_info.keys():
+            details['vpc_id'] = group_info['VpcId']
+        if 'Tags' in group_info.keys():
+            details['tags'] = group_info['Tags']
 
-        return sg_details
+        from pprint import pprint
+        pprint(group_info)
+
+        return details
 
     def unitTests(self, ec2_obj):
         self.list_keypairs()
@@ -1687,5 +1716,9 @@ if __name__ == '__main__':
 
 # test read instance
     instance_details = ec2_client.read_instance(instance_id)
-    print(instance_details)
+    assert instance_details['instance_id'] == instance_id
+    security_group_id = instance_details['security_groups'][0]['security_group_id']
+
+# test read security group
+    group_details = ec2_client.read_security_group(security_group_id)
 

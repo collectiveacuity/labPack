@@ -37,6 +37,18 @@
 <tr><td><a href="https://wit.ai/" title="Natural Language for Developers">Wit.ai</a>                                                                                                                                                                                                                                                                    </td><td>Facebook    </td><td>Service  </td><td>REST api           </td><td>1 request/second     </td><td><a href="https://wit.ai/docs/http/20170307#post%E2%80%94speech-link">API Reference</a>            </td><td>          </td></tr>
 </tbody>
 </table>
+## Telephony
+<table>
+<thead>
+<tr><th>Resource                                                                                                                                                                             </th><th>Author  </th><th>Type   </th><th>Protocols  </th><th>Free Usage  </th><th>Documentation                                                        </th><th>Coverage  </th></tr>
+</thead>
+<tbody>
+<tr><td><a href="https://www.nexmo.com/" title="Programmable Building Blocks for Next Generation Communication Applications">Nexmo</a>                                                       </td><td>Nexmo   </td><td>Service</td><td>REST api   </td><td>$2 credit   </td><td><a href="https://docs.nexmo.com/">API Reference</a>                  </td><td>          </td></tr>
+<tr><td><a href="https://www.plivo.com/" title="Global SMS & Voice calls for businesses of all sizes">Plivo</a>                                                                              </td><td>Plivo   </td><td>Service</td><td>REST api   </td><td>-           </td><td><a href="https://www.plivo.com/voice-api/">API Reference</a>         </td><td>          </td></tr>
+<tr><td><a href="https://www.twilio.com/" title="Build apps that communicate with everyone in the world. Voice & Video, Messaging, and Authentication APIs for every application.">Twilio</a></td><td>Twilio  </td><td>Service</td><td>REST api   </td><td>$10 credit  </td><td><a href="https://www.twilio.com/docs/">API Reference</a>             </td><td>          </td></tr>
+<tr><td><a href="https://cloud.zang.io/" title="Cloud communication technology that transforms your conversations — and your business">Zang</a>                                              </td><td>Avaya   </td><td>Service</td><td>REST api   </td><td>$10 credit  </td><td><a href="https://github.com/zang-cloud/zang-python">API Reference</a></td><td>          </td></tr>
+</tbody>
+</table>
 ## Text to Speech
 <table>
 <thead>

@@ -4,8 +4,9 @@
     "instance_name": "lab-instance-useast1-20170614",
     "pem_file": "./lab-keypair-useast2-test-20170601.pem",
     "pem_name": "lab-keypair-useast2-test-20170601",
-    "tag_key": "env",
+    "tag_key": "Env",
     "tag_values": [ "test" ],
+    "security_group_id": "sg-abcdef12",
     "documentation": {
       "api": "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Welcome.html",
       "boto3": "https://boto3.readthedocs.org/en/latest/reference/services/ec2.html#client",
@@ -327,7 +328,7 @@
   },
   ".components": {
     ".instance_id": {
-      "contains_either": [ "i\\-[a-f\\d]{8}", "i-[a-f\\d]{17}"]
+      "contains_either": [ "i\\-[a-f\\d]{8}", "i\\-[a-f\\d]{17}"]
     },
     ".instance_name": {
       "min_length": 3,
@@ -343,7 +344,9 @@
       "must_not_contain": [ "[^\\w\\-]+", "^\\-", "\\-$" ]
     },
     ".tag_key": {
-
+      "min_length": 1,
+      "max_length": 255,
+      "must_not_contain": [ "aws:", "[^\\w\\s\\-\\._:/]+" ]
     },
     ".tag_values": {
       "max_size": 10
@@ -352,6 +355,9 @@
       "min_length": 1,
       "max_length": 255,
       "must_not_contain": [ "aws:", "[^\\w\\s\\-\\._:/]+" ]
+    },
+    ".security_group_id": {
+      "must_contain": [ "^sg\\-[a-f\\d]{8}$" ]
     }
   }
 }

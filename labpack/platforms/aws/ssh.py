@@ -94,13 +94,6 @@ class sshClient(object):
         from labpack.platforms.aws.ec2 import ec2Client
         self.ec2 = ec2Client(access_id, secret_key, region_name, owner_id, user_name, verbose)
 
-    # verify user has privileges
-        try:
-            self.ec2.iam.printer_on = False
-            self.ec2.list_keypairs()
-        except:
-            raise AWSConnectionError(title, 'You must have privileges to access EC2 to use sshClient')
-
     # validate inputs
         input_fields = {
             'instance_id': instance_id,
@@ -118,6 +111,15 @@ class sshClient(object):
         from os import path
         if not path.exists(pem_file):
             raise Exception('%s is not a valid path.' % pem_file)
+
+    # verify user has privileges
+        try:
+            self.ec2.iam.printer_on = False
+            self.ec2.list_keypairs()
+        except AWSConnectionError as err:
+            if str(err).find('Could not connect') > -1:
+                raise
+            raise AWSConnectionError(title, 'You must have privileges to access EC2 to use sshClient')
 
     # verify instance exists
         instance_list = self.ec2.list_instances()
@@ -157,6 +159,9 @@ class sshClient(object):
 
     # verify instance is ready
         self.ec2.check_instance_status(instance_id)
+
+    # verify security group allows ssh
+
 
     # verify pem file has access
         try:
@@ -546,27 +551,27 @@ if __name__ == '__main__':
 # test responsive method
     assert ssh_client.responsive() == 200
 
-# run test scripts
-    ssh_client.script('mkdir test20170615; touch test20170615/newfile.txt')
-    ssh_client.script('rm -rf test20170615')
-
-# run test transfers
-    local_file = '../../../tests/test-model.json'
-    local_folder = '../../../tests/testing'
-    remote_file = 'test-model2.json'
-    remote_folder = 'testing2'
-    ssh_client.transfer(local_file, synopsis=True)
-    ssh_client.script('rm test-model.json')
-    ssh_client.transfer(local_folder, synopsis=True)
-    ssh_client.script('rm -r testing')
-    ssh_client.transfer(local_file, remote_file, synopsis=True)
-    ssh_client.script('rm test-model2.json')
-    ssh_client.transfer(local_folder, remote_folder, synopsis=True)
-    ssh_client.script('rm -r testing2')
-
-# run test transfer with sudo
-    ssh_client.transfer(local_folder, '/home/testing', synopsis=True)
-    ssh_client.script('sudo rm -r /home/testing')
+# # run test scripts
+#     ssh_client.script('mkdir test20170615; touch test20170615/newfile.txt')
+#     ssh_client.script('rm -rf test20170615')
+#
+# # run test transfers
+#     local_file = '../../../tests/test-model.json'
+#     local_folder = '../../../tests/testing'
+#     remote_file = 'test-model2.json'
+#     remote_folder = 'testing2'
+#     ssh_client.transfer(local_file, synopsis=True)
+#     ssh_client.script('rm test-model.json')
+#     ssh_client.transfer(local_folder, synopsis=True)
+#     ssh_client.script('rm -r testing')
+#     ssh_client.transfer(local_file, remote_file, synopsis=True)
+#     ssh_client.script('rm test-model2.json')
+#     ssh_client.transfer(local_folder, remote_folder, synopsis=True)
+#     ssh_client.script('rm -r testing2')
+#
+# # run test transfer with sudo
+#     ssh_client.transfer(local_folder, '/home/testing', synopsis=True)
+#     ssh_client.script('sudo rm -r /home/testing')
 
 
 
