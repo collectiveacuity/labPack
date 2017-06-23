@@ -224,7 +224,7 @@ class herokuClient(object):
         from os import path
 
     # validate docker client
-        from pocketlab.methods.docker import dockerClient
+        from labpack.platforms.docker import dockerClient
         dockerClient(virtualbox_name, self.verbose)
 
     # validate dockerfile
