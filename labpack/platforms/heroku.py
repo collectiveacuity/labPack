@@ -205,7 +205,7 @@ class herokuClient(object):
         
         return True
         
-    def deploy_docker(self, docker_image, virtualbox_name='default'):
+    def deploy_docker(self, dockerfile_path, virtualbox_name='default'):
 
         ''' a method to deploy app to heroku using docker '''
 
@@ -213,7 +213,7 @@ class herokuClient(object):
 
     # validate inputs
         input_fields = {
-            'docker_image': docker_image,
+            'dockerfile_path': dockerfile_path,
             'virtualbox_name': virtualbox_name
         }
         for key, value in input_fields.items():
@@ -228,8 +228,11 @@ class herokuClient(object):
         dockerClient(virtualbox_name, self.verbose)
 
     # validate dockerfile
-        if not path.exists('Dockerfile'):
-            raise Exception('heroku requires a Dockerfile in working directory to deploy using Docker.')
+        if not path.exists(dockerfile_path):
+            raise Exception('%s is not a valid path on local host.' % dockerfile_path)
+        dockerfile_root, dockerfile_node = path.split(dockerfile_path)
+        if dockerfile_node != 'Dockerfile':
+            raise Exception('heroku requires a file called Dockerfile to deploy using Docker.')
 
     # validate container plugin
         from os import devnull
@@ -264,7 +267,7 @@ class herokuClient(object):
         self.printer('Building docker image ...')
     
     # build docker image
-        sys_command = 'heroku container:push web --app %s' % self.subdomain
+        sys_command = 'cd %s; heroku container:push web --app %s' % (dockerfile_root, self.subdomain)
         heroku_response = self._handle_command(sys_command, pipe=True)
         self.printer('Deployment complete.')
 
