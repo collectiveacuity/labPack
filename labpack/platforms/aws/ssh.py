@@ -104,13 +104,13 @@ class sshClient(object):
             self.ec2.fields.validate(value, '.%s' % key, object_title)
 
     # construct class properties
-        self.pem_file = pem_file
         self.instance_id = instance_id
 
     # verify pem file exists
         from os import path
         if not path.exists(pem_file):
             raise Exception('%s is not a valid path.' % pem_file)
+        self.pem_file = path.abspath(pem_file)
 
     # verify user has privileges
         try:
@@ -234,44 +234,44 @@ class sshClient(object):
             client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             client.connect(hostname=self.instance_ip, username=self.ec2.iam.user_name, pkey=ssh_key)
             for i in range(len(commands)):
-                self.ec2.iam.printer('[%s@%s]: %s ...' % (self.login_name, self.instance_ip, commands[i]), flush=True)
+                self.ec2.iam.printer('[%s@%s]: %s ... ' % (self.login_name, self.instance_ip, commands[i]), flush=True)
                 std_in, std_out, std_err = client.exec_command(commands[i], get_pty=True)
                 if std_err:
-                    self.ec2.iam.printer(' ERROR.')
+                    self.ec2.iam.printer('ERROR.')
                     raise Exception('Failure running [%s@%s]: %s\n%s' % (self.login_name, self.instance_ip, commands[i], std_err.decode('utf-8').strip()))
                 else:
                     response = std_out.decode('utf-8')
                     if synopsis:
-                        self.ec2.iam.printer(' done.')
+                        self.ec2.iam.printer('done.')
                     else:
                         if response:
                             self.ec2.iam.printer('\n%s' % response)
                         else:
-                            self.ec2.iam.printer(' done.')
+                            self.ec2.iam.printer('done.')
             client.close()
 
     # run command through ssh on other platforms
         else:
             from subprocess import Popen, PIPE
             for i in range(len(commands)):
-                self.ec2.iam.printer('[%s@%s]: %s ...' % (self.login_name, self.instance_ip, commands[i]), flush=True)
+                self.ec2.iam.printer('[%s@%s]: %s ... ' % (self.login_name, self.instance_ip, commands[i]), flush=True)
                 sys_command = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentityFile="%s" %s@%s %s' % (self.pem_file, self.login_name, self.instance_ip, commands[i])
                 pipes = Popen(sys_command.split(), stdout=PIPE, stderr=PIPE)
                 std_out, std_err = pipes.communicate()
                 if pipes.returncode != 0:
-                    self.ec2.iam.printer(' ERROR.')
+                    self.ec2.iam.printer('ERROR.')
                     raise Exception('Failure running [%s@%s]: %s\n%s' % (self.login_name, self.instance_ip, commands[i], std_err.decode('utf-8').strip()))
 
         # report response to individual commands
                 else:
                     response = std_out.decode('utf-8')
                     if synopsis:
-                        self.ec2.iam.printer(' done.')
+                        self.ec2.iam.printer('done.')
                     else:
                         if response:
                             self.ec2.iam.printer('\n%s' % response)
                         else:
-                            self.ec2.iam.printer(' done.')
+                            self.ec2.iam.printer('done.')
 
     # close connection and return last response
         return response
@@ -337,7 +337,7 @@ class sshClient(object):
             if str(err).find('usage: scp') > 1:
                 pass
             else:
-                raise Exception('\nSCP needs to be installed on remote host. Canceling transfer.\nOn remote host, try: sudo yum install -y git')
+                raise Exception('SCP needs to be installed on remote host. Canceling transfer.\nOn remote host, try: sudo yum install -y git')
 
     # determine sudo privileges
         sudo_insert = 'sudo '
@@ -350,7 +350,7 @@ class sshClient(object):
     # initiate transfer process
         remote_host = '[%s@%s]' % (self.login_name, self.instance_ip)
         if synopsis:
-            self.ec2.iam.printer('Transferring %s to %s:%s ...' % (local_path, remote_host, remote_path), flush=True)
+            self.ec2.iam.printer('Transferring %s to %s:%s ... ' % (local_path, remote_host, remote_path), flush=True)
             self.ec2.iam.printer_on = False
         self.ec2.iam.printer('Initiating transfer of %s to %s:%s.' % (local_path, remote_host, remote_path))
 
@@ -367,7 +367,7 @@ class sshClient(object):
         from time import time
         tar_file = 'temp%s.tar.gz' % str(time())
         tar_path = path.join(tempfiles_client.collection_folder, tar_file)
-        self.ec2.iam.printer('Creating temporary file %s ...' % tar_file, flush=True)
+        self.ec2.iam.printer('Creating temporary file %s ... ' % tar_file, flush=True)
         def _make_tar(source_path, output_file, content_name=''):
             kw_args = { 'name': source_path }
             if content_name:
@@ -375,16 +375,16 @@ class sshClient(object):
             with tarfile.open(output_file, 'w:gz') as tar:
                 tar.add(**kw_args)
         _make_tar(local_path, tar_path, remote_node_name)
-        self.ec2.iam.printer(' done.')
+        self.ec2.iam.printer('done.')
 
     # define cleanup function
         def _cleanup_temp(tar_file):
-            self.ec2.iam.printer('Cleaning up temporary file %s ...' % tar_file, flush=True)
+            self.ec2.iam.printer('Cleaning up temporary file %s ... ' % tar_file, flush=True)
             tempfiles_client.delete(tar_file)
-            self.ec2.iam.printer(' done.')
+            self.ec2.iam.printer('done.')
 
     # initiate scp transfer of tar file
-        copy_msg = 'Copying %s to %s:~/%s ...' % (tar_file, remote_host, tar_file)
+        copy_msg = 'Copying %s to %s:~/%s ... ' % (tar_file, remote_host, tar_file)
         error_msg = 'Failure copying file %s to ip %s.' % (tar_file, self.instance_ip)
 
     # use paramiko on windows systems
@@ -399,29 +399,25 @@ class sshClient(object):
             try:
                 response = scp_transport.put(tar_path, tar_file)
             except:
-                self.ec2.iam.printer(' ERROR.')
+                self.ec2.iam.printer('ERROR.')
                 _cleanup_temp(tar_file)
                 raise Exception(error_msg)
             client.close()
-            self.ec2.iam.printer(' done.')
+            self.ec2.iam.printer('done.')
 
     # use scp on other systems
         else:
-            from subprocess import Popen, PIPE
             self.ec2.iam.printer(copy_msg, flush=True)
-            escape_local = tar_path.replace(' ', '\ ')
-            if escape_local != tar_path:
-                escape_local = '"%s"' % escape_local
-            sys_command = 'scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentityFile="%s" %s %s@%s:~/' % (self.pem_file, escape_local, self.login_name, self.instance_ip)
-            pipes = Popen(sys_command.split(), stdout=PIPE, stderr=PIPE)
-            std_out, std_err = pipes.communicate()
-            if pipes.returncode != 0:
-                self.ec2.iam.printer(' ERROR.')
+            sys_command = 'scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentityFile="%s" "%s" %s@%s:~/' % (self.pem_file, tar_path, self.login_name, self.instance_ip)
+            from subprocess import check_output, CalledProcessError, STDOUT
+            try:
+                response = check_output(sys_command, shell=True, stderr=STDOUT).decode('utf-8')
+                self.ec2.iam.printer('done.')
+            except CalledProcessError as err:
+                self.ec2.iam.printer('ERROR.')
                 _cleanup_temp(tar_file)
+                print(err)
                 raise Exception(error_msg)
-            else:
-                response = std_out.decode('utf-8')
-                self.ec2.iam.printer(' done.')
 
     # extract tar file to remote path
         extract_cmd = '%star -C %s -xvf %s' % (sudo_insert, remote_node_root, tar_file)
@@ -452,7 +448,7 @@ class sshClient(object):
         self.ec2.iam.printer('Transfer of %s to %s:%s complete.' % (local_path, remote_host, remote_path))
         if synopsis:
             self.ec2.iam.printer_on = True
-            self.ec2.iam.printer(' done.')
+            self.ec2.iam.printer('done.')
 
         return response
 
@@ -551,27 +547,31 @@ if __name__ == '__main__':
 # test responsive method
     assert ssh_client.responsive() == 200
 
-# # run test scripts
-#     ssh_client.script('mkdir test20170615; touch test20170615/newfile.txt')
-#     ssh_client.script('rm -rf test20170615')
-#
-# # run test transfers
-#     local_file = '../../../tests/test-model.json'
-#     local_folder = '../../../tests/testing'
-#     remote_file = 'test-model2.json'
-#     remote_folder = 'testing2'
-#     ssh_client.transfer(local_file, synopsis=True)
-#     ssh_client.script('rm test-model.json')
-#     ssh_client.transfer(local_folder, synopsis=True)
-#     ssh_client.script('rm -r testing')
-#     ssh_client.transfer(local_file, remote_file, synopsis=True)
-#     ssh_client.script('rm test-model2.json')
-#     ssh_client.transfer(local_folder, remote_folder, synopsis=True)
-#     ssh_client.script('rm -r testing2')
-#
-# # run test transfer with sudo
-#     ssh_client.transfer(local_folder, '/home/testing', synopsis=True)
-#     ssh_client.script('sudo rm -r /home/testing')
+# run test scripts
+    ssh_client.script('mkdir test20170615; touch test20170615/newfile.txt')
+    ssh_client.script('rm -rf test20170615')
 
+# run test transfers
+    local_file = '../../../tests/test-model.json'
+    local_folder = '../../../tests/testing'
+    remote_file = 'test-model2.json'
+    remote_folder = 'testing2'
+    ssh_client.transfer(local_file, synopsis=True)
+    ssh_client.script('rm test-model.json')
+    ssh_client.transfer(local_folder, synopsis=True)
+    ssh_client.script('rm -r testing')
+    ssh_client.transfer(local_file, remote_file, synopsis=True)
+    ssh_client.script('rm test-model2.json')
+    ssh_client.transfer(local_folder, remote_folder, synopsis=True)
+    ssh_client.script('rm -r testing2')
+
+# run test transfer with sudo
+    ssh_client.transfer(local_folder, '/home/testing', synopsis=True)
+    ssh_client.script('sudo rm -r /home/testing')
+
+# run test transfer with space
+    ssh_client.transfer('../../../tests/test space.sh', synopsis=True)
+    ssh_client.transfer('../../../tests/test space/test space.sh', synopsis=True)
+    ssh_client.script('rm "test space.sh"')
 
 

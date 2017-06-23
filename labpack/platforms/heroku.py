@@ -9,10 +9,10 @@ class herokuClient(object):
             'account_email': 'noreply@collectiveacuity.com',
             'account_password': 'abcDEF123GHI!!!',
             'app_subdomain': 'mycoolappsubdomain',
-            'docker_image': 'appimage',
             'virtualbox_name': 'default',
             'site_folder': 'site/',
-            'runtime_type': 'html'
+            'runtime_type': 'html',
+            'dockerfile_path': '/home/user/lab/project/Dockerfile'
         },
         'components': {
             '.runtime_type': {
@@ -21,7 +21,7 @@ class herokuClient(object):
         }
     }
     
-    def __init__(self, account_email, account_password, app_subdomain, verbose=True):
+    def __init__(self, account_email, account_password, verbose=True):
         
         ''' a method to initialize the herokuClient class '''
 
@@ -34,15 +34,13 @@ class herokuClient(object):
     # validate inputs
         input_fields = {
             'account_email': account_email,
-            'account_password': account_password,
-            'app_subdomain': app_subdomain
+            'account_password': account_password
         }
         for key, value in input_fields.items():
             object_title = '%s(%s=%s)' % (title, key, str(value))
             self.fields.validate(value, '.%s' % key, object_title)
         self.email = account_email
         self.password = account_password
-        self.subdomain = app_subdomain
 
     # construct class properties
         self.verbose = verbose
@@ -64,7 +62,7 @@ class herokuClient(object):
         self._validate_install()
     
     # validate access
-        self._validate_access()
+        self._validate_login()
         
     def _validate_install(self):
 
@@ -143,21 +141,22 @@ class herokuClient(object):
         self.printer('ERROR')
         raise err
 
-    def _validate_access(self):
+    def _validate_login(self):
         
-        ''' a method to validate user can access resource '''
+        ''' a method to validate user can access heroku account '''
         
-        title = '%s.validate_access' % self.__class__.__name__
+        title = '%s.validate_login' % self.__class__.__name__
             
     # verbosity
-        self.printer('Checking heroku credentials and access to "%s" subdomain ... ' % self.subdomain, flush=True)
+        self.printer('Checking heroku credentials ... ', flush=True)
 
     # confirm access to account
+        login_fail = ''
         if not self.localhost.os.sysname in ('Windows'):
-        
+
             import sys
             import pexpect
-            login_fail = ''
+            
             try:
                 child = pexpect.spawn('heroku login', timeout=2)
                 child.expect('Email:\s?')
@@ -179,31 +178,52 @@ class herokuClient(object):
                     login_fail = 'Some unknown issue prevents Heroku from accepting credentials.\nTry first: heroku login'
             except Exception as err:
                self._check_connectivity(err)
-            
-            if login_fail:
-                try:
-                    from subprocess import check_output
-                    check_output('heroku auth:token', shell=True).decode('utf-8')
-                except:
-                    self.printer('ERROR')
-                    raise Exception(login_fail)
-            
+    
+    # retrieve auth token from localhost
+        try:
+            from subprocess import check_output
+            self.auth_token = check_output('heroku auth:token', shell=True).decode('utf-8').strip()
+        except:
+            self.printer('ERROR')
+            if self.localhost.os.sysname in ('Windows'):
+                raise Exception('On Windows, you need to login to heroku using cmd.exe.\nWith cmd.exe, Try: heroku login')
+            raise Exception(login_fail)
+        
+        self.printer('done.')
+
+        return self
+    
+    def access(self, app_subdomain):
+
+        ''' a method to validate user can access app '''
+
+        title = '%s.validate_access' % self.__class__.__name__
+    
+    # validate input
+        input_fields = {
+            'app_subdomain': app_subdomain
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+        
+    # verbosity
+        self.printer('Checking access to "%s" subdomain ... ' % app_subdomain, flush=True)
+
     # confirm existence of subdomain
-        sys_command = 'heroku ps -a %s' % self.subdomain
+        sys_command = 'heroku ps -a %s' % app_subdomain
         heroku_response = self._handle_command(sys_command, handle_error=True)
         if heroku_response.find('find that app') > -1:
             self.printer('ERROR')
-            raise Exception('%s does not exist. Try: heroku create -a %s' % (self.subdomain, self.subdomain))
+            raise Exception('%s does not exist. Try: heroku create -a %s' % (app_subdomain, app_subdomain))
         elif heroku_response.find('have access to the app') > -1:
             self.printer('ERROR')
-            raise Exception('%s belongs to another account. Try: heroku login' % self.subdomain)
-        elif heroku_response.find('your Heroku credentials') > -1:
-            self.printer('ERROR')
-            raise Exception('On Windows, you need to login to heroku using cmd.exe.\nWith cmd.exe, Try: heroku login')
-       
+            raise Exception('%s belongs to another account. Try: heroku login' % app_subdomain)
+
         self.printer('done.')
+        self.subdomain = app_subdomain
         
-        return True
+        return self
         
     def deploy_docker(self, dockerfile_path, virtualbox_name='default'):
 
@@ -391,8 +411,7 @@ if __name__ == '__main__':
     heroku_kwargs = {
         'account_email': heroku_config['heroku_account_email'],
         'account_password': heroku_config['heroku_account_password'],
-        'app_subdomain': heroku_config['heroku_app_subdomain'],
         'verbose': True
     }
     heroku_client = herokuClient(**heroku_kwargs)
-    
+    heroku_client.access(heroku_config['heroku_app_subdomain'])
