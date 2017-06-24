@@ -8,6 +8,7 @@ class herokuClient(object):
         'schema': {
             'account_email': 'noreply@collectiveacuity.com',
             'account_password': 'abcDEF123GHI!!!',
+            'auth_token': 'abcdef01-2345-6789-abcd-ef0123456789',
             'app_subdomain': 'mycoolappsubdomain',
             'virtualbox_name': 'default',
             'site_folder': 'site/',
@@ -21,7 +22,7 @@ class herokuClient(object):
         }
     }
     
-    def __init__(self, account_email, account_password, verbose=True):
+    def __init__(self, account_email, auth_token, verbose=True):
         
         ''' a method to initialize the herokuClient class '''
 
@@ -34,13 +35,15 @@ class herokuClient(object):
     # validate inputs
         input_fields = {
             'account_email': account_email,
-            'account_password': account_password
+            'auth_token': auth_token
         }
         for key, value in input_fields.items():
             object_title = '%s(%s=%s)' % (title, key, str(value))
             self.fields.validate(value, '.%s' % key, object_title)
         self.email = account_email
-        self.password = account_password
+        self.token = auth_token
+        self.subdomain = ''
+        self.apps = []
 
     # construct class properties
         self.verbose = verbose
@@ -141,6 +144,31 @@ class herokuClient(object):
         self.printer('ERROR')
         raise err
 
+    def _update_netrc(self, netrc_path, auth_token, account_email):
+        
+        ''' a method to replace heroku login details in netrc file '''
+    
+    # define patterns
+        import re
+        api_regex = re.compile('machine\sapi\.heroku\.com.*?\s\slogin\s.*?\n', re.S)
+        git_regex = re.compile('machine\sgit\.heroku\.com.*?\s\slogin\s.*?\n', re.S)
+        
+    # retrieve netrc text
+        netrc_text = open(netrc_path).read()
+    
+    # replace text with new password and login
+        new_api = 'machine api.heroku.com\n  password %s\n  login %s\n' % (auth_token, account_email)
+        new_git = 'machine git.heroku.com\n  password %s\n  login %s\n' % (auth_token, account_email)
+        netrc_text = api_regex.sub(new_api, netrc_text)
+        netrc_text = git_regex.sub(new_git, netrc_text)
+        
+    # save netrc
+        with open(netrc_path, 'wt') as f:
+            f.write(netrc_text)
+            f.close()
+            
+        return netrc_text
+    
     def _validate_login(self):
         
         ''' a method to validate user can access heroku account '''
@@ -148,46 +176,32 @@ class herokuClient(object):
         title = '%s.validate_login' % self.__class__.__name__
             
     # verbosity
+        windows_insert = ' On windows, run in cmd.exe'
         self.printer('Checking heroku credentials ... ', flush=True)
 
-    # confirm access to account
-        login_fail = ''
-        if not self.localhost.os.sysname in ('Windows'):
-
-            import sys
-            import pexpect
-            
-            try:
-                child = pexpect.spawn('heroku login', timeout=2)
-                child.expect('Email:\s?')
-                child.sendline(self.email)
-                child.expect('Password:\s?')
-                child.sendline(self.password)
-    # TODO fix heroku login timeout issue
-                i = child.expect(['Email:\s?', 'not\sa\stty', 'Logged in', pexpect.EOF, pexpect.TIMEOUT])
-                if i == 0:
-                    child.terminate()
-                    raise Exception('Permission denied. Heroku login credentials are not valid.')
-                elif i == 1:
-                    child.terminate()
-                    raise Exception('Heroku is retarded.')
-                elif i < 4:
-                    child.terminate()
-                else:
-                    child.terminate()
-                    login_fail = 'Some unknown issue prevents Heroku from accepting credentials.\nTry first: heroku login'
-            except Exception as err:
-               self._check_connectivity(err)
-    
-    # retrieve auth token from localhost
-        try:
-            from subprocess import check_output
-            self.auth_token = check_output('heroku auth:token', shell=True).decode('utf-8').strip()
-        except:
-            self.printer('ERROR')
+    # validate netrc exists
+        from os import path
+        netrc_path = path.join(self.localhost.home, '.netrc')
+    # TODO verify path exists on Windows
+        if not path.exists(netrc_path):
+            error_msg = '.netrc file is missing. Try: heroku login, then update auth token.'
             if self.localhost.os.sysname in ('Windows'):
-                raise Exception('On Windows, you need to login to heroku using cmd.exe.\nWith cmd.exe, Try: heroku login')
-            raise Exception(login_fail)
+                error_msg += windows_insert
+            self.printer('ERROR.')
+            raise Exception(error_msg)
+    
+    # replace value in netrc
+        self._update_netrc(netrc_path, self.token, self.email)
+    
+    # verify remote access
+        sys_command = 'heroku apps --json'
+        response = self._handle_command(sys_command, handle_error=True)
+        if response.find('Invalid credentials') > -1:
+            raise Exception('Permission denied. Heroku login credentials are not valid.')
+    
+    # add list to object
+        import json
+        self.apps = json.loads(response)
         
         self.printer('done.')
 
@@ -197,7 +211,7 @@ class herokuClient(object):
 
         ''' a method to validate user can access app '''
 
-        title = '%s.validate_access' % self.__class__.__name__
+        title = '%s.access' % self.__class__.__name__
     
     # validate input
         input_fields = {
@@ -211,17 +225,37 @@ class herokuClient(object):
         self.printer('Checking access to "%s" subdomain ... ' % app_subdomain, flush=True)
 
     # confirm existence of subdomain
-        sys_command = 'heroku ps -a %s' % app_subdomain
-        heroku_response = self._handle_command(sys_command, handle_error=True)
-        if heroku_response.find('find that app') > -1:
-            self.printer('ERROR')
-            raise Exception('%s does not exist. Try: heroku create -a %s' % (app_subdomain, app_subdomain))
-        elif heroku_response.find('have access to the app') > -1:
-            self.printer('ERROR')
-            raise Exception('%s belongs to another account. Try: heroku login' % app_subdomain)
+        for app in self.apps:
+            if app['name'] == app_subdomain:
+                self.subdomain = app_subdomain
+                break
+    
+    # refresh app list and search again
+        if not self.subdomain:
+            import json
+            response = self._handle_command('heroku apps --json', handle_error=True)
+            self.apps = json.loads(response)
+
+            for app in self.apps:
+                if app['name'] == app_subdomain:
+                    self.subdomain = app_subdomain
+                    break
+    
+    # check reason for failure
+        if not self.subdomain:
+            sys_command = 'heroku ps -a %s' % app_subdomain
+            heroku_response = self._handle_command(sys_command, handle_error=True)
+            if heroku_response.find('find that app') > -1:
+                self.printer('ERROR')
+                raise Exception('%s does not exist. Try: heroku create -a %s' % (app_subdomain, app_subdomain))
+            elif heroku_response.find('have access to the app') > -1:
+                self.printer('ERROR')
+                raise Exception('%s belongs to another account.')
+            else:
+                self.printer('ERROR')
+                raise Exception('Some unknown issue prevents you from accessing %s' % app_subdomain)
 
         self.printer('done.')
-        self.subdomain = app_subdomain
         
         return self
         
@@ -239,6 +273,10 @@ class herokuClient(object):
         for key, value in input_fields.items():
             object_title = '%s(%s=%s)' % (title, key, str(value))
             self.fields.validate(value, '.%s' % key, object_title)
+    
+    # check app subdomain
+        if not self.subdomain:
+            raise Exception('You must access a subdomain before you can deploy to heroku. Try: %s.access()' % self.__class__.__name__)
             
     # import dependencies
         from os import path
@@ -309,6 +347,10 @@ class herokuClient(object):
                 object_title = '%s(%s=%s)' % (title, key, str(value))
                 self.fields.validate(value, '.%s' % key, object_title)
 
+    # verify app subdomain
+        if not self.subdomain:
+            raise Exception('You must access a subdomain before you can deploy to heroku. Try: %s.access()' % self.__class__.__name__)
+                    
     # validate existence of site folder
         from os import path
         if not path.exists(site_folder):
@@ -410,7 +452,7 @@ if __name__ == '__main__':
     heroku_config = load_settings('../../../cred/heroku.yaml')
     heroku_kwargs = {
         'account_email': heroku_config['heroku_account_email'],
-        'account_password': heroku_config['heroku_account_password'],
+        'auth_token': heroku_config['heroku_auth_token'],
         'verbose': True
     }
     heroku_client = herokuClient(**heroku_kwargs)
