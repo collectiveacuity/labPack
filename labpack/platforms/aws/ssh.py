@@ -161,14 +161,38 @@ class sshClient(object):
         self.ec2.check_instance_status(instance_id)
 
     # verify security group allows ssh
-
-
+        group_list = []
+        for group in instance_details['security_groups']:
+            group_list.append(group['security_group_id'])
+        if not group_list:
+            raise Exception('SSH access to %s requires a security group attached to instance.' % instance_id)
+        port_22_list = []
+        for group_id in group_list:
+            group_details = self.ec2.read_security_group(group_id)
+            for permission in group_details['ip_permissions']:
+                if permission['FromPort'] == 22:
+                    port_22_list.extend(permission['IpRanges'])
+        if not port_22_list:
+            raise Exception('SSH access to %s requires a security group with inbound permissions for port 22.' % instance_id)
+        from labpack.records.ip import get_ip
+        current_ip = get_ip()
+        ssh_access = False
+        for ip_range in port_22_list:
+            if ip_range['CidrIp'].find('0.0.0.0/0') > -1 or ip_range['CidrIp'].find(current_ip) > -1:
+                ssh_access = True
+                break
+        if not ssh_access:
+            raise Exception('SSH access to %s requires your IP %s to be added to port 22 on its security group.' % (instance_id, current_ip))
+        
     # verify pem file has access
         try:
             self.script('ls -a')
         except:
             raise AWSConnectionError(title, '%s does not have access to instance %s.' % (pem_name, instance_id))
 
+    # verify scp
+        self.scp = False
+        
     # turn printer back on
         self.ec2.iam.printer_on = True
 
@@ -338,13 +362,15 @@ class sshClient(object):
                 raise ValueError('%s already exists on remote host. Canceling transfer.' % remote_path)
 
     # verify installation of scp on remote host
-        try:
-            self.script('scp')
-        except Exception as err:
-            if str(err).find('usage: scp') > 1:
-                pass
-            else:
-                raise Exception('SCP needs to be installed on remote host. Canceling transfer.\nOn remote host, try: sudo yum install -y git')
+        if not self.scp:
+            try:
+                self.script('scp')
+                self.scp = True
+            except Exception as err:
+                if str(err).find('usage: scp') > 1:
+                    self.scp = True
+                else:
+                    raise Exception('SCP needs to be installed on remote host. Canceling transfer.\nOn remote host, try: sudo yum install -y git')
 
     # determine sudo privileges
         sudo_insert = 'sudo '
@@ -520,13 +546,15 @@ class sshClient(object):
 
     # verify installation of scp on remote host
         self.ec2.iam.printer_on = False
-        try:
-            self.script('scp')
-        except Exception as err:
-            if str(err).find('usage: scp') > 1:
-                pass
-            else:
-                raise Exception('SCP needs to be installed on remote host. Canceling transfer.\nOn remote host, try: sudo yum install -y git')
+        if not self.scp:
+            try:
+                self.script('scp')
+                self.scp = True
+            except Exception as err:
+                if str(err).find('usage: scp') > 1:
+                    self.scp = True
+                else:
+                    raise Exception('SCP needs to be installed on remote host. Canceling transfer.\nOn remote host, try: sudo yum install -y git')
 
     # determine sudo privileges
         sudo_insert = 'sudo '
@@ -728,54 +756,54 @@ if __name__ == '__main__':
     del client_kwargs['verbose']
     ssh_client = sshClient(**client_kwargs)
 
-# test responsive method
-    assert ssh_client.responsive() == 200
-
-# run test scripts
-    ssh_client.script('mkdir test20170615; touch test20170615/newfile.txt')
-    ssh_client.script('rm -rf test20170615')
-
-# run test transfers
-    from os import remove
-    from shutil import rmtree
-    local_file = '../../../tests/test-model.json'
-    local_folder = '../../../tests/testing'
-    incoming_folder = '../../../tests/test-incoming/'
-    spaces_file = '../../../tests/test space.sh'
-    spaces_folder = '../../../tests/test space'
-    spaces_subfolder = path.join(spaces_folder, 'test space.sh')
-    remote_file = 'test-model2.json'
-    remote_folder = 'testing2'
-    ssh_client.put(local_file)
-    ssh_client.script('rm test-model.json')
-    ssh_client.put(local_file, remote_file)
-    ssh_client.get(remote_file, path.join(incoming_folder, remote_file))
-    ssh_client.script('rm test-model2.json')
-    remove(path.join(incoming_folder, remote_file))    
-    ssh_client.put(local_folder)
-    ssh_client.script('rm -r testing')
-    ssh_client.put(local_folder, remote_folder)
-    ssh_client.get(remote_folder, path.join(incoming_folder, 'testing'))
-    ssh_client.script('rm -r testing2')
-    rmtree(path.join(incoming_folder, 'testing'))    
-
-# run test transfer with sudo
-    ssh_client.put(local_folder, '/home/testing')
-    ssh_client.get('/home/testing', path.join(incoming_folder, 'testing2'))
-    ssh_client.script('sudo rm -r /home/testing')
-    rmtree(path.join(incoming_folder, 'testing2'))
-    
-# run test transfer with space
-    ssh_client.put(spaces_file)
-    ssh_client.put(spaces_subfolder, overwrite=True)
-    ssh_client.put(spaces_folder)
-    ssh_client.put(spaces_subfolder, remote_path='~/test space/test space.sh', overwrite=True)
-    ssh_client.get('test space.sh', path.join(incoming_folder, 'test space.sh'))
-    ssh_client.get('test space', path.join(incoming_folder, 'test space'))
-    ssh_client.get('~/test space/test space.sh', path.join(incoming_folder, 'test space/test space.sh'), overwrite=True)
-    ssh_client.script('rm -r "test space"')
-    ssh_client.script('rm "test space.sh"')
-    rmtree(path.join(incoming_folder, 'test space'))
-    remove(path.join(incoming_folder, 'test space.sh'))
+# # test responsive method
+#     assert ssh_client.responsive() == 200
+# 
+# # run test scripts
+#     ssh_client.script('mkdir test20170615; touch test20170615/newfile.txt')
+#     ssh_client.script('rm -rf test20170615')
+# 
+# # run test transfers
+#     from os import remove
+#     from shutil import rmtree
+#     local_file = '../../../tests/test-model.json'
+#     local_folder = '../../../tests/testing'
+#     incoming_folder = '../../../tests/test-incoming/'
+#     spaces_file = '../../../tests/test space.sh'
+#     spaces_folder = '../../../tests/test space'
+#     spaces_subfolder = path.join(spaces_folder, 'test space.sh')
+#     remote_file = 'test-model2.json'
+#     remote_folder = 'testing2'
+#     ssh_client.put(local_file)
+#     ssh_client.script('rm test-model.json')
+#     ssh_client.put(local_file, remote_file)
+#     ssh_client.get(remote_file, path.join(incoming_folder, remote_file))
+#     ssh_client.script('rm test-model2.json')
+#     remove(path.join(incoming_folder, remote_file))    
+#     ssh_client.put(local_folder)
+#     ssh_client.script('rm -r testing')
+#     ssh_client.put(local_folder, remote_folder)
+#     ssh_client.get(remote_folder, path.join(incoming_folder, 'testing'))
+#     ssh_client.script('rm -r testing2')
+#     rmtree(path.join(incoming_folder, 'testing'))    
+# 
+# # run test transfer with sudo
+#     ssh_client.put(local_folder, '/home/testing')
+#     ssh_client.get('/home/testing', path.join(incoming_folder, 'testing2'))
+#     ssh_client.script('sudo rm -r /home/testing')
+#     rmtree(path.join(incoming_folder, 'testing2'))
+#     
+# # run test transfer with space
+#     ssh_client.put(spaces_file)
+#     ssh_client.put(spaces_subfolder, overwrite=True)
+#     ssh_client.put(spaces_folder)
+#     ssh_client.put(spaces_subfolder, remote_path='~/test space/test space.sh', overwrite=True)
+#     ssh_client.get('test space.sh', path.join(incoming_folder, 'test space.sh'))
+#     ssh_client.get('test space', path.join(incoming_folder, 'test space'))
+#     ssh_client.get('~/test space/test space.sh', path.join(incoming_folder, 'test space/test space.sh'), overwrite=True)
+#     ssh_client.script('rm -r "test space"')
+#     ssh_client.script('rm "test space.sh"')
+#     rmtree(path.join(incoming_folder, 'test space'))
+#     remove(path.join(incoming_folder, 'test space.sh'))
 
 

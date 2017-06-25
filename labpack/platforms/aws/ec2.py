@@ -1641,15 +1641,18 @@ class ec2Client(object):
             'security_group_id': group_info['GroupId'],
             'vpc_id': '',
             'security_group_name': group_info['GroupName'],
-            'tags': []
+            'tags': [],
+            'description': '',
+            'ip_permissions': []
         }
         if 'VpcId' in group_info.keys():
             details['vpc_id'] = group_info['VpcId']
         if 'Tags' in group_info.keys():
             details['tags'] = group_info['Tags']
-
-        from pprint import pprint
-        pprint(group_info)
+        if 'Description' in group_info.keys():
+            details['description'] = group_info['Description']
+        if 'IpPermissions' in group_info.keys():
+            details['ip_permissions'] = group_info['IpPermissions']
 
         return details
 
