@@ -18,16 +18,30 @@ class AWSConnectionError(Exception):
 
     def __init__(self, request='', message='', errors=None):
 
+    # report request attempt
         self.errors = errors
-        text = '\nFailure connecting to AWS with %s request.' % request
+        text = 'Failure connecting to AWS with %s request.' % request
+    # test connectivity
         try:
-            raise
-        except Exception as err:
-            text += '\n%s' % err
-        if message:
-            text += '\n%s' % message
-
+            import requests
+            requests.get('https://www.google.com')
+        except:
+            from requests import Request
+            from labpack.handlers.requests import handle_requests
+            request_object = Request(method='GET', url='https://www.google.com')
+            request_details = handle_requests(request_object)
+            text += '\n%s' % request_details['error']
+    # include original error message
+        else:
+            try:
+                raise
+            except Exception as err:
+                text += '\n%s' % err
+            if message:
+                text += '\n%s' % message
+    
         super(AWSConnectionError, self).__init__(text)
+    
 
 class iamClient(object):
 
