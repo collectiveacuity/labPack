@@ -4,9 +4,7 @@ __created__ = '2015.10'
 __license__ = 'MIT'
 
 '''
-PLEASE NOTE:    ssh package requires the paramiko and C package pycrypto.
-
-(linux)         pip3 install paramiko
+PLEASE NOTE:    ssh package requires the paramiko and C package pycrypto on windows.
 
 (windows)       download Visual Studio C++ Express
                 pip3 install pycrypto
@@ -163,7 +161,7 @@ class sshClient(object):
     # verify security group allows ssh
         group_list = []
         for group in instance_details['security_groups']:
-            group_list.append(group['security_group_id'])
+            group_list.append(group['group_id'])
         if not group_list:
             raise Exception('SSH access to %s requires a security group attached to instance.' % instance_id)
         port_22_list = []
@@ -756,54 +754,54 @@ if __name__ == '__main__':
     del client_kwargs['verbose']
     ssh_client = sshClient(**client_kwargs)
 
-# # test responsive method
-#     assert ssh_client.responsive() == 200
-# 
-# # run test scripts
-#     ssh_client.script('mkdir test20170615; touch test20170615/newfile.txt')
-#     ssh_client.script('rm -rf test20170615')
-# 
-# # run test transfers
-#     from os import remove
-#     from shutil import rmtree
-#     local_file = '../../../tests/test-model.json'
-#     local_folder = '../../../tests/testing'
-#     incoming_folder = '../../../tests/test-incoming/'
-#     spaces_file = '../../../tests/test space.sh'
-#     spaces_folder = '../../../tests/test space'
-#     spaces_subfolder = path.join(spaces_folder, 'test space.sh')
-#     remote_file = 'test-model2.json'
-#     remote_folder = 'testing2'
-#     ssh_client.put(local_file)
-#     ssh_client.script('rm test-model.json')
-#     ssh_client.put(local_file, remote_file)
-#     ssh_client.get(remote_file, path.join(incoming_folder, remote_file))
-#     ssh_client.script('rm test-model2.json')
-#     remove(path.join(incoming_folder, remote_file))    
-#     ssh_client.put(local_folder)
-#     ssh_client.script('rm -r testing')
-#     ssh_client.put(local_folder, remote_folder)
-#     ssh_client.get(remote_folder, path.join(incoming_folder, 'testing'))
-#     ssh_client.script('rm -r testing2')
-#     rmtree(path.join(incoming_folder, 'testing'))    
-# 
-# # run test transfer with sudo
-#     ssh_client.put(local_folder, '/home/testing')
-#     ssh_client.get('/home/testing', path.join(incoming_folder, 'testing2'))
-#     ssh_client.script('sudo rm -r /home/testing')
-#     rmtree(path.join(incoming_folder, 'testing2'))
-#     
-# # run test transfer with space
-#     ssh_client.put(spaces_file)
-#     ssh_client.put(spaces_subfolder, overwrite=True)
-#     ssh_client.put(spaces_folder)
-#     ssh_client.put(spaces_subfolder, remote_path='~/test space/test space.sh', overwrite=True)
-#     ssh_client.get('test space.sh', path.join(incoming_folder, 'test space.sh'))
-#     ssh_client.get('test space', path.join(incoming_folder, 'test space'))
-#     ssh_client.get('~/test space/test space.sh', path.join(incoming_folder, 'test space/test space.sh'), overwrite=True)
-#     ssh_client.script('rm -r "test space"')
-#     ssh_client.script('rm "test space.sh"')
-#     rmtree(path.join(incoming_folder, 'test space'))
-#     remove(path.join(incoming_folder, 'test space.sh'))
+# test responsive method
+    assert ssh_client.responsive() == 200
+
+# run test scripts
+    ssh_client.script('mkdir test20170615; touch test20170615/newfile.txt')
+    ssh_client.script('rm -rf test20170615')
+
+# run test transfers
+    from os import remove
+    from shutil import rmtree
+    local_file = '../../../tests/test-model.json'
+    local_folder = '../../../tests/testing'
+    incoming_folder = '../../../tests/test-incoming/'
+    spaces_file = '../../../tests/test space.sh'
+    spaces_folder = '../../../tests/test space'
+    spaces_subfolder = path.join(spaces_folder, 'test space.sh')
+    remote_file = 'test-model2.json'
+    remote_folder = 'testing2'
+    ssh_client.put(local_file)
+    ssh_client.script('rm test-model.json')
+    ssh_client.put(local_file, remote_file)
+    ssh_client.get(remote_file, path.join(incoming_folder, remote_file))
+    ssh_client.script('rm test-model2.json')
+    remove(path.join(incoming_folder, remote_file))    
+    ssh_client.put(local_folder)
+    ssh_client.script('rm -r testing')
+    ssh_client.put(local_folder, remote_folder)
+    ssh_client.get(remote_folder, path.join(incoming_folder, 'testing'))
+    ssh_client.script('rm -r testing2')
+    rmtree(path.join(incoming_folder, 'testing'))    
+
+# run test transfer with sudo
+    ssh_client.put(local_folder, '/home/testing')
+    ssh_client.get('/home/testing', path.join(incoming_folder, 'testing2'))
+    ssh_client.script('sudo rm -r /home/testing')
+    rmtree(path.join(incoming_folder, 'testing2'))
+
+# run test transfer with space
+    ssh_client.put(spaces_file)
+    ssh_client.put(spaces_subfolder, overwrite=True)
+    ssh_client.put(spaces_folder)
+    ssh_client.put(spaces_subfolder, remote_path='~/test space/test space.sh', overwrite=True)
+    ssh_client.get('test space.sh', path.join(incoming_folder, 'test space.sh'))
+    ssh_client.get('test space', path.join(incoming_folder, 'test space'))
+    ssh_client.get('~/test space/test space.sh', path.join(incoming_folder, 'test space/test space.sh'), overwrite=True)
+    ssh_client.script('rm -r "test space"')
+    ssh_client.script('rm "test space.sh"')
+    rmtree(path.join(incoming_folder, 'test space'))
+    remove(path.join(incoming_folder, 'test space.sh'))
 
 

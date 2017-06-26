@@ -42,7 +42,6 @@ class AWSConnectionError(Exception):
     
         super(AWSConnectionError, self).__init__(text)
     
-
 class iamClient(object):
 
     '''
@@ -101,6 +100,9 @@ class iamClient(object):
         }
         self.connection = boto3.client(**client_kwargs)
 
+    # construct cert list
+        self.cert_list = []
+        
     # construct verbose method
         self.printer_on = True
         def _printer(msg, flush=False):
@@ -145,7 +147,9 @@ class iamClient(object):
         else:
             self.printer('No server certificates found.')
 
-        return cert_list
+        self.certificate_list = cert_list
+        
+        return self.certificate_list
 
     def read_certificate(self, certificate_name):
 
@@ -167,11 +171,12 @@ class iamClient(object):
             self.fields.validate(value, '.%s' % key, object_title)
 
     # verify existence of server certificate
-        self.printer_on = False
-        cert_list = self.list_certificates()
-        self.printer_on = True
-        if not certificate_name in cert_list:
-            raise Exception('\nServer certificate %s does not exist.' % certificate_name)
+        if not certificate_name in self.certificate_list:
+            self.printer_on = False
+            self.list_certificates()
+            self.printer_on = True
+            if not certificate_name in self.certificate_list:
+                raise Exception('\nServer certificate %s does not exist.' % certificate_name)
 
     # send request for certificate details
         try:
@@ -182,20 +187,15 @@ class iamClient(object):
 
     # construct certificate details from response
         from labpack.records.time import labDT
-        cert_dict = response['ServerCertificate']['ServerCertificateMetadata']
-        date_time = cert_dict['Expiration']
+        from labpack.parsing.conversion import camelcase_to_lowercase
+        cert_dict = response['ServerCertificate']
+        cert_details = camelcase_to_lowercase(cert_dict)
+        for key, value in cert_details['server_certificate_metadata'].item():
+            cert_details.update(**{key:value})
+        del cert_details['server_certificate_metadata']
+        date_time = cert_details['expiration']
         epoch_time = labDT(date_time).epoch()
-        cert_details = {
-            'cert_arn': cert_dict['Arn'],
-            'cert_name': cert_dict['ServerCertificateName'],
-            'expiration_date': epoch_time,
-            'cert_body': '',
-            'cert_chain': ''
-        }
-        if 'CertificateBody' in response['ServerCertificate']:
-            cert_details['cert_body'] = response['ServerCertificate']['CertificateBody']
-        if 'CertificateChain' in response['ServerCertificate']:
-            cert_details['cert_body'] = response['ServerCertificate']['CertificateChain']
+        cert_details['expiration'] = epoch_time
 
         return cert_details
 

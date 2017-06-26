@@ -6,7 +6,7 @@
     "pem_name": "lab-keypair-useast2-test-20170601",
     "tag_key": "Env",
     "tag_values": [ "test" ],
-    "security_group_id": "sg-abcdef12",
+    "group_id": "sg-abcdef12",
     "documentation": {
       "api": "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Welcome.html",
       "boto3": "https://boto3.readthedocs.org/en/latest/reference/services/ec2.html#client",
@@ -356,7 +356,7 @@
       "max_length": 255,
       "must_not_contain": [ "aws:", "[^\\w\\s\\-\\._:/]+" ]
     },
-    ".security_group_id": {
+    ".group_id": {
       "must_contain": [ "^sg\\-[a-f\\d]{8}$" ]
     }
   }

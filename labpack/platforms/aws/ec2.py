@@ -534,8 +534,8 @@ class ec2Client(object):
         try:
             for group in instance_info['SecurityGroups']:
                 group_details = {
-                    'security_group_id': group['GroupId'],
-                    'security_group_name': group['GroupName']
+                    'group_id': group['GroupId'],
+                    'group_name': group['GroupName']
                 }
                 instance['security_groups'].append(group_details)
         except:
@@ -1599,12 +1599,12 @@ class ec2Client(object):
 
         return subnet_details
 
-    def read_security_group(self, security_group_id):
+    def read_security_group(self, group_id):
 
         '''
             a method to retrieve the details about a security group
 
-        :param security_group_id: string with AWS id of security group
+        :param group_id: string with AWS id of security group
         :return: dictionary with security group details
 
         'securityGroupID': '',
@@ -1617,17 +1617,17 @@ class ec2Client(object):
 
     # validate inputs
         input_fields = {
-            'security_group_id': security_group_id
+            'group_id': group_id
         }
         for key, value in input_fields.items():
             object_title = '%s(%s=%s)' % (title, key, str(value))
             self.fields.validate(value, '.%s' % key, object_title)
 
     # report query
-        self.iam.printer('Querying AWS region %s for properties of security group %s.' % (self.iam.region_name, security_group_id))
+        self.iam.printer('Querying AWS region %s for properties of security group %s.' % (self.iam.region_name, group_id))
 
     # construct keyword definitions
-        kw_args = { 'GroupIds': [ security_group_id ] }
+        kw_args = { 'GroupIds': [ group_id ] }
 
     # send request for details about security group
         try:
@@ -1638,13 +1638,15 @@ class ec2Client(object):
     # construct security group details from response
         group_info = response['SecurityGroups'][0]
         details = {
-            'security_group_id': group_info['GroupId'],
+            'group_id': group_info['GroupId'],
             'vpc_id': '',
-            'security_group_name': group_info['GroupName'],
+            'group_name': group_info['GroupName'],
             'tags': [],
             'description': '',
             'ip_permissions': []
         }
+        from pprint import pprint
+        pprint(group_info)
         if 'VpcId' in group_info.keys():
             details['vpc_id'] = group_info['VpcId']
         if 'Tags' in group_info.keys():
@@ -1653,7 +1655,7 @@ class ec2Client(object):
             details['description'] = group_info['Description']
         if 'IpPermissions' in group_info.keys():
             details['ip_permissions'] = group_info['IpPermissions']
-
+        
         return details
 
     def unitTests(self, ec2_obj):
@@ -1720,8 +1722,8 @@ if __name__ == '__main__':
 # test read instance
     instance_details = ec2_client.read_instance(instance_id)
     assert instance_details['instance_id'] == instance_id
-    security_group_id = instance_details['security_groups'][0]['security_group_id']
+    group_id = instance_details['security_groups'][0]['group_id']
 
 # test read security group
-    group_details = ec2_client.read_security_group(security_group_id)
+    group_details = ec2_client.read_security_group(group_id)
 
