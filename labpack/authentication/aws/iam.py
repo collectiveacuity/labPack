@@ -100,8 +100,9 @@ class iamClient(object):
         }
         self.connection = boto3.client(**client_kwargs)
 
-    # construct cert list
+    # construct empty lists of resources
         self.cert_list = []
+        self.role_list = []
         
     # construct verbose method
         self.printer_on = True
@@ -132,7 +133,7 @@ class iamClient(object):
 
     # construct certificate list from response
         cert_list = []
-        if 'ServerCertificateMetadataList' in response:
+        if 'ServerCertificateMetadataList' in response.keys():
             for certificate in response['ServerCertificateMetadataList']:
                 cert_list.append(certificate['ServerCertificateName'])
 
@@ -199,6 +200,44 @@ class iamClient(object):
 
         return cert_details
 
+    def list_roles(self):
+    
+        '''
+            a method to retrieve a list of server certificates
+
+        :return: list with certificate name strings
+        '''
+
+        title = '%s.list_certificates' % self.__class__.__name__
+
+    # send request for list of certificates
+        self.printer('Querying AWS for iam roles.')
+        try:
+            response = self.connection.list_roles()
+        except:
+            raise AWSConnectionError(title)
+
+    # construct certificate list from response
+        role_list = []
+        if 'Roles' in response.keys():
+            for role in response['Roles']:
+                role_list.append(role['RoleName'])
+
+    # report results and return list
+        if role_list:
+            print_out = 'Found iam roles'
+            if len(role_list) > 1:
+                print_out += 's'
+            from labpack.parsing.grammar import join_words
+            print_out += ' %s.' % join_words(role_list)
+            self.printer(print_out)
+        else:
+            self.printer('No iam roles found.')
+
+        self.role_list = role_list
+        
+        return self.role_list
+    
 if __name__ == '__main__':
 
     from labpack.records.settings import load_settings
@@ -212,3 +251,4 @@ if __name__ == '__main__':
     }
     iam_client = iamClient(**client_kwargs)
     iam_client.list_certificates()
+    iam_client.list_roles()

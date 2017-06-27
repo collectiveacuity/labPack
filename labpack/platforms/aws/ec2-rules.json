@@ -1,4 +1,13 @@
 {
+  "metadata": {
+    "documentation": {
+      "api": "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Welcome.html",
+      "boto3": "https://boto3.readthedocs.org/en/latest/reference/services/ec2.html#client",
+      "limits": "https://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html",
+      "ec2AMIs": "https://aws.amazon.com/amazon-linux-ami/#Amazon_Linux_AMI_IDs",
+      "ecsAMIs": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-dg.pdf"
+    }
+  },
   "schema": {
     "instance_id": "i-0123456789abcdef0",
     "instance_name": "lab-instance-useast1-20170614",
@@ -8,14 +17,10 @@
     "tag_values": [ "test" ],
     "tag_list": [{ "key": "Env", "value": "test" }],
     "group_id": "sg-abcd1234",
+    "group_ids": [ "sg-abcd1234" ],
     "subnet_id": "subnet-abcd1234",
-    "documentation": {
-      "api": "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Welcome.html",
-      "boto3": "https://boto3.readthedocs.org/en/latest/reference/services/ec2.html#client",
-      "limits": "https://docs.aws.amazon.com/general/latest/gr/aws_service_limits.html",
-      "ec2AMIs": "https://aws.amazon.com/amazon-linux-ami/#Amazon_Linux_AMI_IDs",
-      "ecsAMIs": "https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ecs-dg.pdf"
-    },
+    "iam_profile": "dbAccessRole",
+    "instance_type": "t2.micro",
     "endpoints": {
       "ec2": {
         "us-east-1": "ec2.us-east-1.amazonaws.com",
@@ -337,6 +342,14 @@
       "max_length": 128,
       "must_not_contain": [ "aws:", "[^\\w\\-\\._]+" ]
     },
+    ".instance_type": {
+      "discrete_values": [
+        "t2.micro", "t2.small", "t2.medium", "t2.large", "t2.xlarge", "t2.2xlarge", "m1.small", "m1.medium", "m1.large", "m1.xlarge", "m4.large", "m4.xlarge", "m4.2xlarge", "m4.4xlarge", "m4.10xlarge", "m4.16xlarge", "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "c4.large", "c4.xlarge", "c4.2xlarge", "c4.4xlarge", "c4.8xlarge", "c3.large", "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "c3.8xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge", "i2.xlarge", "i2.2xlarge", "i2.4xlarge", "i2.8xlarge", "d2.xlarge", "d2.2xlarge", "d2.4xlarge", "d2.8xlarge", "g2.2xlarge", "g2.8xlarge"
+      ]
+    },
+    ".volume_type": {
+      "discrete_values": [ "gp2", "io1", "standard", "sc1", "st1" ]
+    },
     ".pem_file": {
       "must_contain": [ "\\w\\.pem$" ]
     },
@@ -370,6 +383,9 @@
       "must_not_contain": [ "aws:", "[^\\w\\s\\-\\._:/]+" ]
     },
     ".group_id": {
+      "must_contain": [ "^sg\\-[a-f\\d]{8}$" ]
+    },
+    ".group_ids[0]": {
       "must_contain": [ "^sg\\-[a-f\\d]{8}$" ]
     },
     ".subnet_id": {
