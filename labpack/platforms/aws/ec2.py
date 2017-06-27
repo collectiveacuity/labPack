@@ -64,8 +64,9 @@ class ec2Client(object):
         self.connection = boto3.client(**client_kwargs)
     
     # construct ingestion
-        from labpack.parsing.conversion import camelcase_to_lowercase
+        from labpack.parsing.conversion import camelcase_to_lowercase, lowercase_to_camelcase
         self.ingest = camelcase_to_lowercase
+        self.prepare = lowercase_to_camelcase
 
     def check_instance_state(self, instance_id, wait=True):
         
@@ -77,7 +78,7 @@ class ec2Client(object):
         :return: string reporting state of instance
         '''
 
-        title = 'check_instance_state'
+        title = '%s.check_instance_state' % self.__class__.__name__
 
     # validate inputs
         input_fields = {
@@ -92,7 +93,7 @@ class ec2Client(object):
 
     # check connection to API
         try:
-            response = self.connection.describe_instances()
+            self.connection.describe_instances()
         except:
             raise AWSConnectionError(title)
                 
@@ -171,7 +172,7 @@ class ec2Client(object):
         :return: True
         '''
 
-        title = 'check_instance_status'
+        title = '%s.check_instance_status' % self.__class__.__name__
 
     # validate inputs
         input_fields = {
@@ -312,34 +313,70 @@ class ec2Client(object):
 
         return image_state
 
-    def tagInstance(self, instance_id, instance_tags):
+    def tag_instance(self, instance_id, tag_list):
 
         '''
             a method for adding or updating tags on an AWS instance
 
         :param instance_id: string of instance id on AWS
-        :param instance_tags: list of tags to add to instance
+        :param tag_list: list of single key-value pairs
         :return: True
         '''
 
-        title = 'tagInstance'
+        title = '%s.tag_instance' % self.__class__.__name__
 
-    # validate input
-        self.input.instanceID(instance_id)
-        self.input.tags(instance_tags, title + ' tag list')
+    # validate inputs
+        input_fields = {
+            'instance_id': instance_id,
+            'tag_list': tag_list
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+    
+    # retrieve tag list of instance
+        self.iam.printer_on = False
+        instance_details = self.read_instance(instance_id)
+        self.iam.printer_on = True
+        old_tags = instance_details['tags']
+    
+    # determine tags to remove
+        delete_list = []
+        tag_map = {}
+        for tag in tag_list:
+            tag_map[tag['key']] = tag['value']
+        for tag in old_tags:
+            if tag['key'] not in tag_map.keys():
+                delete_list.append(tag)
+            elif tag['value'] != tag_map[tag['key']]:
+                delete_list.append(tag)
 
-    # check instance state
-        self.check_instance_state(instance_id)
-
-    # tag instance with instance tags
+    # convert tag list to camelcase
+        delete_list = self.prepare(delete_list)
+        tag_list = self.prepare(tag_list)
+    
+    # remove tags from instance
+        if delete_list:
+            try:
+                delete_kwargs = {
+                    'Resources': [ instance_id ],
+                    'Tags': delete_list
+                }
+                self.connection.delete_tags(**delete_kwargs)
+            except:
+                AWSConnectionError(title)
+            
+    # tag instance with updated tags
         try:
-            tag = self.connection.create_tags(
-                Resources=[ instance_id ],
-                Tags=instance_tags
-            )
+            create_kwargs = {
+                'Resources': [ instance_id ],
+                'Tags': tag_list
+            }
+            response = self.connection.create_tags(**create_kwargs)
         except:
-            raise EC2ConnectionError(title, ' create_tags()')
-        return True
+            raise AWSConnectionError(title)
+        
+        return response
 
     def tagImage(self, image_id, image_tags):
 
@@ -1427,29 +1464,41 @@ class ec2Client(object):
 
         return keypair_list
 
-    def findSubnets(self, tag_values=None):
+    def list_subnets(self, tag_values=None):
 
         '''
             a method to discover the list of subnets on AWS EC2
 
         :param tag_values: [optional] list of tag values
-        :return: list of subnets
+        :return: list of strings with subnet ids
         '''
 
-        title = 'findSubnets'
+        title = '%s.list_subnets' % self.__class__.__name__
 
-    # validate input
+    # validate inputs
+        input_fields = {
+            'tag_values': tag_values
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+            
+    # add tags to method arguments
         kw_args = {}
-        if tag_values:
-            self.input.tagValues(tag_values, title + ' tag values')
-            kw_args['Filters'] = [ { 'Name': 'tag-value', 'Values': tag_values } ]
-
-    # request subnet list from AWS
         tag_text = ''
         if tag_values:
-            tag_text = ' with tag values %s' % tag_values
-        query_text = 'Querying AWS region %s for subnets%s.' % (os.environ['AWS_DEFAULT_REGION'], tag_text)
-        print(query_text)
+            kw_args = {
+                'Filters': [ { 'Name': 'tag-value', 'Values': tag_values } ]
+            }
+            from labpack.parsing.grammar import join_words
+            plural_value = ''
+            if len(tag_values) > 1:
+                plural_value = 's'
+            tag_text = ' with tag value%s %s' % (plural_value, join_words(tag_values))
+            
+    # request instance details from AWS
+        self.iam.printer('Querying AWS region %s for subnets%s.' % (self.iam.region_name, tag_text))
         subnet_list = []
         try:
             if kw_args:
@@ -1457,7 +1506,7 @@ class ec2Client(object):
             else:
                 response = self.connection.describe_subnets()
         except:
-            raise EC2ConnectionError(title + ' describe_subnets()')
+            raise AWSConnectionError(title)
         response_list = []
         if 'Subnets' in response:
             response_list = response['Subnets']
@@ -1469,18 +1518,13 @@ class ec2Client(object):
     # report results and return list
         if subnet_list:
             print_out = 'Found subnet'
-            if len(subnet_list) > 1:
+            if len(instance_list) > 1:
                 print_out += 's'
-            i_counter = 0
-            for subnet in subnet_list:
-                if i_counter > 0:
-                    print_out += ','
-                print_out += ' ' + subnet
-                i_counter += 1
-            print_out += '.'
-            print(print_out)
+            from labpack.parsing.grammar import join_words
+            print_out += ' %s.' % join_words(subnet_list)
+            self.iam.printer(print_out)
         else:
-            print('No subnets found.')
+            self.iam.printer('No subnets found.')
 
         return subnet_list
 
@@ -1535,61 +1579,6 @@ class ec2Client(object):
         subnet_details = self.ingest(subnet_dict, subnet_details)
 
         return subnet_details
-
-    def read_security_group(self, group_id):
-
-        '''
-            a method to retrieve the details about a security group
-
-        :param group_id: string with AWS id of security group
-        :return: dictionary with security group details
-
-        relevant fields:
-        
-        'group_id: '',
-        'vpc_id': '',
-        'group_name': '',
-        'tags': [{'key': '', 'value': ''}]
-        'ip_permissions': [{
-            'from_port': 0, 
-            'ip_ranges':[{'cidr_ip':'0.0.0.0/0'}]
-        }]
-        '''
-
-        title = '%s.read_security_group' % self.__class__.__name__
-
-    # validate inputs
-        input_fields = {
-            'group_id': group_id
-        }
-        for key, value in input_fields.items():
-            object_title = '%s(%s=%s)' % (title, key, str(value))
-            self.fields.validate(value, '.%s' % key, object_title)
-
-    # report query
-        self.iam.printer('Querying AWS region %s for properties of security group %s.' % (self.iam.region_name, group_id))
-
-    # construct keyword definitions
-        kw_args = { 'GroupIds': [ group_id ] }
-
-    # send request for details about security group
-        try:
-            response = self.connection.describe_security_groups(**kw_args)
-        except:
-            raise AWSConnectionError(title)
-
-    # construct security group details from response
-        group_info = response['SecurityGroups'][0]
-        group_details = {
-            'group_id': '',
-            'vpc_id': '',
-            'group_name': '',
-            'tags': [],
-            'ip_permissions': []
-        }
-        group_details = self.ingest(group_info, group_details)
-        
-        return group_details
 
     def list_security_groups(self, tag_values=None):
 
@@ -1655,6 +1644,61 @@ class ec2Client(object):
 
         return group_list
     
+    def read_security_group(self, group_id):
+
+        '''
+            a method to retrieve the details about a security group
+
+        :param group_id: string with AWS id of security group
+        :return: dictionary with security group details
+
+        relevant fields:
+        
+        'group_id: '',
+        'vpc_id': '',
+        'group_name': '',
+        'tags': [{'key': '', 'value': ''}]
+        'ip_permissions': [{
+            'from_port': 0, 
+            'ip_ranges':[{'cidr_ip':'0.0.0.0/0'}]
+        }]
+        '''
+
+        title = '%s.read_security_group' % self.__class__.__name__
+
+    # validate inputs
+        input_fields = {
+            'group_id': group_id
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+
+    # report query
+        self.iam.printer('Querying AWS region %s for properties of security group %s.' % (self.iam.region_name, group_id))
+
+    # construct keyword definitions
+        kw_args = { 'GroupIds': [ group_id ] }
+
+    # send request for details about security group
+        try:
+            response = self.connection.describe_security_groups(**kw_args)
+        except:
+            raise AWSConnectionError(title)
+
+    # construct security group details from response
+        group_info = response['SecurityGroups'][0]
+        group_details = {
+            'group_id': '',
+            'vpc_id': '',
+            'group_name': '',
+            'tags': [],
+            'ip_permissions': []
+        }
+        group_details = self.ingest(group_info, group_details)
+        
+        return group_details
+
 if __name__ == '__main__':
 
 # test instantiation
@@ -1694,13 +1738,45 @@ if __name__ == '__main__':
     subnet_id = instance_details['subnet_id']
 
 # test security group
+    group_list = ec2_client.list_security_groups()
+    assert group_id in group_list
     group_details = ec2_client.read_security_group(group_id)
     assert group_details['group_id'] == group_id
-    group_list = ec2_client.list_security_groups()
-
+    
 # test subnet
+    subnet_list = ec2_client.list_subnets(tag_values=['test'])
+    assert subnet_id in subnet_list
     subnet_details = ec2_client.read_subnet(subnet_id)
     assert subnet_details['subnet_id'] == subnet_id
+
+# test tag instances
+    tag_list = instance_details['tags']
+    tag_found = False
+    for tag in tag_list:
+        if tag['key'] == 'TestTag':
+            if tag['value'] == 'testing-%s' % instance_id:
+                tag_found = True
+                break
+    assert not tag_found
+    new_tags = []
+    new_tags.extend(tag_list)
+    new_tags.append({ 'key':'TestTag', 'value':'testing-%s' % instance_id })
+    ec2_client.tag_instance(instance_id, new_tags)
+    new_details = ec2_client.read_instance(instance_id)
+    tag_found = False
+    for tag in new_details['tags']:
+        if tag['key'] == 'TestTag':
+            if tag['value'] == 'testing-%s' % instance_id:
+                tag_found = True
+                break
+    assert tag_found
+    ec2_client.tag_instance(instance_id, tag_list)
+    instance_details = ec2_client.read_instance(instance_id)
+    assert len(tag_list) == len(instance_details['tags'])
+
+
     # from pprint import pprint
-    # pprint(instance_details)
+    # pprint(tag_list)
+    # pprint(instance_details['tags'])
+    
 

@@ -6,6 +6,7 @@
     "pem_name": "lab-keypair-useast2-test-20170601",
     "tag_key": "Env",
     "tag_values": [ "test" ],
+    "tag_list": [{ "key": "Env", "value": "test" }],
     "group_id": "sg-abcd1234",
     "subnet_id": "subnet-abcd1234",
     "documentation": {
@@ -355,6 +356,17 @@
     ".tag_values[0]": {
       "min_length": 1,
       "max_length": 255,
+      "must_not_contain": [ "aws:", "[^\\w\\s\\-\\._:/]+" ]
+    },
+    ".tag_list": {
+      "max_size": 50
+    },
+    ".tag_list[0].key": {
+      "max_length": "127",
+      "must_not_contain": [ "aws:", "[^\\w\\s\\-\\._:/]+" ]
+    },
+    ".tag_list[0].value": {
+      "max_length": "255",
       "must_not_contain": [ "aws:", "[^\\w\\s\\-\\._:/]+" ]
     },
     ".group_id": {
