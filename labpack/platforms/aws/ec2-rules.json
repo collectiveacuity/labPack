@@ -6,7 +6,8 @@
     "pem_name": "lab-keypair-useast2-test-20170601",
     "tag_key": "Env",
     "tag_values": [ "test" ],
-    "group_id": "sg-abcdef12",
+    "group_id": "sg-abcd1234",
+    "subnet_id": "subnet-abcd1234",
     "documentation": {
       "api": "https://docs.aws.amazon.com/AWSEC2/latest/APIReference/Welcome.html",
       "boto3": "https://boto3.readthedocs.org/en/latest/reference/services/ec2.html#client",
@@ -358,6 +359,9 @@
     },
     ".group_id": {
       "must_contain": [ "^sg\\-[a-f\\d]{8}$" ]
+    },
+    ".subnet_id": {
+      "must_contain": [ "^subnet\\-[a-f\\d]{8}$"]
     }
   }
 }

@@ -62,6 +62,10 @@ class ec2Client(object):
             'aws_secret_access_key': self.iam.secret_key
         }
         self.connection = boto3.client(**client_kwargs)
+    
+    # construct ingestion
+        from labpack.parsing.conversion import camelcase_to_lowercase
+        self.ingest = camelcase_to_lowercase
 
     def check_instance_state(self, instance_id, wait=True):
         
@@ -110,7 +114,7 @@ class ec2Client(object):
                 
     # check into state of instance
         elif not 'State' in response['Reservations'][0]['Instances'][0].keys():
-            self.iam.printer('Checking into the status of instance %s' % instance_id, flush=True)
+            self.iam.printer('Checking into the status of instance %s ... ' % instance_id, flush=True)
             state_timeout = 0
             while not 'State' in response['Reservations'][0]['Instances'][0].keys():
                 self.iam.printer('.', flush=True)
@@ -121,7 +125,7 @@ class ec2Client(object):
                 )
                 if state_timeout > 3:
                     raise Exception('\nFailure to determine status of instance %s.' % instance_id)
-            self.iam.printer(' done.')
+            self.iam.printer('done.')
             
     # return None if instance has already been terminated
         instance_state = response['Reservations'][0]['Instances'][0]['State']['Name']
@@ -177,10 +181,13 @@ class ec2Client(object):
             object_title = '%s(%s=%s)' % (title, key, str(value))
             self.fields.validate(value, '.%s' % key, object_title)
 
+    # notify status check
+        self.iam.printer('Querying AWS region %s for status of instance %s.' % (self.iam.region_name, instance_id))
+        
     # check state of instance
         self.iam.printer_on = False
         self.check_instance_state(instance_id)
-        self.iam.printer_off = True
+        self.iam.printer_on = True
 
     # check instance status
         response = self.connection.describe_instance_status(
@@ -217,7 +224,10 @@ class ec2Client(object):
                     raise Exception('\nTimeout. Failure initializing instance %s on AWS in less than 15min' % instance_id)
                 instance_status = response['InstanceStatuses'][0]['InstanceStatus']['Status']
             print(' done.')
-
+        
+    # report outcome
+        self.iam.printer('Instance %s is %s.' % (instance_id, instance_status))
+        
         return instance_status
 
     def checkImageState(self, image_id):
@@ -461,16 +471,17 @@ class ec2Client(object):
         :param instance_id: string of instance id on AWS
         :return: dictionary with instance attributes
 
-            instance attributes:
-                ['instance_id']
-                ['image_id']
-                ['instance_type']
-                ['region']
-                ['state']
-                ['keypair']
-                ['dns_name']
-                ['public_ip']
-                ['tags']
+        relevant fields:
+        
+        'instance_id': '',
+        'image_id': '',
+        'instance_type': '',
+        'region': '',
+        'state': { 'name': '' },
+        'key_name': '',
+        'public_dns_name': '',
+        'public_ip_address': '',
+        'tags': [{'key': '', 'value': ''}]
         '''
 
         title = '%s.read_instance' % self.__class__.__name__
@@ -512,48 +523,22 @@ class ec2Client(object):
             instance_info = response['Reservations'][0]['Instances'][0]
 
     # create dictionary of instance details
-        instance = {
-            'instance_id': instance_info['InstanceId'],
-            'image_id': instance_info['ImageId'],
-            'state': instance_info['State']['Name'],
-            'keypair': instance_info['KeyName'],
-            'instance_type': instance_info['InstanceType'],
+        instance_details = {
+            'instance_id': '',
+            'image_id': '',
+            'key_name': '',
+            'instance_type': '',
             'region': self.iam.region_name,
             'tags': [],
-            'public_ip': '',
-            'private_ip': '',
-            'dns_name': '',
+            'public_ip_address': '',
+            'public_dns_name': '',
             'security_groups': [],
-            'subnet_id': instance_info['SubnetId'],
-            'vpc_id': instance_info['VpcId']
+            'subnet_id': '',
+            'vpc_id': ''
         }
-        try:
-            instance['tags'] = instance_info['Tags']
-        except:
-            pass
-        try:
-            for group in instance_info['SecurityGroups']:
-                group_details = {
-                    'group_id': group['GroupId'],
-                    'group_name': group['GroupName']
-                }
-                instance['security_groups'].append(group_details)
-        except:
-            pass
-        try:
-            instance['public_ip'] = instance_info['PublicIpAddress']
-        except:
-            pass
-        try:
-            instance['private_ip'] = instance_info['PrivateIpAddress']
-        except:
-            pass
-        try:
-            instance['dns_name'] = instance_info['PublicDnsName']
-        except:
-            pass
+        instance_details = self.ingest(instance_info, instance_details)
 
-        return instance
+        return instance_details
 
     def list_instances(self, tag_values=None):
 
@@ -1499,64 +1484,7 @@ class ec2Client(object):
 
         return subnet_list
 
-    def findSecurityGroups(self, tag_values=None):
-
-        '''
-            a method to discover the list of security groups on AWS EC2
-
-        :param tag_values: [optional] list of tag values
-        :return: list of security groups
-        '''
-
-        title = 'findSecurityGroups'
-
-    # validate input
-        kw_args = {}
-        if tag_values:
-            self.input.tagValues(tag_values, title + ' tag values')
-            kw_args['Filters'] = [ { 'Name': 'tag-value', 'Values': tag_values } ]
-
-    # request subnet list from AWS
-        tag_text = ''
-        if tag_values:
-            tag_text = ' with tag values %s' % tag_values
-        query_text = 'Querying AWS region %s for security groups%s.' % (os.environ['AWS_DEFAULT_REGION'], tag_text)
-        print(query_text)
-        sg_list = []
-        try:
-            if kw_args:
-                response = self.connection.describe_security_groups(**kw_args)
-            else:
-                response = self.connection.describe_security_groups()
-        except:
-            raise EC2ConnectionError(title + ' describe_security_groups()')
-        response_list = []
-        if 'SecurityGroups' in response:
-            response_list = response['SecurityGroups']
-
-    # construct list of subnets from response
-        for sub_dict in response_list:
-            sg_list.append(sub_dict['GroupId'])
-
-    # report results and return list
-        if sg_list:
-            print_out = 'Found security group'
-            if len(sg_list) > 1:
-                print_out += 's'
-            i_counter = 0
-            for group in sg_list:
-                if i_counter > 0:
-                    print_out += ','
-                print_out += ' ' + group
-                i_counter += 1
-            print_out += '.'
-            print(print_out)
-        else:
-            print('No security groups found.')
-
-        return sg_list
-
-    def subnetDetails(self, subnet_id):
+    def read_subnet(self, subnet_id):
 
         '''
             a method to retrieve the details about a subnet
@@ -1564,18 +1492,28 @@ class ec2Client(object):
         :param subnet_id: string with AWS id of subnet
         :return: dictionary with subnet details
 
-        'subnetID': '',
-        'vpcID': '',
-        'zoneID': '',
+        relevant fields:
+        
+        'subnet_id': '',
+        'vpc_id': '',
+        'availability_zone': '',
         'state': '',
-        'tags': []
+        'tags': [{'key': '', 'value': ''}]
         '''
 
-        title = 'subnetDetails'
+        title = '%s.read_subnet' % self.__class__.__name__
 
     # validate inputs
-        self.input.subnetID(subnet_id, title + ' security group id')
+        input_fields = {
+            'subnet_id': subnet_id
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
 
+    # report query
+        self.iam.printer('Querying AWS region %s for properties of subnet %s.' % (self.iam.region_name, subnet_id))
+        
     # construct keyword definitions
         kw_args = { 'SubnetIds': [ subnet_id ] }
 
@@ -1583,19 +1521,18 @@ class ec2Client(object):
         try:
             response = self.connection.describe_subnets(**kw_args)
         except:
-            raise EC2ConnectionError('%s describe_subnets(%s)' % (title, kw_args))
+            raise AWSConnectionError(title)
 
     # construct subnet details from response
         subnet_dict = response['Subnets'][0]
         subnet_details = {
-            'subnetID': subnet_dict['SubnetId'],
-            'vpcID': subnet_dict['VpcId'],
-            'zoneID': subnet_dict['AvailabilityZone'],
-            'state': subnet_dict['State'],
+            'subnet_id': '',
+            'vpc_id': '',
+            'availability_zone': '',
+            'state': '',
             'tags': []
         }
-        if 'Tags' in subnet_dict.keys():
-            subnet_details['tags'] = subnet_dict['Tags']
+        subnet_details = self.ingest(subnet_dict, subnet_details)
 
         return subnet_details
 
@@ -1607,10 +1544,16 @@ class ec2Client(object):
         :param group_id: string with AWS id of security group
         :return: dictionary with security group details
 
-        'securityGroupID': '',
-        'vpcID': '',
-        'securityGroupName: '',
-        'tags': []
+        relevant fields:
+        
+        'group_id: '',
+        'vpc_id': '',
+        'group_name': '',
+        'tags': [{'key': '', 'value': ''}]
+        'ip_permissions': [{
+            'from_port': 0, 
+            'ip_ranges':[{'cidr_ip':'0.0.0.0/0'}]
+        }]
         '''
 
         title = '%s.read_security_group' % self.__class__.__name__
@@ -1637,56 +1580,81 @@ class ec2Client(object):
 
     # construct security group details from response
         group_info = response['SecurityGroups'][0]
-        details = {
-            'group_id': group_info['GroupId'],
+        group_details = {
+            'group_id': '',
             'vpc_id': '',
-            'group_name': group_info['GroupName'],
+            'group_name': '',
             'tags': [],
-            'description': '',
             'ip_permissions': []
         }
-        from pprint import pprint
-        pprint(group_info)
-        if 'VpcId' in group_info.keys():
-            details['vpc_id'] = group_info['VpcId']
-        if 'Tags' in group_info.keys():
-            details['tags'] = group_info['Tags']
-        if 'Description' in group_info.keys():
-            details['description'] = group_info['Description']
-        if 'IpPermissions' in group_info.keys():
-            details['ip_permissions'] = group_info['IpPermissions']
+        group_details = self.ingest(group_info, group_details)
         
-        return details
+        return group_details
 
-    def unitTests(self, ec2_obj):
-        self.list_keypairs()
-        subnet_list = self.findSubnets()
-        if subnet_list:
-            self.subnetDetails(subnet_list[0])
-        sg_list = self.findSecurityGroups()
-        if sg_list:
-            self.securityGroupDetails(sg_list[0])
-        buildTag = 'method-unit-tests'
-        assert not self.list_instances([buildTag]) # prevent deletion of live instances
-        assert not self.findImages([buildTag]) # prevent deletion of live images
-        initParams = self.input.initParams(ec2_obj)
-        initParams['tags'][0]['Value'] = buildTag
-        instanceID = self.startInstance(initParams)
-        self.check_instance_status(instanceID)
-        self.list_instances([buildTag])
-        read_instance = self.read_instance(instanceID)
-        assert read_instance['tags']
-        imageName = 'baby_needs_a_new_pair_of_shoes'
-        imageID = self.imageInstance(instanceID, imageName)
-        self.findImages([buildTag])
-        imageDetails = self.imageDetails(imageID)
-        assert imageDetails['tags']
-        self.exportImage(imageID, 'us-west-2')
-        self.removeImage(imageID)
-        self.removeInstance(instanceID)
-        self.cleanupEC2()
-        return self
+    def list_security_groups(self, tag_values=None):
 
+        '''
+            a method to discover the list of security groups on AWS EC2
+
+        :param tag_values: [optional] list of tag values
+        :return: list of strings with security group ids
+        '''
+
+        title = '%s.list_security_groups' % self.__class__.__name__
+
+    # validate inputs
+        input_fields = {
+            'tag_values': tag_values
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+            
+    # add tags to method arguments
+        kw_args = {}
+        tag_text = ''
+        if tag_values:
+            kw_args = {
+                'Filters': [ { 'Name': 'tag-value', 'Values': tag_values } ]
+            }
+            from labpack.parsing.grammar import join_words
+            plural_value = ''
+            if len(tag_values) > 1:
+                plural_value = 's'
+            tag_text = ' with tag value%s %s' % (plural_value, join_words(tag_values))
+            
+    # request instance details from AWS
+        self.iam.printer('Querying AWS region %s for security groups%s.' % (self.iam.region_name, tag_text))
+        group_list = []
+        try:
+            if kw_args:
+                response = self.connection.describe_security_groups(**kw_args)
+            else:
+                response = self.connection.describe_security_groups()
+        except:
+            raise AWSConnectionError(title)
+        response_list = []
+        if 'SecurityGroups' in response:
+            response_list = response['SecurityGroups']
+
+    # construct list of subnets from response
+        for sub_dict in response_list:
+            group_list.append(sub_dict['GroupId'])
+
+    # report results and return list
+        if group_list:
+            print_out = 'Found security group'
+            if len(instance_list) > 1:
+                print_out += 's'
+            from labpack.parsing.grammar import join_words
+            print_out += ' %s.' % join_words(group_list)
+            self.iam.printer(print_out)
+        else:
+            self.iam.printer('No security groups found.')
+
+        return group_list
+    
 if __name__ == '__main__':
 
 # test instantiation
@@ -1723,7 +1691,16 @@ if __name__ == '__main__':
     instance_details = ec2_client.read_instance(instance_id)
     assert instance_details['instance_id'] == instance_id
     group_id = instance_details['security_groups'][0]['group_id']
+    subnet_id = instance_details['subnet_id']
 
-# test read security group
+# test security group
     group_details = ec2_client.read_security_group(group_id)
+    assert group_details['group_id'] == group_id
+    group_list = ec2_client.list_security_groups()
+
+# test subnet
+    subnet_details = ec2_client.read_subnet(subnet_id)
+    assert subnet_details['subnet_id'] == subnet_id
+    # from pprint import pprint
+    # pprint(instance_details)
 

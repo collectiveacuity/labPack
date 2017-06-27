@@ -126,9 +126,9 @@ class sshClient(object):
 
     # verify instance has public ip
         instance_details = self.ec2.read_instance(instance_id)
-        if not instance_details['public_ip']:
+        if not instance_details['public_ip_address']:
             raise Exception('%s requires a public IP address to access through ssh.' % instance_id)
-        self.instance_ip = instance_details['public_ip']
+        self.instance_ip = instance_details['public_ip_address']
 
     # retrieve login name from tag
         self.login_name = ''
@@ -152,7 +152,7 @@ class sshClient(object):
         pem_absolute = path.abspath(pem_file)
         pem_root, pem_ext = path.splitext(pem_absolute)
         pem_path, pem_name = path.split(pem_root)
-        if not instance_details['keypair'] == pem_name:
+        if not instance_details['key_name'] == pem_name:
             raise Exception('%s does not match name of keypair %s for instance %s.' % (pem_name, instance_details['keypair'], instance_id))
 
     # verify instance is ready
@@ -742,7 +742,7 @@ if __name__ == '__main__':
         raise Exception('There are no test instances running.')
     instance_id = instance_list[0]
     instance_details = ec2_client.read_instance(instance_id)
-    pem_name = instance_details['keypair']
+    pem_name = instance_details['key_name']
     from os import path
     pem_file = path.join(pem_folder, '%s.pem' % pem_name)
     if not path.exists(pem_file):
