@@ -21,6 +21,10 @@
     "subnet_id": "subnet-abcd1234",
     "iam_profile": "dbAccessRole",
     "instance_type": "t2.micro",
+    "volume_type": "gp2",
+    "image_id": "ami-abcd1234",
+    "snapshot_id": "snap-0123456789abcdef0",
+    "auction_bid": 0.0,
     "endpoints": {
       "ec2": {
         "us-east-1": "ec2.us-east-1.amazonaws.com",
@@ -335,7 +339,7 @@
   },
   ".components": {
     ".instance_id": {
-      "contains_either": [ "i\\-[a-f\\d]{8}", "i\\-[a-f\\d]{17}"]
+      "contains_either": [ "^i\\-[a-f\\d]{8}$", "^i\\-[a-f\\d]{17}$"]
     },
     ".instance_name": {
       "min_length": 3,
@@ -390,6 +394,15 @@
     },
     ".subnet_id": {
       "must_contain": [ "^subnet\\-[a-f\\d]{8}$"]
+    },
+    ".image_id": {
+      "contains_either": [ "^ami\\-[a-f\\d]{8}$", "^amii\\-[a-f\\d]{17}$"]
+    },
+    ".snapshot_id": {
+      "contains_either": [ "^snap\\-[a-f\\d]{8}$", "^snap\\-[a-f\\d]{17}$"]
+    },
+    ".auction_bid": {
+      "min_value": 0.00001
     }
   }
 }
