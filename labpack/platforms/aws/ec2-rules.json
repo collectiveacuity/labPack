@@ -10,7 +10,7 @@
   },
   "schema": {
     "instance_id": "i-0123456789abcdef0",
-    "instance_name": "lab-instance-useast1-20170614",
+    "instance_name": "lab-instance-useast2-20170614",
     "pem_file": "./lab-keypair-useast2-test-20170601.pem",
     "pem_name": "lab-keypair-useast2-test-20170601",
     "tag_key": "Env",
@@ -23,6 +23,7 @@
     "instance_type": "t2.micro",
     "volume_type": "gp2",
     "image_id": "ami-abcd1234",
+    "image_name": "lab-image-useast2-20170628",
     "snapshot_id": "snap-0123456789abcdef0",
     "auction_bid": 0.0,
     "endpoints": {
@@ -397,6 +398,11 @@
     },
     ".image_id": {
       "contains_either": [ "^ami\\-[a-f\\d]{8}$", "^amii\\-[a-f\\d]{17}$"]
+    },
+    ".image_name": {
+      "min_length": 3,
+      "max_length": 128,
+      "must_not_contain": [ "aws:", "[^\\w\\-\\._]+" ]
     },
     ".snapshot_id": {
       "contains_either": [ "^snap\\-[a-f\\d]{8}$", "^snap\\-[a-f\\d]{17}$"]

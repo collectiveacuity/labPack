@@ -15,10 +15,6 @@ except:
     sys.exit(1)
 
 from labpack.authentication.aws.iam import AWSConnectionError
-import time
-import re
-from copy import deepcopy
-from timeit import default_timer as timer
 
 class ec2Client(object):
 
@@ -62,6 +58,7 @@ class ec2Client(object):
             'aws_secret_access_key': self.iam.secret_key
         }
         self.connection = boto3.client(**client_kwargs)
+        self.verbose = verbose
     
     # construct ingestion
         from labpack.parsing.conversion import camelcase_to_lowercase, lowercase_to_camelcase
@@ -400,7 +397,7 @@ class ec2Client(object):
 
         :param instance_id: string of instance id on AWS
         :param tag_list: list of single key-value pairs
-        :return: True
+        :return: dictionary with aws response info
         '''
 
         title = '%s.tag_instance' % self.__class__.__name__
@@ -612,7 +609,7 @@ class ec2Client(object):
         else:
             raise Exception('Failure creating instance from image %s.' % image_id)
 
-# tag instance with instance tags
+    # tag instance with instance tags
         self.tag_instance(instance_id, tag_list)
 
         return instance_id
@@ -648,6 +645,7 @@ class ec2Client(object):
             response = self.connection.describe_tags(
                 Filters=[ { 'Name': 'resource-id', 'Values': [ instance_id ] } ]
             )
+            import re
             aws_tag_pattern = re.compile('aws:')
             for i in range(0, len(response['Tags'])):
                 if not aws_tag_pattern.findall(response['Tags'][i]['Key']):
@@ -833,12 +831,14 @@ class ec2Client(object):
 
     # repeat request
         if not response_list:
+            from time import sleep
+            from timeit import default_timer as timer
             self.iam.printer('No images found initially. Checking again', flush=True)
             state_timeout = 0
             delay = 3
             while not response_list and state_timeout < 12:
                 self.iam.printer('.', flush=True)
-                time.sleep(delay)
+                sleep(delay)
                 t3 = timer()
                 try:
                     response = self.connection.describe_images(**kw_args)
@@ -926,83 +926,124 @@ class ec2Client(object):
         
         return image_details
 
-    def tagImage(self, image_id, image_tags):
+    def tag_image(self, image_id, tag_list):
 
         '''
             a method for adding or updating tags on an AWS instance
 
-        :param instance_id: string with AWS id of instance
-        :param instance_tags: list of tags to add to instance
-        :return: True
+        :param image_id: string with AWS id of instance
+        :param tag_list: list of tags to add to instance
+        :return: dictionary with response data
         '''
 
-        title = 'tagImage'
+        title = '%s.tag_image' % self.__class__.__name__
 
-    # validate input
-        self.input.imageID(image_id)
-        self.input.tags(image_tags, title + ' tag list')
+    # validate inputs
+        input_fields = {
+            'image_id': image_id,
+            'tag_list': tag_list
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+    
+    # retrieve tag list of image
+        self.iam.printer_on = False
+        image_details = self.read_image(image_id)
+        self.iam.printer_on = True
+        old_tags = image_details['tags']
+    
+    # determine tags to remove
+        delete_list = []
+        tag_map = {}
+        for tag in tag_list:
+            tag_map[tag['key']] = tag['value']
+        for tag in old_tags:
+            if tag['key'] not in tag_map.keys():
+                delete_list.append(tag)
+            elif tag['value'] != tag_map[tag['key']]:
+                delete_list.append(tag)
 
-    # check image state
-        self.checkImageState(image_id)
-
-    # tag instance with instance tags
+    # convert tag list to camelcase
+        delete_list = self.prepare(delete_list)
+        tag_list = self.prepare(tag_list)
+    
+    # remove tags from instance
+        if delete_list:
+            try:
+                delete_kwargs = {
+                    'Resources': [ image_id ],
+                    'Tags': delete_list
+                }
+                self.connection.delete_tags(**delete_kwargs)
+            except:
+                AWSConnectionError(title)
+            
+    # tag instance with updated tags
         try:
-            self.connection.create_tags(
-                Resources=[ image_id ],
-                Tags=image_tags
-            )
+            create_kwargs = {
+                'Resources': [ image_id ],
+                'Tags': tag_list
+            }
+            response = self.connection.create_tags(**create_kwargs)
         except:
-            raise EC2ConnectionError(title + ' create_tags()')
+            raise AWSConnectionError(title)
 
-        return True
+        return response
 
-    def imageInstance(self, instance_id, image_name, image_tags=None):
+    def create_image(self, instance_id, image_name, tag_list=None):
 
         '''
             method for imaging an instance on AWS EC2
 
         :param instance_id: string with AWS id of running instance
         :param image_name: string with name to give new image
-        :param image_tags: [optional] list of image_tags to add to image
+        :param tag_list: [optional] list of resources tags to add to image
         :return: string with AWS id of image
         '''
 
-        title = 'imageInstance'
+        title = '%s.create_image' % self.__class__.__name__
 
-    # validate input
-        self.input.instanceID(instance_id, title + ' instance id')
-        sub_title = '%s instance id %s' % (title, instance_id)
-        self.input.imageName(image_name, sub_title + ' image name')
-        if image_tags:
-            self.input.tags(image_tags, sub_title + ' image tags')
+    # validate inputs
+        input_fields = {
+            'instance_id': instance_id,
+            'image_name': image_name,
+            'tag_list': tag_list
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
 
     # check instance state
-        print('Initiating image of instance %s.' % instance_id)
+        self.iam.printer('Initiating image of instance %s.' % instance_id)
         instance_state = self.check_instance_state(instance_id)
 
     # stop instance
         if instance_state == 'running':
-            print('Instance %s is %s.\nStopping instance %s to image it.' % (instance_id, instance_state, instance_id))
+            self.iam.printer('Instance %s is %s.\nStopping instance %s to image it.' % (instance_id, instance_state, instance_id))
             try:
                 response = self.connection.stop_instances(
                     InstanceIds=[ instance_id ]
                 )
                 instance_state = response['StoppingInstances'][0]['CurrentState']['Name']
             except:
-                raise EC2ConnectionError(title + ' stop_instances()')
+                raise AWSConnectionError(title)
         if instance_state == 'stopping':
-            print('Instance %s is %s' % (instance_id, instance_state), end='', flush=True)
+            from time import sleep
+            from timeit import timeit as timer
+            self.iam.printer('Instance %s is %s' % (instance_id, instance_state), flush=True)
             delay = 3
             while instance_state == 'stopping':
-                print('.', end='', flush=True)
-                time.sleep(delay)
+                self.iam.printer('.', flush=True)
+                sleep(delay)
                 t3 = timer()
                 try:
                     response = self.connection.describe_instances(
                         InstanceIds=[ instance_id ]
                     )
                 except:
-                    raise EC2ConnectionError(title + ' describe_instances()')
+                    raise AWSConnectionError(title)
                 t4 = timer()
                 response_time = t4 - t3
                 if 3 - response_time > 0:
@@ -1010,32 +1051,33 @@ class ec2Client(object):
                 else:
                     delay = 0
                 instance_state = response['Reservations'][0]['Instances'][0]['State']['Name']
-            print(' Done.')
+            self.iam.printer(' done.')
         if instance_state != 'stopped':
-            raise Exception('\nInstance %s is currently in a state that cannot be imaged.' % instance_id)
+            raise Exception('Instance %s is currently in a state that cannot be imaged.' % instance_id)
 
     # discover tags associated with instance
-        tag_list = []
+        old_tags = []
         try:
             response = self.connection.describe_instances(
                     InstanceIds=[ instance_id ]
                 )
             instance_tags = response['Reservations'][0]['Instances'][0]['Tags']
+            import re
             aws_tag_pattern = re.compile('aws:')
             for i in range(0, len(instance_tags)):
                 if not aws_tag_pattern.findall(instance_tags[i]['Key']):
                     tag = {}
                     tag['Key'] = instance_tags[i]['Key']
                     tag['Value'] = instance_tags[i]['Value']
-                    tag_list.append(tag)
+                    old_tags.append(tag)
         except:
-            raise EC2ConnectionError(title + ' describe_instances()')
+            raise AWSConnectionError(title)
 
     # replace tag list if new tag input
-        new_tags = False
-        if image_tags:
-            tag_list = deepcopy(image_tags)
-            new_tags = True
+        new_tags = True
+        if not tag_list:
+            tag_list = self.ingest(old_tags)
+            new_tags = False
 
     # create image of the instance
         try:
@@ -1044,71 +1086,68 @@ class ec2Client(object):
                 Name=image_name
             )
             image_id = response['ImageId']
-            print('Image %s is being created.' % image_name)
+            self.iam.printer('Image %s is being created.' % image_name)
         except:
-            raise EC2ConnectionError(title + ' create_image()')
+            raise AWSConnectionError(title)
 
     # add tags to image
-        self.tagImage(image_id, tag_list)
+        self.tag_image(image_id, tag_list)
         if new_tags:
-            print('Tags from input have been added to image %s.' % image_id)
+            self.iam.printer('Tags from input have been added to image %s.' % image_id)
         else:
-            print('Instance %s tags have been added to image %s.' % (instance_id, image_id))
+            self.iam.printer('Instance %s tags have been added to image %s.' % (instance_id, image_id))
 
     # restart instance
         try:
             self.connection.start_instances(
                     InstanceIds=[ instance_id ]
             )
-            print('Restarting instance %s now.' % instance_id)
+            self.iam.printer('Restarting instance %s now.' % instance_id)
         except:
-            raise EC2ConnectionError(title + ' start_instances()')
+            raise AWSConnectionError
 
         return image_id
 
-    def removeImage(self, image_id):
+    def delete_image(self, image_id):
 
         '''
             method for removing an image from AWS EC2
 
         :param image_id: string with AWS id of instance
-        :return: True
+        :return: string with AWS response from snapshot delete
         '''
 
-        title = 'removeImage'
+        title = '%s.delete_image' % self.__class__.__name__
 
-    # validate input
-        self.input.imageID(image_id, title + ' image_id')
+    # validate inputs
+        input_fields = {
+            'image_id': image_id
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
 
-    # check image state
-        print('Removing image %s.' % image_id)
-        self.checkImageState(image_id)
+    # report query
+        self.iam.printer('Removing image %s from AWS region %s.' % (image_id, self.iam.region_name))
 
-    # discover tags and snapshot id associated with image id
-        tag_list = []
+    # retrieve state
+        old_state = self.check_image_state(image_id)
+
+    # discover snapshot id and tags associated with instance id
+        image_details = self.read_image(image_id)
+        tag_list = image_details['tags']
+        snapshot_id = image_details['snapshot_id']
+
+    # remove tags from instance
         try:
-            response = self.connection.describe_images(
-                ImageIds=[ image_id ]
-            )
+            delete_kwargs = {
+                'Resources': [ image_id ],
+                'Tags': self.prepare(tag_list)
+            }
+            self.connection.delete_tags(**delete_kwargs)
+            self.iam.printer('Tags have been deleted from %s.' % image_id)
         except:
-            raise EC2ConnectionError(title + ' describe_images()')
-        image_tags = response['Images'][0]['Tags']
-        snapshot_id = response['Images'][0]['BlockDeviceMappings'][0]['Ebs']['SnapshotId']
-        for i in range(0, len(image_tags)):
-            tag = {}
-            tag['Key'] = image_tags[i]['Key']
-            tag['Value'] = image_tags[i]['Value']
-            tag_list.append(tag)
-
-    # remove tags from image
-        try:
-            self.connection.delete_tags(
-                Resources=[ image_id ],
-                Tags=tag_list
-            )
-        except:
-            raise EC2ConnectionError(title + ' delete_tags()')
-        print('Tags have been deleted from %s.' % image_id)
+            raise AWSConnectionError(title)
 
     # deregister image
         try:
@@ -1116,91 +1155,107 @@ class ec2Client(object):
                 ImageId=image_id
             )
         except:
-            raise EC2ConnectionError(title + ' deregister_image()')
-        print('Image %s has been deregistered.' % image_id)
+            raise AWSConnectionError(title)
+        self.iam.printer('Image %s has been deregistered.' % image_id)
 
     # delete snapshot
         try:
-            self.connection.delete_snapshot(
+            response = self.connection.delete_snapshot(
                 SnapshotId=snapshot_id
             )
         except:
-            raise EC2ConnectionError(title + ' delete_snapshot()')
-        print('Snapshot %s associated with image %s has been deleted.' % (snapshot_id, image_id))
+            raise AWSConnectionError(title)
+        self.iam.printer('Snapshot %s associated with image %s has been deleted.' % (snapshot_id, image_id))
 
-        return True
+        return response
 
-    def importImage(self, image_id, aws_region):
+    def import_image(self, image_id, region_name):
 
         '''
             a method to import an image from another AWS region
 
             https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/CopyingAMIs.html
 
-            REQUIRED: awsCredentials must have valid access to import region
+            REQUIRED: aws credentials must have valid access to both regions
 
         :param image_id: string with AWS id of source image
-        :param aws_region: string with AWS region of source image
+        :param region_name: string with AWS region of source image
         :return: string with AWS id of new image
         '''
 
-        title = 'importImage'
+        title = '%s.import_image' % self.__class__.__name__
 
-    # validate input
-        self.input.imageID(image_id, title + ' image id')
-        self.input.region(aws_region)
-        region_cred = deepcopy(self.cred)
-        region_cred['AWS_DEFAULT_REGION'] = aws_region
-        if region_cred['AWS_DEFAULT_REGION'] == self.cred['AWS_DEFAULT_REGION']:
-            raise IndexError('\n%s cannot import an image from the same region.' % title)
-
-    # set environmental variables of region of source image
-        for key, value in region_cred.items():
-            os.environ[key] = value
-        client = boto3.client('ec2')
+    # validate inputs
+        input_fields = {
+            'image_id': image_id
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+        input_fields = {
+            'region_name': region_name
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.iam.fields.validate(value, '.%s' % key, object_title)
+        if region_name == self.iam.region_name:
+            raise ValueError('%s cannot import an image from the same region.' % title)
+    
+    # construct ec2 client connection for source region
+        client_kwargs = {
+            'service_name': 'ec2',
+            'region_name': region_name,
+            'aws_access_key_id': self.iam.access_id,
+            'aws_secret_access_key': self.iam.secret_key
+        }
+        source_connection = boto3.client(**client_kwargs)
 
     # check existence of image
         try:
-            response = client.describe_images(
+            response = source_connection.describe_images(
                 ImageIds=[ image_id ]
             )
         except:
-            raise ValueError('\nImage %s in region %s does not exist.' % (image_id, aws_region))
+            raise ValueError('Image %s does not exist in AWS region %s.' % (image_id, region_name))
         if not 'Images' in response.keys():
-            raise ValueError('\nImage %s in region %s does not exist.' % (image_id, aws_region))
+            raise ValueError('Image %s does not exist in AWS region %s.' % (image_id, region_name))
         elif not response['Images'][0]:
-            raise ValueError('\nImage %s in region %s does not exist.' % (image_id, aws_region))
+            raise ValueError('Image %s does not exist in AWS region %s.' % (image_id, region_name))
 
     # check into state of image
         elif not 'State' in response['Images'][0].keys():
-            print('Checking into the status of image %s in region %s' % (image_id, aws_region), end='', flush=True)
+            from time import sleep
+            from timeit import default_timer as timer
+            self.iam.printer('Checking into the status of image %s in AWS region %s' % (image_id, region_name), flush=True)
             state_timeout = 0
             while not 'State' in response['Images'][0].keys():
-                print('.', end='', flush=True)
-                time.sleep(3)
+                self.iam.printer('.', flush=True)
+                sleep(3)
                 state_timeout += 1
-                response = client.describe_images(
+                response = source_connection.describe_images(
                     ImageIds=[ image_id ]
                 )
                 if state_timeout > 3:
-                    raise Exception('\nFailure to determine status of image %s.' % image_id)
-            print(' Done.')
+                    raise Exception('Failure to determine status of image %s.' % image_id)
+            self.iam.printer(' done.')
         image_state = response['Images'][0]['State']
 
     # raise error if image is deregistered or otherwise invalid
         if image_state == 'deregistered' or image_state == 'invalid' or image_state == 'transient' or image_state == 'failed':
-            raise Exception('\nImage %s in region %s is %s.' % (image_id, aws_region, image_state))
+            raise Exception('Image %s in AWS region %s is %s.' % (image_id, region_name, image_state))
 
     # wait while image is pending
         elif image_state == 'pending':
-            print('Image %s is %s' % (image_id, image_state), end='', flush=True)
+            from time import sleep
+            from timeit import default_timer as timer
+            self.iam.printer('Image %s is %s' % (image_id, image_state), flush=True)
             delay = 3
             state_timeout = 0
             while image_state != 'available':
-                print('.', end='', flush=True)
-                time.sleep(delay)
+                self.iam.printer('.', flush=True)
+                sleep(delay)
                 t3 = timer()
-                response = client.describe_images(
+                response = source_connection.describe_images(
                     ImageIds=[ image_id ]
                 )
                 t4 = timer()
@@ -1211,144 +1266,149 @@ class ec2Client(object):
                 else:
                     delay = 0
                 if state_timeout > 300:
-                    raise Exception('\nTimeout. Failure initializing image %s in region %s in less than 15min' % (image_id, aws_region))
+                    raise Exception('Timeout. Failure initializing image %s in region %s in less than 15min' % (image_id, region_name))
                 image_state = response['Images'][0]['State']
-            print(' Done.')
+            self.iam.printer(' done.')
 
     # discover tags and name associated with source image
         try:
-            response = client.describe_images(
+            response = source_connection.describe_images(
                 ImageIds=[ image_id ]
             )
         except:
-            raise EC2ConnectionError(title + ' describe_images()')
+            raise AWSConnectionError(title)
         image_info = response['Images'][0]
 
     # construct image details from response
         image_name = image_info['Name']
-        image_region = region_cred['AWS_DEFAULT_REGION']
-        tag_list = image_info['Tags']
-
-    # reset environmental variables and connection method
-        for key, value in self.cred.items():
-            os.environ[key] = value
-        self.connection = boto3.client('ec2')
+        tag_list = self.ingest(image_info['Tags'])
 
     # copy image over to current region
+        self.iam.printer('Copying image %s from region %s.' % (image_id, region_name))
         try:
             response = self.connection.copy_image(
-                SourceRegion=image_region,
+                SourceRegion=region_name,
                 SourceImageId=image_id,
                 Name=image_name
             )
         except:
-            raise EC2ConnectionError(title + ' copy_image()')
+            raise AWSConnectionError
         new_id = response['ImageId']
 
     # check into state of new image
-        self.checkImageState(new_id)
+        self.check_image_state(new_id, wait=False)
 
     # add tags from source image to new image
-        try:
-            self.connection.create_tags(
-                Resources=[ new_id ],
-                Tags=tag_list
-            )
-        except:
-            raise EC2ConnectionError(title + ' create_tags()')
-        print('Tags from image %s have been added to image %s.' % (image_id, new_id))
+        self.tag_image(new_id, tag_list)
+        self.iam.printer('Tags from image %s have been added to image %s.' % (image_id, new_id))
 
         return new_id
 
-    def exportImage(self, image_id, aws_region):
+    def export_image(self, image_id, region_name):
 
         '''
             a method to add a copy of an image to another AWS region
 
             https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/CopyingAMIs.html
 
-            REQUIRED: awsCredentials must have valid access to export region
+            REQUIRED: iam credentials must have valid access to both regions
 
         :param image_id: string of AWS id of image to be copied
-        :param aws_region: string of AWS region to copy image to
+        :param region_name: string of AWS region to copy image to
         :return: string with AWS id of new image
         '''
 
-        title = 'exportImage'
+        title = '%s.export_image' % self.__class__.__name__
 
-    # validate input
-        self.input.imageID(image_id, title + ' image id')
-        self.input.region(aws_region)
-        region_cred = deepcopy(self.cred)
-        region_cred['AWS_DEFAULT_REGION'] = aws_region
-        if region_cred['AWS_DEFAULT_REGION'] == self.cred['AWS_DEFAULT_REGION']:
-            raise IndexError('\n%s cannot export an image to the same region.' % title)
+    # validate inputs
+        input_fields = {
+            'image_id': image_id
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+        input_fields = {
+            'region_name': region_name
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.iam.fields.validate(value, '.%s' % key, object_title)
+        if region_name == self.iam.region_name:
+            raise ValueError('%s cannot export an image to the same region.' % title)
+        
+    # construct ec2 client connection for source region
+        client_kwargs = {
+            'service_name': 'ec2',
+            'region_name': region_name,
+            'aws_access_key_id': self.iam.access_id,
+            'aws_secret_access_key': self.iam.secret_key
+        }
+        destination_connection = boto3.client(**client_kwargs)
 
     # check state of image to be copied
-        self.checkImageState(image_id)
+        self.check_image_state(image_id)
 
     # discover tags and name associated with image to be copied
-        image_details = self.imageDetails(image_id)
+        image_details = self.read_image(image_id)
         tag_list = image_details['tags']
         image_name = image_details['name']
 
-    # set environmental variables of region to export image to
-        print('Copying image %s to region %s.' % (image_id, aws_region))
-        for key, value in region_cred.items():
-            os.environ[key] = value
-        client = boto3.client('ec2')
-
     # copy image over to current region
+        self.iam.printer('Copying image %s to region %s.' % (image_id, region_name))
         try:
-            response = client.copy_image(
-                SourceRegion=self.cred['AWS_DEFAULT_REGION'],
+            response = destination_connection.copy_image(
+                SourceRegion=self.iam.region_name,
                 SourceImageId=image_id,
                 Name=image_name
             )
         except:
-            raise EC2ConnectionError(title + ' copy_image()')
+            raise AWSConnectionError(title)
         new_id = response['ImageId']
 
     # check into state of new image
         try:
-            response = client.describe_images(
+            response = destination_connection.describe_images(
                 ImageIds=[ new_id ]
             )
         except:
-            raise EC2ConnectionError(title + ' describe_images()')
+            raise AWSConnectionError(title)
         if not 'State' in response['Images'][0].keys():
-            print('Checking into the status of image %s in region %s' % (new_id, aws_region), end='', flush=True)
+            from time import sleep
+            from timeit import default_timer as timer
+            self.iam.printer('Checking into the status of image %s in AWS region %s' % (new_id, region_name), flush=True)
             state_timeout = 0
             while not 'State' in response['Images'][0].keys():
-                print('.', end='', flush=True)
-                time.sleep(3)
+                self.iam.printer('.', flush=True)
+                sleep(3)
                 state_timeout += 1
                 try:
-                    response = client.describe_images(
+                    response = destination_connection.describe_images(
                         ImageIds=[ new_id ]
                     )
                 except:
-                    raise EC2ConnectionError(title + ' describe_images()')
+                    raise AWSConnectionError(title)
                 if state_timeout > 3:
-                    raise Exception('\nFailure to determine status of image %s in region %s.' % (new_id, aws_region))
-            print(' Done.')
+                    raise Exception('Failure to determine status of image %s in AWS region %s.' % (new_id, region_name))
+            self.iam.printer(' done.')
         image_state = response['Images'][0]['State']
 
     # wait while image is pending
         if image_state == 'pending':
-            print('Image %s in region %s is %s' % (new_id, aws_region, image_state), end='', flush=True)
+            from time import sleep
+            from timeit import default_timer as timer
+            self.iam.printer('Image %s in AWS region %s is %s' % (new_id, region_name, image_state), flush=True)
             delay = 3
             state_timeout = 0
             while image_state != 'available':
-                print('.', end='', flush=True)
-                time.sleep(delay)
+                self.iam.printer('.', flush=True)
+                sleep(delay)
                 t3 = timer()
                 try:
-                    response = client.describe_images(
+                    response = destination_connection.describe_images(
                         ImageIds=[ new_id ]
                     )
                 except:
-                    raise EC2ConnectionError(title + ' describe_images()')
+                    raise AWSConnectionError(title)
                 t4 = timer()
                 state_timeout += 1
                 response_time = t4 - t3
@@ -1357,162 +1417,21 @@ class ec2Client(object):
                 else:
                     delay = 0
                 if state_timeout > 300:
-                    raise Exception('\nTimeout. Failure initializing image %s in region %s in less than 15min' % (new_id, aws_region))
+                    raise Exception('Timeout. Failure initializing image %s in region %s in less than 15min' % (new_id, region_name))
                 image_state = response['Images'][0]['State']
-            print(' Done.')
+            self.iam.printer(' done.')
 
     # add tags from image to image copy
         try:
-            client.create_tags(
+            destination_connection.create_tags(
                 Resources=[ new_id ],
                 Tags=tag_list
             )
         except:
-            raise EC2ConnectionError(title + ' create_tags()')
-        print('Tags from image %s have been added to image %s.' % (image_id, new_id))
-
-    # reset environmental variables and connection method
-        for key, value in self.cred.items():
-            os.environ[key] = value
-        self.connection = boto3.client('ec2')
+            raise AWSConnectionError(title)
+        self.iam.printer('Tags from image %s have been added to image %s.' % (image_id, new_id))
 
         return new_id
-
-    def cleanupEC2(self):
-
-        '''
-            a method for removing instances and images in unusual states
-
-        :return: True
-        '''
-
-    # find non-running instances
-        print('Cleaning up region %s.' % str(os.environ['AWS_DEFAULT_REGION']))
-        response = self.connection.describe_instances()
-        instance_list = response['Reservations']
-        for instance in instance_list:
-            instance_info = instance['Instances'][0]
-            if instance_info['State']['Name'] == 'pending':
-                self.check_instance_state(instance_info['InstanceId'])
-                response = self.connection.describe_instances(
-                    InstanceIds=[ instance_info['InstanceId'] ]
-                )
-                instance_info = response['Reservations'][0]['Instances'][0]
-            if instance_info['State']['Name'] != 'running':
-
-    # try to remove tags associated with non-running instance
-                try:
-                    response = self.connection.describe_tags(
-                        Filters=[ { 'Name': 'resource-id', 'Values': [ instance_info['InstanceId'] ] } ]
-                    )
-                    tag_list = []
-                    aws_tag_pattern = re.compile('aws:')
-                    for i in range(0, len(response['Tags'])):
-                        if not aws_tag_pattern.findall(response['Tags'][i]['Key']):
-                            tag = {}
-                            tag['Key'] = response['Tags'][i]['Key']
-                            tag['Value'] = response['Tags'][i]['Value']
-                            tag_list.append(tag)
-                    self.connection.delete_tags(
-                        Resources=[ instance_info['InstanceId'] ],
-                        Tags=tag_list
-                    )
-                    print('Tags have been deleted from instance %s.' % instance_info['InstanceId'])
-                except:
-                    pass
-
-    # try stopping non-running instance
-                try:
-                    self.connection.stop_instances(
-                        InstanceIds=[ instance_info['InstanceId'] ]
-                    )
-                    print('Instance %s is stopping.' % instance_info['InstanceId'])
-                except:
-                    pass
-
-    # try terminating non-running instance
-                try:
-                    self.connection.terminate_instances(
-                        InstanceIds=[ instance_info['InstanceId'] ]
-                    )
-                    print('Instance %s is terminating.' % instance_info['InstanceId'])
-                except:
-                    pass
-
-    # find non-available images
-        response = self.connection.describe_images(
-            Owners=[ os.environ['AWS_OWNER_ID'] ]
-        )
-        image_list = response['Images']
-        for image in image_list:
-            image_info = image.copy()
-            if image_info['State'] == 'pending':
-                self.checkImageState(image_info['ImageId'])
-                response = self.connection.describe_images(
-                    ImageIds=[ image_info['ImageId'] ]
-                )
-                image_info = response['Images'][0]
-            if image_info['State'] != 'available':
-
-    # try removing tags from non-available images
-                try:
-                    response = self.connection.describe_images(
-                        ImageIds=[ image_info['ImageId'] ]
-                    )
-                    image_tags = response['Images'][0]['Tags']
-                    tag_list = []
-                    for i in range(0, len(image_tags)):
-                        tag = {}
-                        tag['Key'] = image_tags[i]['Key']
-                        tag['Value'] = image_tags[i]['Value']
-                        tag_list.append(tag)
-                    self.connection.delete_tags(
-                        Resources=[ image_info['ImageId'] ],
-                        Tags=tag_list
-                    )
-                    print('Tags have been deleted from image %s.' % image_info['ImageId'])
-                except:
-                    pass
-
-    # try deregistering non-available image
-                try:
-                    self.connection.deregister_image(
-                        ImageId=image_info['ImageId']
-                    )
-                    print('Image %s has been deregistered.' % image_info['ImageId'])
-                except:
-                    pass
-
-    # try deleting snapshot associated with non-available image
-                try:
-                    self.connection.delete_snapshot(
-                        SnapshotId=image_info['BlockDeviceMappings'][0]['Ebs']['SnapshotId']
-                    )
-                    snap_id = image_info['BlockDeviceMappings'][0]['Ebs']['SnapshotId']
-                    image_id = image_info['ImageId']
-                    print('Snapshot %s associated with image %s has been deleted.' % (snap_id, image_id))
-                except:
-                    pass
-
-    # find snapshots with errors
-        response = self.connection.describe_snapshots(
-            OwnerIds=[ os.environ['AWS_OWNER_ID'] ]
-        )
-        snapshot_list = response['Snapshots']
-        for snapshot in snapshot_list:
-            snapshot_info = snapshot.copy()
-            if snapshot_info['State'] == 'error':
-
-    # try deleting snapshot with errors
-                try:
-                    self.connection.delete_snapshot(
-                        SnapshotId=snapshot_info['SnapshotId']
-                    )
-                    print('Snapshot %s has been deleted.' % snapshot_info['SnapshotId'])
-                except:
-                    pass
-
-        return True
 
     def list_keypairs(self):
 
@@ -1786,6 +1705,143 @@ class ec2Client(object):
         group_details = self.ingest(group_info, group_details)
         
         return group_details
+
+    def cleanup(self):
+
+        '''
+            a method for removing instances and images in unusual states
+
+        :return: True
+        '''
+
+    # find non-running instances
+        self.iam.printer('Cleaning up AWS region %s.' % self.iam.region_name)
+        response = self.connection.describe_instances()
+        instance_list = response['Reservations']
+        for instance in instance_list:
+            instance_info = instance['Instances'][0]
+            if instance_info['State']['Name'] == 'pending':
+                self.check_instance_state(instance_info['InstanceId'])
+                response = self.connection.describe_instances(
+                    InstanceIds=[ instance_info['InstanceId'] ]
+                )
+                instance_info = response['Reservations'][0]['Instances'][0]
+            if instance_info['State']['Name'] != 'running':
+
+    # try to remove tags associated with non-running instance
+                try:
+                    response = self.connection.describe_tags(
+                        Filters=[ { 'Name': 'resource-id', 'Values': [ instance_info['InstanceId'] ] } ]
+                    )
+                    tag_list = []
+                    import re
+                    aws_tag_pattern = re.compile('aws:')
+                    for i in range(0, len(response['Tags'])):
+                        if not aws_tag_pattern.findall(response['Tags'][i]['Key']):
+                            tag = {}
+                            tag['Key'] = response['Tags'][i]['Key']
+                            tag['Value'] = response['Tags'][i]['Value']
+                            tag_list.append(tag)
+                    self.connection.delete_tags(
+                        Resources=[ instance_info['InstanceId'] ],
+                        Tags=tag_list
+                    )
+                    self.iam.printer('Tags have been deleted from instance %s.' % instance_info['InstanceId'])
+                except:
+                    pass
+
+    # try stopping non-running instance
+                try:
+                    self.connection.stop_instances(
+                        InstanceIds=[ instance_info['InstanceId'] ]
+                    )
+                    self.iam.printer('Instance %s is stopping.' % instance_info['InstanceId'])
+                except:
+                    pass
+
+    # try terminating non-running instance
+                try:
+                    self.connection.terminate_instances(
+                        InstanceIds=[ instance_info['InstanceId'] ]
+                    )
+                    self.iam.printer('Instance %s is terminating.' % instance_info['InstanceId'])
+                except:
+                    pass
+
+    # find non-available images
+        response = self.connection.describe_images(
+            Owners=[ self.iam.owner_id ]
+        )
+        image_list = response['Images']
+        for image in image_list:
+            image_info = image.copy()
+            if image_info['State'] == 'pending':
+                self.check_image_state(image_info['ImageId'])
+                response = self.connection.describe_images(
+                    ImageIds=[ image_info['ImageId'] ]
+                )
+                image_info = response['Images'][0]
+            if image_info['State'] != 'available':
+
+    # try removing tags from non-available images
+                try:
+                    response = self.connection.describe_images(
+                        ImageIds=[ image_info['ImageId'] ]
+                    )
+                    image_tags = response['Images'][0]['Tags']
+                    tag_list = []
+                    for i in range(0, len(image_tags)):
+                        tag = {}
+                        tag['Key'] = image_tags[i]['Key']
+                        tag['Value'] = image_tags[i]['Value']
+                        tag_list.append(tag)
+                    self.connection.delete_tags(
+                        Resources=[ image_info['ImageId'] ],
+                        Tags=tag_list
+                    )
+                    self.iam.printer('Tags have been deleted from image %s.' % image_info['ImageId'])
+                except:
+                    pass
+
+    # try deregistering non-available image
+                try:
+                    self.connection.deregister_image(
+                        ImageId=image_info['ImageId']
+                    )
+                    self.iam.printer('Image %s has been deregistered.' % image_info['ImageId'])
+                except:
+                    pass
+
+    # try deleting snapshot associated with non-available image
+                try:
+                    self.connection.delete_snapshot(
+                        SnapshotId=image_info['BlockDeviceMappings'][0]['Ebs']['SnapshotId']
+                    )
+                    snap_id = image_info['BlockDeviceMappings'][0]['Ebs']['SnapshotId']
+                    image_id = image_info['ImageId']
+                    self.iam.printer('Snapshot %s associated with image %s has been deleted.' % (snap_id, image_id))
+                except:
+                    pass
+
+    # find snapshots with errors
+        response = self.connection.describe_snapshots(
+            OwnerIds=[ self.iam.owner_id ]
+        )
+        snapshot_list = response['Snapshots']
+        for snapshot in snapshot_list:
+            snapshot_info = snapshot.copy()
+            if snapshot_info['State'] == 'error':
+
+    # try deleting snapshot with errors
+                try:
+                    self.connection.delete_snapshot(
+                        SnapshotId=snapshot_info['SnapshotId']
+                    )
+                    self.iam.printer('Snapshot %s has been deleted.' % snapshot_info['SnapshotId'])
+                except:
+                    pass
+
+        return True
 
 if __name__ == '__main__':
 

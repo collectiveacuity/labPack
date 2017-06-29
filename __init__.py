@@ -1,0 +1,3 @@
+__author__ = 'rcj1492'
+__created__ = '2017.06'
+__licence__ = '©2017 Collective Acuity'
