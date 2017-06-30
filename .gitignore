@@ -1,6 +1,7 @@
 ###############  .gitignore   ##################
 
 ################ credentials  ##################
+.lab/
 cred/
 keys/
 
@@ -32,6 +33,7 @@ docs/_build/
 target/
 
 ###############   IDE files   ##################
+.~lock.*
 .DS_STORE
 .netbeans
 nbproject

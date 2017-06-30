@@ -1,8 +1,14 @@
 ChangeLog
 =========
 
-0.10 (TBD)
-----------
+0.10 (2017.06.30)
+-----------------
+* [FEATURE ADDED] sshClient class for handling ssh connections to ec2 instance
+* [FEATURE ADDED] ec2Client class for handling aws ec2 interactions
+* [FEATURE ADDED] iamClient class for handling aws authentication
+* [FEATURE ADDED] ip package for retrieving ip addresses
+* [FEATURE ADDED] conversion package for handling data format conversion
+* [FEATURE ADDED] grammar package for handling common grammar constructions
 * [FEATURE ADDED] documentation pages created on github.io
 * [UPDATE] added byte_data argument to appdataClient.create method
 * [UPDATE] added validate_extension function to regex package
