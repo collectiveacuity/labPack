@@ -1,3 +1,6 @@
+recursive-exclude notes/ *.*
+recursive-exclude dev/ *.*
+recursive-exclude tests_dev/ *.*
 recursive-include labpack/* *.json
 prune */__pycache__
 include *.rst
