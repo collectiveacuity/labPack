@@ -1,12 +1,426 @@
-# Classes (WIP)
+# Classes
 
-Classes
--------
-* **labID**: A class of methods for uniquely identifying records
-* **labDT**: A class of methods for transforming datetime data
-* **labRegex**: A class of methods for matching regex patterns in strings
-* **labMagic**: A class of methods for retrieving metadata information about data
+## labMagic
+### Import:
+labpack.parsing.magic.labMagic  
+### Description:
+initialization method for labMagic class  
+### \__init__
+##### 
+**Signature:**  
+\__init__(self, magic_file="")
+##### 
+**Description:**  
+initialization method for labMagic class  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                        </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                   </td></tr>
+<tr><td>magic_file</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with local path to magic.mgc file</td></tr>
+</tbody>
+</table>
+### analyze
+##### 
+**Signature:**  
+analyze(self, file_path="", file_url="", byte_data=None)
+##### 
+**Description:**  
+a method to determine the mimetype and extension of a file from its byte data  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                              </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                         </td></tr>
+<tr><td>file_path </td><td>str     </td><td>          </td><td>""       </td><td>[optional] string with local path to file</td></tr>
+<tr><td>file_url  </td><td>str     </td><td>          </td><td>""       </td><td>[optional] string with url of file       </td></tr>
+<tr><td>byte_data </td><td>NoneType</td><td>          </td><td>None     </td><td>[optional] byte data from a file         </td></tr>
+</tbody>
+</table>
 
+## labRegex
+### Import:
+labpack.parsing.regex.labRegex  
+### Description:
+instantiates class with a regular expression dictionary  
+### \__init__
+##### 
+**Signature:**  
+\__init__(self, regex_schema, override=False)
+##### 
+**Description:**  
+instantiates class with a regular expression dictionary  
+<table>
+<thead>
+<tr><th>Argument    </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                    </th></tr>
+</thead>
+<tbody>
+<tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
+<tr><td>regex_schema</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with regular expression name, pattern key-pairs     </td></tr>
+<tr><td>override    </td><td>bool  </td><td>          </td><td>False    </td><td>boolean to ignore value errors raised from regex name conflicts</td></tr>
+</tbody>
+</table>
+### map
+##### 
+**Signature:**  
+map(self, string_input, n_grams=1)
+##### 
+**Description:**  
+  
+<table>
+<thead>
+<tr><th>Argument    </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self        </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>string_input</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>n_grams     </td><td>int     </td><td>          </td><td>1        </td><td>             </td></tr>
+</tbody>
+</table>
 
+## labID
+### Import:
+labpack.records.id.labID  
+### Description:
+a class of methods for uniquely identifying objects
 
+        build-in methods:
+            self.uuid: uuid1 uuid object
+            self.id12: 12 character base 64 url safe string of posix time
+            self.id24: 24 character base 64 url safe string of md5 hash of uuid1
+            self.id36: 36 character base 64 url safe string of sha1 hash of uuid1
+            self.id48: 48 character base 64 url safe string of sha256 hash of uuid1
+            self.mac: string of mac address of device
+            self.epoch: current posix epoch timestamp with micro second resolution
+            self.iso: current iso utc datetime string
+            self.datetime: current python datetime  
+### \__init__
+##### 
+**Signature:**  
+\__init__(self)
+##### 
+**Description:**  
+a method to initialize a unique ID based upon the UUID1 method  
 
+## labDT
+### Import:
+labpack.records.time.labDT  
+### Description:
+a class of methods for datetime conversion
+
+    for list of timezones:
+        https://stackoverflow.com/questions/13866926/python-pytz-list-of-timezones
+    for list of datetime directives:
+        https://docs.python.org/2/library/datetime.html#strftime-and-strptime-behavior  
+### new
+##### 
+**Signature:**  
+new(cls)
+##### 
+**Description:**  
+a method to generate the current datetime as a labDT object  
+### zulu
+##### 
+**Signature:**  
+zulu(self)
+##### 
+**Description:**  
+a method to report ISO UTC datetime string from a labDT object
+
+        NOTE: for timezone offset string use .isoformat() instead  
+### epoch
+##### 
+**Signature:**  
+epoch(self)
+##### 
+**Description:**  
+a method to report posix epoch timestamp from a labDT object  
+### rfc2822
+##### 
+**Signature:**  
+rfc2822(self)
+##### 
+**Description:**  
+a method to report a RFC-2822 Compliant Date from a labDT object
+
+            https://tools.ietf.org/html/rfc2822.html#page-14  
+### pyLocal
+##### 
+**Signature:**  
+pyLocal(self, time_zone="")
+##### 
+**Description:**  
+a method to report a python datetime from a labDT object  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                 </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                            </td></tr>
+<tr><td>time_zone </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with timezone to report in</td></tr>
+</tbody>
+</table>
+### jsLocal
+##### 
+**Signature:**  
+jsLocal(self, time_zone="")
+##### 
+**Description:**  
+a method to report a javascript string from a labDT object  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                 </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                            </td></tr>
+<tr><td>time_zone </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with timezone to report in</td></tr>
+</tbody>
+</table>
+### humanFriendly
+##### 
+**Signature:**  
+humanFriendly(self, time_zone="")
+##### 
+**Description:**  
+a method to report a human friendly string from a labDT object  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                 </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                            </td></tr>
+<tr><td>time_zone </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with timezone to report in</td></tr>
+</tbody>
+</table>
+### fromEpoch
+##### 
+**Signature:**  
+fromEpoch(cls, epoch_time)
+##### 
+**Description:**  
+a method for constructing a labDT object from epoch timestamp  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                     </th></tr>
+</thead>
+<tbody>
+<tr><td>cls       </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>                                </td></tr>
+<tr><td>epoch_time</td><td>float   </td><td>Yes       </td><td>0.0      </td><td>number with epoch timestamp info</td></tr>
+</tbody>
+</table>
+### fromISO
+##### 
+**Signature:**  
+fromISO(cls, iso_string)
+##### 
+**Description:**  
+a method for constructing a labDT object from a timezone aware ISO string  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                 </th></tr>
+</thead>
+<tbody>
+<tr><td>cls       </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>                                            </td></tr>
+<tr><td>iso_string</td><td>str     </td><td>Yes       </td><td>""       </td><td>string with date and time info in ISO format</td></tr>
+</tbody>
+</table>
+### fromPython
+##### 
+**Signature:**  
+fromPython(cls, python_datetime)
+##### 
+**Description:**  
+a method for constructing a labDT from a python datetime with timezone info  
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                       </th></tr>
+</thead>
+<tbody>
+<tr><td>cls            </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>                                  </td></tr>
+<tr><td>python_datetime</td><td>object  </td><td>Yes       </td><td>None     </td><td>datetime object with timezone info</td></tr>
+</tbody>
+</table>
+### fromJavascript
+##### 
+**Signature:**  
+fromJavascript(cls, javascript_datetime)
+##### 
+**Description:**  
+a method to construct labDT from a javascript datetime string  
+<table>
+<thead>
+<tr><th>Argument           </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                       </th></tr>
+</thead>
+<tbody>
+<tr><td>cls                </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>                                                  </td></tr>
+<tr><td>javascript_datetime</td><td>str     </td><td>Yes       </td><td>""       </td><td>string with datetime info in javascript formatting</td></tr>
+</tbody>
+</table>
+### fromPattern
+##### 
+**Signature:**  
+fromPattern(cls, datetime_string, datetime_pattern, time_zone)
+##### 
+**Description:**  
+a method for constructing labDT from a strptime pattern in a string
+            https://docs.python.org/2/library/datetime.html#strftime-and-strptime-behavior
+            iso_pattern: '%Y-%m-%dT%H:%M:%S.%f%z'
+            human_friendly_pattern: '%A, %B %d, %Y %I:%M:%S.%f%p'  
+<table>
+<thead>
+<tr><th>Argument        </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                         </th></tr>
+</thead>
+<tbody>
+<tr><td>cls             </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>                                    </td></tr>
+<tr><td>datetime_string </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with date and time info      </td></tr>
+<tr><td>datetime_pattern</td><td>str     </td><td>Yes       </td><td>""       </td><td>string with python formatted pattern</td></tr>
+<tr><td>time_zone       </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with timezone info           </td></tr>
+</tbody>
+</table>
+
+## appdataModel
+### Import:
+labpack.storage.appdata.appdataModel  
+### Description:
+a schema-enforceable class for managing record collections in local app data
+
+        NOTE: class is still WIP
+
+        NOTE:   class is designed to store json valid data nested in a dictionary
+                structure. acceptable data types include:
+                    boolean
+                    integer or float (number)
+                    string
+                    dictionary
+                    list
+                    none
+                to store other types of data, try first creating an url safe base64
+                string using something like:
+                    base64.urlsafe_b64encode(byte_data).decode()  
+### \__init__
+##### 
+**Signature:**  
+\__init__(self, record_schema=None, collection_settings=None, appdata_model=None)
+##### 
+**Description:**  
+initialization method for the appdata file storage class  
+<table>
+<thead>
+<tr><th>Argument           </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                              </th></tr>
+</thead>
+<tbody>
+<tr><td>self               </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                         </td></tr>
+<tr><td>record_schema      </td><td>dict  </td><td>          </td><td>None     </td><td>dictionary with record schema in jsonModel format        </td></tr>
+<tr><td>collection_settings</td><td>dict  </td><td>          </td><td>None     </td><td>dictionary with collection settings                      </td></tr>
+<tr><td>appdata_model      </td><td>object</td><td>          </td><td>None     </td><td>[optional] appdataModel object with pre-existing settings</td></tr>
+</tbody>
+</table>
+### new
+##### 
+**Signature:**  
+new(self, **kwargs=None)
+##### 
+**Description:**  
+a method to create a new record in the object model using keyword arguments  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>**kwargs  </td><td>dict  </td><td>          </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+### save
+##### 
+**Signature:**  
+save(self, overwrite=True)
+##### 
+**Description:**  
+a method to save the values of a record to a file in local app data  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                    </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                               </td></tr>
+<tr><td>overwrite </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to force a consistency check</td></tr>
+</tbody>
+</table>
+### load
+##### 
+**Signature:**  
+load(self, key_string)
+##### 
+**Description:**  
+  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>key_string</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+### delete
+##### 
+**Signature:**  
+delete(self)
+##### 
+**Description:**  
+  
+### migrate
+##### 
+**Signature:**  
+migrate(self, storage_model)
+##### 
+**Description:**  
+  
+<table>
+<thead>
+<tr><th>Argument     </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self         </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>storage_model</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+### find
+##### 
+**Signature:**  
+find(self, index_filters=None, max_results=1, reverse_search=True, previous_key="")
+##### 
+**Description:**  
+a method to find records based upon their indexed values  
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                  </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                             </td></tr>
+<tr><td>index_filters </td><td>list  </td><td>          </td><td>None     </td><td>list with index query criteria dictionaries to filter records</td></tr>
+<tr><td>max_results   </td><td>int   </td><td>          </td><td>1        </td><td>integer with maximum number of results to return             </td></tr>
+<tr><td>reverse_search</td><td>bool  </td><td>          </td><td>True     </td><td>boolean to begin search with last item in collection first   </td></tr>
+<tr><td>previous_key  </td><td>str   </td><td>          </td><td>""       </td><td>string with key to begin next search with (for pagination)   </td></tr>
+</tbody>
+</table>
+### compact
+##### 
+**Signature:**  
+compact(self, total_number=0, cutoff_date="")
+##### 
+**Description:**  
+  
+<table>
+<thead>
+<tr><th>Argument    </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>total_number</td><td>int   </td><td>          </td><td>0        </td><td>             </td></tr>
+<tr><td>cutoff_date </td><td>str   </td><td>          </td><td>""       </td><td>             </td></tr>
+</tbody>
+</table>

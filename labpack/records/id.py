@@ -17,15 +17,6 @@ class labID(object):
 
     ''' a class of methods for uniquely identifying objects
 
-        dependencies:
-            import uuid
-            import binascii
-            import os
-            import hashlib
-            import base64
-            import pytz
-            from datetime import datetime
-
         build-in methods:
             self.uuid: uuid1 uuid object
             self.id12: 12 character base 64 url safe string of posix time

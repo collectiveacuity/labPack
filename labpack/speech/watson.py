@@ -33,7 +33,7 @@ class watsonSpeechClient(object):
     ''' 
         a class of methods to convert speech to text using IBM Watson api 
     
-        reference: https://console.ng.bluemix.net/catalog/services/text-to-speech
+        https://console.ng.bluemix.net/catalog/services/text-to-speech
     '''
 
     _class_fields = {
