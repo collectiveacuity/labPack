@@ -142,8 +142,8 @@ class sshClient(object):
                 self.login_name = login_name
         if not self.login_name:
             for tag in instance_details['tags']:
-                if tag['Key'] == 'LoginName':
-                    self.login_name = tag['Value']
+                if tag['key'] == 'LoginName':
+                    self.login_name = tag['value']
         if not self.login_name:
             raise Exception('SSH access to %s requires a login_name argument or LoginName tag' % instance_id)
 
@@ -168,15 +168,15 @@ class sshClient(object):
         for group_id in group_list:
             group_details = self.ec2.read_security_group(group_id)
             for permission in group_details['ip_permissions']:
-                if permission['FromPort'] == 22:
-                    port_22_list.extend(permission['IpRanges'])
+                if permission['from_port'] == 22:
+                    port_22_list.extend(permission['ip_ranges'])
         if not port_22_list:
             raise Exception('SSH access to %s requires a security group with inbound permissions for port 22.' % instance_id)
         from labpack.records.ip import get_ip
         current_ip = get_ip()
         ssh_access = False
         for ip_range in port_22_list:
-            if ip_range['CidrIp'].find('0.0.0.0/0') > -1 or ip_range['CidrIp'].find(current_ip) > -1:
+            if ip_range['cidr_ip'].find('0.0.0.0/0') > -1 or ip_range['cidr_ip'].find(current_ip) > -1:
                 ssh_access = True
                 break
         if not ssh_access:

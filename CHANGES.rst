@@ -1,6 +1,10 @@
 ChangeLog
 =========
 
+0.11 (2017.06.30)
+-----------------
+* [BUG FIX] fixed sshClient init element key name error
+
 0.10 (2017.06.30)
 -----------------
 * [FEATURE ADDED] sshClient class for handling ssh connections to ec2 instance
