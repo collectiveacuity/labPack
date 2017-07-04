@@ -1,5 +1,6 @@
 __author__ = 'rcj1492'
-__created__ = '2015'
+__created__ = '2015.07'
+__license__ = 'MIT'
 
 '''
 PLEASE NOTE:    ec2 package requires the boto3 module.
