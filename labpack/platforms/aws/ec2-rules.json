@@ -18,6 +18,13 @@
       "ap-southeast-2": "ec2.ap-southeast-2.amazonaws.com",
       "ap-northeast-1": "ec2.ap-northeast-1.amazonaws.com",
       "sa-east-1": "ec2.sa-east-1.amazonaws.com"
+    },
+    "limits": {
+      "max_instances_per_region": {
+        "on_demand": "varies",
+        "reserved": 20,
+        "spot": 20
+      }
     }
   },
   "schema": {

@@ -1,83 +1,68 @@
 __author__ = 'rcj1492'
 __created__ = '2015.08'
+__license__ = 'MIT'
 
 '''
-a package of classes for managing interactions with AWS Simple Storage Service
+PLEASE NOTE:    ec2 package requires the boto3 module.
 
-pip install boto3
-pip install python-dateutil
-https://boto3.readthedocs.org/en/latest/reference/services/dynamodb.html#id1
-https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GSI.html
+(all platforms) pip3 install boto3
 '''
 
-from awsDB.awsValidation import s3Input, iamInput
-import boto3
-import os
-import re
-from dateutil.tz import *
-import datetime
-import gzip
-import json
-import hashlib
-import base64
-import time
-from copy import deepcopy
+try:
+    import boto3
+except:
+    import sys
+    print('ec2 package requires the boto3 module. try: pip3 install boto3')
+    sys.exit(1)
 
-class S3ConnectionError(Exception):
-    def __init__(self, message='', errors=None):
-        text = '\nFailure connecting to AWS S3 with %s request.' % message
-        super(S3ConnectionError, self).__init__(text)
-        self.errors = errors
+from labpack.authentication.aws.iam import AWSConnectionError
 
-class awsS3(object):
+class s3Client(object):
 
     '''
         a class of methods for interacting with AWS Simple Storage Service
-
-        dependencies:
-            from awsDB.awsValidation import s3Input, iamInput
-            import boto3
-            import re
-            import os
-            import pytest
-            from dateutil.tz import *
-            import datetime
-            import gzip
-            import json
-            import hashlib
-            import base64
-            from copy import deepcopy
     '''
 
-    def __init__(self, aws_credentials, aws_rules, aws_region=''):
+    def __init__(self, access_id, secret_key, region_name, owner_id, user_name, verbose=True):
 
         '''
             a method for initializing the connection to S3
-
-            checks for environmental variables:
-                'OS' to determine live or localhost endpoint
-                'LAB_REMOTE_DB_TESTING' to determine remote testing endpoint
-        :param aws_credentials: dictionary with AWS credentials
-        :param aws_rules: dictionary with AWS data rules
-        :param aws_region: [optional] string with AWS region
+            
+        :param access_id: string with access_key_id from aws IAM user setup
+        :param secret_key: string with secret_access_key from aws IAM user setup
+        :param region_name: string with name of aws region
+        :param owner_id: string with aws account id
+        :param user_name: string with name of user access keys are assigned to
+        :param verbose: boolean to enable process messages
         '''
+        
+        title = '%s.__init__' % self.__class__.__name__
 
-    # validate inputs and create base methods
-        self.cred = iamInput(aws_rules).credentials(aws_credentials)
-        self.input = s3Input(aws_rules)
-        self.rules = aws_rules
+    # initialize model
+        from labpack import __module__
+        from jsonmodel.loader import jsonLoader
+        from jsonmodel.validators import jsonModel
+        class_fields = jsonLoader(__module__, 'storage/aws/s3-rules.json')
+        self.fields = jsonModel(class_fields)
 
-    # change region environment variable
-        if aws_region:
-            region = self.input.region(aws_region)
-            self.cred['AWS_DEFAULT_REGION'] = aws_region
+    # construct iam connection
+        from labpack.authentication.aws.iam import iamClient
+        self.iam = iamClient(access_id, secret_key, region_name, owner_id, user_name, verbose)
 
     # construct s3 client connection
-        for key, value in self.cred.items():
-            os.environ[key] = value
-        self.connection = boto3.client('s3')
+        client_kwargs = {
+            'service_name': 's3',
+            'region_name': self.iam.region_name,
+            'aws_access_key_id': self.iam.access_id,
+            'aws_secret_access_key': self.iam.secret_key
+        }
+        self.connection = boto3.client(**client_kwargs)
+        self.verbose = verbose
+    
+    # construct object properties
+        self.bucket_list = []
 
-    def listBuckets(self):
+    def list_buckets(self):
 
         '''
             a method to retrieve a list of buckets on s3
@@ -85,221 +70,74 @@ class awsS3(object):
         :return: list of buckets
         '''
 
+        title = '%s.list_buckets' % self.__class__.__name__
+        
         bucket_list = []
-
+        
     # send request to s3
         try:
             response = self.connection.list_buckets()
         except:
-            raise S3ConnectionError(self.listBuckets.__name__)
+            raise AWSConnectionError(title)
 
     # create list from response
         for bucket in response['Buckets']:
             bucket_list.append(bucket['Name'])
 
-        return bucket_list
+        self.bucket_list = bucket_list
+        
+        return self.bucket_list
 
-    def bucketDetails(self, bucket_name):
+    def create_bucket(self, bucket_name, access_control='private', version_control=False, log_destination=None, lifecycle_rules=None, tag_list=None, notification_settings=None,  region_replication=None, access_policy=None):
 
         '''
-            a method to retrieve properties of a bucket in s3
-
+            a method for creating a bucket on AWS S3
+            
         :param bucket_name: string with name of bucket
-        :return: dictionary with details of bucket
+        :param access_control: string with type of access control policy
+        :param version_control: boolean to enable versioning of records
+        :param log_destination: dictionary with bucket name and prefix of log bucket
+        :param lifecycle_rules: dictionary with rules for aging data
+        :param tag_list: list of dictionaries with key and value for tag
+        :param notification_settings: list of dictionaries with notification details
+        :param region_replication: WIP
+        :param access_policy: WIP
+        :return: string with name of bucket
         '''
 
-    # validate input
-        self.input.bucketName(bucket_name)
-
-    # validate existence of bucket
-        if not bucket_name in self.listBuckets():
-            raise ValueError('\nS3 Bucket "%s" does not exist.' % bucket_name)
-
-    # create details dictionary
-        bucket_details = {
-            'bucketName': bucket_name,
-            'accessControl': 'private',
-            'versionControl': False,
-            'logDestination': {},
-            'lifecycleRules': [],
-            'bucketTags': [],
-            'notificationSettings': [],
-            'regionReplication': {},
-            'accessPolicy': {}
-        }
-
-    # retrieve access control details
-        try:
-            response = self.connection.get_bucket_acl( Bucket=bucket_name )
-            if len(response['Grants']) > 1:
-                log_user = 'http://acs.amazonaws.com/groups/s3/LogDelivery'
-                log_delivery = False
-                public_user = 'http://acs.amazonaws.com/groups/global/AllUsers'
-                public_perm = []
-                for grant in response['Grants']:
-                    if 'URI' in grant['Grantee']:
-                        if grant['Grantee']['URI'] == log_user:
-                            log_delivery = True
-                        if grant['Grantee']['URI'] == public_user:
-                            public_perm.append(grant['Permission'])
-                if public_perm:
-                    if len(public_perm) > 1:
-                        bucket_details['accessControl'] = 'public-read-write'
-                    else:
-                        bucket_details['accessControl'] = 'public-read'
-                elif log_delivery:
-                    bucket_details['accessControl'] = 'log-delivery-write'
-                else:
-                    bucket_details['accessControl'] = 'authenticated-read'
-        except:
-            raise S3ConnectionError('bucketDetails access control')
-
-    # retrieve version control details
-        try:
-            response = self.connection.get_bucket_versioning( Bucket=bucket_name )
-            if 'Status' in response.keys():
-                if response['Status'] == 'Enabled':
-                    bucket_details['versionControl'] = True
-        except:
-            raise S3ConnectionError('bucketDetails version control')
-
-    # retrieve log destination details
-        try:
-            response = self.connection.get_bucket_logging( Bucket=bucket_name )
-            if 'LoggingEnabled' in response:
-                res = response['LoggingEnabled']
-                bucket_details['logDestination']['bucketName'] = res['TargetBucket']
-                bucket_details['logDestination']['prefix'] = res['TargetPrefix']
-        except:
-            raise S3ConnectionError('bucketDetails logging')
-
-    # retrieve lifecycle rules details
-        try:
-            response = self.connection.get_bucket_lifecycle( Bucket=bucket_name )
-            for rule in response['Rules']:
-                if rule['Status'] == 'Enabled':
-                    details = { "prefix": rule['Prefix'] }
-                    if 'Transition' in rule.keys():
-                        details['longevity'] = rule['Transition']['Days']
-                        details['currentVersion'] = True
-                        details['action'] = 'archive'
-                    elif 'Expiration' in rule.keys():
-                        details['longevity'] = rule['Expiration']['Days']
-                        details['currentVersion'] = True
-                        details['action'] = 'delete'
-                    elif 'NoncurrentVersionTransition' in rule.keys():
-                        details['longevity'] = rule['NoncurrentVersionTransition']['NoncurrentDays']
-                        details['currentVersion'] = False
-                        details['action'] = 'archive'
-                    elif 'NoncurrentVersionExpiration' in rule.keys():
-                        details['longevity'] = rule['NoncurrentVersionExpiration']['NoncurrentDays']
-                        details['currentVersion'] = False
-                        details['action'] = 'delete'
-                    bucket_details['lifecycleRules'].append(details)
-        except:
-            pass
-
-    # retrieve bucket tag details
-        try:
-            response = self.connection.get_bucket_tagging( Bucket=bucket_name )
-            for tag in response['TagSet']:
-                bucket_details['bucketTags'].append(tag)
-        except:
-            pass
-
-    # retrieve notification settings details
-        try:
-            response = self.connection.get_bucket_notification_configuration( Bucket=bucket_name)
-            if 'TopicConfigurations' in response.keys():
-                for notification in response['TopicConfigurations']:
-                    details = {
-                        'service': 'sns',
-                        'arn': notification['TopicArn'],
-                        'event': notification['Events'][0],
-                        'filters': {}
-                    }
-                    if 'Filter' in notification.keys():
-                        for rule in notification['Filter']['Key']['FilterRules']:
-                            details['filters'][rule['Name']] = rule['Value']
-                    bucket_details['notificationSettings'].append(details)
-            if 'QueueConfigurations' in response.keys():
-                for notification in response['QueueConfigurations']:
-                    details = {
-                        'service': 'sqs',
-                        'arn': notification['QueueArn'],
-                        'event': notification['Events'][0],
-                        'filters': {}
-                    }
-                    if 'Filter' in notification.keys():
-                        for rule in notification['Filter']['Key']['FilterRules']:
-                            details['filters'][rule['Name']] = rule['Value']
-                    bucket_details['notificationSettings'].append(details)
-            if 'LambdaFunctionConfigurations' in response.keys():
-                for notification in response['LambdaFunctionConfigurations']:
-                    details = {
-                        'service': 'lambda',
-                        'arn': notification['LambdaFunctionArn'],
-                        'event': notification['Events'][0],
-                        'filters': {}
-                    }
-                    if 'Filter' in notification.keys():
-                        for rule in notification['Filter']['Key']['FilterRules']:
-                            details['filters'][rule['Name']] = rule['Value']
-                    bucket_details['notificationSettings'].append(details)
-        except:
-            raise S3ConnectionError('bucketDetails notification settings')
-
-    # TODO: retrieve region replication details
-    #     try:
-    #         response = self.connection.get_bucket_replication( Bucket=bucket_name )
-    #     except:
-    #         pass
-
-    # TODO: retrieve access policy details
-    #     try:
-    #         response = self.connection.get_bucket_policy( Bucket=bucket_name )
-    #     except:
-    #         pass
-
-        return bucket_details
-
-    def createBucket(self, object_map):
-
-        '''
-            a method for creating a bucket in s3
-
-            :param object_map: dictionary with bucket, metadata and object definitions
-            :return: object_map
-        '''
-
+        title = '%s.create_bucket' % self.__class__.__name__
+        
     # validate inputs
-        # object_map = self.input.map(object_map)
-        bucket_name = object_map['bucket']['bucketName']
-        aws_region = os.environ.get('AWS_DEFAULT_REGION')
-        access_control = object_map['bucket']['accessControl']
-        version_control = object_map['bucket']['versionControl']
-        log_destination = object_map['bucket']['logDestination']
-        lifecycle_rules = object_map['bucket']['lifecycleRules']
-        bucket_tags = object_map['bucket']['bucketTags']
-        notification_settings = object_map['bucket']['notificationSettings']
-        region_replication = {}
-        access_policy = {}
+        input_fields = {
+            'bucket_name': bucket_name,
+            'access_control': access_control,
+            'log_destination': log_destination,
+            'lifecycle_rules': lifecycle_rules,
+            'tag_list': tag_list,
+            'notification_settings': notification_settings,
+            'region_replication': region_replication,
+            'access_policy': access_policy
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
 
-    # check to see if required buckets already exists
-        response = self.listBuckets()
-        max_buckets = self.rules['s3']['bucket']['maxNumberPerAccount']
-        if bucket_name in response:
-            raise ValueError('\nS3 Bucket "%s" already exists.' % bucket_name)
-        elif len(response) >= max_buckets:
-            raise Exception('\nS3 account already at maximum %s buckets.' % max_buckets)
+    # verify requirements and limits
+        self.list_buckets()
+        if bucket_name in self.bucket_list:
+            raise ValueError('S3 Bucket "%s" already exists in aws region %s.' % (bucket_name, self.iam.region_name))
+        max_buckets = self.fields.metadata['limits']['max_buckets_per_account']
+        if len(self.bucket_list) >= max_buckets:
+            raise Exception('S3 account %s already at maximum %s buckets.' % (self.iam.owner_id, max_buckets))
         if log_destination:
-            log_name = log_destination['bucketName']
-            if not log_name in response:
+            log_name = log_destination['name']
+            if not log_name in self.bucket_list:
                 if log_name != bucket_name:
-                    raise ValueError('\nS3 Bucket "%s" for logging does not exist.' % log_name)
+                    raise ValueError('S3 Bucket "%s" for logging does not exist in aws region %s.' % (log_name, self.iam.region_name))
             else:
-                response = self.bucketDetails(log_name)
-                if response['accessControl'] != 'log-delivery-write':
+                log_details = self.read_bucket(log_name)
+                if log_details['access_control'] != 'log-delivery-write':
                     raise ValueError('\nS3 Bucket "%s" for logging does not have "log-delivery-write" access control.' % log_name)
 
     # TODO: check to see if required notification arns exist
@@ -312,15 +150,16 @@ class awsS3(object):
             'Bucket': bucket_name,
             'ACL': access_control
         }
-        if not aws_region == 'us-east-1':
-            kw_args['CreateBucketConfiguration'] = { 'LocationConstraint': aws_region }
+        if self.iam.region_name != 'us-east-1':
+            kw_args['CreateBucketConfiguration'] = { 'LocationConstraint': self.iam.region_name }
 
     # send request to s3
-        print('Creating bucket "%s".' % bucket_name, end='', flush=True)
+        self.iam.printer('Creating bucket "%s".' % bucket_name, flush=True)
         try:
             response = self.connection.create_bucket(**kw_args)
+            self.iam.printer('.', flush=True)
         except:
-            raise S3ConnectionError('createBucket')
+            raise AWSConnectionError(title)
 
     # if true, activate version_control attribute
         if version_control:
@@ -329,9 +168,9 @@ class awsS3(object):
                     Bucket=bucket_name,
                     VersioningConfiguration={ 'Status': 'Enabled' }
                 )
-                print('.', end='', flush=True)
+                self.iam.printer('.', flush=True)
             except:
-                raise S3ConnectionError('createBucket versionControl')
+                raise AWSConnectionError(title)
 
     # if present, direct bucket logging to bucket location
         if log_destination:
@@ -340,16 +179,16 @@ class awsS3(object):
                     'Bucket': bucket_name,
                     'BucketLoggingStatus': {
                         'LoggingEnabled': {
-                            'TargetBucket': log_destination['bucketName']
+                            'TargetBucket': log_destination['name']
                         }
                     }
                 }
                 if log_destination['prefix']:
                     kw_args['BucketLoggingStatus']['LoggingEnabled']['TargetPrefix'] = log_destination['prefix']
                 self.connection.put_bucket_logging(**kw_args)
-                print('.', end='', flush=True)
+                self.iam.printer('.', flush=True)
             except:
-                raise S3ConnectionError('createBucket logDestination')
+                raise AWSConnectionError(title)
 
     # if present, assign lifecycle rules
         if lifecycle_rules:
@@ -363,7 +202,7 @@ class awsS3(object):
                     'Status': 'Enabled'
                 }
                 if rule['action'] == 'archive':
-                    if rule['currentVersion']:
+                    if rule['current_version']:
                         details['Transition'] = {
                             'Days': rule['longevity'],
                             'StorageClass': 'GLACIER'
@@ -374,27 +213,27 @@ class awsS3(object):
                             'StorageClass': 'GLACIER'
                         }
                 else:
-                    if rule['currentVersion']:
+                    if rule['current_version']:
                         details['Expiration'] = { 'Days': rule['longevity'] }
                     else:
                         details['NoncurrentVersionExpiration'] = { 'NoncurrentDays': rule['longevity'] }
                 kw_args['LifecycleConfiguration']['Rules'].append(details)
             try:
                 response = self.connection.put_bucket_lifecycle(**kw_args)
-                print('.', end='', flush=True)
+                self.iam.printer('.', flush=True)
             except:
-                raise S3ConnectionError('createBucket lifecycle')
+                raise AWSConnectionError(title)
 
     # if present, assign tags to bucket
-        if bucket_tags:
+        if tag_list:
             try:
                 self.connection.put_bucket_tagging(
                     Bucket=bucket_name,
-                    Tagging={ 'TagSet': bucket_tags }
+                    Tagging={ 'TagSet': self.iam.prepare(tag_list) }
                 )
-                print('.', end='', flush=True)
+                self.iam.printer('.', flush=True)
             except:
-                raise S3ConnectionError('createBucket bucketTags')
+                raise AWSConnectionError(title)
 
     # if present, assign notification rules
         if notification_settings:
@@ -432,116 +271,221 @@ class awsS3(object):
                     kw_args['NotificationConfiguration']['LambdaFunctionConfigurations'].append(details)
 
             try:
-                # TODO: response = self.connection.put_bucket_notification_configuration(**kw_args)
-                print('.', end='', flush=True)
+                response = self.connection.put_bucket_notification_configuration(**kw_args)
+                self.iam.printer('.', flush=True)
             except:
-                raise S3ConnectionError('createBucket notifications')
+                raise AWSConnectionError(title)
 
      # TODO: if present, assign region replication
         if region_replication:
             try:
-                response = self.connection.put_bucket_replication(
-                    Bucket='string',
-                    ReplicationConfiguration={
-                        'Role': 'string',
-                        'Rules': [
-                            {
-                                'ID': 'string',
-                                'Prefix': 'string',
-                                'Status': 'Enabled',
-                                'Destination': {
-                                    'Bucket': 'string'
-                                }
-                            },
-                        ]
-                    }
-                )
-                print('.', end='', flush=True)
+                # response = self.connection.put_bucket_replication(
+                #     Bucket='string',
+                #     ReplicationConfiguration={
+                #         'Role': 'string',
+                #         'Rules': [
+                #             {
+                #                 'ID': 'string',
+                #                 'Prefix': 'string',
+                #                 'Status': 'Enabled',
+                #                 'Destination': {
+                #                     'Bucket': 'string'
+                #                 }
+                #             },
+                #         ]
+                #     }
+                # )
+                self.iam.printer('.', flush=True)
             except:
-                raise S3ConnectionError('createBucket replication')
+                raise AWSConnectionError(title)
 
     # TODO: if present, assign access policy
         if access_policy:
             try:
-                response = self.connection.put_bucket_policy(
-                    Bucket='string',
-                    Policy='string'
-                )
-                print('.', end='', flush=True)
+                # response = self.connection.put_bucket_policy(
+                #     Bucket='string',
+                #     Policy='string'
+                # )
+                self.iam.printer('.', flush=True)
             except:
-                raise S3ConnectionError('createBucket access policy')
+                raise AWSConnectionError(title)
 
-        print(' Done.')
-        return object_map
+        self.iam.printer(' done.')
+        
+        return bucket_name
 
-    def deleteBucket(self, bucket_name):
+    def read_bucket(self, bucket_name):
 
         '''
-            a method for deleting a bucket and all its files on s3
+            a method to retrieve properties of a bucket in s3
 
         :param bucket_name: string with name of bucket
-        :return: True
+        :return: dictionary with details of bucket
         '''
 
+        title = '%s.read_bucket' % self.__class__.__name__
+        
     # validate inputs
-        self.input.bucketName(bucket_name)
-
-    # check for existence of bucket
-        if not bucket_name in self.listBuckets():
-            print('S3 bucket "%s" does not exist.' % bucket_name)
-            return True
-
-    # retrieve list of objects in bucket
-        object_keys = []
-        object_list, next_key = self.listVersions(bucket_name)
-        for object in object_list:
-            details = {
-                'Key': object['objectKey'],
-                'VersionId': object['versionID']
-            }
-            object_keys.append(details)
-
-    # delete objects in bucket
-        kw_args = {
-            'Bucket': bucket_name,
-            'Delete': { 'Objects': object_keys }
+        input_fields = {
+            'bucket_name': bucket_name
         }
-        if object_keys:
-            try:
-                response = self.connection.delete_objects(**kw_args)
-            except:
-                raise S3ConnectionError('deleteBucket deleteObjects')
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
 
-    # continue deleting objects in bucket until empty
-        if next_key:
-            while next_key:
-                object_keys = []
-                object_list, next_key = self.listVersions(bucket_name, starting_key=next_key['key'], starting_marker=next_key['marker'])
-                for object in object_list:
-                    details = {
-                        'Key': object['objectKey'],
-                        'VersionId': object['versionID']
-                    }
-                    object_keys.append(details)
-                kw_args = {
-                    'Bucket': bucket_name,
-                    'Delete': { 'Objects': object_keys }
-                }
-                try:
-                    response = self.connection.delete_objects(**kw_args)
-                except:
-                    raise S3ConnectionError('deleteBucket deleteObjects')
+    # validate existence of bucket
+        if not bucket_name in self.bucket_list:
+            if not bucket_name in self.list_buckets():
+                raise ValueError('S3 Bucket "%s" does not exist.' % bucket_name)
 
-    # send delete bucket request
+    # create details dictionary
+        bucket_details = {
+            'bucket_name': bucket_name,
+            'access_control': 'private',
+            'version_control': False,
+            'log_destination': {},
+            'lifecycle_rules': [],
+            'tags': [],
+            'notification_settings': [],
+            'region_replication': {},
+            'access_policy': {}
+        }
+
+    # retrieve access control details
         try:
-            self.connection.delete_bucket( Bucket=bucket_name )
+            response = self.connection.get_bucket_acl( Bucket=bucket_name )
+            if len(response['Grants']) > 1:
+                log_user = 'http://acs.amazonaws.com/groups/s3/LogDelivery'
+                log_delivery = False
+                public_user = 'http://acs.amazonaws.com/groups/global/AllUsers'
+                public_perm = []
+                for grant in response['Grants']:
+                    if 'URI' in grant['Grantee']:
+                        if grant['Grantee']['URI'] == log_user:
+                            log_delivery = True
+                        if grant['Grantee']['URI'] == public_user:
+                            public_perm.append(grant['Permission'])
+                if public_perm:
+                    if len(public_perm) > 1:
+                        bucket_details['access_control'] = 'public-read-write'
+                    else:
+                        bucket_details['access_control'] = 'public-read'
+                elif log_delivery:
+                    bucket_details['access_control'] = 'log-delivery-write'
+                else:
+                    bucket_details['access_control'] = 'authenticated-read'
         except:
-            raise S3ConnectionError('deleteBucket')
+            raise AWSConnectionError(title)
 
-    # report result and return true
-        print('S3 bucket "%s" deleted.' % bucket_name)
-        return True
+    # retrieve version control details
+        try:
+            response = self.connection.get_bucket_versioning( Bucket=bucket_name )
+            if 'Status' in response.keys():
+                if response['Status'] == 'Enabled':
+                    bucket_details['version_control'] = True
+        except:
+            raise AWSConnectionError(title)
 
+    # retrieve log destination details
+        try:
+            response = self.connection.get_bucket_logging( Bucket=bucket_name )
+            if 'LoggingEnabled' in response:
+                res = response['LoggingEnabled']
+                bucket_details['log_destination']['target_bucket'] = res['TargetBucket']
+                bucket_details['log_destination']['target_prefix'] = res['TargetPrefix']
+        except:
+            raise AWSConnectionError(title)
+
+    # retrieve lifecycle rules details
+        try:
+            response = self.connection.get_bucket_lifecycle( Bucket=bucket_name )
+            for rule in response['Rules']:
+                if rule['Status'] == 'Enabled':
+                    details = { "prefix": rule['Prefix'] }
+                    if 'Transition' in rule.keys():
+                        details['longevity'] = rule['Transition']['Days']
+                        details['current_version'] = True
+                        details['action'] = 'archive'
+                    elif 'Expiration' in rule.keys():
+                        details['longevity'] = rule['Expiration']['Days']
+                        details['current_version'] = True
+                        details['action'] = 'delete'
+                    elif 'NoncurrentVersionTransition' in rule.keys():
+                        details['longevity'] = rule['NoncurrentVersionTransition']['NoncurrentDays']
+                        details['current_version'] = False
+                        details['action'] = 'archive'
+                    elif 'NoncurrentVersionExpiration' in rule.keys():
+                        details['longevity'] = rule['NoncurrentVersionExpiration']['NoncurrentDays']
+                        details['current_version'] = False
+                        details['action'] = 'delete'
+                    bucket_details['lifecycle_rules'].append(details)
+        except:
+            pass
+
+    # retrieve bucket tag details
+        try:
+            response = self.connection.get_bucket_tagging( Bucket=bucket_name )
+            for tag in response['TagSet']:
+                bucket_details['tag_list'].append(tag)
+        except:
+            pass
+
+    # retrieve notification settings details
+        try:
+            response = self.connection.get_bucket_notification_configuration( Bucket=bucket_name)
+            if 'TopicConfigurations' in response.keys():
+                for notification in response['TopicConfigurations']:
+                    details = {
+                        'service': 'sns',
+                        'arn': notification['TopicArn'],
+                        'event': notification['Events'][0],
+                        'filters': {}
+                    }
+                    if 'Filter' in notification.keys():
+                        for rule in notification['Filter']['Key']['FilterRules']:
+                            details['filters'][rule['Name']] = rule['Value']
+                    bucket_details['notification_settings'].append(details)
+            if 'QueueConfigurations' in response.keys():
+                for notification in response['QueueConfigurations']:
+                    details = {
+                        'service': 'sqs',
+                        'arn': notification['QueueArn'],
+                        'event': notification['Events'][0],
+                        'filters': {}
+                    }
+                    if 'Filter' in notification.keys():
+                        for rule in notification['Filter']['Key']['FilterRules']:
+                            details['filters'][rule['Name']] = rule['Value']
+                    bucket_details['notification_settings'].append(details)
+            if 'LambdaFunctionConfigurations' in response.keys():
+                for notification in response['LambdaFunctionConfigurations']:
+                    details = {
+                        'service': 'lambda',
+                        'arn': notification['LambdaFunctionArn'],
+                        'event': notification['Events'][0],
+                        'filters': {}
+                    }
+                    if 'Filter' in notification.keys():
+                        for rule in notification['Filter']['Key']['FilterRules']:
+                            details['filters'][rule['Name']] = rule['Value']
+                    bucket_details['notification_settings'].append(details)
+        except:
+            raise AWSConnectionError(title)
+
+    # TODO: retrieve region replication details
+    #     try:
+    #         response = self.connection.get_bucket_replication( Bucket=bucket_name )
+    #     except:
+    #         pass
+
+    # TODO: retrieve access policy details
+    #     try:
+    #         response = self.connection.get_bucket_policy( Bucket=bucket_name )
+    #     except:
+    #         pass
+
+        return self.iam.ingest(bucket_details)
+    
     def updateBucket(self, object_map):
 
         '''
@@ -582,7 +526,7 @@ class awsS3(object):
                     self.connection.put_bucket_acl(**kw_args)
                     print('.', end='', flush=True)
                 except:
-                    raise S3ConnectionError('updateBucket accessControl')
+                    raise AWSConnectionError('updateBucket accessControl')
             processed_list.append('accessControl')
 
     # replace version control
@@ -595,7 +539,7 @@ class awsS3(object):
                         )
                         print('.', end='', flush=True)
                     except:
-                        raise S3ConnectionError('updateBucket versionControl')
+                        raise AWSConnectionError('updateBucket versionControl')
                 else:
                     try:
                         self.connection.put_bucket_versioning(
@@ -604,7 +548,7 @@ class awsS3(object):
                         )
                         print('.', end='', flush=True)
                     except:
-                        raise S3ConnectionError('updateBucket versionControl')
+                        raise AWSConnectionError('updateBucket versionControl')
                 processed_list.append('versionControl')
 
     # replace log destination
@@ -637,7 +581,7 @@ class awsS3(object):
                     self.connection.put_bucket_logging(**kw_args)
                     print('.', end='', flush=True)
                 except:
-                    raise S3ConnectionError('updateBucket logDestination')
+                    raise AWSConnectionError('updateBucket logDestination')
                 processed_list.append('logDestination')
 
     # replace lifecycle rules
@@ -673,13 +617,13 @@ class awsS3(object):
                         self.connection.put_bucket_lifecycle(**kw_args)
                         print('.', end='', flush=True)
                     except:
-                        raise S3ConnectionError('updateBucket lifecycleRules')
+                        raise AWSConnectionError('updateBucket lifecycleRules')
                 else:
                     try:
                         self.connection.delete_bucket_lifecycle( Bucket=bucket_name )
                         print('.', end='', flush=True)
                     except:
-                        raise S3ConnectionError('updateBucket lifecycleRules')
+                        raise AWSConnectionError('updateBucket lifecycleRules')
                 processed_list.append('lifecycleRules')
 
     # replace bucket tags
@@ -692,13 +636,13 @@ class awsS3(object):
                         )
                         print('.', end='', flush=True)
                     except:
-                        raise S3ConnectionError('updateBucket bucketTags')
+                        raise AWSConnectionError('updateBucket bucketTags')
                 else:
                     try:
                         self.connection.delete_bucket_tagging( Bucket=bucket_name )
                         print('.', end='', flush=True)
                     except:
-                        raise S3ConnectionError('updateBucket bucketTags')
+                        raise AWSConnectionError('updateBucket bucketTags')
                 processed_list.append('bucketTags')
 
     # replace notification settings
@@ -740,7 +684,7 @@ class awsS3(object):
                     # TODO: response = self.connection.put_bucket_notification_configuration(**kw_args)
                     print('.', end='', flush=True)
                 except:
-                    raise S3ConnectionError('createBucket notifications')
+                    raise AWSConnectionError('createBucket notifications')
                 processed_list.append('notificationSettings')
 
     # TODO: replace region replication
@@ -762,6 +706,85 @@ class awsS3(object):
     # report and return completion of process
         print(' Done.')
         return True
+    
+    def delete_bucket(self, bucket_name):
+
+        '''
+            a method to delete a bucket in s3 and all its contents
+
+        :param bucket_name: string with name of bucket
+        :return: string with status of method
+        '''
+
+        title = '%s.delete_bucket' % self.__class__.__name__
+        
+    # validate inputs
+        input_fields = {
+            'bucket_name': bucket_name
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+
+    # check for existence of bucket
+        if not bucket_name in self.bucket_list:
+            if not bucket_name in self.list_buckets():
+                status_msg = 'S3 bucket "%s" does not exist.' % bucket_name
+                self.iam.printer(status_msg)
+                return status_msg
+
+    # retrieve list of objects in bucket
+        record_keys = []
+        record_list, next_key = self.list_versions(bucket_name)
+        for record in record_list:
+            details = {
+                'Key': record['key'],
+                'VersionId': record['version_id']
+            }
+            record_keys.append(details)
+
+    # delete objects in bucket
+        kw_args = {
+            'Bucket': bucket_name,
+            'Delete': { 'Objects': record_keys }
+        }
+        if record_keys:
+            try:
+                response = self.connection.delete_objects(**kw_args)
+            except:
+                raise AWSConnectionError(title)
+
+    # continue deleting objects in bucket until empty
+        if next_key:
+            while next_key:
+                record_keys = []
+                record_list, next_key = self.list_versions(bucket_name, starting_key=next_key['key'], starting_id=next_key['version_id'])
+                for record in record_list:
+                    details = {
+                        'Key': record['key'],
+                        'VersionId': record['version_id']
+                    }
+                    record_keys.append(details)
+                kw_args = {
+                    'Bucket': bucket_name,
+                    'Delete': { 'Objects': record_keys }
+                }
+                try:
+                    response = self.connection.delete_objects(**kw_args)
+                except:
+                    raise AWSConnectionError(title)
+
+    # send delete bucket request
+        try:
+            self.connection.delete_bucket( Bucket=bucket_name )
+        except:
+            raise AWSConnectionError(title)
+
+    # report result and return true
+        status_msg = 'S3 bucket "%s" deleted.' % bucket_name
+        self.iam.printer(status_msg)
+        
+        return status_msg
 
     def listObjects(self, bucket_name, prefix='', delimiter='', max_results=0, starting_key=''):
 
@@ -813,7 +836,7 @@ class awsS3(object):
         try:
             response = self.connection.list_objects(**kw_args)
         except:
-            raise S3ConnectionError('listObjects')
+            raise AWSConnectionError('listObjects')
 
     # add retrieved contents to object list
         if 'Contents' in response:
@@ -838,43 +861,48 @@ class awsS3(object):
 
         return object_list, next_key
 
-    def listVersions(self, bucket_name, prefix='', delimiter='', max_results=0, starting_key='', starting_marker=''):
+    def list_versions(self, bucket_name, prefix='', suffix='', max_results=1, starting_key='', starting_id=''):
 
         '''
-            a method for retrieving a list of the versions of objects in a bucket
+            a method for retrieving a list of the versions of records in a bucket
 
         :param bucket_name: string with name of bucket
         :param prefix: [optional] string with value limiting results to key prefix
-        :param delimiter: [optional] string with value limiting results to key suffix
+        :param suffix: [optional] string with value limiting results to key suffix
         :param max_results: [optional] integer with max results to return
         :param starting_key: [optional] string with key value to continue search with
-        :param starting_marker: [optional] string with version id to continue search with
+        :param starting_id: [optional] string with version id to continue search with
         :return: list of results with key, size and date, string with ending key value
         '''
 
+        title = '%s.list_versions' % self.__class__.__name__
+        
+        from datetime import datetime
+        from dateutil.tz import tzutc
+        
+        
     # validate inputs
-        title = 'list objects in bucket'
-        self.input.bucketName(bucket_name, 'Query of ' + title)
-        sub_title = '%s "%s"' % (title, bucket_name)
-        if prefix:
-            self.input.keyName(prefix, 'prefix for ' + sub_title)
-        if delimiter:
-            self.input.keyName(delimiter, 'delimiter for ' + sub_title)
-        if max_results:
-            req_max = self.rules['requests']['listObjects']['maxResults']
-            self.input.integer(max_results, 1, req_max, 'Max results for ' + sub_title)
-        if starting_key:
-            self.input.keyName(starting_key, 'starting key for ' + sub_title)
-            if not starting_marker:
-                raise ValueError('\nStarting marker is required for starting key for %s' % sub_title)
-        if starting_marker:
-            self.input.keyName(starting_marker, 'starting marker for ' + sub_title)
-            if not starting_key:
-                raise ValueError('\nStarting key is required for starting marker for %s' % sub_title)
+        input_fields = {
+            'bucket_name': bucket_name,
+            'prefix': prefix,
+            'suffix': suffix,
+            'max_results': max_results,
+            'starting_key': starting_key,
+            'starting_id': starting_id
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+        
+        if starting_id or starting_key:
+            if not starting_id or not starting_key:
+                raise ValueError('%s inputs starting_key and starting_id each require the other.' % title)
 
     # check to see if bucket exists:
-        if not bucket_name in self.listBuckets():
-            raise ValueError('\nBucket "%s" for %s does not exist.' % (bucket_name, sub_title))
+        if not bucket_name in self.bucket_list:
+            if not bucket_name in self.list_buckets():
+                raise ValueError('S3 Bucket "%s" does not exist in aws region %s.' % (bucket_name, self.iam.region_name))
 
     # create key word argument dictionary
         kw_args = {
@@ -882,12 +910,12 @@ class awsS3(object):
         }
         if starting_key:
             kw_args['KeyMarker'] = starting_key
-        if starting_marker:
-            kw_args['VersionIdMarker'] = starting_marker
+        if starting_id:
+            kw_args['VersionIdMarker'] = starting_id
         if prefix:
             kw_args['Prefix'] = prefix
-        if delimiter:
-            kw_args['Delimiter'] = delimiter
+        if suffix:
+            kw_args['Delimiter'] = suffix
         if max_results:
             kw_args['MaxKeys'] = max_results
 
@@ -897,47 +925,43 @@ class awsS3(object):
         try:
             response = self.connection.list_object_versions(**kw_args)
         except:
-            raise S3ConnectionError('listVersions')
+            raise AWSConnectionError(title)
 
     # add version keys and ids to object list
         if 'Versions' in response:
-            for object in response['Versions']:
+            for record in response['Versions']:
                 details = {
-                    'objectKey': object['Key'],
-                    'versionID': object['VersionId'],
-                    'objectSize': object['Size'],
-                    'currentVersion': object['IsLatest'],
-                    'contentEncoding': '',
-                    'contentType': '',
-                    'indexMetaData': {}
+                    'key': '',
+                    'version_id': ''
                 }
-                date_time = object['LastModified']
-                epoch_zero = datetime.datetime.fromtimestamp(0).replace(tzinfo=tzutc())
-                details['lastModified'] = (date_time - epoch_zero).total_seconds()
+                details = self.iam.ingest(record, details)
+                epoch_zero = datetime.fromtimestamp(0).replace(tzinfo=tzutc())
+                details['last_modified'] = (details['last_modified'] - epoch_zero).total_seconds()
+                details['current_version'] = details['IsLatest']
+                del details['IsLatest']
                 object_list.append(details)
 
     # add delete markers to object list
         if 'DeleteMarkers' in response:
-            for object in response['DeleteMarkers']:
+            for record in response['DeleteMarkers']:
                 details = {
-                    'objectKey': object['Key'],
-                    'versionID': object['VersionId'],
-                    'objectSize': None,
-                    'currentVersion': object['IsLatest'],
-                    'contentEncoding': '',
-                    'contentType': '',
-                    'indexMetaData': {}
+                    'key': '',
+                    'version_id': ''
                 }
-                date_time = object['LastModified']
-                epoch_zero = datetime.datetime.fromtimestamp(0).replace(tzinfo=tzutc())
-                details['lastModified'] = (date_time - epoch_zero).total_seconds()
+                details = self.iam.ingest(record, details)
+                epoch_zero = datetime.fromtimestamp(0).replace(tzinfo=tzutc())
+                details['last_modified'] = (details['last_modified'] - epoch_zero).total_seconds()
+                details['current_version'] = details['IsLatest']
+                del details['IsLatest']
+                if not 'size' in details.keys():
+                    details['size'] = 0
                 object_list.append(details)
 
     # define next key value
         if response['IsTruncated']:
             next_key = {
                 'key': response['NextKeyMarker'],
-                'marker': response['NextVersionIdMarker']
+                'version_id': response['NextVersionIdMarker']
             }
 
         return object_list, next_key
@@ -981,7 +1005,7 @@ class awsS3(object):
         try:
             response = self.connection.get_object(**kw_args)
         except:
-            raise S3ConnectionError('retrieveRecord')
+            raise AWSConnectionError('retrieveRecord')
 
     # create record details from response data
         record_data = response['Body'].read()
@@ -1016,7 +1040,7 @@ class awsS3(object):
                     if version['VersionId'] == meta_data['versionID']:
                         meta_data['currentVersion'] = version['IsLatest']
             except:
-                raise S3ConnectionError('listVersions')
+                raise AWSConnectionError('listVersions')
 
     # TODO: client-side decrypt incoming data
         if 'ContentEncryption' in meta_data['indexMetaData']:
@@ -1070,7 +1094,7 @@ class awsS3(object):
         try:
             response = self.connection.head_object(**kw_args)
         except:
-            raise S3ConnectionError('retrieveRecord')
+            raise AWSConnectionError('retrieveRecord')
 
     # create meta data from response
         meta_data = {
@@ -1106,7 +1130,7 @@ class awsS3(object):
                     if version['VersionId'] == meta_data['versionID']:
                         meta_data['currentVersion'] = version['IsLatest']
             except:
-                raise S3ConnectionError('listVersions')
+                raise AWSConnectionError('listVersions')
 
         return meta_data
 
@@ -1190,7 +1214,7 @@ class awsS3(object):
             if response['ETag'] != '"' + check_sum + '"':
                 raise Exception('\nData transcription error for key "%s".' % key_name)
         except:
-            raise S3ConnectionError('addRecord')
+            raise AWSConnectionError('addRecord')
 
         return key_name
 
@@ -1224,7 +1248,7 @@ class awsS3(object):
         try:
             self.connection.delete_object(**kw_args)
         except:
-            raise S3ConnectionError('deleteRecord')
+            raise AWSConnectionError('deleteRecord')
 
         return True
 
@@ -1271,7 +1295,7 @@ class awsS3(object):
             try:
                 response = self.connection.get_object(Bucket=bucket_name,Key=record['objectKey'])
             except:
-                raise S3ConnectionError('retrieveRecord')
+                raise AWSConnectionError('retrieveRecord')
             record_data = response['Body'].read()
             file_path = export_path + record['objectKey']
             dir_path = os.path.dirname(file_path)
@@ -1302,7 +1326,7 @@ class awsS3(object):
                     try:
                         response = self.connection.get_object(Bucket=bucket_name,Key=record['objectKey'])
                     except:
-                        raise S3ConnectionError('retrieveRecord')
+                        raise AWSConnectionError('retrieveRecord')
                     record_data = response['Body'].read()
                     file_path = export_path + record['objectKey']
                     dir_path = os.path.dirname(file_path)
@@ -1394,7 +1418,7 @@ class awsS3(object):
         print(' Done.')
         return True
 
-    def handler(self, function, wait=.5):
+    def handler(self, function, timeout=30):
 
         '''
             a decorator method to deal with exception handling of requests to AWS
@@ -1402,259 +1426,140 @@ class awsS3(object):
         :return: return of input function
         '''
 
-        if not isinstance(wait, int) and not isinstance(wait, float):
-            raise TypeError('\nawsS3.handler() wait input must be a number.')
-        timeout = 0
-        while timeout < 30:
+        title = '%s.handler' % self.__class__.__name__
+        
+    # validate inputs
+        input_fields = {
+            'timeout': timeout
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+        from time import sleep
+        from timeit import timeit as timer
+        t0 = timer()
+        t1 = timer()
+        while t1 < t0 + 30:
             try:
                 return function
-            except S3ConnectionError:
-                timeout += 1
-                time.sleep(wait)
-        raise Exception('\nConnectivity Issues with AWS.')
+            except Exception:
+                sleep(1)
+                t1 = timer()
+        raise AWSConnectionError(function.__name__)
 
-    def unitTests(self):
-        objectMap = json.loads(open('../models/s3-obj-model.json').read())
-        logMap = deepcopy(objectMap)
-        logMap['bucket']['bucketName'] = 'useast1-collective-acuity-test-log'
-        logMap['bucket']['accessControl'] = 'log-delivery-write'
-        logMap['bucket']['versionControl'] = False
-        logMap['bucket']['logDestination'] = {}
-        logMap['bucket']['lifecycleRules'] = []
-        logMap['bucket']['bucketTags'] = []
-        logMap['bucket']['notificationSettings'] = []
-        testBuckets = [ logMap['bucket']['bucketName'], objectMap['bucket']['bucketName'] ]
-        for name in testBuckets:
-            assert name not in self.listBuckets() # prevent deletion of live data
-        for bucket in testBuckets:
-            self.deleteBucket(bucket)
-        self.createBucket(logMap)
-        self.createBucket(objectMap)
-        recordDetails = objectMap['details']
-        self.addRecord(recordDetails, objectMap)
-        keyName = self.addRecord(recordDetails, objectMap)
-        meta_data = self.recordHeaders(keyName, objectMap)
-        assert meta_data['lastModified']
-        bucketList = self.listBuckets()
-        for name in testBuckets:
-            assert name in bucketList
-        recordList, nextKey = self.listObjects(testBuckets[1])
-        assert recordList[0]['objectKey'] == keyName
-        data, meta_data = self.recordDetails(recordList[0]['objectKey'], objectMap)
-        assert data
-        assert meta_data
-        newRecord = deepcopy(recordDetails)
-        newRecord[objectMap['indexing']['key'][0]] = 'new'
-        self.addRecord(newRecord, objectMap)
-        self.exportRecords(objectMap, '../data', overwrite=True)
-        self.exportRecords(objectMap, '../data')
-        self.importRecords(objectMap, '../data')
-        self.importRecords(objectMap, '../data', overwrite=True)
-        self.deleteRecord(recordList[0]['objectKey'], objectMap)
-        versionList, nextKey = self.listVersions(testBuckets[1])
-        self.recordDetails(versionList[1]['objectKey'], objectMap, version_id=versionList[1]['versionID'])
-        self.deleteRecord(versionList[1]['objectKey'], objectMap, versionList[1]['versionID'])
-        self.deleteBucket(testBuckets[1])
-        self.createBucket(objectMap)
-        self.importRecords(objectMap, '../data')
-        recordList, nextKey = self.handler(self.listObjects(objectMap['bucket']['bucketName']))
-        assert recordList
-        updateMap = {}
-        updateMap['indexing'] = objectMap['indexing']
-        updateMap['details'] = objectMap['details']
-        updateMap['bucket'] = self.bucketDetails(testBuckets[1])
-        updateMap['bucket']['accessControl'] = 'public-read'
-        updateMap['bucket']['versionControl'] = False
-        updateMap['bucket']['logDestination'] = {}
-        updateMap['bucket']['lifecycleRules'] = []
-        updateMap['bucket']['bucketTags'] = []
-        self.updateBucket(updateMap)
-        self.updateBucket(objectMap)
-        for bucket in testBuckets:
-            self.deleteBucket(bucket)
-        return self
 
-class deltaData(object):
+if __name__ == '__main__':
+    
+# test instantiation
+    from labpack.records.settings import load_settings
+    aws_cred = load_settings('../../../../cred/awsLab.yaml')
+    client_kwargs = {
+        'access_id': aws_cred['aws_access_key_id'],
+        'secret_key': aws_cred['aws_secret_access_key'],
+        'region_name': aws_cred['aws_default_region'],
+        'owner_id': aws_cred['aws_owner_id'],
+        'user_name': aws_cred['aws_user_name']
+    }
+    s3_client = s3Client(**client_kwargs)
 
-    '''
-        a class of recursive methods for identifying changes between two objects
+# test list bucket and verify unittesting is clean
+    bucket_list = s3_client.list_buckets()
+    bucket_name = 'collective-acuity-labpack-unittest-main'
+    log_name = 'collective-acuity-labpack-unittest-log'
+    # assert bucket_name not in bucket_list
+    # assert log_name not in bucket_list
+    for bucket in (bucket_name, log_name):
+        s3_client.delete_bucket(bucket)
 
-        dependencies:
-            from copy import deepcopy
-    '''
-
-    def __init__(self, new_details, old_details):
-
-        '''
-            the initialization method for the class
-
-        :param new_details: set, list or dictionary with new details of an item
-        :param old_details: set, list or dictionary with old details of an item
-        :return: list with dictionary of changes
-        '''
-
-        if new_details.__class__ != old_details.__class__:
-            raise TypeError('\nDatatype of new and old data must match.')
-        new_map = deepcopy(new_details)
-        old_map = deepcopy(old_details)
-        if isinstance(new_map, dict):
-            self.output = self.dict(new_map, old_map, [], [])
-        elif isinstance(new_map, list):
-            self.output = self.list(new_map, old_map, [], [])
-        elif isinstance(new_map, set):
-            self.output = self.set(new_map, old_map, [], [])
-        else:
-            raise TypeError('\nData inputs must be sets, lists or dictionaries.')
-
-    def dict(self, new_dict, old_dict, change_list=None, root=None):
-
-        '''
-            a method for recursively listing changes made to a dictionary
-
-        :param new_dict: dictionary with new key-value pairs
-        :param old_dict: dictionary with old key-value pairs
-        :param change_list: list of differences between old and new
-        :patam root: string with record of path to the root of the main object
-        :return: list of differences between old and new
-        '''
-
-        new_keys = set(new_dict.keys())
-        old_keys = set(old_dict.keys())
-        missing_keys = old_keys - new_keys
-        extra_keys = new_keys - old_keys
-        same_keys = new_keys.intersection(old_keys)
-        for key in missing_keys:
-            new_path = deepcopy(root)
-            new_path.append(key)
-            change_list.append({'action': 'DELETE', 'value': None, 'path': new_path})
-        for key in extra_keys:
-            for k, v in new_dict.items():
-                if key == k:
-                    new_path = deepcopy(root)
-                    new_path.append(key)
-                    change_list.append({'action': 'ADD', 'value': v, 'path': new_path})
-        for key in same_keys:
-            new_path = deepcopy(root)
-            new_path.append(key)
-            if new_dict[key].__class__ != old_dict[key].__class__:
-                change_list.append({'action': 'UPDATE', 'value': new_dict[key], 'path': new_path})
-            elif isinstance(new_dict[key], dict):
-                self.dict(new_dict[key], old_dict[key], change_list, new_path)
-            elif isinstance(new_dict[key], list):
-                self.list(new_dict[key], old_dict[key], change_list, new_path)
-            elif isinstance(new_dict[key], set):
-                self.set(new_dict[key], old_dict[key], change_list, new_path)
-            elif new_dict[key] != old_dict[key]:
-                change_list.append({'action': 'UPDATE', 'value': new_dict[key], 'path': new_path})
-        return change_list
-
-    def list(self, new_list, old_list, change_list=None, root=None):
-
-        '''
-            a method for recursively listing changes made to a list
-
-        :param new_list: list with new value
-        :param old_list: list with old values
-        :param change_list: list of differences between old and new
-        :patam root: string with record of path to the root of the main object
-        :return: list of differences between old and new
-        '''
-
-        if len(old_list) > len(new_list):
-            same_len = len(new_list)
-            for i in reversed(range(len(new_list), len(old_list))):
-                new_path = deepcopy(root)
-                new_path.append(i)
-                change_list.append({'action': 'REMOVE', 'value': None, 'path': new_path})
-        elif len(new_list) > len(old_list):
-            same_len = len(old_list)
-            append_list = []
-            path = deepcopy(root)
-            for i in range(len(old_list), len(new_list)):
-                append_list.append(new_list[i])
-            change_list.append({'action': 'APPEND', 'value': append_list, 'path': path})
-        else:
-            same_len = len(new_list)
-        for i in range(0, same_len):
-            new_path = deepcopy(root)
-            new_path.append(i)
-            if new_list[i].__class__ != old_list[i].__class__:
-                change_list.append({'action': 'UPDATE', 'value': new_list[i], 'path': new_path})
-            elif isinstance(new_list[i], dict):
-                self.dict(new_list[i], old_list[i], change_list, new_path)
-            elif isinstance(new_list[i], list):
-                self.list(new_list[i], old_list[i], change_list, new_path)
-            elif isinstance(new_list[i], set):
-                self.set(new_list[i], old_list[i], change_list, new_path)
-            elif new_list[i] != old_list[i]:
-                change_list.append({'action': 'UPDATE', 'value': new_list[i], 'path': new_path})
-        return change_list
-
-    def set(self, new_set, old_set, change_list, root):
-
-        '''
-            a method for list changes made to a set
-
-        :param new_set: set with new values
-        :param old_set: set with old values
-        :param change_list: list of differences between old and new
-        :patam root: string with record of path to the root of the main object
-        :return: list of differences between old and new
-        '''
-
-        path = deepcopy(root)
-        missing_items = old_set - new_set
-        extra_items = new_set - old_set
-        for item in missing_items:
-            change_list.append({'action': 'REMOVE', 'key': None, 'value': item, 'path': path})
-        for item in extra_items:
-            change_list.append({'action': 'ADD', 'key': None, 'value': item, 'path': path})
-        return change_list
-
-    def unitTests(self):
-        newRecord = {
-            'active': True,
-            'id': 'd53iedBwKNcFCJXLEAWHCfCT3zGLCu93rxTG',
-            'dT': 1440184621.607344,
-            'score': 400,
-            'dict1': { 'key': 'value' },
-            'list1': [ 'item' ],
-            'dict2': {
-                'key1': 'string',
-                'key2': 2.2,
-                'key3': 2,
-                'key4': True,
-                'dict': {
-                    'key': 'value',
-                    'list1': [ 'item' ],
-                    'list2': [ 'item', 2, 2.2, True, { 'key': 'newValue' } ]
-                } },
-            'list2': [ 'item', 2, 2.2, True, { 'key': 'value', 'list': [ 2, 2.2, True, 'item' ] } ]
+# test create buckets
+    log_kwargs = {
+        'bucket_name': log_name,
+        'access_control': 'log-delivery-write'
+    }
+    main_kwargs = {
+        'bucket_name': bucket_name,
+        'version_control': True,
+        'tag_list': [ {'key': 'Env', 'value': 'test'}, { 'key': 'BuildDate', 'value': 'now' } ],
+        'lifecycle_rules': [ { 
+            "action": "archive",
+            "prefix": "test/",
+            "longevity": 180,
+            "current_version": True 
+        } ],
+        'log_destination': {
+            'name': log_name,
+            'prefix': 'test/'
         }
-        oldRecord = {
-            'active': True,
-            'id': 'd53iedBwKNcFCJXLEAWHCfCT3zGLCu93rxTG',
-            'dT': 1440184621.607344,
-            'score': 400,
-            'dict1': { 'key': 'value' },
-            'list1': [ 'item' ],
-            'dict2': {
-                'key1': 'string',
-                'key2': 2.2,
-                'key3': 2,
-                'key4': True,
-                'dict': {
-                    'key': 'value',
-                    'list1': [ 'item' ],
-                    'list2': [ 'item', 2, 2.2, True, { 'key': 'oldValue' } ]
-                } },
-            'list2': [ 'item', 2, 2.2, True, { 'key': 'value', 'list': [ 2, 2.2, True, 'item' ] } ]
-        }
-        assert self.dict(newRecord, oldRecord, [], [])[0]['path'][4] == 'key'
-        return self
+    }
+    s3_client.create_bucket(**log_kwargs)
+    s3_client.create_bucket(**main_kwargs)
 
-class awsGlacier(object):
-    pass
+# remove test buckets
+    for bucket in (bucket_name, log_name):
+        s3_client.delete_bucket(bucket)    
+
+
+    # import json
+    # from copy import deepcopy
+    # objectMap = json.loads(open('../models/s3-obj-model.json').read())
+    # logMap = deepcopy(objectMap)
+    # logMap['bucket']['bucketName'] = 'useast1-collective-acuity-test-log'
+    # logMap['bucket']['accessControl'] = 'log-delivery-write'
+    # logMap['bucket']['versionControl'] = False
+    # logMap['bucket']['logDestination'] = {}
+    # logMap['bucket']['lifecycleRules'] = []
+    # logMap['bucket']['bucketTags'] = []
+    # logMap['bucket']['notificationSettings'] = []
+    # testBuckets = [ logMap['bucket']['bucketName'], objectMap['bucket']['bucketName'] ]
+    # for name in testBuckets:
+    #     assert name not in self.listBuckets() # prevent deletion of live data
+    # for bucket in testBuckets:
+    #     self.deleteBucket(bucket)
+    # self.createBucket(logMap)
+    # self.createBucket(objectMap)
+    # recordDetails = objectMap['details']
+    # self.addRecord(recordDetails, objectMap)
+    # keyName = self.addRecord(recordDetails, objectMap)
+    # meta_data = self.recordHeaders(keyName, objectMap)
+    # assert meta_data['lastModified']
+    # bucketList = self.listBuckets()
+    # for name in testBuckets:
+    #     assert name in bucketList
+    # recordList, nextKey = self.listObjects(testBuckets[1])
+    # assert recordList[0]['objectKey'] == keyName
+    # data, meta_data = self.recordDetails(recordList[0]['objectKey'], objectMap)
+    # assert data
+    # assert meta_data
+    # newRecord = deepcopy(recordDetails)
+    # newRecord[objectMap['indexing']['key'][0]] = 'new'
+    # self.addRecord(newRecord, objectMap)
+    # self.exportRecords(objectMap, '../data', overwrite=True)
+    # self.exportRecords(objectMap, '../data')
+    # self.importRecords(objectMap, '../data')
+    # self.importRecords(objectMap, '../data', overwrite=True)
+    # self.deleteRecord(recordList[0]['objectKey'], objectMap)
+    # versionList, nextKey = self.listVersions(testBuckets[1])
+    # self.recordDetails(versionList[1]['objectKey'], objectMap, version_id=versionList[1]['versionID'])
+    # self.deleteRecord(versionList[1]['objectKey'], objectMap, versionList[1]['versionID'])
+    # self.deleteBucket(testBuckets[1])
+    # self.createBucket(objectMap)
+    # self.importRecords(objectMap, '../data')
+    # recordList, nextKey = self.handler(self.listObjects(objectMap['bucket']['bucketName']))
+    # assert recordList
+    # updateMap = {}
+    # updateMap['indexing'] = objectMap['indexing']
+    # updateMap['details'] = objectMap['details']
+    # updateMap['bucket'] = self.bucketDetails(testBuckets[1])
+    # updateMap['bucket']['accessControl'] = 'public-read'
+    # updateMap['bucket']['versionControl'] = False
+    # updateMap['bucket']['logDestination'] = {}
+    # updateMap['bucket']['lifecycleRules'] = []
+    # updateMap['bucket']['bucketTags'] = []
+    # self.updateBucket(updateMap)
+    # self.updateBucket(objectMap)
+    # for bucket in testBuckets:
+    #     self.deleteBucket(bucket)
+
 
 dummy = ''
 # TODO: client side encryption feature for s3 records

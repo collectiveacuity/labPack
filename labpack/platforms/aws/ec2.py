@@ -60,11 +60,6 @@ class ec2Client(object):
         }
         self.connection = boto3.client(**client_kwargs)
         self.verbose = verbose
-    
-    # construct ingestion
-        from labpack.parsing.conversion import camelcase_to_lowercase, lowercase_to_camelcase
-        self.ingest = camelcase_to_lowercase
-        self.prepare = lowercase_to_camelcase
 
     def check_instance_state(self, instance_id, wait=True):
         
@@ -387,7 +382,7 @@ class ec2Client(object):
             'subnet_id': '',
             'vpc_id': ''
         }
-        instance_details = self.ingest(instance_info, instance_details)
+        instance_details = self.iam.ingest(instance_info, instance_details)
 
         return instance_details
 
@@ -430,8 +425,8 @@ class ec2Client(object):
                 delete_list.append(tag)
 
     # convert tag list to camelcase
-        delete_list = self.prepare(delete_list)
-        tag_list = self.prepare(tag_list)
+        delete_list = self.iam.prepare(delete_list)
+        tag_list = self.iam.prepare(tag_list)
     
     # remove tags from instance
         if delete_list:
@@ -922,7 +917,7 @@ class ec2Client(object):
             'region': self.iam.region_name,
             'tags': []
         }
-        image_details = self.ingest(image_info, image_details)
+        image_details = self.iam.ingest(image_info, image_details)
         image_details['snapshot_id'] = image_details['block_device_mappings'][0]['ebs']['snapshot_id']
         
         return image_details
@@ -966,8 +961,8 @@ class ec2Client(object):
                 delete_list.append(tag)
 
     # convert tag list to camelcase
-        delete_list = self.prepare(delete_list)
-        tag_list = self.prepare(tag_list)
+        delete_list = self.iam.prepare(delete_list)
+        tag_list = self.iam.prepare(tag_list)
     
     # remove tags from instance
         if delete_list:
@@ -1077,7 +1072,7 @@ class ec2Client(object):
     # replace tag list if new tag input
         new_tags = True
         if not tag_list:
-            tag_list = self.ingest(old_tags)
+            tag_list = self.iam.ingest(old_tags)
             new_tags = False
 
     # create image of the instance
@@ -1143,7 +1138,7 @@ class ec2Client(object):
         try:
             delete_kwargs = {
                 'Resources': [ image_id ],
-                'Tags': self.prepare(tag_list)
+                'Tags': self.iam.prepare(tag_list)
             }
             self.connection.delete_tags(**delete_kwargs)
             self.iam.printer('Tags have been deleted from %s.' % image_id)
@@ -1282,7 +1277,7 @@ class ec2Client(object):
 
     # construct image details from response
         image_name = image_info['Name']
-        tag_list = self.ingest(image_info['Tags'])
+        tag_list = self.iam.ingest(image_info['Tags'])
 
     # copy image over to current region
         self.iam.printer('Copying image %s from region %s.' % (image_id, region_name))
@@ -1584,7 +1579,7 @@ class ec2Client(object):
             'state': '',
             'tags': []
         }
-        subnet_details = self.ingest(subnet_dict, subnet_details)
+        subnet_details = self.iam.ingest(subnet_dict, subnet_details)
 
         return subnet_details
 
@@ -1703,7 +1698,7 @@ class ec2Client(object):
             'tags': [],
             'ip_permissions': []
         }
-        group_details = self.ingest(group_info, group_details)
+        group_details = self.iam.ingest(group_info, group_details)
         
         return group_details
 

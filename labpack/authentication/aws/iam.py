@@ -113,6 +113,11 @@ class iamClient(object):
                 else:
                     print(msg)
         self.printer = _printer
+    
+    # construct ingestion
+        from labpack.parsing.conversion import camelcase_to_lowercase, lowercase_to_camelcase
+        self.ingest = camelcase_to_lowercase
+        self.prepare = lowercase_to_camelcase
 
     def list_certificates(self):
 
