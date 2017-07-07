@@ -49,7 +49,7 @@ Save record data in local user data::
     from labpack.storage.appdata import appdataClient
 
     msg_key = '%s/%s.yaml' % (id_mac_address, id_datetime)
-    msg_details = { 'dt': id_datetime, 'mac': id_mac_address, 'msg': 'Text me back' }
+    msg_details = { 'dt': id_datetime, 'mac': id_mac_address, 'msg': 'Text me back soon' }
     msg_client = appdataClient('Outgoing', 'My Team', 'My App')
     mgs_client.create(msg_key, msg_details)
 

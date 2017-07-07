@@ -593,6 +593,7 @@ class appdataClient(object):
                 if not os.path.exists(dir_path[0]):
                     os.makedirs(dir_path[0])
             with open(file_path, 'wb') as f:
+    # TODO add encryption to data write
                 f.write(byte_data)
                 f.close()
 

@@ -36,15 +36,19 @@
       }
     },
     "limits": {
-      "max_buckets_per_account": 100
+      "max_buckets_per_account": 100,
+      "metadata_max_bytes": 2024,
+      "record_max_bytes": 5060000000,
+      "record_optimal_bytes": 100000000
     }
   },
   "schema": {
     "bucket_name": "org-project-collection-main",
     "access_control": "private",
+    "version_control": true,
     "log_destination": {
       "name": "org-project-collection-logs",
-      "prefix": "start_of_key/"
+      "prefix": ""
     },
     "lifecycle_rules": [ {
       "action": "delete",
@@ -68,8 +72,12 @@
     "suffix": "/end_of_key.ext",
     "max_results": 1,
     "starting_key": "test/record/data.json",
-    "starting_id": "",
-    "timeout": 2.5,
+    "starting_version": "",
+    "record_key": "test/record/data.json",
+    "secret_key": "abcdef0123456789abcdef0123456789",
+    "record_metadata": {},
+    "metadata_keys": "x-amz-meta-location",
+    "metadata_values": "",
     "indexing": {
       "format": {
         "metadata": {},
@@ -205,6 +213,18 @@
       "min_length": 1,
       "max_length": 1024,
       "must_not_contain": [ "[^\\w\\-\\.\\*_'!\\(\\)/]+" ]
+    },
+    ".record_key": {
+      "min_length": 1,
+      "max_length": 1024,
+      "must_not_contain": [ "[^\\w\\-\\.\\*_'!\\(\\)/]+" ]
+    },
+    ".secret_key": {
+      "max_length": 256,
+      "must_not_contain": [ "[^\\x00-\\x7F]+" ]
+    },
+    ".metadata_keys": {
+      "must_contain": [ "^x-amz-meta-" ]
     }
   }
 }
