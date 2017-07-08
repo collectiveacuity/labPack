@@ -39,7 +39,8 @@
       "max_buckets_per_account": 100,
       "metadata_max_bytes": 2024,
       "record_max_bytes": 5060000000,
-      "record_optimal_bytes": 100000000
+      "record_optimal_bytes": 100000000,
+      "get_requests_per_second": 800
     }
   },
   "schema": {
@@ -74,44 +75,11 @@
     "starting_key": "test/record/data.json",
     "starting_version": "",
     "record_key": "test/record/data.json",
+    "record_version": "",
     "secret_key": "abcdef0123456789abcdef0123456789",
     "record_metadata": {},
-    "metadata_keys": "x-amz-meta-location",
-    "metadata_values": "",
-    "indexing": {
-      "format": {
-        "metadata": {},
-        "aclID": "",
-        "key": [ "string" ]
-      },
-      "metadata": {
-        "prefix": "x-amz-meta-",
-        "maxSize": 2024,
-        "units": "characters"
-      },
-      "key": {
-        "minLength": 1,
-        "maxLength": 1024,
-        "regEx": "[^\\w\\-\\.\\*_'!\\(\\)/]+",
-        "units": "characters",
-        "charCode": "UTF-8"
-      }
-    },
-    "details": {
-      "format": {},
-      "maxSize": 5060000000,
-      "optimalSize": 100000000,
-      "units": "bytes"
-    },
-    "requests": {
-      "listObjects": {
-        "maxResults": 1000
-      },
-      "recordDetails": {
-        "requestLimit": 800,
-        "requestPeriod": "second"
-      }
-    }
+    "metadata_keys": "location",
+    "metadata_values": ""
   },
   "components": {
     ".bucket_name": {
@@ -224,7 +192,7 @@
       "must_not_contain": [ "[^\\x00-\\x7F]+" ]
     },
     ".metadata_keys": {
-      "must_contain": [ "^x-amz-meta-" ]
+      "must_not_contain": [ "^x-amz-meta-" ]
     }
   }
 }

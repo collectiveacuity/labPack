@@ -860,7 +860,7 @@ class s3Client(object):
         
         return status_msg
 
-    def list_records(self, bucket_name, prefix='', suffix='', max_results=1, starting_key=''):
+    def list_records(self, bucket_name, prefix='', suffix='', max_results=1000, starting_key=''):
 
         '''
             a method for retrieving a list of the versions of records in a bucket
@@ -915,7 +915,7 @@ class s3Client(object):
         try:
             response = self.connection.list_objects(**kw_args)
         except:
-            raise AWSConnectionError('listObjects')
+            raise AWSConnectionError(title)
 
     # add retrieved contents to object list
         if 'Contents' in response:
@@ -934,7 +934,7 @@ class s3Client(object):
 
         return record_list, next_key
 
-    def list_versions(self, bucket_name, prefix='', suffix='', max_results=1, starting_key='', starting_version=''):
+    def list_versions(self, bucket_name, prefix='', suffix='', max_results=1000, starting_key='', starting_version=''):
 
         '''
             a method for retrieving a list of the versions of records in a bucket
@@ -952,8 +952,7 @@ class s3Client(object):
         
         from datetime import datetime
         from dateutil.tz import tzutc
-        
-        
+         
     # validate inputs
         input_fields = {
             'bucket_name': bucket_name,
@@ -967,7 +966,8 @@ class s3Client(object):
             if value:
                 object_title = '%s(%s=%s)' % (title, key, str(value))
                 self.fields.validate(value, '.%s' % key, object_title)
-        
+    
+    # validate mutual requirements
         if starting_version or starting_key:
             if not starting_version or not starting_key:
                 raise ValueError('%s inputs starting_key and starting_version each require the other.' % title)
@@ -1010,8 +1010,8 @@ class s3Client(object):
                 details = self.iam.ingest(record, details)
                 epoch_zero = datetime.fromtimestamp(0).replace(tzinfo=tzutc())
                 details['last_modified'] = (details['last_modified'] - epoch_zero).total_seconds()
-                details['current_version'] = details['IsLatest']
-                del details['IsLatest']
+                details['current_version'] = details['is_latest']
+                del details['is_latest']
                 record_list.append(details)
 
     # add delete markers to object list
@@ -1024,8 +1024,8 @@ class s3Client(object):
                 details = self.iam.ingest(record, details)
                 epoch_zero = datetime.fromtimestamp(0).replace(tzinfo=tzutc())
                 details['last_modified'] = (details['last_modified'] - epoch_zero).total_seconds()
-                details['current_version'] = details['IsLatest']
-                del details['IsLatest']
+                details['current_version'] = details['is_latest']
+                del details['is_latest']
                 if not 'size' in details.keys():
                     details['size'] = 0
                 record_list.append(details)
@@ -1062,7 +1062,7 @@ class s3Client(object):
     # define size limitations
         metadata_max = self.fields.metadata['limits']['metadata_max_bytes']
         record_max = self.fields.metadata['limits']['record_max_bytes']
-        record_optimal = self.fields.metadata['limits']['metadata_optimal_bytes']
+        record_optimal = self.fields.metadata['limits']['record_optimal_bytes']
         
     # validate inputs
         input_fields = {
@@ -1083,10 +1083,8 @@ class s3Client(object):
                 self.fields.validate(key, '.metadata_keys', object_title)
                 object_title = '%s(record_metadata={%s:%s})' % (title, key, value)
                 self.fields.validate(value, '.metadata_values', object_title)
-            import json
-            metadata_size = sys.getsizeof(json.dumps(record_metadata).encode('utf-8'))
-            if metadata_size > metadata_max:
-                raise ValueError('%s(record_metadata={...}) cannot be greater than 2024 characters.' % title)
+        else:
+            record_metadata = {}
     
     # verify existence of bucket
         if not bucket_name in self.bucket_list:
@@ -1095,15 +1093,24 @@ class s3Client(object):
     
     # verify overwrite condition
         if not overwrite:
-            record_headers = self.read_headers(bucket_name, record_key)
-            if record_headers:
+            try:
+                self.read_headers(bucket_name, record_key)
                 raise ValueError('S3 bucket "%s" already contains a record for key "%s"' % (bucket_name, record_key))
+            except:
+                pass
                 
     # encrypt record
         if secret_key:
             from labpack.encryption import cryptolab
             record_data = cryptolab.encrypt(record_data, secret_key)
-            
+            record_metadata['encryption'] = 'lab'
+    
+    # validate size of metadata
+        import json
+        metadata_size = sys.getsizeof(json.dumps(record_metadata).encode('utf-8'))
+        if metadata_size > metadata_max:
+            raise ValueError('%s(record_metadata={...}) cannot be greater than %s bytes.' % (title, metadata_max))
+                
     # validate size of record
         record_size = sys.getsizeof(record_data)
         error_prefix = '%s(record_key="%s", record_data=...)' % (title, record_key)
@@ -1172,103 +1179,114 @@ class s3Client(object):
 
         return record_key
 
-    def read_headers(self, bucket_name, record_key, version_id='', version_check=True):
+    def read_headers(self, bucket_name, record_key, record_version='', version_check=False):
 
         '''
             a method for retrieving the headers of a record from s3
 
+        :param bucket_name: string with name of bucket
         :param record_key: string with key value of record
-        :param object_map: dictionary with object definitions
-        :param version_id: [optional] string with aws id of version of record
-        :param version_check: [optional] boolean to turn off currentVersion check
+        :param record_version: [optional] string with aws id of version of record
+        :param version_check: [optional] boolean to enable current version check
         :return: dictionary with headers of record
         '''
-
-    #validate inputs
-        # object_map = self.input.map(object_map)
-        bucket_name = object_map['bucket']['bucketName']
-        title = ' for bucket "%s"' % bucket_name
-        self.input.keyName(record_key, 'key name' + title)
+        
+        title = '%s.read_headers' % self.__class__.__name__
+        
+        from datetime import datetime
+        from dateutil.tz import tzutc
+        
+    # validate inputs
+        input_fields = {
+            'bucket_name': bucket_name,
+            'record_key': record_key,
+            'record_version': record_version
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
 
     # create key word argument dictionary
-        kw_args = {
+        headers_kwargs = {
             'Bucket': bucket_name,
             'Key': record_key
         }
-        if version_id:
-            self.input.keyName(version_id, 'version id' + title)
-            kw_args['VersionId'] = version_id
+        if record_version:
+            headers_kwargs['VersionId'] = record_version
 
     # send request for record header
         try:
-            response = self.connection.head_object(**kw_args)
+            record = self.connection.head_object(**headers_kwargs)
         except:
-            raise AWSConnectionError('retrieveRecord')
+            raise AWSConnectionError(title)
 
-    # create meta data from response
-        meta_data = {
-            'objectKey': record_key,
-            'objectSize': response['ContentLength'],
-            'indexMetaData': {},
-            'versionID': version_id,
-            'currentVersion': True,
-            'contentEncoding': '',
-            'contentType': ''
+    # create metadata from response
+        metadata_details = {
+            'key': record_key,
+            'version_id': '',
+            'current_version': True,
+            'content_type': '',
+            'content_encoding': '',
+            'metadata': {}
         }
-        date_time = response['LastModified']
-        epoch_zero = datetime.datetime.fromtimestamp(0).replace(tzinfo=tzutc())
-        meta_data['lastModified'] = (date_time - epoch_zero).total_seconds()
-        if 'VersionId' in response:
-            meta_data['versionID'] = response['VersionId']
-        if 'ContentEncoding' in response:
-            meta_data['contentEncoding'] = response['ContentEncoding']
-        if 'Metadata' in response:
-            meta_data['indexMetaData'] = response['Metadata']
-        if 'ContentType' in response:
-            meta_data['contentType'] = response['ContentType']
+        metadata_details = self.iam.ingest(record, metadata_details)
+        epoch_zero = datetime.fromtimestamp(0).replace(tzinfo=tzutc())
+        metadata_details['last_modified'] = (metadata_details['last_modified'] - epoch_zero).total_seconds()
 
-    # determine currentVersion from version id
-        if version_id and version_check:
-            kw_args = {
+    # determine current version from version id
+        if record_version and version_check:
+            version_kwargs = {
                 'Bucket': bucket_name,
-                'Prefix': meta_data['objectKey']
+                'Prefix': record_key
             }
             try:
-                version_check = self.connection.list_object_versions(**kw_args)
+                version_check = self.connection.list_object_versions(**version_kwargs)
                 for version in version_check['Versions']:
-                    if version['VersionId'] == meta_data['versionID']:
-                        meta_data['currentVersion'] = version['IsLatest']
+                    if version['VersionId'] == metadata_details['version_id']:
+                        metadata_details['current_version'] = version['IsLatest']
+                        break
             except:
-                raise AWSConnectionError('listVersions')
+                raise AWSConnectionError(title)
 
-        return meta_data
+        return metadata_details
 
-    def recordDetails(self, record_key, object_map, version_id='', password=''):
+    def read_record(self, bucket_name, record_key, record_version='', version_check=False, secret_key=''):
 
         '''
-            a method for retrieving the attributes of a record from s3
-
-        :param record_key: string with key value of record
-        :param object_map: dictionary with object definitions
-        :param version_id: [optional] string with aws id of version of record
-        :param password: [optional] string to use for sha256 hash for aes256 bit key
-        :return: dictionary with details of record
+            a method for retrieving data of record from AWS S3
+            
+        :param bucket_name: string with name of bucket
+        :param record_key: string with name of key (path) for record
+        :param record_version: [optional] string with aws id of version of record
+        :param version_check: [optional] boolean to enable current version check
+        :param secret_key: [optional] string with key to encrypt the data
+        :return: byte data for record, dictionary with metadata details
         '''
 
-    #validate inputs
-        # object_map = self.input.map(object_map)
-        bucket_name = object_map['bucket']['bucketName']
-        title = ' for bucket "%s"' % bucket_name
-        self.input.keyName(record_key, 'key name' + title)
+        title = '%s.read_record' % self.__class__.__name__
+        
+        from datetime import datetime
+        from dateutil.tz import tzutc
+        
+    # validate inputs
+        input_fields = {
+            'bucket_name': bucket_name,
+            'record_key': record_key,
+            'record_version': record_version
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
 
     # create key word argument dictionary
-        kw_args = {
+        record_kwargs = {
             'Bucket': bucket_name,
             'Key': record_key
         }
-        if version_id:
-            self.input.keyName(version_id, 'version id' + title)
-            kw_args['VersionId'] = version_id
+        if record_version:
+            record_kwargs['VersionId'] = record_version
 
     # server-side decryption key with request
     #     if password:
@@ -1280,99 +1298,98 @@ class s3Client(object):
 
     # send request for record data
         try:
-            response = self.connection.get_object(**kw_args)
+            response = self.connection.get_object(**record_kwargs)
         except:
-            raise AWSConnectionError('retrieveRecord')
+            raise AWSConnectionError(title)
 
-    # create record details from response data
-        record_data = response['Body'].read()
+    # parse record data from response data
+        record_data = response['Body']
+        del response['Body']
 
-    # create meta data from response
-        meta_data = {
-            'objectKey': record_key,
-            'objectSize': 0,
-            'indexMetaData': {},
-            'versionID': version_id,
-            'currentVersion': True,
-            'contentType': '',
-            'contentEncoding': ''
+    # create metadata from response
+        metadata_details = {
+            'key': record_key,
+            'version_id': '',
+            'current_version': True,
+            'content_type': '',
+            'content_encoding': '',
+            'metadata': {}
         }
-        date_time = response['LastModified']
-        epoch_zero = datetime.datetime.fromtimestamp(0).replace(tzinfo=tzutc())
-        meta_data['lastModified'] = (date_time - epoch_zero).total_seconds()
-        if 'ContentLength' in response:
-            meta_data['objectSize'] = response['ContentLength']
-        if 'Metadata' in response:
-            meta_data['indexMetaData'] = response['Metadata']
+        metadata_details = self.iam.ingest(response, metadata_details)
+        epoch_zero = datetime.fromtimestamp(0).replace(tzinfo=tzutc())
+        metadata_details['last_modified'] = (metadata_details['last_modified'] - epoch_zero).total_seconds()
 
-    # determine currentVersion from version id
-        if version_id:
-            kw_args = {
+    # determine current version from version id
+        if record_version and version_check:
+            version_kwargs = {
                 'Bucket': bucket_name,
-                'Prefix': meta_data['objectKey']
+                'Prefix': record_key
             }
             try:
-                version_check = self.connection.list_object_versions(**kw_args)
+                version_check = self.connection.list_object_versions(**version_kwargs)
                 for version in version_check['Versions']:
-                    if version['VersionId'] == meta_data['versionID']:
-                        meta_data['currentVersion'] = version['IsLatest']
+                    if version['VersionId'] == metadata_details['version_id']:
+                        metadata_details['current_version'] = version['IsLatest']
+                        break
             except:
-                raise AWSConnectionError('listVersions')
+                raise AWSConnectionError(title)
 
-    # TODO: client-side decrypt incoming data
-        if 'ContentEncryption' in meta_data['indexMetaData']:
-            if not password:
-                raise Exception('A password must be included to decrypt details%s record %s' % (title, record_key))
-            pass_title = 'decryption password' + title
-            # key_b64, digest_b64 = self.input.password(password, pass_title)
-            # decipher aes256 cipher text with sha256 hash
+    # decrypt ciphered data
+        if 'encryption' in metadata_details['metadata'].keys():
+            if not secret_key:
+                raise Exception('%s(secret_key="...") required decrypt record "%s"' % (title, record_key))
+            if metadata_details['metadata']['encryption'] == 'lab':
+                from labpack.encryption import cryptolab
+                record_data = cryptolab.decrypt(record_data, secret_key)
 
-    # decompress and deserialize the data
-        record_details = {}
-        if 'ContentEncoding' in response:
-            meta_data['contentEncoding'] = response['ContentEncoding']
-            if response['ContentEncoding'] == 'gzip':
-                record_data = gzip.decompress(record_data)
-        if 'ContentType' in response:
-            meta_data['contentType'] = response['ContentType']
-            if response['ContentType'] == 'application/json':
-                record_details = json.loads(record_data.decode())
+        return record_data, metadata_details
 
-        return record_details, meta_data
-
-    def deleteRecord(self, record_key, object_map, version_id=''):
+    def delete_record(self, bucket_name, record_key, record_version=''):
 
         '''
             a method for deleting an object record in s3
 
+        :param bucket_name: string with name of bucket
         :param record_key: string with key value of record
-        :param object_map: dictionary with object definitions
-        :param version_id: [optional] string with aws id of version of record
-        :return: True
+        :param record_version: [optional] string with aws id of version of record
+        :return: dictionary with status of delete request
         '''
 
-     #validate inputs
-        # object_map = self.input.map(object_map)
-        bucket_name = object_map['bucket']['bucketName']
-        title = ' for bucket "%s"' % bucket_name
-        self.input.keyName(record_key, 'key name' + title)
+        title = '%s.delete_record' % self.__class__.__name__
+        
+    # validate inputs
+        input_fields = {
+            'bucket_name': bucket_name,
+            'record_key': record_key,
+            'record_version': record_version
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
 
     # create key word argument dictionary
-        kw_args = {
+        delete_kwargs = {
             'Bucket': bucket_name,
             'Key': record_key
         }
-        if version_id:
-            self.input.keyName(version_id, 'version id' + title)
-            kw_args['VersionId'] = version_id
+        if record_version:
+            delete_kwargs['VersionId'] = record_version
 
     # send request to delete record
         try:
-            self.connection.delete_object(**kw_args)
+            response = self.connection.delete_object(**delete_kwargs)
         except:
-            raise AWSConnectionError('deleteRecord')
+            raise AWSConnectionError(title)
 
-        return True
+    # report status
+        response_details = {
+            'delete_marker': True,
+            'version_id': ''
+        }
+        response_details = self.iam.ingest(response, response_details)
+        
+        return response_details
 
     def exportRecords(self, object_map, export_path='', overwrite=False):
 
@@ -1599,6 +1616,34 @@ if __name__ == '__main__':
     s3_client.update_bucket(**main_kwargs)
     bucket_details = s3_client.read_bucket(bucket_name)
     assert bucket_details['version_control']
+
+    try:
+    # test create record
+        import json
+        from time import time
+        record_key = 'unittest/%s.json' % str(time())
+        record_data = json.dumps(main_kwargs).encode('utf-8')
+        s3_client.create_record(bucket_name, record_key, record_data)
+    
+    # test update record
+        main_kwargs['additional_key'] = True
+        record_data = json.dumps(main_kwargs).encode('utf-8')
+        s3_client.create_record(bucket_name, record_key, record_data)
+    
+    # test list records and versions
+        log_list = s3_client.list_records(log_name)
+        record_list = s3_client.list_versions(bucket_name)
+        pprint(log_list)
+        pprint(record_list)
+    
+    # test delete record
+        for record in log_list:
+            print('deleting %s' % record['key'])
+            delete_output = s3_client.delete_record(log_name, record['key'])
+            print(delete_output)
+        
+    except Exception as err:
+        print(err)
 
 # remove test buckets
     for bucket in (bucket_name, log_name):
