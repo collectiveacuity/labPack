@@ -73,13 +73,15 @@
     "suffix": "/end_of_key.ext",
     "max_results": 1,
     "starting_key": "test/record/data.json",
-    "starting_version": "",
+    "starting_version": "abcDEF0123ghiJKL4567mnoPQR89",
     "record_key": "test/record/data.json",
-    "record_version": "",
+    "record_version": "abcDEF0123ghiJKL4567mnoPQR89",
     "secret_key": "abcdef0123456789abcdef0123456789",
     "record_metadata": {},
     "metadata_keys": "location",
-    "metadata_values": ""
+    "metadata_values": "database",
+    "export_path": "data/",
+    "import_path": "data/"
   },
   "components": {
     ".bucket_name": {

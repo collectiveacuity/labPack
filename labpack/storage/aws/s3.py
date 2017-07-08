@@ -891,7 +891,7 @@ class s3Client(object):
                 object_title = '%s(%s=%s)' % (title, key, str(value))
                 self.fields.validate(value, '.%s' % key, object_title)
 
-    # check to see if bucket exists:
+    # verify existence of bucket
         if not bucket_name in self.bucket_list:
             if not bucket_name in self.list_buckets():
                 raise ValueError('S3 Bucket "%s" does not exist in aws region %s.' % (bucket_name, self.iam.region_name))
@@ -945,7 +945,7 @@ class s3Client(object):
         :param max_results: [optional] integer with max results to return
         :param starting_key: [optional] string with key value to continue search with
         :param starting_version: [optional] string with version id to continue search with
-        :return: list of results with key, size and date, string with ending key value
+        :return: list of results with key, size and date, dictionary with key and version id
         '''
 
         title = '%s.list_versions' % self.__class__.__name__
@@ -972,7 +972,7 @@ class s3Client(object):
             if not starting_version or not starting_key:
                 raise ValueError('%s inputs starting_key and starting_version each require the other.' % title)
 
-    # check to see if bucket exists:
+    # verify existence of bucket
         if not bucket_name in self.bucket_list:
             if not bucket_name in self.list_buckets():
                 raise ValueError('S3 Bucket "%s" does not exist in aws region %s.' % (bucket_name, self.iam.region_name))
@@ -1093,18 +1093,21 @@ class s3Client(object):
     
     # verify overwrite condition
         if not overwrite:
+            error_msg = ''
             try:
                 self.read_headers(bucket_name, record_key)
-                raise ValueError('S3 bucket "%s" already contains a record for key "%s"' % (bucket_name, record_key))
+                error_msg = 'S3 bucket "%s" already contains a record for key "%s"' % (bucket_name, record_key)
             except:
                 pass
-                
+            if error_msg:
+                raise ValueError(error_msg)
+        
     # encrypt record
         if secret_key:
             from labpack.encryption import cryptolab
-            record_data = cryptolab.encrypt(record_data, secret_key)
+            record_data, dummy_key = cryptolab.encrypt(record_data, secret_key)
             record_metadata['encryption'] = 'lab'
-    
+        
     # validate size of metadata
         import json
         metadata_size = sys.getsizeof(json.dumps(record_metadata).encode('utf-8'))
@@ -1122,7 +1125,6 @@ class s3Client(object):
     # determine content encoding
         content_type = ''
         content_encoding = ''
-    # parse extension type
         file_extensions = {
             "json": ".+\\.json$",
             "json.gz": ".+\\.json\\.gz$",
@@ -1207,6 +1209,11 @@ class s3Client(object):
                 object_title = '%s(%s=%s)' % (title, key, str(value))
                 self.fields.validate(value, '.%s' % key, object_title)
 
+    # verify existence of bucket
+        if not bucket_name in self.bucket_list:
+            if not bucket_name in self.list_buckets():
+                raise ValueError('S3 bucket "%s" does not exist in aws region %s.' % (bucket_name, self.iam.region_name))
+                
     # create key word argument dictionary
         headers_kwargs = {
             'Bucket': bucket_name,
@@ -1233,6 +1240,8 @@ class s3Client(object):
         metadata_details = self.iam.ingest(record, metadata_details)
         epoch_zero = datetime.fromtimestamp(0).replace(tzinfo=tzutc())
         metadata_details['last_modified'] = (metadata_details['last_modified'] - epoch_zero).total_seconds()
+        if 'response_metadata' in metadata_details.keys():
+            del metadata_details['response_metadata']
 
     # determine current version from version id
         if record_version and version_check:
@@ -1280,6 +1289,11 @@ class s3Client(object):
                 object_title = '%s(%s=%s)' % (title, key, str(value))
                 self.fields.validate(value, '.%s' % key, object_title)
 
+    # verify existence of bucket
+        if not bucket_name in self.bucket_list:
+            if not bucket_name in self.list_buckets():
+                raise ValueError('S3 bucket "%s" does not exist in aws region %s.' % (bucket_name, self.iam.region_name))
+                
     # create key word argument dictionary
         record_kwargs = {
             'Bucket': bucket_name,
@@ -1303,7 +1317,7 @@ class s3Client(object):
             raise AWSConnectionError(title)
 
     # parse record data from response data
-        record_data = response['Body']
+        record_data = response['Body'].read()
         del response['Body']
 
     # create metadata from response
@@ -1318,6 +1332,8 @@ class s3Client(object):
         metadata_details = self.iam.ingest(response, metadata_details)
         epoch_zero = datetime.fromtimestamp(0).replace(tzinfo=tzutc())
         metadata_details['last_modified'] = (metadata_details['last_modified'] - epoch_zero).total_seconds()
+        if 'response_metadata' in metadata_details.keys():
+            del metadata_details['response_metadata']
 
     # determine current version from version id
         if record_version and version_check:
@@ -1368,6 +1384,11 @@ class s3Client(object):
                 object_title = '%s(%s=%s)' % (title, key, str(value))
                 self.fields.validate(value, '.%s' % key, object_title)
 
+    # verify existence of bucket
+        if not bucket_name in self.bucket_list:
+            if not bucket_name in self.list_buckets():
+                raise ValueError('S3 bucket "%s" does not exist in aws region %s.' % (bucket_name, self.iam.region_name))
+                
     # create key word argument dictionary
         delete_kwargs = {
             'Bucket': bucket_name,
@@ -1384,42 +1405,53 @@ class s3Client(object):
 
     # report status
         response_details = {
-            'delete_marker': True,
             'version_id': ''
         }
         response_details = self.iam.ingest(response, response_details)
+        if 'response_metadata' in response_details.keys():
+            del response_details['response_metadata']
         
         return response_details
 
-    def exportRecords(self, object_map, export_path='', overwrite=False):
+    def export_records(self, bucket_name, export_path='', overwrite=True):
 
         '''
             a method to export all the records from a bucket to local files
 
-        :param object_map: dictionary with object definitions
+        :param bucket_name: string with name of bucket
         :param export_path: [optional] string with path to root directory for record dump
         :param overwrite: [optional] boolean to overwrite existing files matching records
         :return: True
         '''
 
+        title = '%s.export_records' % self.__class__.__name__
+        
     # validate inputs
-        # object_map = self.input.map(object_map)
-        bucket_name = object_map['bucket']['bucketName']
-        title = 'bucket "%s" in exportRecords request' % bucket_name
-        if export_path:
-            slash = re.compile('/$')
-            if not slash.search(export_path):
-                export_path = export_path + '/'
-            self.input.path(export_path, 'export path for ' + title)
-        else:
+        input_fields = {
+            'bucket_name': bucket_name,
+            'export_path': export_path
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+        
+    # validate path
+        from os import path, makedirs
+        if not export_path:
             export_path = './'
-
-    # check for existence of bucket
-        if not bucket_name in self.listBuckets():
-            raise Exception('%s does not exist.' % title)
+        if not path.exists(export_path):
+            raise ValueError('%s(export_path="%s") is not a valid path.' % (title, export_path))
+        elif not path.isdir(export_path):
+            raise ValueError('%s(export_path="%s") must be a directory.' % (title, export_path))
+    
+    # verify existence of bucket
+        if not bucket_name in self.bucket_list:
+            if not bucket_name in self.list_buckets():
+                raise ValueError('S3 bucket "%s" does not exist in aws region %s.' % (bucket_name, self.iam.region_name))
 
     # retrieve list of records in bucket
-        record_list, next_key = self.listObjects(bucket_name)
+        record_list, next_key = self.list_records(bucket_name)
         if next_key:
             record_number = 'first %s' % str(len(record_list))
         else:
@@ -1427,31 +1459,36 @@ class s3Client(object):
         plural = ''
         if len(record_list) != 1:
             plural = 's'
-        self.iam.printer('Exporting %s record%s from bucket "%s" to path %s.' % (record_number, plural, bucket_name, export_path), end='', flush=True)
+        self.iam.printer('Exporting %s record%s from bucket "%s" to path "%s"' % (record_number, plural, bucket_name, export_path), flush=True)
 
-    # retrieve data for records in bucket
-        for record in record_list:
+    # define local save function
+        def save_to_file(_export_path, _bucket_name, _record_key, _overwrite):
+            
             try:
-                response = self.connection.get_object(Bucket=bucket_name,Key=record['objectKey'])
+                response = self.connection.get_object(Bucket=_bucket_name,Key=_record_key)
             except:
-                raise AWSConnectionError('retrieveRecord')
+                raise AWSConnectionError(title)
             record_data = response['Body'].read()
-            file_path = export_path + record['objectKey']
-            dir_path = os.path.dirname(file_path)
-            if not os.path.exists(dir_path):
-                os.makedirs(dir_path)
-            if os.path.exists(file_path) and not overwrite:
-                self.iam.printer('%s already exists. File skipped.' % file_path, end='', flush=True)
+            file_path = path.join(_export_path, _record_key)
+            dir_path = path.dirname(file_path)
+            if not path.exists(dir_path):
+                makedirs(dir_path)
+            if path.exists(file_path) and not _overwrite:
+                self.iam.printer('.\n%s already exists. File skipped. Continuing.' % file_path, flush=True)
             else:
                 with open(file_path, 'wb') as file:
                     file.write(record_data)
                     file.close()
-            self.iam.printer('.', end='', flush=True)
+                self.iam.printer('.', flush=True)
+            
+    # retrieve data for records in bucket
+        for record in record_list:
+            save_to_file(export_path, bucket_name, record['key'], overwrite)
 
     # continue exporting records in bucket until all exported
         if next_key:
             while next_key or record_list:
-                record_list, next_key = self.listObjects(bucket_name)
+                record_list, next_key = self.list_records(bucket_name)
                 if next_key:
                     record_number = 'next %s' % str(len(record_list))
                 else:
@@ -1460,101 +1497,72 @@ class s3Client(object):
                 plural = ''
                 if len(record_list) != 1:
                     plural = 's'
-                self.iam.printer('Exporting %s record%s from bucket "%s" to path %s' % (record_number, plural, bucket_name, export_path), end='', flush=True)
+                self.iam.printer('Exporting %s record%s from bucket "%s" to path "%s"' % (record_number, plural, bucket_name, export_path), flush=True)
                 for record in record_list:
-                    try:
-                        response = self.connection.get_object(Bucket=bucket_name,Key=record['objectKey'])
-                    except:
-                        raise AWSConnectionError('retrieveRecord')
-                    record_data = response['Body'].read()
-                    file_path = export_path + record['objectKey']
-                    dir_path = os.path.dirname(file_path)
-                    if not os.path.exists(dir_path):
-                        os.makedirs(dir_path)
-                    if os.path.exists(file_path) and not overwrite:
-                        self.iam.printer('%s already exists. File skipped.' % file_path, end='', flush=True)
-                    else:
-                        with open(file_path, 'wb') as file:
-                            file.write(record_data)
-                            file.close()
-                    self.iam.printer('.', end='', flush=True)
+                    save_to_file(export_path, bucket_name, record['key'], overwrite)
 
     # report completion and return true
-        self.iam.printer(' Done.')
+        self.iam.printer(' done.')
         return True
 
-    def importRecords(self, object_map, import_path='', overwrite=False):
+    def import_records(self, bucket_name, import_path='', overwrite=True):
 
         '''
             a method to importing records from local files to a bucket
 
-        :param object_map: dictionary with object definitions
-        :param import_path: [optional] string with path to root of record file structure
-        :param overwrite: [optional] boolean to overwrite records matching existing files
+        :param bucket_name: string with name of bucket
+        :param export_path: [optional] string with path to root directory of files
+        :param overwrite: [optional] boolean to overwrite existing files matching records
         :return: True
         '''
 
+        title = '%s.import_records' % self.__class__.__name__
+        
     # validate inputs
-        # object_map = self.input.map(object_map)
-        bucket_name = object_map['bucket']['bucketName']
-        title = 'bucket "%s" in importRecords request' % bucket_name
-        if import_path:
-            slash = re.compile('/$')
-            if not slash.search(import_path):
-                import_path = import_path + '/'
-        else:
+        input_fields = {
+            'bucket_name': bucket_name,
+            'import_path': import_path
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+
+    # validate path
+        from os import path
+        if not import_path:
             import_path = './'
-        self.input.path(import_path, 'import path for ' + title)
+        if not path.exists(import_path):
+            raise ValueError('%s(import_path="%s") is not a valid path.' % (title, import_path))
+        elif not path.isdir(import_path):
+            raise ValueError('%s(import_path="%s") must be a directory.' % (title, import_path))
+    
+    # verify existence of bucket
+        if not bucket_name in self.bucket_list:
+            if not bucket_name in self.list_buckets():
+                raise ValueError('S3 bucket "%s" does not exist in aws region %s.' % (bucket_name, self.iam.region_name))
 
-    # check for existence of bucket
-        if bucket_name not in self.listBuckets():
-            raise Exception('%s does not exist.' % title)
-
-    # mini-method to create a record
-        def createRecord(record_details, object_map, overwrite=False):
-            results = []
-            index = object_map['indexing']
-            record_key = ''
-            for component in index['key']:
-                if component == '/':
-                    record_key += component
-                else:
-                    record_key += record_details[component]
-            record_key = record_key + '.json.gz'
-            bucket_name = object_map['bucket']['bucketName']
-            if not overwrite:
-                results, next = self.listObjects(bucket_name, record_key)
-            if not overwrite and results:
-                self.iam.printer('%s already exists. Record skipped.' % record_key, end='', flush=True)
-            else:
-                self.addRecord(record_details, object_map)
-                self.iam.printer('.', end='', flush=True)
-
-    # mini-method to open record from a file
-        def openRecord(file_path, object_map, overwrite=False):
+    # create records from walk of local path
+        self.iam.printer('Importing records from path "%s" to bucket "%s".' % (import_path, bucket_name), flush=True)
+        from labpack.platforms.localhost import localhostClient
+        localhost_client = localhostClient()
+        import_path = path.abspath(import_path)
+        for file_path in localhost_client.walk(import_path):
+            relative_path = path.relpath(file_path, import_path)
             try:
-                record_data = open(file_path, 'rb').read()
-                record_bytes = gzip.decompress(record_data)
-                record_details = json.loads(record_bytes.decode())
-                createRecord(record_details, object_map, overwrite)
-            except:
-                self.iam.printer('[WARNING]: %s does not have a compatible record format. Skipped.' % file_path, end='', flush=True)
-
-    # mini-method to recursively find files and file path
-        def findFiles(root_path, object_map, overwrite=False):
-            for object in os.listdir(root_path):
-                new_path = deepcopy(root_path) + object
-                if os.path.isdir(new_path):
-                    findFiles(new_path + '/', object_map, overwrite)
+                byte_data = open(file_path, 'rb').read()
+                self.create_record(bucket_name, relative_path, byte_data, overwrite=overwrite)
+                self.iam.printer('.', flush=True)
+            except ValueError as err:
+                if str(err).find('already contains') > -1:
+                    self.iam.printer('.\n%s already exists. Record skipped. Continuing.' % relative_path, flush=True)
                 else:
-                    openRecord(new_path, object_map, overwrite)
-
-    # run creation methods
-        self.iam.printer('Importing records from path %s to bucket "%s".' % (import_path, bucket_name), end='', flush=True)
-        findFiles(import_path, object_map, overwrite)
+                    raise
+            except:
+                raise AWSConnectionError(title)
 
     # report completion and return true
-        self.iam.printer(' Done.')
+        self.iam.printer(' done.')
         return True
 
 if __name__ == '__main__':
@@ -1617,31 +1625,47 @@ if __name__ == '__main__':
     bucket_details = s3_client.read_bucket(bucket_name)
     assert bucket_details['version_control']
 
+# test create record
+    import json
+    from time import time
+    secret_key = 'testpassword'
+    record_key = 'unittest/%s.json' % str(time())
+    record_data = json.dumps(main_kwargs).encode('utf-8')
+    s3_client.create_record(bucket_name, record_key, record_data, secret_key=secret_key)
+
+# test update record
+    main_kwargs['additional_key'] = True
+    record_data = json.dumps(main_kwargs).encode('utf-8')
+    s3_client.create_record(bucket_name, record_key, record_data, secret_key=secret_key)
+
+# test list records and versions
+    log_list, log_key = s3_client.list_records(log_name)
+    record_list, next_key = s3_client.list_versions(bucket_name)
+    record_version = record_list[1]['version_id']
+
+# test read headers and read record
+    header_details = s3_client.read_headers(bucket_name, record_key)
+    data, headers = s3_client.read_record(bucket_name, record_key, record_version, secret_key=secret_key)
+    assert header_details['content_type'] == headers['content_type']
+    assert header_details['current_version']
+    record_details = json.loads(data.decode())
+    assert record_details['bucket_name'] == bucket_name
+
+# test delete record
+    for record in record_list:
+        delete_output = s3_client.delete_record(bucket_name, record['key'])
+        print('record version %s deleted.' % delete_output['version_id'])
+
+# test import and export
     try:
-    # test create record
-        import json
-        from time import time
-        record_key = 'unittest/%s.json' % str(time())
-        record_data = json.dumps(main_kwargs).encode('utf-8')
-        s3_client.create_record(bucket_name, record_key, record_data)
-    
-    # test update record
-        main_kwargs['additional_key'] = True
-        record_data = json.dumps(main_kwargs).encode('utf-8')
-        s3_client.create_record(bucket_name, record_key, record_data)
-    
-    # test list records and versions
-        log_list = s3_client.list_records(log_name)
-        record_list = s3_client.list_versions(bucket_name)
-        pprint(log_list)
-        pprint(record_list)
-    
-    # test delete record
-        for record in log_list:
-            print('deleting %s' % record['key'])
-            delete_output = s3_client.delete_record(log_name, record['key'])
-            print(delete_output)
-        
+        from os import listdir
+        test_dir = '../../../tests/testing'
+        dir_size = len(listdir(test_dir))
+        s3_client.import_records(bucket_name, test_dir)
+        s3_client.import_records(bucket_name, test_dir, overwrite=False)
+        s3_client.export_records(bucket_name, test_dir, overwrite=False)
+        s3_client.export_records(bucket_name, test_dir)
+        assert len(listdir(test_dir)) == dir_size
     except Exception as err:
         print(err)
 
