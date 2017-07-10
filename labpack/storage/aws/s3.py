@@ -3,7 +3,7 @@ __created__ = '2015.08'
 __license__ = 'MIT'
 
 '''
-PLEASE NOTE:    ec2 package requires the boto3 module.
+PLEASE NOTE:    s3 package requires the boto3 module.
 
 (all platforms) pip3 install boto3
 '''
@@ -12,12 +12,12 @@ try:
     import boto3
 except:
     import sys
-    print('ec2 package requires the boto3 module. try: pip3 install boto3')
+    print('s3 package requires the boto3 module. try: pip3 install boto3')
     sys.exit(1)
 
 from labpack.authentication.aws.iam import AWSConnectionError
 
-class s3Client(object):
+class _s3Client(object):
 
     '''
         a class of methods for interacting with AWS Simple Storage Service
@@ -329,6 +329,7 @@ class s3Client(object):
             except:
                 raise AWSConnectionError(title)
 
+        self.bucket_list.append(bucket_name)
         self.iam.printer(' done.')
         
         return bucket_name
@@ -1565,6 +1566,93 @@ class s3Client(object):
         self.iam.printer(' done.')
         return True
 
+class s3Client(object):
+    
+    _class_fields = {
+        'schema': {
+            'org_name': 'Collective Acuity',
+            'prod_name': 'labPack',
+            'collection_name': 'User Data',
+        },
+        'components': {
+            '.org_name': {
+                'max_length': 58,
+                'must_not_contain': ['/', '^\\.']
+            },
+            '.prod_name': {
+                'max_length': 58,
+                'must_not_contain': ['/', '^\\.']
+            },
+            '.collection_name': {
+                'max_length': 58,
+                'must_not_contain': ['/', '^\\.']
+            }
+        }
+    }
+    
+    def __init__(self, access_id, secret_key, region_name, owner_id, user_name, collection_name='', prod_name='', org_name='', access_control='private', version_control=False, log_destination=None, lifecycle_rules=None, tag_list=None, notification_settings=None, region_replication=None, access_policy=None, verbose=True):
+    
+        title = '%s.__init__' % self.__class__.__name__
+        
+    # construct boto3 client method
+        self.s3 = _s3Client(access_id, secret_key, region_name, owner_id, user_name, verbose)
+    
+    # construct s3Client fields
+        from jsonmodel.validators import jsonModel
+        self.fields = jsonModel(self._class_fields)
+    
+    # validate inputs
+        input_fields = {
+            'collection_name': collection_name,
+            'prod_name': prod_name,
+            'org_name': org_name
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+        
+    # determine defaults
+        if not collection_name:
+            collection_name = 'User Data'
+        if not prod_name:
+            prod_name = user_name
+        if not org_name:
+            org_name = owner_id
+    
+    # construct bucket name
+        collection_name = collection_name.replace(' ', '-').lower()
+        prod_name = prod_name.replace(' ', '-').lower()
+        org_name = org_name.replace(' ', '-').lower()
+        self.bucket_name = '%s-%s-%s' % (org_name, prod_name, collection_name)
+    
+    # create (or update) bucket
+        self.s3.list_buckets()
+        if self.bucket_name in self.s3.bucket_list:
+            self.s3.update_bucket(self.bucket_name, access_control, version_control, log_destination, lifecycle_rules, tag_list, notification_settings, region_replication, access_policy)
+        else:
+            self.s3.create_bucket(self.bucket_name, access_control, version_control, log_destination, lifecycle_rules, tag_list, notification_settings, region_replication, access_policy)
+    
+    def create(self, record_key, record_body, byte_data=False, overwrite=True, secret_key=''):
+        
+        pass
+    
+    def read(self, record_key, secret_key=''):
+        
+        pass
+    
+    def list(self, filter_function=None, max_results=1, previous_key=''):
+    
+        pass
+    
+    def delete(self, record_key):
+        
+        pass
+    
+    def remove(self):
+        
+        pass
+    
 if __name__ == '__main__':
     
 # test instantiation
@@ -1578,16 +1666,16 @@ if __name__ == '__main__':
         'owner_id': aws_cred['aws_owner_id'],
         'user_name': aws_cred['aws_user_name']
     }
-    s3_client = s3Client(**client_kwargs)
+    _s3_client = _s3Client(**client_kwargs)
 
 # test list bucket and verify unittesting is clean
-    bucket_list = s3_client.list_buckets()
+    bucket_list = _s3_client.list_buckets()
     bucket_name = 'collective-acuity-labpack-unittest-main'
     log_name = 'collective-acuity-labpack-unittest-log'
     # assert bucket_name not in bucket_list
     # assert log_name not in bucket_list
     for bucket in (bucket_name, log_name):
-        s3_client.delete_bucket(bucket)
+        _s3_client.delete_bucket(bucket)
 
 # test create buckets
     simple_kwargs = { 'bucket_name': bucket_name }
@@ -1617,12 +1705,12 @@ if __name__ == '__main__':
             'prefix': 'test/'
         }
     }
-    s3_client.create_bucket(**simple_kwargs)
-    s3_client.create_bucket(**log_kwargs)
+    _s3_client.create_bucket(**simple_kwargs)
+    _s3_client.create_bucket(**log_kwargs)
 
 # test update bucket
-    s3_client.update_bucket(**main_kwargs)
-    bucket_details = s3_client.read_bucket(bucket_name)
+    _s3_client.update_bucket(**main_kwargs)
+    bucket_details = _s3_client.read_bucket(bucket_name)
     assert bucket_details['version_control']
 
 # test create record
@@ -1631,21 +1719,21 @@ if __name__ == '__main__':
     secret_key = 'testpassword'
     record_key = 'unittest/%s.json' % str(time())
     record_data = json.dumps(main_kwargs).encode('utf-8')
-    s3_client.create_record(bucket_name, record_key, record_data, secret_key=secret_key)
+    _s3_client.create_record(bucket_name, record_key, record_data, secret_key=secret_key)
 
 # test update record
     main_kwargs['additional_key'] = True
     record_data = json.dumps(main_kwargs).encode('utf-8')
-    s3_client.create_record(bucket_name, record_key, record_data, secret_key=secret_key)
+    _s3_client.create_record(bucket_name, record_key, record_data, secret_key=secret_key)
 
 # test list records and versions
-    log_list, log_key = s3_client.list_records(log_name)
-    record_list, next_key = s3_client.list_versions(bucket_name)
+    log_list, log_key = _s3_client.list_records(log_name)
+    record_list, next_key = _s3_client.list_versions(bucket_name)
     record_version = record_list[1]['version_id']
 
 # test read headers and read record
-    header_details = s3_client.read_headers(bucket_name, record_key)
-    data, headers = s3_client.read_record(bucket_name, record_key, record_version, secret_key=secret_key)
+    header_details = _s3_client.read_headers(bucket_name, record_key)
+    data, headers = _s3_client.read_record(bucket_name, record_key, record_version, secret_key=secret_key)
     assert header_details['content_type'] == headers['content_type']
     assert header_details['current_version']
     record_details = json.loads(data.decode())
@@ -1653,25 +1741,22 @@ if __name__ == '__main__':
 
 # test delete record
     for record in record_list:
-        delete_output = s3_client.delete_record(bucket_name, record['key'])
+        delete_output = _s3_client.delete_record(bucket_name, record['key'])
         print('record version %s deleted.' % delete_output['version_id'])
 
 # test import and export
-    try:
-        from os import listdir
-        test_dir = '../../../tests/testing'
-        dir_size = len(listdir(test_dir))
-        s3_client.import_records(bucket_name, test_dir)
-        s3_client.import_records(bucket_name, test_dir, overwrite=False)
-        s3_client.export_records(bucket_name, test_dir, overwrite=False)
-        s3_client.export_records(bucket_name, test_dir)
-        assert len(listdir(test_dir)) == dir_size
-    except Exception as err:
-        print(err)
+    from os import listdir
+    test_dir = '../../../tests/testing'
+    dir_size = len(listdir(test_dir))
+    _s3_client.import_records(bucket_name, test_dir)
+    _s3_client.import_records(bucket_name, test_dir, overwrite=False)
+    _s3_client.export_records(bucket_name, test_dir, overwrite=False)
+    _s3_client.export_records(bucket_name, test_dir)
+    assert len(listdir(test_dir)) == dir_size
 
 # remove test buckets
     for bucket in (bucket_name, log_name):
-        s3_client.delete_bucket(bucket)    
+        _s3_client.delete_bucket(bucket)    
 
 
     # import json

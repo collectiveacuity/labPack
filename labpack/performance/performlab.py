@@ -7,12 +7,14 @@ from time import perf_counter as timer
 from labpack.randomization import randomlab
 from copy import deepcopy
 
-def repeat(function, title, count, verbose=True):
+def repeat(function, kwargs, title, count, verbose=True):
 
     t0 = timer()
     id_list = []
     while len(id_list) < count:
-        id_list.append(deepcopy(function))
+        func = deepcopy(function)
+        kw = deepcopy(kwargs)
+        id_list.append(func(**kw))
     t1 = timer()
     if verbose:
         print('%s inits of %s in %s secs' % (count, title, (t1 - t0)))

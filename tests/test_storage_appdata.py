@@ -151,6 +151,8 @@ class testAppdataModel(appdataModel):
         return self
 
 if __name__ == '__main__':
+
+# initialize client
     test_schema = { 'schema': {
         'dt': 1474505298.768161,
         'deviceID': 'ZeLPQ77bU3qnl5QI9ucwZyLK',
@@ -167,13 +169,22 @@ if __name__ == '__main__':
         'deviceID': '2Pp8d9lpsappm8QPv_Ps6cL0'
     }
     test_client = testAppdataClient()
-# TODO retrieve data from stable url
+
+# test byte data
+    from hashlib import md5
     test_data = open('../data/test_voice.ogg', 'rb').read()
     test_key = 'lab/voice/unittest.ogg'
-    test_client.create(test_key, byte_data=test_data)
+    secret_key = 'upside'
+    old_hash = md5(test_data).digest()
+    test_client.create(test_key, byte_data=test_data, secret_key=secret_key)
     test_filter = test_client.conditional_filter([{2:{'must_contain':['unittest\.ogg$']}}])
     test_search = test_client.list(test_filter)
+    new_data = test_client.read(test_search[0], secret_key=secret_key)
+    new_hash = md5(new_data).digest()
+    assert old_hash == new_hash
     assert test_client.delete(test_search[0])
+
+# test record data
     test_client.unitTests()
     test_client.performanceTests()
     # test_kwargs = { 'record_schema': test_schema, 'collection_settings': test_settings }

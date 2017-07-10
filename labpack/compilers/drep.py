@@ -11,11 +11,11 @@ except:
     print('\ndrep methods require the cryptography module. try: pip install cryptography')
     exit()
 
-def dump(map_input, secret_key):
+def dump(json_input, secret_key):
 
 # validate input and convert to json data
     try:
-        json_data = json.dumps(map_input).encode('utf-8')
+        json_data = json.dumps(json_input).encode('utf-8')
     except:
         raise TypeError('Map data input is not a valid json data structure.')
 
