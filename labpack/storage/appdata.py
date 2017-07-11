@@ -9,10 +9,10 @@ from labpack.platforms.localhost import localhostClient
 
 class appdataClient(object):
 
-    ''' a class of methods for managing file storage in local app data
+    ''' a class of methods for managing file storage on local device in app data 
 
-        NOTE:   class is designed to store json valid data nested in a dictionary
-                structure. acceptable data types include:
+        NOTE:   class is designed to store json valid data. acceptable data types 
+                inside the record body include:
                     boolean
                     integer or float (number)
                     string
@@ -22,6 +22,8 @@ class appdataClient(object):
                 to store other types of data, try first creating an url safe base64
                 string using something like:
                     base64.urlsafe_b64encode(byte_data).decode()
+                otherwise, you can store the entire body as a byte blob and handle the
+                data type architecture manually
     '''
 
     _class_fields = {
@@ -29,12 +31,12 @@ class appdataClient(object):
             'org_name': 'Collective Acuity',
             'prod_name': 'labPack',
             'collection_name': 'User Data',
-            'key_string': 'obs/terminal/2016-03-17T17-24-51-687845Z.ogg',
-            'key_string_dict': 'obs/terminal/2016-03-17T17-24-51-687845Z.yaml',
-            'key_string_path': '/home/user/.config/collective-acuity-labpack/user-data/obs/terminal',
-            'key_string_comp': 'obs',
+            'record_key': 'obs/terminal/2016-03-17T17-24-51-687845Z.ogg',
+            'record_key_dict': 'obs/terminal/2016-03-17T17-24-51-687845Z.yaml',
+            'record_key_path': '/home/user/.config/collective-acuity-labpack/user-data/obs/terminal',
+            'record_key_comp': 'obs',
             'previous_key': 'obs/terminal/2016-03-17T17-24-51-687845Z.yaml',
-            'body_dict': { 'dT': 1458235492.311154 },
+            'record_body': { 'dT': 1458235492.311154 },
             'secret_key': '6tZ0rUexOiBcOse2-dgDkbeY',
             'max_results': 1,
             'path_filters': [ { } ],
@@ -66,22 +68,22 @@ class appdataClient(object):
                 'max_length': 255,
                 'must_not_contain': ['/', '^\\.']
             },
-            '.key_string': {
+            '.record_key': {
                 'must_not_contain': [ '[^\\w\\-\\./]', '^\\.', '\\.$', '^/', '//' ]
             },
-            '.key_string_dict': {
+            '.record_key_dict': {
                 'contains_either': [ '\\.json$', '\\.ya?ml$', '\\.json\\.gz$', '\\.ya?ml\\.gz$', '\\.drep$' ]
             },
-            '.key_string_path': {
+            '.record_key_path': {
                 'max_length': 32767
             },
-            '.key_string_comp': {
+            '.record_key_comp': {
                 'max_length': 255
             },
-            '.body_dict': {
+            '.record_body': {
                 'extra_fields': True
             },
-            '.body_dict.dT': {
+            '.record_body.dT': {
                 'required_field': False
             },
             '.secret_key': {
@@ -143,11 +145,11 @@ class appdataClient(object):
         if self.localhost.os in ('Linux', 'FreeBSD', 'Solaris'):
             collection_name = collection_name.replace(' ', '-').lower()
         self.collection_folder = os.path.join(self.app_folder, collection_name)
-        self.fields.validate(self.collection_folder, '.key_string_path')
+        self.fields.validate(self.collection_folder, '.record_key_path')
         if not os.path.exists(self.collection_folder):
             os.makedirs(self.collection_folder)
 
-    def _delete(self, _file_path, _key_arg, _key_string):
+    def _delete(self, _file_path, _key_arg, _record_key):
 
         '''
             a helper method for non-blocking deletion of files
@@ -176,160 +178,181 @@ class appdataClient(object):
                 sleep(.05)
                 count += 1
                 if count > retry_count:
-                    raise Exception('%s failed to delete %s' % (_key_arg, _key_string))
+                    raise Exception('%s failed to delete %s' % (_key_arg, _record_key))
 
         os._exit(0)
 
-    def create(self, key_string, body_dict=None, byte_data=None, overwrite=True, secret_key=''):
+    def _import(self, _record_key, _byte_data, _overwrite=True):
+        
+        '''
+            a helper method for other storage clients to import into appdata
+        :param _record_key: string with key for record
+        :param _byte_data: byte data for body of record
+        :param _overwrite: [optional] boolean to overwrite existing records
+        :return: True
+        '''
+        
+    # construct and validate file path
+        file_path = os.path.join(self.collection_folder, _record_key)
+
+    # check overwrite exception
+        from os import path, makedirs
+        if not _overwrite:
+            if path.exists(file_path):
+                return False
+
+    # create directories in path to file
+        file_root, file_name = path.split(file_path)
+        if file_root:
+            if not path.exists(file_root):
+                makedirs(file_root)
+                
+    # save file
+        with open(file_path, 'wb') as f:
+            f.write(_byte_data)
+            f.close()
+    
+    # erase file date from drep files
+        import re
+        if re.search('\\.drep$', file_name):
+            from os import utime
+            file_time = 1
+            utime(file_path, times=(file_time, file_time))
+        
+        return True
+        
+    def create(self, record_key, record_body=None, overwrite=True, secret_key=''):
 
         ''' a method to create a file in the collection folder
 
-        :param key_string: string with name to assign file (see NOTE below)
-        :param body_dict: dictionary with file body details
-        :param byte_data: byte data to save under key string
-        :param overwrite: boolean to overwrite files with same name
+        :param record_key: string with name to assign file (see NOTE below)
+        :param record_body: object with file body details (see NOTE below)
+        :param overwrite: [optional] boolean to overwrite files with same name
         :param secret_key: [optional] string with key to encrypt body data
         :return: self
 
-            NOTE:   key_string may only contain alphanumeric, /, _, . or -
-                    characters and may not begin with the . or / character.
-            
-            NOTE:   body_dict and byte_data arguments cannot both be empty
-                    if creating a record with dictionary data, then the
-                    key_string must end with one of the following acceptable 
-                    file extensions:
-                        .json
-                        .yaml
-                        .yml
-                        .json.gz
-                        .yaml.gz
-                        .yml.gz
-                        .drep
-                    if creating a record with byte data, then neither the
-                    key_string file extension nor the byte data will be
-                    validated. it is up to the saving method to ensure that
-                    mimetype of the data is correct.
+        NOTE:   record_key may only contain alphanumeric, /, _, . or -
+                characters and may not begin with the . or / character.
+        
+        NOTE:   record_body datatype is inferred from the record_key extension
+                name. if the record_key ends with one of the following file 
+                extensions then the record_body can be any json valid object:
+                    .json
+                    .yaml
+                    .yml
+                    .json.gz
+                    .yaml.gz
+                    .yml.gz
+                    .drep
+                the body of record_key values with .txt or .md extension are
+                interpreted as string data types. any other file extension is
+                treated as a byte data type. it is up to the saving method to 
+                ensure that the mimetype of byte data is correct.
 
-            NOTE:   using one or more / characters splits the key into
-                    separate segments. these segments will appear as a
-                    sub directories inside the record collection and each
-                    segment is used as a separate index for that record
-                    when using the list method
-                    eg. lab/unittests/1473719695.2165067.json is indexed:
-                    [ 'lab', 'unittests', '1473719695.2165067', '.json' ]
+        NOTE:   using one or more / characters splits the key into
+                separate segments. these segments will appear as a
+                sub directories inside the record collection and each
+                segment is used as a separate index for that record
+                when using the list method
+                eg. lab/unittests/1473719695.2165067.json is indexed:
+                [ 'lab', 'unittests', '1473719695.2165067', '.json' ]
         '''
 
         _title = '%s.create' % self.__class__.__name__
-        _key_arg = '%s(key_string="%s")' % (_title, key_string)
-        _body_arg = '%s(body_dict={...}' % {_title}
+        _key_arg = '%s(record_key="%s")' % (_title, record_key)
+        _body_arg = '%s(record_body={...}' % {_title}
         _secret_arg = '%s(secret_key="%s")' % (_title, secret_key)
 
     # validate inputs
-        key_string = self.fields.validate(key_string, '.key_string', _key_arg)
-        if body_dict:
-            key_string = self.fields.validate(key_string, '.key_string_dict', _key_arg)
-            body_dict = self.fields.validate(body_dict, '.body_dict', _body_arg)
-        elif byte_data:
-            pass
-        else:
-            raise IndexError('%s must contain either a body_dict or byte_data argument' % _title)
+        record_key = self.fields.validate(record_key, '.record_key', _key_arg)
 
     # construct and validate file path
-        file_path = os.path.join(self.collection_folder, key_string)
-        file_path = self.fields.validate(file_path, '.key_string_path')
-        current_path = os.path.split(file_path)
-        self.fields.validate(current_path[1], '.key_string_comp')
-        while current_path[0] != self.collection_folder:
-            current_path = os.path.split(current_path[0])
-            self.fields.validate(current_path[1], '.key_string_comp')
+        file_path = os.path.join(self.collection_folder, record_key)
+        file_path = self.fields.validate(file_path, '.record_key_path')
+        file_root, file_name = os.path.split(file_path)
+        self.fields.validate(file_name, '.record_key_comp')
+        while file_root != self.collection_folder:
+            file_root, path_node = os.path.split(file_root)
+            self.fields.validate(path_node, '.record_key_comp')
 
-    # save dictionary data
-        if body_dict:
-            from labpack.records.settings import save_settings
-            save_kwargs = {
-                'file_path': file_path,
-                'record_details': body_dict,
-                'overwrite': overwrite,
-                'secret_key': secret_key
-            }
-            save_settings(**save_kwargs)
+    # # check overwrite exception
+        from os import path, makedirs
+        if not overwrite:
+            if path.exists(file_path):
+                raise Exception('%s already exists. To overwrite %s, set overwrite=True' % (_key_arg, _key_arg))
 
-    # save byte data
-        elif byte_data:
-            if not overwrite:
-                if os.path.exists(file_path):
-                    raise Exception('%s already exists. To overwrite %s, set overwrite=True' % (key_string, key_string))
-            dir_path = os.path.split(file_path)
-            if dir_path[0]:
-                if not os.path.exists(dir_path[0]):
-                    os.makedirs(dir_path[0])
-            if secret_key:
-                from labpack.encryption import cryptolab
-                byte_data, secret_key = cryptolab.encrypt(byte_data, secret_key)
-            with open(file_path, 'wb') as f:
-                f.write(byte_data)
-                f.close()
+    # create directories in path to file
+        file_root, file_node = path.split(file_path)
+        if file_root:
+            if not path.exists(file_root):
+                makedirs(file_root)
+            
+    # encode data
+        from labpack.compilers.encoding import encode_data
+        byte_data = encode_data(file_name, record_body, secret_key=secret_key)
+    
+    # save file
+        with open(file_path, 'wb') as f:
+            f.write(byte_data)
+            f.close()
+    
+    # erase file date from drep files
+        import re
+        if re.search('\\.drep$', file_name):
+            from os import utime
+            file_time = 1
+            utime(file_path, times=(file_time, file_time))
 
-        return key_string
+        return record_key
 
-    def read(self, key_string, secret_key=''):
+    def read(self, record_key, secret_key=''):
 
         ''' a method to retrieve body details from a file
 
-        :param key_string: string with name of file
+        :param record_key: string with name of file
         :param secret_key: [optional] string used to decrypt data
-        :return: dictionary with file content details or byte data
+        :return: object with file body details (see NOTE below)
+        
+        NOTE:   the datatype returned is inferred from the record_key extension
+                name. if the record_key ends with one of the following file 
+                extensions then the returned datatype can be any json valid object:
+                    .json
+                    .yaml
+                    .yml
+                    .json.gz
+                    .yaml.gz
+                    .yml.gz
+                    .drep
+                the body of record_key values with .txt or .md extension are
+                interpreted as string data types. any other file extension is
+                returns a byte data type object. it is up to the saving method
+                to ensure that the mimetype of byte data is correct.
         '''
 
         _title = '%s.read' % self.__class__.__name__
-        _key_arg = '%s(key_string="%s")' % (_title, key_string)
+        _key_arg = '%s(record_key="%s")' % (_title, record_key)
         _secret_arg = '%s(secret_key="%s")' % (_title, secret_key)
 
     # validate inputs
-        key_string = self.fields.validate(key_string, '.key_string', _key_arg)
+        record_key = self.fields.validate(record_key, '.record_key', _key_arg)
 
     # construct path to file
-        file_path = os.path.join(self.collection_folder, key_string)
+        from os import path
+        file_path = path.join(self.collection_folder, record_key)
 
     # validate existence of file
-        if not os.path.exists(file_path):
+        if not path.exists(file_path):
             raise Exception('%s does not exist.' % _key_arg)
 
-    # parse extension
-        record_data = False
-        file_extensions = {
-            "json": ".+\\.json$",
-            "json.gz": ".+\\.json\\.gz$",
-            "yaml": ".+\\.ya?ml$",
-            "yaml.gz": ".+\\.ya?ml\\.gz$",
-            "drep": ".+\\.drep$"
-        }
-        import re
-        for key, value in file_extensions.items():
-            file_pattern = re.compile(value)
-            if file_pattern.findall(file_path):
-                record_data = True
-                break
+    # determine file name
+        file_root, file_name = path.split(file_path)
         
-    # retrieve file details from record data
-        if record_data:
-            from labpack.records.settings import load_settings
-            load_kwargs = {
-                'file_path': file_path,
-                'secret_key': secret_key
-            }
-            file_details = load_settings(**load_kwargs)
+    # open file and decode data
+        from labpack.compilers.encoding import decode_data
+        byte_data = open(file_path, 'rb')
+        record_body = decode_data(file_name, byte_data, secret_key=secret_key)
     
-            return file_details
-    
-    # retrieve byte data from other files
-        else:
-            byte_data = open(file_path, 'rb').read()
-            if secret_key:
-                from labpack.encryption import cryptolab
-                byte_data = cryptolab.decrypt(byte_data, secret_key)
-            
-            return byte_data
+        return record_body
             
     def conditional_filter(self, path_filters):
 
@@ -462,7 +485,7 @@ class appdataClient(object):
 
     # validate input
         input_kwargs = [max_results, previous_key]
-        input_names = ['.max_results', '.key_string']
+        input_names = ['.max_results', '.record_key']
         for i in range(len(input_kwargs)):
             if input_kwargs[i]:
                 self.fields.validate(input_kwargs[i], input_names[i])
@@ -487,15 +510,15 @@ class appdataClient(object):
             path_segments = file_path.split(os.sep)
             for i in range(len(root_segments)):
                 del path_segments[0]
-            key_string = os.path.join(*path_segments)
-            key_string = key_string.replace('\\','/')
+            record_key = os.path.join(*path_segments)
+            record_key = record_key.replace('\\','/')
 
     # apply filtering criteria
             if filter_function:
                 if filter_function(*path_segments):
-                    results_list.append(key_string)
+                    results_list.append(record_key)
             else:
-                results_list.append(key_string)
+                results_list.append(record_key)
 
     # return results list
             if len(results_list) == max_results:
@@ -503,33 +526,33 @@ class appdataClient(object):
 
         return results_list
 
-    def delete(self, key_string):
+    def delete(self, record_key):
 
         ''' a method to delete a file
 
-        :param key_string: string with name of file
+        :param record_key: string with name of file
         :return: string reporting outcome
         '''
 
         _title = '%s.delete' % self.__class__.__name__
-        _key_arg = '%s(key_string="%s")' % (_title, key_string)
+        _key_arg = '%s(record_key="%s")' % (_title, record_key)
 
     # validate inputs
-        key_string = self.fields.validate(key_string, '.key_string')
+        record_key = self.fields.validate(record_key, '.record_key')
 
     # construct path to file
-        file_path = os.path.join(self.collection_folder, key_string)
+        file_path = os.path.join(self.collection_folder, record_key)
 
     # validate existence of file
         if not os.path.exists(file_path):
-            return '%s does not exist.' % key_string
+            return '%s does not exist.' % record_key
         current_dir = os.path.split(file_path)[0]
 
     # remove file
         try:
             os.remove(file_path)
         except:
-            raise Exception('%s failed to delete %s' % (_key_arg, key_string))
+            raise Exception('%s failed to delete %s' % (_key_arg, record_key))
 
     # # remove empty directories in path to file
     #     if not os.listdir(current_dir):
@@ -543,7 +566,7 @@ class appdataClient(object):
             else:
                 break
 
-        return '%s has been deleted.' % key_string
+        return '%s has been deleted.' % record_key
 
     def remove(self):
 
@@ -565,6 +588,77 @@ class appdataClient(object):
             raise Exception('%s failed to remove %s collection from app data.' % (_title, self.collection_folder))
 
         return '%s collection has been removed from app data.' % self.collection_folder
+    
+    def export(self, storage_client, overwrite=True):
+        
+        '''
+            a method to export all the records in collection to another platform
+            
+        :param storage_client: class object with storage client methods
+        :return: string with exit message
+        '''
+        
+        title = '%s.export' % self.__class__.__name__
+        
+    # validate storage client
+        method_list = [ 'create', 'read', 'list', 'export', 'delete', 'remove', '_import' ]
+        for method in method_list:
+            if not getattr(storage_client, method, None):
+                from labpack.parsing.grammar import join_words
+                raise ValueError('%s(storage_client=...) must be a client object with %s methods.' % (title, join_words(method_list)))
+            
+    # walk collection folder to find files
+        import os
+        root_segments = self.collection_folder.split(os.sep)
+        count = 0
+        skipped = 0
+        for file_path in self.localhost.walk(self.collection_folder):
+            count += 1
+            path_segments = file_path.split(os.sep)
+            for i in range(len(root_segments)):
+                del path_segments[0]
+            record_key = os.path.join(*path_segments)
+            record_key = record_key.replace('\\','/')
+            
+    # read file and save files
+            byte_data = open(file_path, 'rb').read()
+            outcome = storage_client._import(record_key, byte_data, overwrite)
+            if not outcome:
+                count -= 1
+                skipped += 1
+            
+    # report outcome
+        plural = ''
+        skip_insert = ''
+        new_root, new_folder = os.path.split(storage_client.collection_folder)
+        if count != 1:
+            plural = 's'
+        if skipped > 0:
+            skip_plural = ''
+            if skipped > 1:
+                skip_plural = 's'
+            skip_insert = ' %s record%s skipped to avoid overwrite.' % (str(skipped), skip_plural)
+        exit_msg = '%s record%s exported to %s.%s' % (str(count), plural, new_folder, skip_insert)
+        return exit_msg
 
 if __name__ == '__main__':
-    appdataClient()
+    
+    from time import time
+    old_client = appdataClient(collection_name='Test Export')
+    new_client = appdataClient(collection_name='Test Import')
+    
+    try:
+        secret_key = 'password'
+        record_key = 'test/migrate/%s.drep' % str(time())
+        record_body = { 'test': 'value' }
+        old_client.create(record_key, record_body, secret_key=secret_key)
+        exit_msg = old_client.export(new_client)
+        exit_msg = old_client.export(new_client, overwrite=False)
+        record_details = new_client.read(record_key, secret_key)
+        assert record_details == record_body
+        print(exit_msg)
+    except Exception as err:
+        print(err)
+    old_client.remove()
+    new_client.remove()
+    

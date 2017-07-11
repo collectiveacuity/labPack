@@ -8,10 +8,9 @@ except:
     print('pytest module required to perform unittests. try: pip install pytest')
     exit()
 
-from labpack.storage.appdata import appdataClient, appdataModel
+from labpack.storage.appdata import appdataClient
 from labpack.performance import performlab
 from jsonmodel.exceptions import InputValidationError
-from copy import deepcopy
 
 class testAppdataClient(appdataClient):
 
@@ -28,7 +27,7 @@ class testAppdataClient(appdataClient):
         seed_details['type'] = '.json'
         seed_details['time'] = time()
         seed_key = '%s/%s%s' % (testKey, str(seed_details['time']), seed_details['type'])
-        self.create(key_string=seed_key, body_dict=seed_details)
+        self.create(record_key=seed_key, record_body=seed_details)
         file_types = [ 'json', 'json.gz', 'yaml', 'yaml.gz', 'drep' ]
         for type in file_types:
             test_dt = time()
@@ -40,14 +39,14 @@ class testAppdataClient(appdataClient):
             secret_key = ''
             if type == 'drep':
                 secret_key = 'test-key'
-            self.create(key_string=test_key, body_dict=test_details, secret_key=secret_key)
-            assert self.read(key_string=test_key, secret_key=secret_key)
+            self.create(record_key=test_key, record_body=test_details, secret_key=secret_key)
+            assert self.read(record_key=test_key, secret_key=secret_key)
             assert test_key in self.list(max_results=100, reverse_search=False)
             path_filters = [{0: {'must_contain': ['^lab']}, 2:{'discrete_values': ['unittest']}}]
             filter_function = self.conditional_filter(path_filters=path_filters)
             assert test_key in self.list(filter_function=filter_function, max_results=100)
-            assert self.delete(key_string=test_key)
-        self.delete(key_string=seed_key)
+            assert self.delete(record_key=test_key)
+        self.delete(record_key=seed_key)
         self.remove()
 
     # test filter method
@@ -96,57 +95,20 @@ class testAppdataClient(appdataClient):
             seed_details['type'] = '.json'
             seed_details['time'] = time()
             seed_key = '%s/%s%s' % (testKey, str(seed_details['time']), seed_details['type'])
-            self.create(key_string=seed_key, body_dict=seed_details)
+            self.create(record_key=seed_key, record_body=seed_details)
             count += 1
             sleep(.001)
             if count == 2:
                 last_key = deepcopy(seed_key)
         path_filters = [{ 1:{'must_contain':['^log']}}]
         filter_function = self.conditional_filter(path_filters=path_filters)
-        performlab.repeat(self.list(filter_function=filter_function, max_results=100, previous_key=last_key), 'appdataClient.list(filter_function=self.conditional_filter(%s), max_results=100, previous_key=%s)' % (path_filters, last_key), 10000)
+        perform_kwargs = {
+            'filter_function': filter_function, 
+            'max_results': 100, 
+            'previous_key': last_key
+        }
+        performlab.repeat(self.list, perform_kwargs, 'appdataClient.list(filter_function=self.conditional_filter(%s), max_results=100, previous_key=%s)' % (path_filters, last_key), 1000)
         self.remove()
-
-        return self
-
-class testAppdataModel(appdataModel):
-
-    def __init__(self, record_schema=None, collection_settings=None, appdata_model=None):
-        appdataModel.__init__(self, record_schema=record_schema, collection_settings=collection_settings, appdata_model=appdata_model)
-
-    def unitTests(self):
-
-    # instantiation assertions
-        assert self.index
-        assert isinstance(self.methods, appdataClient)
-        assert not self.settings['enforce_schema']
-        print(self.settings)
-        print(test_record)
-
-    # test new method
-        new_record = self.new(**test_record)
-        assert new_record.data
-        new_record.settings['enforce_schema'] = True
-        with pytest.raises(InputValidationError):
-            new_record.new(**test_record)
-
-    # test byte data in record
-        new_record.settings['enforce_schema'] = False
-        byte_record = deepcopy(test_record)
-        import base64
-        byte_data = b'\xb0mx\x0b\xec[\xc3a\xaf>Ce\x07\x08\xd1I\x8drs\x15\xedP\xc4\xef+-0^C^\x97\x17'
-        byte_record['happy'] = base64.urlsafe_b64encode(byte_data).decode()
-        new_record = self.new(**byte_record)
-        print(new_record.data)
-        import json
-        t = json.dumps(new_record.data)
-
-    # test extract value method
-        new_record.settings['enforce_schema'] = False
-        assert new_record._extract_value('.deviceID') == test_record['deviceID']
-        assert new_record._extract_value('.metric') == 'null'
-
-    # test extract value method with dictionary datatypes
-
 
         return self
 
@@ -176,7 +138,7 @@ if __name__ == '__main__':
     test_key = 'lab/voice/unittest.ogg'
     secret_key = 'upside'
     old_hash = md5(test_data).digest()
-    test_client.create(test_key, byte_data=test_data, secret_key=secret_key)
+    test_client.create(test_key, test_data, secret_key=secret_key)
     test_filter = test_client.conditional_filter([{2:{'must_contain':['unittest\.ogg$']}}])
     test_search = test_client.list(test_filter)
     new_data = test_client.read(test_search[0], secret_key=secret_key)
