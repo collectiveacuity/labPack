@@ -87,7 +87,7 @@ class appdataClient(object):
                 'required_field': False
             },
             '.secret_key': {
-                'must_not_contain': [ '[\\s\\t\\n\\r]' ]
+                'must_not_contain': [ '[\\t\\n\\r]' ]
             },
             '.max_results': {
                 'min_value': 1,
@@ -139,6 +139,10 @@ class appdataClient(object):
             prod_name = __module__
         else:
             prod_name = self.localhost.fields.validate(prod_name, '.prod_name')
+    
+    # construct collection name
+        from copy import deepcopy
+        self.collection_name = deepcopy(collection_name)
 
     # validate existence of file data folder in app data (or create)
         self.app_folder = self.localhost.app_data(org_name=org_name, prod_name=prod_name)
@@ -181,23 +185,25 @@ class appdataClient(object):
                     raise Exception('%s failed to delete %s' % (_key_arg, _record_key))
 
         os._exit(0)
-
-    def _import(self, _record_key, _byte_data, _overwrite=True):
+    
+    def _import(self, record_key, byte_data, overwrite=True, **kwargs):
         
         '''
             a helper method for other storage clients to import into appdata
-        :param _record_key: string with key for record
-        :param _byte_data: byte data for body of record
-        :param _overwrite: [optional] boolean to overwrite existing records
-        :return: True
+            
+        :param record_key: string with key for record
+        :param byte_data: byte data for body of record
+        :param overwrite: [optional] boolean to overwrite existing records
+        :param kwargs: [optional] keyword arguments from other import methods 
+        :return: boolean indicating whether record was imported
         '''
         
     # construct and validate file path
-        file_path = os.path.join(self.collection_folder, _record_key)
+        file_path = os.path.join(self.collection_folder, record_key)
 
     # check overwrite exception
         from os import path, makedirs
-        if not _overwrite:
+        if not overwrite:
             if path.exists(file_path):
                 return False
 
@@ -209,7 +215,7 @@ class appdataClient(object):
                 
     # save file
         with open(file_path, 'wb') as f:
-            f.write(_byte_data)
+            f.write(byte_data)
             f.close()
     
     # erase file date from drep files
@@ -223,7 +229,8 @@ class appdataClient(object):
         
     def create(self, record_key, record_body=None, overwrite=True, secret_key=''):
 
-        ''' a method to create a file in the collection folder
+        ''' 
+            a method to create a file in the collection folder
 
         :param record_key: string with name to assign file (see NOTE below)
         :param record_body: object with file body details (see NOTE below)
@@ -275,7 +282,7 @@ class appdataClient(object):
             file_root, path_node = os.path.split(file_root)
             self.fields.validate(path_node, '.record_key_comp')
 
-    # # check overwrite exception
+    # check overwrite exception
         from os import path, makedirs
         if not overwrite:
             if path.exists(file_path):
@@ -307,7 +314,8 @@ class appdataClient(object):
 
     def read(self, record_key, secret_key=''):
 
-        ''' a method to retrieve body details from a file
+        ''' 
+            a method to retrieve body details from a file
 
         :param record_key: string with name of file
         :param secret_key: [optional] string used to decrypt data
@@ -545,7 +553,8 @@ class appdataClient(object):
 
     # validate existence of file
         if not os.path.exists(file_path):
-            return '%s does not exist.' % record_key
+            exit_msg = '%s does not exist.' % record_key
+            return exit_msg
         current_dir = os.path.split(file_path)[0]
 
     # remove file
@@ -566,11 +575,13 @@ class appdataClient(object):
             else:
                 break
 
-        return '%s has been deleted.' % record_key
-
+        exit_msg = '%s has been deleted.' % record_key
+        return exit_msg
+    
     def remove(self):
 
-        ''' a method to remove collection and all records in the collection
+        ''' 
+            a method to remove collection and all records in the collection
 
         :return: string with confirmation of deletion
         '''
@@ -587,7 +598,8 @@ class appdataClient(object):
         except:
             raise Exception('%s failed to remove %s collection from app data.' % (_title, self.collection_folder))
 
-        return '%s collection has been removed from app data.' % self.collection_folder
+        exit_msg = '%s collection has been removed from app data.' % self.collection_folder
+        return exit_msg
     
     def export(self, storage_client, overwrite=True):
         
@@ -601,7 +613,7 @@ class appdataClient(object):
         title = '%s.export' % self.__class__.__name__
         
     # validate storage client
-        method_list = [ 'create', 'read', 'list', 'export', 'delete', 'remove', '_import' ]
+        method_list = [ 'create', 'read', 'list', 'export', 'delete', 'remove', '_import', 'collection_name' ]
         for method in method_list:
             if not getattr(storage_client, method, None):
                 from labpack.parsing.grammar import join_words
@@ -613,7 +625,6 @@ class appdataClient(object):
         count = 0
         skipped = 0
         for file_path in self.localhost.walk(self.collection_folder):
-            count += 1
             path_segments = file_path.split(os.sep)
             for i in range(len(root_segments)):
                 del path_segments[0]
@@ -623,14 +634,15 @@ class appdataClient(object):
     # read file and save files
             byte_data = open(file_path, 'rb').read()
             outcome = storage_client._import(record_key, byte_data, overwrite)
-            if not outcome:
-                count -= 1
+            if outcome:
+                count += 1
+            else:
                 skipped += 1
             
     # report outcome
         plural = ''
         skip_insert = ''
-        new_root, new_folder = os.path.split(storage_client.collection_folder)
+        new_folder = storage_client.collection_name
         if count != 1:
             plural = 's'
         if skipped > 0:

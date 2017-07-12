@@ -15,6 +15,11 @@ except:
     print('s3 package requires the boto3 module. try: pip3 install boto3')
     sys.exit(1)
 
+# TODO: bucket access policy feature for s3
+# TODO: bucket region replication feature for s3
+# TODO: test bucket notification settings feature integration with AWS event services
+# TODO: glacierClient archive, restore and delete methods
+
 from labpack.authentication.aws.iam import AWSConnectionError
 
 class _s3Client(object):
@@ -808,7 +813,7 @@ class _s3Client(object):
                 self.iam.printer(status_msg)
                 return status_msg
 
-    # retrieve list of objects in bucket
+    # retrieve list of records in bucket
         record_keys = []
         record_list, next_key = self.list_versions(bucket_name)
         for record in record_list:
@@ -818,7 +823,7 @@ class _s3Client(object):
             }
             record_keys.append(details)
 
-    # delete objects in bucket
+    # delete records in bucket
         kw_args = {
             'Bucket': bucket_name,
             'Delete': { 'Objects': record_keys }
@@ -1040,7 +1045,7 @@ class _s3Client(object):
 
         return record_list, next_key
 
-    def create_record(self, bucket_name, record_key, record_data, record_metadata=None, overwrite=True, secret_key=''):
+    def create_record(self, bucket_name, record_key, record_data, record_metadata=None, record_mimetype='', record_encoding='', overwrite=True):
 
         '''
             a method for adding a record to an S3 bucket
@@ -1049,8 +1054,9 @@ class _s3Client(object):
         :param record_key: string with name of key (path) for record
         :param record_data: byte data for record
         :param record_metadata: [optional] dictionary with metadata to attach to record
+        :param record_mimetype: [optional] string with content mimetype of record data
+        :param record_encoding: [optional] string with content encoding of record data
         :param overwrite: [optional] boolean to overwrite any existing record
-        :param secret_key: [optional] string with key to encrypt the data
         :return: string with name of record key
         '''
         
@@ -1103,12 +1109,6 @@ class _s3Client(object):
             if error_msg:
                 raise ValueError(error_msg)
         
-    # encrypt record
-        if secret_key:
-            from labpack.encryption import cryptolab
-            record_data, dummy_key = cryptolab.encrypt(record_data, secret_key)
-            record_metadata['encryption'] = 'lab'
-        
     # validate size of metadata
         import json
         metadata_size = sys.getsizeof(json.dumps(record_metadata).encode('utf-8'))
@@ -1124,27 +1124,13 @@ class _s3Client(object):
             self.iam.printer('[WARNING] %s exceeds optimal record data size of %s bytes.' % (error_prefix, record_max))
 
     # determine content encoding
-        content_type = ''
-        content_encoding = ''
-        file_extensions = {
-            "json": ".+\\.json$",
-            "json.gz": ".+\\.json\\.gz$",
-            "yaml": ".+\\.ya?ml$",
-            "yaml.gz": ".+\\.ya?ml\\.gz$",
-            "drep": ".+\\.drep$"
-        }
-        import re
-        for key, value in file_extensions.items():
-            file_pattern = re.compile(value)
-            if file_pattern.findall(record_key):
-                if key.find('json') > -1:
-                    content_type = 'application/json'
-                elif key.find('yaml') > -1:
-                    content_type = 'application/x-yaml'
-                elif key.find('drep') > -1:
-                    content_type = 'application/x-drep'
-                if key.find('gz') > -1:
-                    content_encoding = 'gzip'
+        if not record_encoding or not record_mimetype:
+            import mimetypes
+            guess_mimetype, guess_encoding = mimetypes.guess_type(record_key)
+            if not record_mimetype:
+                record_mimetype = guess_mimetype
+            if not record_encoding:
+                record_encoding = guess_encoding
                     
     # create RFC 1864 base64 encoded md5 digest of data to confirm integrity
         hash_bytes = md5(record_data).digest()
@@ -1160,10 +1146,10 @@ class _s3Client(object):
         }
         if record_metadata:
             create_kwargs['Metadata'] = record_metadata
-        if content_type:
-            create_kwargs['ContentType'] = content_type
-        if content_encoding:
-            create_kwargs['ContentEncoding'] = content_encoding
+        if record_mimetype:
+            create_kwargs['ContentType'] = record_mimetype
+        if record_encoding:
+            create_kwargs['ContentEncoding'] = record_encoding
 
     # add server side encryption key to request
     #     if server_encryption:
@@ -1261,7 +1247,7 @@ class _s3Client(object):
 
         return metadata_details
 
-    def read_record(self, bucket_name, record_key, record_version='', version_check=False, secret_key=''):
+    def read_record(self, bucket_name, record_key, record_version='', version_check=False):
 
         '''
             a method for retrieving data of record from AWS S3
@@ -1270,7 +1256,6 @@ class _s3Client(object):
         :param record_key: string with name of key (path) for record
         :param record_version: [optional] string with aws id of version of record
         :param version_check: [optional] boolean to enable current version check
-        :param secret_key: [optional] string with key to encrypt the data
         :return: byte data for record, dictionary with metadata details
         '''
 
@@ -1350,14 +1335,6 @@ class _s3Client(object):
                         break
             except:
                 raise AWSConnectionError(title)
-
-    # decrypt ciphered data
-        if 'encryption' in metadata_details['metadata'].keys():
-            if not secret_key:
-                raise Exception('%s(secret_key="...") required decrypt record "%s"' % (title, record_key))
-            if metadata_details['metadata']['encryption'] == 'lab':
-                from labpack.encryption import cryptolab
-                record_data = cryptolab.decrypt(record_data, secret_key)
 
         return record_data, metadata_details
 
@@ -1573,6 +1550,9 @@ class s3Client(object):
             'org_name': 'Collective Acuity',
             'prod_name': 'labPack',
             'collection_name': 'User Data',
+            'record_key': 'obs/terminal/2016-03-17T17-24-51-687845Z.ogg',
+            'secret_key': '6tZ0rUexOiBcOse2-dgDkbeY',
+            'encryption': 'lab512'
         },
         'components': {
             '.org_name': {
@@ -1586,6 +1566,12 @@ class s3Client(object):
             '.collection_name': {
                 'max_length': 58,
                 'must_not_contain': ['/', '^\\.']
+            },
+            '.record_key': {
+                'must_not_contain': [ '[^\\w\\-\\./]', '^\\.', '\\.$', '^/', '//' ]
+            },
+            '.secret_key': {
+                'must_not_contain': [ '[\\t\\n\\r]' ]
             }
         }
     }
@@ -1620,6 +1606,10 @@ class s3Client(object):
         if not org_name:
             org_name = owner_id
     
+    # create collection name property
+        from copy import deepcopy
+        self.collection_name = deepcopy(collection_name)
+    
     # construct bucket name
         collection_name = collection_name.replace(' ', '-').lower()
         prod_name = prod_name.replace(' ', '-').lower()
@@ -1633,13 +1623,206 @@ class s3Client(object):
         else:
             self.s3.create_bucket(self.bucket_name, access_control, version_control, log_destination, lifecycle_rules, tag_list, notification_settings, region_replication, access_policy)
     
-    def create(self, record_key, record_body, byte_data=False, overwrite=True, secret_key=''):
+    def _import(self, record_key, byte_data, overwrite=True, encryption='', **kwargs):
         
-        pass
+        '''
+            a helper method for other storage clients to import into s3
+            
+        :param record_key: string with key for record
+        :param byte_data: byte data for body of record
+        :param overwrite: [optional] boolean to overwrite existing records
+        :param encryption: [optional] string with encryption type add to metadata
+        :param kwargs: [optional] keyword arguments from other import methods 
+        :return: boolean indicating whether record was imported
+        '''
+
+    # define keyword arguments
+        create_kwargs = {
+            'bucket_name': self.bucket_name,
+            'record_key': record_key,
+            'record_data': byte_data,
+            'overwrite': overwrite
+        }
+    
+    # add encryption
+        if encryption:
+            create_kwargs['record_metadata'] = { 'encryption': encryption }
+            
+    # add record mimetype and encoding
+        import mimetypes
+        guess_mimetype, guess_encoding = mimetypes.guess_type(record_key)
+        if not guess_mimetype:
+            if record_key.find('.yaml') or record_key.find('.yml'):
+                guess_mimetype = 'application/x-yaml'
+            if record_key.find('.drep'):
+                guess_mimetype = 'application/x-drep'
+        if guess_mimetype:
+            create_kwargs['record_mimetype'] = guess_mimetype
+        if guess_encoding:
+            create_kwargs['record_encoding'] = guess_encoding
+            
+    # create record
+        try:
+            self.s3.create_record(**create_kwargs)
+        except ValueError as err:
+            if str(err).find('already contains') > -1:
+                self.s3.iam.printer('%s already exists in %s collection. Skipping.' % (record_key, self.bucket_name))
+                return False
+            else:
+                raise
+        except:
+            raise
+
+        return True
+    
+    def create(self, record_key, record_body, overwrite=True, secret_key=''):
+        
+        ''' 
+            a method to create a file in the collection folder on S3
+
+        :param record_key: string with key to assign record (see NOTE below)
+        :param record_body: object with file body details (see NOTE below)
+        :param overwrite: [optional] boolean to overwrite files with same name
+        :param secret_key: [optional] string with key to encrypt body data
+        :return: self
+
+        NOTE:   record_key may only contain alphanumeric, /, _, . or -
+                characters and may not begin with the . or / character.
+        
+        NOTE:   record_body datatype is inferred from the record_key extension
+                name. if the record_key ends with one of the following file 
+                extensions then the record_body can be any json valid object:
+                    .json
+                    .yaml
+                    .yml
+                    .json.gz
+                    .yaml.gz
+                    .yml.gz
+                    .drep
+                the body of record_key values with .txt or .md extension are
+                interpreted as string data types. any other file extension is
+                treated as a byte data type. it is up to the application to 
+                ensure that the mimetype of byte data is correct.
+
+        NOTE:   using one or more / characters splits the key into
+                separate segments. these segments will appear as a
+                sub directories inside the record collection and each
+                segment is used as a separate index for that record
+                when using the list method
+                eg. lab/unittests/1473719695.2165067.json is indexed:
+                [ 'lab', 'unittests', '1473719695.2165067', '.json' ]
+        '''
+
+        title = '%s.create' % self.__class__.__name__
+    
+    # validate inputs
+        input_fields = {
+            'record_key': record_key,
+            'secret_key': secret_key
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+    
+    # encode data
+        from os import path
+        file_root, file_name = path.split(record_key)
+        from labpack.compilers.encoding import encode_data
+        byte_data = encode_data(file_name, record_body, secret_key=secret_key)
+
+    # define keyword arguments
+        create_kwargs = {
+            'bucket_name': self.bucket_name,
+            'record_key': record_key,
+            'record_data': byte_data,
+            'overwrite': overwrite
+        }
+    
+    # add encryption metadata
+        import re
+        if secret_key and not re.search('\\.drep$', file_name):
+            create_kwargs['record_metadata'] = { 'encryption': 'lab512' }
+    
+    # add record mimetype and encoding
+        import mimetypes
+        guess_mimetype, guess_encoding = mimetypes.guess_type(file_name)
+        if not guess_mimetype:
+            if file_name.find('.yaml') or file_name.find('.yml'):
+                guess_mimetype = 'application/x-yaml'
+            if file_name.find('.drep'):
+                guess_mimetype = 'application/x-drep'
+        if guess_mimetype:
+            create_kwargs['record_mimetype'] = guess_mimetype
+        if guess_encoding:
+            create_kwargs['record_encoding'] = guess_encoding
+            
+    # create record
+        self.s3.create_record(**create_kwargs)
+
+        return record_key
     
     def read(self, record_key, secret_key=''):
         
-        pass
+        '''
+            a method to retrieve record body from an S3 record
+
+        :param record_key: string with key of record
+        :param secret_key: [optional] string used to decrypt data
+        :return: object with file body details (see NOTE below)
+        
+        NOTE:   the datatype returned is inferred from the record_key extension
+                name. if the record_key ends with one of the following file 
+                extensions then the returned datatype can be any json valid object:
+                    .json
+                    .yaml
+                    .yml
+                    .json.gz
+                    .yaml.gz
+                    .yml.gz
+                    .drep
+                the body of record_key values with .txt or .md extension are
+                interpreted as string data types. any other file extension is
+                returns a byte data type object. it is up to the saving method
+                to ensure that the mimetype of byte data is correct.
+        '''
+        
+        title = '%s.read' % self.__class__.__name__
+    
+    # validate inputs
+        input_fields = {
+            'record_key': record_key,
+            'secret_key': secret_key
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+    
+    # retrieve record data from s3
+        record_data, record_metadata = self.s3.read_record(self.bucket_name, record_key)
+    
+    # validate secret key
+        error_msg = '%s(secret_key="...") required to decrypt record "%s"' % (title, record_key)
+        if 'encryption' in record_metadata['metadata'].keys():
+            if record_metadata['metadata']['encryption'] == 'lab512':
+                if not secret_key:
+                    raise Exception(error_msg)
+            else:
+                self.s3.iam.printer('[WARNING]: %s uses unrecognized encryption method. Decryption skipped.' % record_key)
+                secret_key = ''
+        if 'content_type' in record_metadata.keys():
+            if record_metadata['content_type'] == 'application/x-drep':
+                if not secret_key:
+                    raise Exception(error_msg)
+                
+    # decode data
+        from os import path
+        file_root, file_name = path.split(record_key)
+        from labpack.compilers.encoding import decode_data
+        record_body = decode_data(file_name, record_data, secret_key=secret_key)
+    
+        return record_body
     
     def list(self, filter_function=None, max_results=1, previous_key=''):
     
@@ -1647,33 +1830,139 @@ class s3Client(object):
     
     def delete(self, record_key):
         
-        pass
+        ''' a method to delete a record from S3
+
+        :param record_key: string with key of record
+        :return: string reporting outcome
+        '''
+    
+        title = '%s.delete' % self.__class__.__name__
+    
+    # validate inputs
+        input_fields = {
+            'record_key': record_key
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+    
+    # delete record
+        try:
+            self.s3.delete_record(self.bucket_name, record_key)
+        except:
+            try:
+                self.s3.read_headers(self.bucket_name, record_key)
+            except:
+                exit_msg = '%s does not exist.' % record_key
+                return exit_msg
+            raise
+        
+        exit_msg = '%s has been deleted.' % record_key
+        return exit_msg
     
     def remove(self):
         
-        pass
+        ''' 
+            a method to remove collection and all records in the collection
+
+        :return: string with confirmation of deletion
+        '''
     
+        title = '%s.remove' % self.__class__.__name__
+    
+    # request bucket delete 
+        self.s3.delete_bucket(self.bucket_name)
+
+    # return confirmation
+        exit_msg = '%s collection has been removed from S3.' % self.bucket_name
+        return exit_msg
+    
+    def export(self, storage_client, overwrite=True):
+    
+        '''
+            a method to export all the records in collection to another platform
+            
+        :param storage_client: class object with storage client methods
+        :return: string with exit message
+        '''
+        
+        title = '%s.export' % self.__class__.__name__
+        
+    # validate storage client
+        method_list = [ 'create', 'read', 'list', 'export', 'delete', 'remove', '_import', 'collection_name' ]
+        for method in method_list:
+            if not getattr(storage_client, method, None):
+                from labpack.parsing.grammar import join_words
+                raise ValueError('%s(storage_client=...) must be a client object with %s methods.' % (title, join_words(method_list)))
+    
+    # define remove record function
+        def _remove_record(_record, _storage_client):
+            record_key = _record['key']
+            record_data, record_metadata = self.s3.read_record(self.bucket_name, record_key)
+            encryption = ''
+            if 'encryption' in record_metadata['metadata'].keys():
+                encryption = record_metadata['metadata']['encryption']
+            outcome = _storage_client._import(record_key, record_data, overwrite=overwrite, encryption=encryption)
+            return outcome
+            
+    # retrieve list of records in bucket
+        count = 0
+        skipped = 0
+        record_list, next_key = self.s3.list_records(self.bucket_name)
+        for record in record_list:
+            outcome = _remove_record(record, storage_client)
+            if outcome:
+                count += 1
+            else:
+                skipped += 1
+        
+    # continue through bucket
+        if next_key:
+            while next_key:
+                record_list, next_key = self.s3.list_records(self.bucket_name, starting_key=next_key)
+                for record in record_list:
+                    outcome = _remove_record(record, storage_client)
+                    if outcome:
+                        count += 1
+                    else:
+                        skipped += 1
+    
+    # report outcome
+        from os import path
+        plural = ''
+        skip_insert = ''
+        new_root, new_folder = path.split(storage_client.collection_folder)
+        if count != 1:
+            plural = 's'
+        if skipped > 0:
+            skip_plural = ''
+            if skipped > 1:
+                skip_plural = 's'
+            skip_insert = ' %s record%s skipped to avoid overwrite.' % (str(skipped), skip_plural)
+        exit_msg = '%s record%s exported to %s.%s' % (str(count), plural, new_folder, skip_insert)
+        return exit_msg
+       
 if __name__ == '__main__':
     
 # test instantiation
     from pprint import pprint
     from labpack.records.settings import load_settings
     aws_cred = load_settings('../../../../cred/awsLab.yaml')
-    client_kwargs = {
+    _client_kwargs = {
         'access_id': aws_cred['aws_access_key_id'],
         'secret_key': aws_cred['aws_secret_access_key'],
         'region_name': aws_cred['aws_default_region'],
         'owner_id': aws_cred['aws_owner_id'],
         'user_name': aws_cred['aws_user_name']
     }
-    _s3_client = _s3Client(**client_kwargs)
+    _s3_client = _s3Client(**_client_kwargs)
 
 # test list bucket and verify unittesting is clean
     bucket_list = _s3_client.list_buckets()
     bucket_name = 'collective-acuity-labpack-unittest-main'
     log_name = 'collective-acuity-labpack-unittest-log'
-    # assert bucket_name not in bucket_list
-    # assert log_name not in bucket_list
+    assert bucket_name not in bucket_list
+    assert log_name not in bucket_list
     for bucket in (bucket_name, log_name):
         _s3_client.delete_bucket(bucket)
 
@@ -1719,12 +2008,13 @@ if __name__ == '__main__':
     secret_key = 'testpassword'
     record_key = 'unittest/%s.json' % str(time())
     record_data = json.dumps(main_kwargs).encode('utf-8')
-    _s3_client.create_record(bucket_name, record_key, record_data, secret_key=secret_key)
+    record_mimetype = 'application/json'
+    _s3_client.create_record(bucket_name, record_key, record_data, record_mimetype=record_mimetype)
 
 # test update record
     main_kwargs['additional_key'] = True
     record_data = json.dumps(main_kwargs).encode('utf-8')
-    _s3_client.create_record(bucket_name, record_key, record_data, secret_key=secret_key)
+    _s3_client.create_record(bucket_name, record_key, record_data, record_mimetype=record_mimetype)
 
 # test list records and versions
     log_list, log_key = _s3_client.list_records(log_name)
@@ -1733,7 +2023,7 @@ if __name__ == '__main__':
 
 # test read headers and read record
     header_details = _s3_client.read_headers(bucket_name, record_key)
-    data, headers = _s3_client.read_record(bucket_name, record_key, record_version, secret_key=secret_key)
+    data, headers = _s3_client.read_record(bucket_name, record_key, record_version)
     assert header_details['content_type'] == headers['content_type']
     assert header_details['current_version']
     record_details = json.loads(data.decode())
@@ -1758,73 +2048,33 @@ if __name__ == '__main__':
     for bucket in (bucket_name, log_name):
         _s3_client.delete_bucket(bucket)    
 
+# create collection
+    client_kwargs = {
+        'collection_name': 'Unittest Main'
+    }
+    client_kwargs.update(**_client_kwargs)
+    s3_client = s3Client(**client_kwargs)
 
-    # import json
-    # from copy import deepcopy
-    # objectMap = json.loads(open('../models/s3-obj-model.json').read())
-    # logMap = deepcopy(objectMap)
-    # logMap['bucket']['bucketName'] = 'useast1-collective-acuity-test-log'
-    # logMap['bucket']['accessControl'] = 'log-delivery-write'
-    # logMap['bucket']['versionControl'] = False
-    # logMap['bucket']['logDestination'] = {}
-    # logMap['bucket']['lifecycleRules'] = []
-    # logMap['bucket']['bucketTags'] = []
-    # logMap['bucket']['notificationSettings'] = []
-    # testBuckets = [ logMap['bucket']['bucketName'], objectMap['bucket']['bucketName'] ]
-    # for name in testBuckets:
-    #     assert name not in self.listBuckets() # prevent deletion of live data
-    # for bucket in testBuckets:
-    #     self.deleteBucket(bucket)
-    # self.createBucket(logMap)
-    # self.createBucket(objectMap)
-    # recordDetails = objectMap['details']
-    # self.addRecord(recordDetails, objectMap)
-    # keyName = self.addRecord(recordDetails, objectMap)
-    # meta_data = self.recordHeaders(keyName, objectMap)
-    # assert meta_data['lastModified']
-    # bucketList = self.listBuckets()
-    # for name in testBuckets:
-    #     assert name in bucketList
-    # recordList, nextKey = self.listObjects(testBuckets[1])
-    # assert recordList[0]['objectKey'] == keyName
-    # data, meta_data = self.recordDetails(recordList[0]['objectKey'], objectMap)
-    # assert data
-    # assert meta_data
-    # newRecord = deepcopy(recordDetails)
-    # newRecord[objectMap['indexing']['key'][0]] = 'new'
-    # self.addRecord(newRecord, objectMap)
-    # self.exportRecords(objectMap, '../data', overwrite=True)
-    # self.exportRecords(objectMap, '../data')
-    # self.importRecords(objectMap, '../data')
-    # self.importRecords(objectMap, '../data', overwrite=True)
-    # self.deleteRecord(recordList[0]['objectKey'], objectMap)
-    # versionList, nextKey = self.listVersions(testBuckets[1])
-    # self.recordDetails(versionList[1]['objectKey'], objectMap, version_id=versionList[1]['versionID'])
-    # self.deleteRecord(versionList[1]['objectKey'], objectMap, versionList[1]['versionID'])
-    # self.deleteBucket(testBuckets[1])
-    # self.createBucket(objectMap)
-    # self.importRecords(objectMap, '../data')
-    # recordList, nextKey = self.handler(self.listObjects(objectMap['bucket']['bucketName']))
-    # assert recordList
-    # updateMap = {}
-    # updateMap['indexing'] = objectMap['indexing']
-    # updateMap['details'] = objectMap['details']
-    # updateMap['bucket'] = self.bucketDetails(testBuckets[1])
-    # updateMap['bucket']['accessControl'] = 'public-read'
-    # updateMap['bucket']['versionControl'] = False
-    # updateMap['bucket']['logDestination'] = {}
-    # updateMap['bucket']['lifecycleRules'] = []
-    # updateMap['bucket']['bucketTags'] = []
-    # self.updateBucket(updateMap)
-    # self.updateBucket(objectMap)
-    # for bucket in testBuckets:
-    #     self.deleteBucket(bucket)
+# test create and read record
+    secret_key = 'password'
+    record_key = 'testing/test.json.gz'
+    s3_client.create(record_key, main_kwargs)
+    record_details = s3_client.read(record_key)
+    assert record_details == main_kwargs
 
+# TODO test list record
 
-dummy = ''
-# TODO: client side encryption feature for s3 records
-# TODO: bucket access policy feature for s3
-# TODO: bucket region replication feature for s3
-# TODO: bucket notification settings feature integration with AWS event services
-# TODO: awsGlacier archive, restore and delete methods
-# TODO: more variations for deltaData.unitTest()
+# test export collection
+    from labpack.storage.appdata import appdataClient
+    appdata_client = appdataClient(collection_name='Unittest Local')
+    print(s3_client.export(appdata_client))
+    assert appdata_client.read(record_key) == main_kwargs
+    print(appdata_client.export(s3_client, overwrite=False))
+    appdata_client.remove()
+
+# test delete record
+    print(s3_client.delete(record_key))
+
+# remove collection
+    s3_client.remove()
+

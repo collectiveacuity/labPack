@@ -78,6 +78,8 @@
     "record_version": "abcDEF0123ghiJKL4567mnoPQR89",
     "secret_key": "abcdef0123456789abcdef0123456789",
     "record_metadata": {},
+    "record_mimetype": "application/json",
+    "record_encoding": "gzip",
     "metadata_keys": "location",
     "metadata_values": "database",
     "export_path": "data/",
