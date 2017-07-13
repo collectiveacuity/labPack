@@ -866,14 +866,14 @@ class _s3Client(object):
         
         return status_msg
 
-    def list_records(self, bucket_name, prefix='', suffix='', max_results=1000, starting_key=''):
+    def list_records(self, bucket_name, prefix='', delimiter='', max_results=1000, starting_key=''):
 
         '''
             a method for retrieving a list of the versions of records in a bucket
 
         :param bucket_name: string with name of bucket
         :param prefix: [optional] string with value limiting results to key prefix
-        :param suffix: [optional] string with value limiting results to key suffix
+        :param delimiter: string with value which results must not contain (after prefix)
         :param max_results: [optional] integer with max results to return
         :param starting_key: [optional] string with key value to continue search with
         :return: list of results with key, size and date, string with ending key value
@@ -888,7 +888,7 @@ class _s3Client(object):
         input_fields = {
             'bucket_name': bucket_name,
             'prefix': prefix,
-            'suffix': suffix,
+            'delimiter': delimiter,
             'max_results': max_results,
             'starting_key': starting_key
         }
@@ -910,8 +910,8 @@ class _s3Client(object):
             kw_args['Marker'] = starting_key
         if prefix:
             kw_args['Prefix'] = prefix
-        if suffix:
-            kw_args['Delimiter'] = suffix
+        if delimiter:
+            kw_args['Delimiter'] = delimiter
         if max_results:
             kw_args['MaxKeys'] = max_results
 
@@ -940,14 +940,14 @@ class _s3Client(object):
 
         return record_list, next_key
 
-    def list_versions(self, bucket_name, prefix='', suffix='', max_results=1000, starting_key='', starting_version=''):
+    def list_versions(self, bucket_name, prefix='', delimiter='', max_results=1000, starting_key='', starting_version=''):
 
         '''
             a method for retrieving a list of the versions of records in a bucket
 
         :param bucket_name: string with name of bucket
         :param prefix: [optional] string with value limiting results to key prefix
-        :param suffix: [optional] string with value limiting results to key suffix
+        :param delimiter: [optional] string with value limiting results to key delimiter
         :param max_results: [optional] integer with max results to return
         :param starting_key: [optional] string with key value to continue search with
         :param starting_version: [optional] string with version id to continue search with
@@ -963,7 +963,7 @@ class _s3Client(object):
         input_fields = {
             'bucket_name': bucket_name,
             'prefix': prefix,
-            'suffix': suffix,
+            'delimiter': delimiter,
             'max_results': max_results,
             'starting_key': starting_key,
             'starting_version': starting_version
@@ -993,8 +993,8 @@ class _s3Client(object):
             kw_args['VersionIdMarker'] = starting_version
         if prefix:
             kw_args['Prefix'] = prefix
-        if suffix:
-            kw_args['Delimiter'] = suffix
+        if delimiter:
+            kw_args['Delimiter'] = delimiter
         if max_results:
             kw_args['MaxKeys'] = max_results
 
@@ -1100,13 +1100,9 @@ class _s3Client(object):
     
     # verify overwrite condition
         if not overwrite:
-            error_msg = ''
-            try:
-                self.read_headers(bucket_name, record_key)
+            record_status = self.read_headers(bucket_name, record_key)
+            if record_status:
                 error_msg = 'S3 bucket "%s" already contains a record for key "%s"' % (bucket_name, record_key)
-            except:
-                pass
-            if error_msg:
                 raise ValueError(error_msg)
         
     # validate size of metadata
@@ -1209,11 +1205,19 @@ class _s3Client(object):
         if record_version:
             headers_kwargs['VersionId'] = record_version
 
+    # create metadata default
+        metadata_details = {}
+        
     # send request for record header
         try:
             record = self.connection.head_object(**headers_kwargs)
-        except:
-            raise AWSConnectionError(title)
+        except Exception as err:
+            try:
+                import requests
+                requests.get('https://www.google.com')
+                return metadata_details
+            except:
+                raise AWSConnectionError(title, captured_error=err)
 
     # create metadata from response
         metadata_details = {
@@ -1552,7 +1556,10 @@ class s3Client(object):
             'collection_name': 'User Data',
             'record_key': 'obs/terminal/2016-03-17T17-24-51-687845Z.ogg',
             'secret_key': '6tZ0rUexOiBcOse2-dgDkbeY',
-            'encryption': 'lab512'
+            'prefix': 'obs/terminal',
+            'delimiter': '2016-03-17T17-24-51-687845Z.yaml',
+            'encryption': 'lab512',
+            'max_results': 1
         },
         'components': {
             '.org_name': {
@@ -1572,6 +1579,10 @@ class s3Client(object):
             },
             '.secret_key': {
                 'must_not_contain': [ '[\\t\\n\\r]' ]
+            },
+            '.max_results': {
+                'min_value': 1,
+                'integer_data': True
             }
         }
     }
@@ -1623,13 +1634,13 @@ class s3Client(object):
         else:
             self.s3.create_bucket(self.bucket_name, access_control, version_control, log_destination, lifecycle_rules, tag_list, notification_settings, region_replication, access_policy)
     
-    def _import(self, record_key, byte_data, overwrite=True, encryption='', **kwargs):
+    def _import(self, record_key, record_data, overwrite=True, encryption='', **kwargs):
         
         '''
             a helper method for other storage clients to import into s3
             
         :param record_key: string with key for record
-        :param byte_data: byte data for body of record
+        :param record_data: byte data for body of record
         :param overwrite: [optional] boolean to overwrite existing records
         :param encryption: [optional] string with encryption type add to metadata
         :param kwargs: [optional] keyword arguments from other import methods 
@@ -1640,7 +1651,7 @@ class s3Client(object):
         create_kwargs = {
             'bucket_name': self.bucket_name,
             'record_key': record_key,
-            'record_data': byte_data,
+            'record_data': record_data,
             'overwrite': overwrite
         }
     
@@ -1675,34 +1686,44 @@ class s3Client(object):
 
         return True
     
-    def create(self, record_key, record_body, overwrite=True, secret_key=''):
+    def exists(self, record_key):
+        
+        ''' 
+            a method to determine if a record exists in collection
+
+        :param record_key: string with key of record
+        :return: boolean reporting status
+        '''
+        
+        title = '%s.exists' % self.__class__.__name__
+    
+    # validate inputs
+        input_fields = {
+            'record_key': record_key
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+    
+    # read record headers
+        record_status = self.s3.read_headers(self.bucket_name, record_key)
+        if record_status:
+            return True
+        return False
+    
+    def save(self, record_key, record_data, overwrite=True, secret_key=''):
         
         ''' 
             a method to create a file in the collection folder on S3
 
-        :param record_key: string with key to assign record (see NOTE below)
-        :param record_body: object with file body details (see NOTE below)
-        :param overwrite: [optional] boolean to overwrite files with same name
-        :param secret_key: [optional] string with key to encrypt body data
-        :return: self
+        :param record_key: string with name to assign to record (see NOTES below)
+        :param record_data: byte data for record body
+        :param overwrite: [optional] boolean to overwrite records with same name
+        :param secret_key: [optional] string with key to encrypt data
+        :return: string with name of record
 
         NOTE:   record_key may only contain alphanumeric, /, _, . or -
                 characters and may not begin with the . or / character.
-        
-        NOTE:   record_body datatype is inferred from the record_key extension
-                name. if the record_key ends with one of the following file 
-                extensions then the record_body can be any json valid object:
-                    .json
-                    .yaml
-                    .yml
-                    .json.gz
-                    .yaml.gz
-                    .yml.gz
-                    .drep
-                the body of record_key values with .txt or .md extension are
-                interpreted as string data types. any other file extension is
-                treated as a byte data type. it is up to the application to 
-                ensure that the mimetype of byte data is correct.
 
         NOTE:   using one or more / characters splits the key into
                 separate segments. these segments will appear as a
@@ -1713,7 +1734,7 @@ class s3Client(object):
                 [ 'lab', 'unittests', '1473719695.2165067', '.json' ]
         '''
 
-        title = '%s.create' % self.__class__.__name__
+        title = '%s.save' % self.__class__.__name__
     
     # validate inputs
         input_fields = {
@@ -1725,32 +1746,34 @@ class s3Client(object):
                 object_title = '%s(%s=%s)' % (title, key, str(value))
                 self.fields.validate(value, '.%s' % key, object_title)
     
-    # encode data
-        from os import path
-        file_root, file_name = path.split(record_key)
-        from labpack.compilers.encoding import encode_data
-        byte_data = encode_data(file_name, record_body, secret_key=secret_key)
-
+    # validate byte data
+        if not isinstance(record_data, bytes):
+            raise ValueError('%s(record_data=b"...") must be byte data.' % title)
+    
+    # encrypt data
+        if secret_key:
+            from labpack.encryption import cryptolab
+            record_data, secret_key = cryptolab.encrypt(record_data, secret_key)
+            
     # define keyword arguments
         create_kwargs = {
             'bucket_name': self.bucket_name,
             'record_key': record_key,
-            'record_data': byte_data,
+            'record_data': record_data,
             'overwrite': overwrite
         }
     
     # add encryption metadata
-        import re
-        if secret_key and not re.search('\\.drep$', file_name):
+        if secret_key:
             create_kwargs['record_metadata'] = { 'encryption': 'lab512' }
     
     # add record mimetype and encoding
         import mimetypes
-        guess_mimetype, guess_encoding = mimetypes.guess_type(file_name)
+        guess_mimetype, guess_encoding = mimetypes.guess_type(record_key)
         if not guess_mimetype:
-            if file_name.find('.yaml') or file_name.find('.yml'):
+            if record_key.find('.yaml') or record_key.find('.yml'):
                 guess_mimetype = 'application/x-yaml'
-            if file_name.find('.drep'):
+            if record_key.find('.drep'):
                 guess_mimetype = 'application/x-drep'
         if guess_mimetype:
             create_kwargs['record_mimetype'] = guess_mimetype
@@ -1762,32 +1785,17 @@ class s3Client(object):
 
         return record_key
     
-    def read(self, record_key, secret_key=''):
+    def load(self, record_key, secret_key=''):
         
         '''
-            a method to retrieve record body from an S3 record
+            a method to retrieve byte data of an S3 record
 
-        :param record_key: string with key of record
+        :param record_key: string with name of record
         :param secret_key: [optional] string used to decrypt data
-        :return: object with file body details (see NOTE below)
-        
-        NOTE:   the datatype returned is inferred from the record_key extension
-                name. if the record_key ends with one of the following file 
-                extensions then the returned datatype can be any json valid object:
-                    .json
-                    .yaml
-                    .yml
-                    .json.gz
-                    .yaml.gz
-                    .yml.gz
-                    .drep
-                the body of record_key values with .txt or .md extension are
-                interpreted as string data types. any other file extension is
-                returns a byte data type object. it is up to the saving method
-                to ensure that the mimetype of byte data is correct.
+        :return: byte data for record body
         '''
         
-        title = '%s.read' % self.__class__.__name__
+        title = '%s.load' % self.__class__.__name__
     
     # validate inputs
         input_fields = {
@@ -1811,22 +1819,165 @@ class s3Client(object):
             else:
                 self.s3.iam.printer('[WARNING]: %s uses unrecognized encryption method. Decryption skipped.' % record_key)
                 secret_key = ''
-        if 'content_type' in record_metadata.keys():
-            if record_metadata['content_type'] == 'application/x-drep':
-                if not secret_key:
-                    raise Exception(error_msg)
                 
-    # decode data
-        from os import path
-        file_root, file_name = path.split(record_key)
-        from labpack.compilers.encoding import decode_data
-        record_body = decode_data(file_name, record_data, secret_key=secret_key)
+    # decrypt (if necessary)
+        if secret_key:
+            from labpack.encryption import cryptolab
+            record_data = cryptolab.decrypt(record_data, secret_key)
     
-        return record_body
+        return record_data
     
-    def list(self, filter_function=None, max_results=1, previous_key=''):
+    def conditional_filter(self, path_filters):
+
+        ''' a method to construct a conditional filter function for class list method
+
+        :param path_filters: dictionary or list of dictionaries with query criteria
+        :return: filter_function object
+
+        path_filters:
+        [ { 0: { conditional operators }, 1: { conditional_operators }, ... } ]
+
+        conditional operators:
+            "byte_data": false,
+            "discrete_values": [ "" ],
+            "excluded_values": [ "" ],
+            "greater_than": "",
+            "less_than": "",
+            "max_length": 0,
+            "max_value": "",
+            "min_length": 0,
+            "min_value": "",
+            "must_contain": [ "" ],
+            "must_not_contain": [ "" ],
+            "contains_either": [ "" ]
+        '''
+
+        title = '%s.conditional_filter' % self.__class__.__name__
+        
+        from labpack.compilers.filters import positional_filter
+        filter_function = positional_filter(path_filters, title)
+        
+        return filter_function
     
-        pass
+    def list(self, prefix='', delimiter='', filter_function=None, max_results=1, previous_key=''):
+    
+        ''' 
+            a method to list keys in the collection
+
+        :param prefix: string with prefix value to filter results
+        :param delimiter: string with value results must not contain (after prefix)
+        :param filter_function: (positional arguments) function used to filter results
+        :param max_results: integer with maximum number of results to return
+        :param previous_key: string with key in collection to begin search after
+        :return: list of key strings
+        
+        NOTE:   each key string can be divided into one or more segments
+                based upon the / characters which occur in the key string as
+                well as its file extension type. if the key string represents
+                a file path, then each directory in the path, the file name
+                and the file extension are all separate indexed values.
+
+                eg. lab/unittests/1473719695.2165067.json is indexed:
+                [ 'lab', 'unittests', '1473719695.2165067', '.json' ]
+
+                it is possible to filter the records in the collection according
+                to one or more of these path segments using a filter_function.
+
+        NOTE:   the filter_function must be able to accept an array of positional
+                arguments and return a value that can evaluate to true or false.
+                while searching the records, list produces an array of strings
+                which represent the directory structure in relative path of each
+                key string. if a filter_function is provided, this list of strings
+                is fed to the filter function. if the function evaluates this input
+                and returns a true value the file will be included in the list
+                results.
+        '''
+        
+        title = '%s.list' % self.__class__.__name__
+
+    # validate input
+        input_fields = {
+            'prefix': prefix,
+            'delimiter': delimiter,
+            'max_results': max_results,
+            'record_key': previous_key
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+    
+    # construct default response
+        results_list = []
+        
+    # handle filter function filter
+        if filter_function:
+        
+        # validate filter function
+            try:
+                path_segments = [ 'lab', 'unittests', '1473719695.2165067', '.json' ]
+                filter_function(*path_segments)
+            except:
+                err_msg = '%s(filter_function=%s)' % (title, filter_function.__class__.__name__)
+                raise TypeError('%s must accept positional arguments.' % err_msg)
+            
+        # construct keyword arguments
+            list_kwargs = {
+                'bucket_name': self.bucket_name,
+                'prefix': prefix,
+                'delimiter': delimiter
+            }
+            
+        # determine starting key
+            starting_key = '1'
+            if previous_key:
+                previous_kwargs = {}
+                previous_kwargs.update(**list_kwargs)
+                previous_kwargs['max_results'] = 1
+                previous_kwargs['starting_key'] = previous_key
+                search_list, next_key = self.s3.list_records(**list_kwargs)
+                list_kwargs['starting_key'] = next_key
+        
+        # iterate filter over collection
+            import os
+            while starting_key:
+                search_list, starting_key = self.s3.list_records(**list_kwargs)
+                for record in search_list:
+                    record_key = record['key']
+                    path_segments = record_key.split(os.sep)
+                    if filter_function(*path_segments):
+                        results_list.append(record_key)
+                    if len(results_list) == max_results:
+                        return results_list
+        
+    # handle other filters
+        else:
+            
+        # construct keyword arguments
+            list_kwargs = {
+                'bucket_name': self.bucket_name,
+                'prefix': prefix,
+                'delimiter': delimiter,
+                'max_results': max_results
+            }
+        
+        # determine starting key
+            if previous_key:
+                previous_kwargs = {}
+                previous_kwargs.update(**list_kwargs)
+                previous_kwargs['max_results'] = 1
+                previous_kwargs['starting_key'] = previous_key
+                search_list, starting_key = self.s3.list_records(**list_kwargs)
+                list_kwargs['starting_key'] = starting_key
+    
+        # retrieve results 
+            search_list, starting_key = self.s3.list_records(**list_kwargs)
+    
+        # construct result list
+            for record in search_list:
+                results_list.append(record['key'])
+        
+        return results_list
     
     def delete(self, record_key):
         
@@ -1850,9 +2001,7 @@ class s3Client(object):
         try:
             self.s3.delete_record(self.bucket_name, record_key)
         except:
-            try:
-                self.s3.read_headers(self.bucket_name, record_key)
-            except:
+            if not self.exists(record_key):
                 exit_msg = '%s does not exist.' % record_key
                 return exit_msg
             raise
@@ -1889,14 +2038,14 @@ class s3Client(object):
         title = '%s.export' % self.__class__.__name__
         
     # validate storage client
-        method_list = [ 'create', 'read', 'list', 'export', 'delete', 'remove', '_import', 'collection_name' ]
+        method_list = [ 'save', 'load', 'list', 'export', 'delete', 'remove', '_import', 'collection_name' ]
         for method in method_list:
             if not getattr(storage_client, method, None):
                 from labpack.parsing.grammar import join_words
                 raise ValueError('%s(storage_client=...) must be a client object with %s methods.' % (title, join_words(method_list)))
     
-    # define remove record function
-        def _remove_record(_record, _storage_client):
+    # define copy record function
+        def _copy_record(_record, _storage_client):
             record_key = _record['key']
             record_data, record_metadata = self.s3.read_record(self.bucket_name, record_key)
             encryption = ''
@@ -1910,7 +2059,7 @@ class s3Client(object):
         skipped = 0
         record_list, next_key = self.s3.list_records(self.bucket_name)
         for record in record_list:
-            outcome = _remove_record(record, storage_client)
+            outcome = _copy_record(record, storage_client)
             if outcome:
                 count += 1
             else:
@@ -1921,7 +2070,7 @@ class s3Client(object):
             while next_key:
                 record_list, next_key = self.s3.list_records(self.bucket_name, starting_key=next_key)
                 for record in record_list:
-                    outcome = _remove_record(record, storage_client)
+                    outcome = _copy_record(record, storage_client)
                     if outcome:
                         count += 1
                     else:
@@ -2023,6 +2172,7 @@ if __name__ == '__main__':
 
 # test read headers and read record
     header_details = _s3_client.read_headers(bucket_name, record_key)
+    assert not _s3_client.read_headers(bucket_name, 'notakey')
     data, headers = _s3_client.read_record(bucket_name, record_key, record_version)
     assert header_details['content_type'] == headers['content_type']
     assert header_details['current_version']
@@ -2055,21 +2205,35 @@ if __name__ == '__main__':
     client_kwargs.update(**_client_kwargs)
     s3_client = s3Client(**client_kwargs)
 
-# test create and read record
+# test save record
+    import json
     secret_key = 'password'
-    record_key = 'testing/test.json.gz'
-    s3_client.create(record_key, main_kwargs)
-    record_details = s3_client.read(record_key)
-    assert record_details == main_kwargs
+    record_key = 'testing/lab/test.json'
+    record_data = json.dumps(main_kwargs).encode('utf-8')
+    s3_client.save(record_key, record_data, secret_key=secret_key)
+    assert s3_client.exists(record_key)
 
-# TODO test list record
+# test list record
+    record_list = s3_client.list(prefix='testing/', delimiter='.yaml')
+    record_filter = { 2: {'must_contain': ['json$']}}
+    filter_function = s3_client.conditional_filter(record_filter)
+    filter_list = s3_client.list(prefix='testing/', filter_function=filter_function)
+    assert record_list[0] == filter_list[0]
+
+# test load record
+    record_load = s3_client.load(record_key, secret_key=secret_key)
+    record_details = json.loads(record_load.decode())
+    assert record_details == main_kwargs
 
 # test export collection
     from labpack.storage.appdata import appdataClient
     appdata_client = appdataClient(collection_name='Unittest Local')
     print(s3_client.export(appdata_client))
-    assert appdata_client.read(record_key) == main_kwargs
+    export_data = appdata_client.load(record_key, secret_key)
+    assert json.loads(export_data.decode()) == main_kwargs
     print(appdata_client.export(s3_client, overwrite=False))
+    export_list = appdata_client.list()
+    print(export_list)
     appdata_client.remove()
 
 # test delete record

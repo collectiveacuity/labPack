@@ -42,8 +42,10 @@ if __name__ == '__main__':
         1: {'discrete_values': ['tokens']},
         2: {'discrete_values':['meetup']}
     }]
+    import yaml
     token_list = log_client.list(log_client.conditional_filter(path_filters), reverse_search=True)
-    token_details = log_client.read(token_list[0])
+    token_data = log_client.load(token_list[0])
+    token_details = yaml.load(token_data.decode())
 
 # test access token renewal
 #     new_details = meetup_oauth.renew_token(token_details['refresh_token'])

@@ -37,7 +37,7 @@ class twilioClient(object):
 
         '''
 
-        response = self.client.messages.create(
+        response = self.client.messages.save(
             to=phone_number,
             from_=self.twilio_phone,
             body=message_text

@@ -70,7 +70,7 @@
     "region_replication": {},
     "access_policy": {},
     "prefix": "start_of_key/",
-    "suffix": "/end_of_key.ext",
+    "delimiter": "/end_of_key.ext",
     "max_results": 1,
     "starting_key": "test/record/data.json",
     "starting_version": "abcDEF0123ghiJKL4567mnoPQR89",
@@ -171,7 +171,7 @@
       "max_length": 1024,
       "must_not_contain": [ "[^\\w\\-\\.\\*_'!\\(\\)/]+" ]
     },
-    ".suffix": {
+    ".delimiter": {
       "min_length": 1,
       "max_length": 1024,
       "must_not_contain": [ "[^\\w\\-\\.\\*_'!\\(\\)/]+" ]

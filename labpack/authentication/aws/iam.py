@@ -16,7 +16,7 @@ except:
 
 class AWSConnectionError(Exception):
 
-    def __init__(self, request='', message='', errors=None):
+    def __init__(self, request='', message='', errors=None, captured_error=None):
 
     # report request attempt
         self.errors = errors
@@ -34,7 +34,10 @@ class AWSConnectionError(Exception):
     # include original error message
         else:
             try:
-                raise
+                if captured_error:
+                    raise captured_error
+                else:
+                    raise
             except Exception as err:
                 text += '\n%s' % err
             if message:
