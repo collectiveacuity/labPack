@@ -30,8 +30,7 @@ class appdataClient(object):
             'secret_key': '6tZ0rUexOiBcOse2-dgDkbeY',
             'prefix': 'obs/terminal',
             'delimiter': '2016-03-17T17-24-51-687845Z.yaml',
-            'max_results': 1,
-            'path_filters': [ { } ]
+            'max_results': 1
         },
         'components': {
             '.org_name': {
@@ -373,7 +372,8 @@ class appdataClient(object):
 
     def list(self, prefix='', delimiter='', filter_function=None, max_results=1, reverse_search=True, previous_key=''):
 
-        ''' a method to list keys in the collection
+        ''' 
+            a method to list keys in the collection
 
         :param prefix: string with prefix value to filter results
         :param delimiter: string with value which results must not contain (after prefix)
