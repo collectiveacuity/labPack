@@ -197,6 +197,53 @@ class dropboxClient(object):
         if collection_name:
             self.collection_name = collection_name
     
+    def _import(self, record_key, record_data, overwrite=True, last_modified=0.0, **kwargs):
+        
+        '''
+            a helper method for other storage clients to import into appdata
+            
+        :param record_key: string with key for record
+        :param record_data: byte data for body of record
+        :param overwrite: [optional] boolean to overwrite existing records
+        :param last_modified: [optional] float to record last modified date
+        :param kwargs: [optional] keyword arguments from other import methods 
+        :return: boolean indicating whether record was imported
+        '''
+        
+        title = '%s._import' % self.__class__.__name__
+    
+    # check overwrite
+        if not overwrite:
+            if self.exists(record_key):
+                return False
+                
+    # construct upload kwargs
+        upload_kwargs = {
+            'f': record_data,
+            'path': '/%s' % record_key,
+            'mute': True,
+            'mode': self.objects.WriteMode.overwrite
+        }
+    
+    # modify file time
+        import re
+        if re.search('\\.drep$', record_key):
+            from labpack.records.time import labDT
+            drep_time = labDT.fromEpoch(1)
+            upload_kwargs['client_modified'] = drep_time
+        elif last_modified:
+            from labpack.records.time import labDT
+            mod_time = labDT.fromEpoch(last_modified)
+            upload_kwargs['client_modified'] = mod_time
+    
+    # send upload request
+        try:
+            self.dropbox.files_upload(**upload_kwargs)
+        except:
+            raise DropboxConnectionError(title)
+        
+        return True
+    
     def _walk(self, root_path=''):
         ''' an iterator method which walks the file structure of the dropbox collection '''
         title = '%s._walk' % self.__class__.__name__
@@ -372,6 +419,7 @@ class dropboxClient(object):
                 raise Exception('%s(record_key=%s) does not exist.' % (title, record_key))
             else:
                 raise DropboxConnectionError(title)
+        print(metadata.client_modified)
         record_data = response.content
     
     # decrypt (if necessary)
@@ -615,6 +663,67 @@ class dropboxClient(object):
         exit_msg = 'Contents of %s will been removed from Dropbox.' % insert
         return exit_msg
 
+    def export(self, storage_client, overwrite=True):
+        
+        '''
+            a method to export all the records in collection to another platform
+            
+        :param storage_client: class object with storage client methods
+        :return: string with exit message
+        '''
+        
+        title = '%s.export' % self.__class__.__name__
+        
+    # validate storage client
+        method_list = [ 'save', 'load', 'list', 'export', 'delete', 'remove', '_import', 'collection_name' ]
+        for method in method_list:
+            if not getattr(storage_client, method, None):
+                from labpack.parsing.grammar import join_words
+                raise ValueError('%s(storage_client=...) must be a client object with %s methods.' % (title, join_words(method_list)))
+            
+    # walk collection folder to find files
+        import os
+        count = 0
+        skipped = 0
+        for file_path in self._walk():
+            path_segments = file_path.split(os.sep)
+            record_key = os.path.join(*path_segments)
+            record_key = record_key.replace('\\','/')
+            
+    # retrieve data and metadata
+            try:
+                metadata, response = self.dropbox.files_download(file_path)
+            except:
+                raise DropboxConnectionError(title)
+            record_data = response.content
+            client_modified = metadata.client_modified
+            
+    # import record into storage client
+            last_modified = 0.0
+            if client_modified:
+                from dateutil import tzutc
+                from labpack.records.time import labDT
+                last_modified = labDT(client_modified, tzinfo=tzutc()).epoch()
+            outcome = storage_client._import(record_key, record_data, overwrite=overwrite, last_modified=last_modified)
+            if outcome:
+                count += 1
+            else:
+                skipped += 1
+            
+    # report outcome
+        plural = ''
+        skip_insert = ''
+        new_folder = storage_client.collection_name
+        if count != 1:
+            plural = 's'
+        if skipped > 0:
+            skip_plural = ''
+            if skipped > 1:
+                skip_plural = 's'
+            skip_insert = ' %s record%s skipped to avoid overwrite.' % (str(skipped), skip_plural)
+        exit_msg = '%s record%s exported to %s.%s' % (str(count), plural, new_folder, skip_insert)
+        return exit_msg
+    
 if __name__ == '__main__':
     
 # initialize client
