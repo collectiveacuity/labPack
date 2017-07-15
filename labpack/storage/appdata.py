@@ -150,7 +150,7 @@ class appdataClient(object):
 
         os._exit(0)
     
-    def _import(self, record_key, record_data, overwrite=True, **kwargs):
+    def _import(self, record_key, record_data, overwrite=True, last_modified=0.0, **kwargs):
         
         '''
             a helper method for other storage clients to import into appdata
@@ -158,6 +158,7 @@ class appdataClient(object):
         :param record_key: string with key for record
         :param record_data: byte data for body of record
         :param overwrite: [optional] boolean to overwrite existing records
+        :param last_modified: [optional] float to record last modified date
         :param kwargs: [optional] keyword arguments from other import methods 
         :return: boolean indicating whether record was imported
         '''
@@ -188,6 +189,9 @@ class appdataClient(object):
             from os import utime
             file_time = 1
             utime(file_path, times=(file_time, file_time))
+        elif last_modified:
+            from os import utime
+            utime(file_path, times=(last_modified, last_modified))
         
         return True
     
@@ -580,7 +584,8 @@ class appdataClient(object):
             
     # read and save files
             record_data = open(file_path, 'rb').read()
-            outcome = storage_client._import(record_key, record_data, overwrite=overwrite)
+            last_modified = os.path.getmtime(file_path)
+            outcome = storage_client._import(record_key, record_data, overwrite=overwrite, last_modified=last_modified)
             if outcome:
                 count += 1
             else:

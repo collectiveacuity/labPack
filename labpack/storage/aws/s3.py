@@ -1634,7 +1634,7 @@ class s3Client(object):
         else:
             self.s3.create_bucket(self.bucket_name, access_control, version_control, log_destination, lifecycle_rules, tag_list, notification_settings, region_replication, access_policy)
     
-    def _import(self, record_key, record_data, overwrite=True, encryption='', **kwargs):
+    def _import(self, record_key, record_data, overwrite=True, encryption='', last_modified=0.0, **kwargs):
         
         '''
             a helper method for other storage clients to import into s3
@@ -1648,16 +1648,20 @@ class s3Client(object):
         '''
 
     # define keyword arguments
+        from time import time
         create_kwargs = {
             'bucket_name': self.bucket_name,
             'record_key': record_key,
             'record_data': record_data,
-            'overwrite': overwrite
+            'overwrite': overwrite,
+            'record_metadata': { 'last_modified': str(time()) }
         }
     
-    # add encryption
+    # add encryption and last_modified
         if encryption:
-            create_kwargs['record_metadata'] = { 'encryption': encryption }
+            create_kwargs['record_metadata']['encryption'] = encryption
+        if last_modified:
+            create_kwargs['record_metadata']['last_modified'] = str(last_modified)
             
     # add record mimetype and encoding
         import mimetypes
@@ -1756,16 +1760,18 @@ class s3Client(object):
             record_data, secret_key = cryptolab.encrypt(record_data, secret_key)
             
     # define keyword arguments
+        from time import time
         create_kwargs = {
             'bucket_name': self.bucket_name,
             'record_key': record_key,
             'record_data': record_data,
-            'overwrite': overwrite
+            'overwrite': overwrite,
+            'record_metadata': { 'last_modified': str(time()) }
         }
     
     # add encryption metadata
         if secret_key:
-            create_kwargs['record_metadata'] = { 'encryption': 'lab512' }
+            create_kwargs['record_metadata']['encryption'] = 'lab512'
     
     # add record mimetype and encoding
         import mimetypes
@@ -2051,7 +2057,13 @@ class s3Client(object):
             encryption = ''
             if 'encryption' in record_metadata['metadata'].keys():
                 encryption = record_metadata['metadata']['encryption']
-            outcome = _storage_client._import(record_key, record_data, overwrite=overwrite, encryption=encryption)
+            last_modified = 0.0
+            if 'last_modified' in record_metadata['metadata'].keys():
+                try:
+                    last_modified = float(record_metadata['metadata']['last_modified'])
+                except:
+                    pass
+            outcome = _storage_client._import(record_key, record_data, overwrite=overwrite, encryption=encryption, last_modified=last_modified)
             return outcome
             
     # retrieve list of records in bucket
