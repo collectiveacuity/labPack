@@ -434,8 +434,15 @@ class appdataClient(object):
         if previous_key:
             previous_key = os.path.join(self.collection_folder, previous_key)
 
+    # determine root path
+        root_path = self.collection_folder
+        if prefix:
+            from os import path
+            file_root, file_name = path.split(prefix)
+            root_path = path.join(root_path, file_root)
+            
     # walk collection folder to find files
-        for file_path in self.localhost.walk(self.collection_folder, reverse_search, previous_key):
+        for file_path in self.localhost.walk(root_path, reverse_search, previous_key):
             path_segments = file_path.split(os.sep)
             for i in range(len(root_segments)):
                 del path_segments[0]
@@ -468,12 +475,11 @@ class appdataClient(object):
 
         return results_list
 
-    def delete(self, record_key, non_blocking=False):
+    def delete(self, record_key):
 
         ''' a method to delete a file
 
         :param record_key: string with name of file
-        :param non_blocking: boolean to enable deletion as subprocess
         :return: string reporting outcome
         '''
 
@@ -492,10 +498,10 @@ class appdataClient(object):
             return exit_msg
     
     # delete file asynchronously
-        if non_blocking:
-            self._delete(file_path, title, record_key)
-            exit_msg = '%s will be deleted.' % record_key
-            return exit_msg
+    #     if non_blocking:
+    #         self._delete(file_path, title, record_key)
+    #         exit_msg = '%s will be deleted.' % record_key
+    #         return exit_msg
         
     # remove file
         current_dir = os.path.split(file_path)[0]
