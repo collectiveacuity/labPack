@@ -2,6 +2,12 @@ __author__ = 'rcj1492'
 __created__ = '2016.12'
 __license__ = 'MIT'
 
+'''
+TODO: incorporate rate limiting logic
+TODO: add method to retrieve metadata from record
+TODO: add method to use Dropbox search functionality
+'''
+
 import os
 from jsonmodel.validators import jsonModel
 
@@ -419,7 +425,6 @@ class dropboxClient(object):
                 raise Exception('%s(record_key=%s) does not exist.' % (title, record_key))
             else:
                 raise DropboxConnectionError(title)
-        print(metadata.client_modified)
         record_data = response.content
     
     # decrypt (if necessary)
@@ -689,6 +694,7 @@ class dropboxClient(object):
             path_segments = file_path.split(os.sep)
             record_key = os.path.join(*path_segments)
             record_key = record_key.replace('\\','/')
+            file_path = '/%s' % file_path
             
     # retrieve data and metadata
             try:
@@ -701,9 +707,9 @@ class dropboxClient(object):
     # import record into storage client
             last_modified = 0.0
             if client_modified:
-                from dateutil import tzutc
+                from dateutil.tz import tzutc
                 from labpack.records.time import labDT
-                last_modified = labDT(client_modified, tzinfo=tzutc()).epoch()
+                last_modified = labDT.fromPython(client_modified.replace(tzinfo=tzutc())).epoch()
             outcome = storage_client._import(record_key, record_data, overwrite=overwrite, last_modified=last_modified)
             if outcome:
                 count += 1
@@ -752,11 +758,11 @@ if __name__ == '__main__':
 
 # test save method
     old_hash = md5(test_data).digest()
-    # dropbox_client.save(data_key, test_data, secret_key=secret_key)
-    # dropbox_client.save(record_key, record_data)
-    # dropbox_client.save(drep_key, drep_data)
-    # assert dropbox_client.exists(drep_key)
-    # assert not dropbox_client.exists('notakey')
+    dropbox_client.save(data_key, test_data, secret_key=secret_key)
+    dropbox_client.save(record_key, record_data)
+    dropbox_client.save(drep_key, drep_data)
+    assert dropbox_client.exists(drep_key)
+    assert not dropbox_client.exists('notakey')
 
 # test list with different filters
     data_filter = { 2:{'must_contain': ['ogg$']}}
@@ -764,6 +770,21 @@ if __name__ == '__main__':
     data_search = dropbox_client.list(filter_function=filter_function, max_results=3)
     prefix_search = dropbox_client.list(prefix='lab/dev', delimiter='drep', max_results=3)
     print(prefix_search)
+
+# test import and export method
+    try:
+        from labpack.storage.appdata import appdataClient
+        export_client = appdataClient(collection_name='Test Export')
+        dropbox_client.export(export_client)
+        export_status = dropbox_client.export(export_client, overwrite=False)
+        print(export_status)
+        export_list = export_client.list(filter_function=filter_function, max_results=3)
+        print(export_list)
+        import_status = export_client.export(dropbox_client)
+        print(import_status)
+        export_client.remove()
+    except Exception as err:
+        print(err)
 
 # test load method
     new_data = dropbox_client.load(data_search[0], secret_key=secret_key)
@@ -775,12 +796,12 @@ if __name__ == '__main__':
     with pytest.raises(Exception):
         dropbox_client.load('notakey')
 
-# # test delete
-#     delete_status = dropbox_client.delete(data_key)
-# 
-# # test removal
-#     remove_status = dropbox_client.remove()
-#     print(remove_status)
+# test delete
+    delete_status = dropbox_client.delete(data_key)
+
+# test removal
+    remove_status = dropbox_client.remove()
+    print(remove_status)
     
 
 
