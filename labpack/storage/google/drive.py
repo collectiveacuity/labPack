@@ -54,7 +54,8 @@ class driveClient(object):
             'secret_key': '6tZ0rUexOiBcOse2-dgDkbeY',
             'prefix': 'obs/terminal',
             'delimiter': '2016-03-17T17-24-51-687845Z.yaml',
-            'max_results': 1
+            'max_results': 1,
+            'folder_path': 'obs/terminal/'
         },
         'components': {
             '.collection_name': {
@@ -81,6 +82,9 @@ class driveClient(object):
                 'must_not_contain': [ '[^\\w\\-\\./]', '^\\.', '\\.$', '^/', '//' ]
             },
             '.prefix': {
+                'must_not_contain': [ '[^\\w\\-\\./]', '^\\.', '\\.$', '^/', '//' ]
+            },
+            '.folder_path': {
                 'must_not_contain': [ '[^\\w\\-\\./]', '^\\.', '\\.$', '^/', '//' ]
             }
         },
@@ -126,6 +130,7 @@ class driveClient(object):
     
     # construct collection properties
         self.permissions_write = True
+        self.permissions_content = True
         self.drive_space = 'drive'
         if collection_name:
             self.collection_name = collection_name
@@ -135,7 +140,6 @@ class driveClient(object):
     # validate access token
         self._validate_token()
         
-
     def _validate_token(self):
         
         ''' a method to validate active access token '''
@@ -166,9 +170,11 @@ class driveClient(object):
                 if not self.collection_name:
                     self.collection_name = 'Photos'
     
-    # determine write permissions
+    # determine permissions
             if service_scope.find('readonly') > -1:
                 self.permissions_write = False
+            if service_scope.find('readonly.metadata') > -1:
+                self.permissions_content = False
                 
     # refresh token
         if 'expires_in' in token_details.keys():
@@ -179,13 +185,82 @@ class driveClient(object):
         
         return token_details
     
+    def _list_directory(self, folder_id=''):
+    
+        ''' a helper method for listing the contents of a directory '''
+        
+        title = '%s._list_directory' % self.__class__.__name__
+        
+    # construct default response
+        file_list = []
+    
+    # construct request kwargs
+        list_kwargs = {
+            'spaces': self.drive_space,
+            'fields': 'files(id, name, parents)'
+        }
+    
+    # add query field for parent
+        if folder_id:
+            list_kwargs['q'] = "'%s' in parents" % folder_id
+    
+    # send request
+        try:
+            response = self.drive.list(**list_kwargs).execute()
+        except:
+            raise DriveConnectionError(title)
+    
+    # interpret response
+        results = response.get('files', [])
+        for file in results:
+            file_list.append(file.get('id'))
+        
+        return file_list
+    
+    def _get_id(self, file_path):
+        
+        ''' a helper method for retrieving id of file or folder '''
+        
+        title = '%s._get_id' % self.__class__.__name__
+        
+    # construct request kwargs
+        list_kwargs = {
+            'spaces': self.drive_space,
+            'fields': 'files(id)'
+        }
+    
+    # determine path segments
+        path_segments = file_path.split(os.sep)
+        
+    # walk down parents to file name
+        parent = ''
+        empty_string = ''
+        while path_segments:
+            walk_query = "name = '%s'" % path_segments.pop(0)
+            if parent:
+                walk_query += "and '%s' in parents" % parent
+            list_kwargs['q'] = walk_query
+            try:
+                response = self.drive.list(**list_kwargs).execute()
+            except:
+                raise DriveConnectionError(title)
+            file_list = response.get('files', [])
+            if file_list:
+                if path_segments:
+                    parent = file_list[0].get('id')
+                else:
+                    file_id = file_list[0].get('id')
+                    return file_id
+            else:
+                return empty_string
+        
     def exists(self, record_key):
         
         ''' 
             a method to determine if a record exists in collection
 
         :param record_key: string with key of record
-        :return: boolean reporting status
+        :return: string with file id if it exists
         '''
         
         title = '%s.exists' % self.__class__.__name__
@@ -201,33 +276,14 @@ class driveClient(object):
     # construct request kwargs
         list_kwargs = {
             'spaces': self.drive_space,
-            'fields': 'files(id, name)'
+            'fields': 'files(id)'
         }
     
-    # determine path segments
-        path_segments = record_key.split(os.sep)
+    # retrieve file id
+        file_id = self._get_id(record_key)
         
-    # add query field
-        query_string = "name = '%s'" % path_segments.pop()
-        for segment in path_segments:
-            query_string += "and '%s' in parents" % segment
-        list_kwargs['q'] = query_string
-        
-    # send request
-        try:
-            response = self.drive.list(**list_kwargs).execute()
-        except:
-            raise DriveConnectionError(title)
-    
-    # interpret response
-        empty_string = ''
-        file_list = response.get('files', [])
-        if file_list:
-            file_id = file_list[0].get('id')
-            return file_id
-        else:
-            return empty_string
-    
+        return file_id
+            
     def save(self, record_key, record_data, overwrite=True, secret_key=''):
 
         ''' 
@@ -277,15 +333,23 @@ class driveClient(object):
     # verify permissions
         if not self.permissions_write:
             raise Exception('%s requires an access_token with write permissions.' % title)
-            
+    
+    # retrieve file id
+        file_id = self._get_id(record_key)
+        
     # check overwrite exception
-        if not overwrite:
-            if self.exists(record_key):
+        if file_id:
+            if overwrite:
+                try:
+                    self.drive.delete(fileId=file_id).execute()
+                except:
+                    raise DriveConnectionError(title)
+            else:
                 raise Exception('%s(record_key="%s") already exists. To overwrite, set overwrite=True' % (title, record_key))
     
     # check size of file
         import sys
-        record_optimal = self.fields.metadata['record_optimal_size']
+        record_optimal = self.fields.metadata['record_optimal_bytes']
         record_size = sys.getsizeof(record_data)
         error_prefix = '%s(record_key="%s", record_data=b"...")' % (title, record_key)
         if record_size > record_optimal:
@@ -301,26 +365,24 @@ class driveClient(object):
         media_body = MediaInMemoryUpload(body=record_data, resumable=True)
         
     # determine path segments
-        path_segments = record_key.split(os.sep)
+        file_root, file_name = os.path.split(record_key)
         
     # construct upload kwargs
         create_kwargs = {
             'body': {
-                'name': path_segments.pop(),
-                'parents': []
+                'name': file_name
             },
             'media_body': media_body,
             'fields': 'id'
         }
     
     # add parents
-        if self.drive_space == 'appDataFolder':
-            create_kwargs['body']['parents'].append(self.drive_space)
-        for segment in path_segments:
-            create_kwargs['body']['parents'].append(segment)
-        if not create_kwargs['body']['parents']:
-            del create_kwargs['body']['parents']
-        
+        if file_root:
+            folder_id = self._get_id(file_root)
+            create_kwargs['body']['parents'] = [folder_id]
+        elif self.drive_space == 'appDataFolder':
+            create_kwargs['body']['parents'] = [self.drive_space] 
+    
     # modify file time
         import re
         if re.search('\\.drep$', file_name):
@@ -328,13 +390,117 @@ class driveClient(object):
             drep_time = labDT.fromEpoch(1).isoformat()
             create_kwargs['body']['modifiedTime'] = drep_time
     
+    # TODO create parent directories
+            
     # send create request
         try:
-            response = self.drive.create(**create_kwargs).execute()
+            self.drive.create(**create_kwargs).execute()
         except:
             raise DriveConnectionError(title)
         
         return record_key
+    
+    def load(self, record_key, secret_key=''):
+
+        ''' 
+            a method to retrieve byte data of appdata record
+
+        :param record_key: string with name of record
+        :param secret_key: [optional] string used to decrypt data
+        :return: byte data for record body
+        '''
+
+        title = '%s.load' % self.__class__.__name__
+    
+    # validate inputs
+        input_fields = {
+            'record_key': record_key,
+            'secret_key': secret_key
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+
+    # verify permissions
+        if not self.permissions_content:
+            raise Exception('%s requires an access_token with file content permissions.' % title)
+            
+    # retrieve file id
+        file_id = self._get_id(record_key)
+        if not file_id:
+            raise Exception('%s(record_key=%s) does not exist.' % (title, record_key))
+    
+    # request file data
+        try:
+            record_data = self.drive.get_media(fileId=file_id).execute()
+        except:
+            raise DriveConnectionError(title)
+    
+    # retrieve data from response
+    #     import io
+    #     from googleapiclient.http import MediaIoBaseDownload
+    #     file_header = io.BytesIO
+    #     record_data = MediaIoBaseDownload(file_header, response)
+    #     done = False
+    #     while not done:
+    #         status, done = record_data.next_chunk()
+    
+    # decrypt (if necessary)
+        if secret_key:
+            from labpack.encryption import cryptolab
+            record_data = cryptolab.decrypt(record_data, secret_key)
+    
+        return record_data
+    
+    def delete(self, record_key):
+
+        ''' a method to delete a file
+
+        :param record_key: string with name of file
+        :return: string reporting outcome
+        '''
+
+        title = '%s.delete' % self.__class__.__name__
+
+    # validate inputs
+        input_fields = {
+            'record_key': record_key
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+
+    # validate existence of file
+        file_id = self._get_id(record_key)
+        if not file_id:
+            exit_msg = '%s does not exist.' % record_key
+            return exit_msg
+            
+    # remove file
+        try:
+            response = self.drive.delete(fileId=file_id).execute()
+        except:
+            raise DriveConnectionError(title)
+
+    # determine file directory
+        current_dir = os.path.split(record_key)[0]
+        
+    # remove empty parent folders
+        try:
+            while current_dir:
+                folder_id = self._get_id(current_dir)
+                if not self._list_directory(folder_id):
+                    self.drive.delete(fileId=folder_id).execute()
+                    current_dir = os.path.split(current_dir)[0]
+                else:
+                    break
+        except:
+            raise DriveConnectionError(title)
+
+    # return exit message
+        exit_msg = '%s has been deleted.' % record_key
+        return exit_msg
     
     def test(self):
         
@@ -391,11 +557,19 @@ if __name__ == '__main__':
 
 # test save method
     old_hash = md5(test_data).digest()
-    # file_id = drive_client.save(data_key, test_data, secret_key=secret_key)
+    drive_client.save(data_key, test_data, secret_key=secret_key)
 #     drive_client.save(record_key, record_data)
 #     drive_client.save(drep_key, drep_data)
     # assert drive_client.exists(drep_key)
     # assert not drive_client.exists('notakey')
 
-    test_output = drive_client.exists(data_key)
-    print(test_output)   
+# test load method
+    new_data = drive_client.load(data_key, secret_key=secret_key)
+    new_hash = md5(new_data).digest()
+    assert old_hash == new_hash
+    
+# test delete method
+    drive_client.delete(data_key)
+
+# list contents
+    drive_client.test()
