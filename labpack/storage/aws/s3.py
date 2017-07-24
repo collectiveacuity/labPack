@@ -1117,7 +1117,7 @@ class _s3Client(object):
         if record_size > record_max:
             raise ValueError('%s exceeds maximum record data size of %s bytes.' % (error_prefix, record_max))
         elif record_size > record_optimal:
-            self.iam.printer('[WARNING] %s exceeds optimal record data size of %s bytes.' % (error_prefix, record_max))
+            self.iam.printer('[WARNING] %s exceeds optimal record data size of %s bytes.' % (error_prefix, record_optimal))
 
     # determine content encoding
         if not record_encoding or not record_mimetype:
@@ -1683,6 +1683,8 @@ class s3Client(object):
             if str(err).find('already contains') > -1:
                 self.s3.iam.printer('%s already exists in %s collection. Skipping.' % (record_key, self.bucket_name))
                 return False
+            # elif str(err).find('exceeds maximum record') > -1:
+            #     self.s3.iam.printer('%s exceeds the maximum size for files on S3. Skipping.' % record_key)
             else:
                 raise
         except:

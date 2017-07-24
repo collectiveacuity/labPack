@@ -153,7 +153,8 @@ class dropboxClient(object):
             }
         },
         'metadata': {
-            'optimal_file_size': 150000000
+            'record_optimal_bytes': 10000 * 1024,
+            'record_max_bytes': 150000 * 1024
         }
     }
     
@@ -200,8 +201,7 @@ class dropboxClient(object):
         })
     
     # construct collection name
-        if collection_name:
-            self.collection_name = collection_name
+        self.collection_name = collection_name
     
     def _import(self, record_key, record_data, overwrite=True, last_modified=0.0, **kwargs):
         
@@ -222,7 +222,14 @@ class dropboxClient(object):
         if not overwrite:
             if self.exists(record_key):
                 return False
-                
+    
+    # # check max size
+    #     import sys
+    #     record_max = self.fields.metadata['record_max_bytes']
+    #     record_size = sys.getsizeof(record_data)
+    #     if record_size > record_max:
+    #         return False
+    
     # construct upload kwargs
         upload_kwargs = {
             'f': record_data,
@@ -355,11 +362,14 @@ class dropboxClient(object):
     
     # check size of file
         import sys
-        record_max = self.fields.metadata['optimal_file_size']
+        record_optimal = self.fields.metadata['record_optimal_bytes']
+        record_max = self.fields.metadata['record_max_bytes']
         record_size = sys.getsizeof(record_data)
         error_prefix = '%s(record_key="%s", record_data=b"...")' % (title, record_key)
         if record_size > record_max:
             raise ValueError('%s exceeds maximum record data size of %s bytes.' % (error_prefix, record_max))
+        elif record_size > record_optimal:
+            print('[WARNING] %s exceeds optimal record data size of %s bytes.' % (error_prefix, record_optimal))
     
     # TODO add upload session for support of files over 150MB
     # http://dropbox-sdk-python.readthedocs.io/en/latest/moduledoc.html#dropbox.dropbox.Dropbox.files_upload_session_start
