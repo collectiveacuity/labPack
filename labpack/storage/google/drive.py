@@ -132,6 +132,7 @@ class driveClient(object):
         self.permissions_write = True
         self.permissions_content = True
         self.drive_space = 'drive'
+        self.space_id = ''
         if collection_name:
             self.collection_name = collection_name
         else:
@@ -175,47 +176,15 @@ class driveClient(object):
                 self.permissions_write = False
             if service_scope.find('readonly.metadata') > -1:
                 self.permissions_content = False
-                
-    # refresh token
+          
+    # TODO refresh token
         if 'expires_in' in token_details.keys():
             from time import time
             expiration_date = time() + token_details['expires_in']
         if 'issued_to' in token_details.keys():
             client_id = token_details['issued_to']
-        
+    
         return token_details
-    
-    def _list_directory(self, folder_id=''):
-    
-        ''' a helper method for listing the contents of a directory '''
-        
-        title = '%s._list_directory' % self.__class__.__name__
-        
-    # construct default response
-        file_list = []
-    
-    # construct request kwargs
-        list_kwargs = {
-            'spaces': self.drive_space,
-            'fields': 'files(id, name, parents)'
-        }
-    
-    # add query field for parent
-        if folder_id:
-            list_kwargs['q'] = "'%s' in parents" % folder_id
-    
-    # send request
-        try:
-            response = self.drive.list(**list_kwargs).execute()
-        except:
-            raise DriveConnectionError(title)
-    
-    # interpret response
-        results = response.get('files', [])
-        for file in results:
-            file_list.append(file.get('id'))
-        
-        return file_list
     
     def _get_id(self, file_path):
         
@@ -253,6 +222,90 @@ class driveClient(object):
                     return file_id, parent_id
             else:
                 return empty_string, empty_string
+    
+    def _get_space(self):
+        
+        ''' a helper method to retrieve id of drive space '''
+        
+        title = '%s._space_id' % self.__class__.__name__
+        list_kwargs = {
+            'q': "'%s' in parents" % self.drive_space,
+            'spaces': self.drive_space,
+            'fields': 'files(name, parents)',
+            'pageSize': 1
+        }
+        try:
+            response = self.drive.list(**list_kwargs).execute()
+        except:
+            raise DriveConnectionError(title)
+        for file in response.get('files',[]):
+            self.space_id = file.get('parents')[0]
+            break
+        return self.space_id
+  
+    def _list_directory(self, folder_id=''):
+    
+        ''' a generator method for listing the contents of a directory '''
+        
+        title = '%s._list_directory' % self.__class__.__name__
+        
+    # construct default response
+        file_list = []
+    
+    # construct request kwargs
+        list_kwargs = {
+            'spaces': self.drive_space,
+            'fields': 'nextPageToken, files(id, name, parents, mimeType)'
+        }
+    
+    # add query field for parent
+        if folder_id:
+            list_kwargs['q'] = "'%s' in parents" % folder_id
+    
+    # retrieve space id
+        if not self.space_id:
+            self._get_space()
+        
+    # send request
+        page_token = 1
+        while page_token:
+            try:
+                response = self.drive.list(**list_kwargs).execute()
+            except:
+                raise DriveConnectionError(title)
+        
+        # populate list from response
+            results = response.get('files', [])
+            for file in results:
+                if not folder_id and file.get('parents', [])[0] != self.space_id:
+                    pass
+                else:
+                    yield file.get('id', ''), file.get('name', ''), file.get('mimeType', '')
+    
+        # get page token
+            page_token = response.get('nextPageToken', None)
+            if page_token:
+                list_kwargs['pageToken'] = page_token
+        
+        return file_list
+      
+    def _walk(self, root_path='', root_id=''):
+        
+        ''' a generator method which walks the file structure of the dropbox collection '''
+        
+        title = '%s._walk' % self.__class__.__name__
+        
+        if root_id:
+            pass
+        elif root_path:
+            root_id, root_parent = self._get_id(root_path)
+        for id, name, mimetype in self._list_directory(root_id):
+            file_path = os.path.join(root_path, name)
+            if mimetype == 'application/vnd.google-apps.folder':
+                for file_path in self._walk(root_path=file_path, root_id=id):
+                    yield file_path
+            else:
+                yield file_path
         
     def exists(self, record_key):
         
@@ -504,6 +557,145 @@ class driveClient(object):
     
         return record_data
     
+    def conditional_filter(self, path_filters):
+
+        ''' a method to construct a conditional filter function for list method
+    
+        :param path_filters: dictionary or list of dictionaries with query criteria
+        :return: filter_function object
+    
+        path_filters:
+        [ { 0: { conditional operators }, 1: { conditional_operators }, ... } ]
+    
+        conditional operators:
+            "byte_data": false,
+            "discrete_values": [ "" ],
+            "excluded_values": [ "" ],
+            "greater_than": "",
+            "less_than": "",
+            "max_length": 0,
+            "max_value": "",
+            "min_length": 0,
+            "min_value": "",
+            "must_contain": [ "" ],
+            "must_not_contain": [ "" ],
+            "contains_either": [ "" ]
+        '''
+    
+        title = '%s.conditional_filter' % self.__class__.__name__
+        
+        from labpack.compilers.filters import positional_filter
+        filter_function = positional_filter(path_filters, title)
+        
+        return filter_function
+
+    def list(self, prefix='', delimiter='', filter_function=None, max_results=1, previous_key=''):
+        
+        ''' 
+            a method to list keys in the google drive collection
+
+        :param prefix: string with prefix value to filter results
+        :param delimiter: string with value which results must not contain (after prefix)
+        :param filter_function: (positional arguments) function used to filter results
+        :param max_results: integer with maximum number of results to return
+        :param previous_key: string with key in collection to begin search after
+        :return: list of key strings
+
+            NOTE:   each key string can be divided into one or more segments
+                    based upon the / characters which occur in the key string as
+                    well as its file extension type. if the key string represents
+                    a file path, then each directory in the path, the file name
+                    and the file extension are all separate indexed values.
+
+                    eg. lab/unittests/1473719695.2165067.json is indexed:
+                    [ 'lab', 'unittests', '1473719695.2165067', '.json' ]
+
+                    it is possible to filter the records in the collection according
+                    to one or more of these path segments using a filter_function.
+
+            NOTE:   the filter_function must be able to accept an array of positional
+                    arguments and return a value that can evaluate to true or false.
+                    while searching the records, list produces an array of strings
+                    which represent the directory structure in relative path of each
+                    key string. if a filter_function is provided, this list of strings
+                    is fed to the filter function. if the function evaluates this input
+                    and returns a true value the file will be included in the list
+                    results.
+        '''
+        
+        title = '%s.list' % self.__class__.__name__
+        
+    # validate input
+        input_fields = {
+            'prefix': prefix,
+            'delimiter': delimiter,
+            'max_results': max_results,
+            'previous_key': previous_key
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+
+    # validate filter function
+        if filter_function:
+            try:
+                path_segments = [ 'lab', 'unittests', '1473719695.2165067', '.json' ]
+                filter_function(*path_segments)
+            except:
+                err_msg = '%s(filter_function=%s)' % (title, filter_function.__class__.__name__)
+                raise TypeError('%s must accept positional arguments.' % err_msg)
+
+    # construct empty results list
+        results_list = []
+        check_key = True
+        if previous_key: 
+            check_key = False
+    
+    # determine root path
+        root_path = ''
+        if prefix:
+            from os import path
+            root_path, file_name = path.split(prefix)
+
+    # iterate over dropbox files
+        for file_path in self._walk(root_path):
+            path_segments = file_path.split(os.sep)
+            record_key = os.path.join(*path_segments)
+            record_key = record_key.replace('\\','/')
+            if record_key == previous_key:
+                check_key = True
+    
+    # find starting point
+            if not check_key:
+                continue
+                
+    # apply prefix filter
+            partial_key = record_key
+            if prefix:
+                if record_key.find(prefix) == 0:
+                    partial_key = record_key[len(prefix):]
+                else:
+                    continue
+    
+    # apply delimiter filter
+            if delimiter:
+                if partial_key.find(delimiter) > -1:
+                    continue
+    
+    # apply filter function
+            if filter_function:
+                if filter_function(*path_segments):
+                    results_list.append(record_key)
+            else:
+                results_list.append(record_key)
+
+    # return results list
+            if len(results_list) == max_results:
+                return results_list
+
+        return results_list
+
     def delete(self, record_key):
 
         ''' a method to delete a file
@@ -541,7 +733,11 @@ class driveClient(object):
         try:
             while current_dir:
                 folder_id, parent_id = self._get_id(current_dir)
-                if not self._list_directory(folder_id):
+                count = 0
+                for id, name, mimetype in self._list_directory(folder_id):
+                    count += 1
+                    break
+                if count:
                     self.drive.delete(fileId=folder_id).execute()
                     current_dir = os.path.split(current_dir)[0]
                 else:
@@ -553,13 +749,44 @@ class driveClient(object):
         exit_msg = '%s has been deleted.' % record_key
         return exit_msg
     
+    def remove(self):
+        
+        ''' 
+            a method to remove all records in the collection
+
+        NOTE:   this method removes all the files in the collection, but the
+                collection folder itself created by oauth2 cannot be removed.
+                only the user can remove access to the app folder
+                
+        :return: string with confirmation of deletion
+        '''
+
+        title = '%s.remove' % self.__class__.__name__
+    
+    # get contents of root
+        for id, name, mimetype in self._list_directory():
+            try:
+                self.drive.delete(fileId=id).execute()
+            except Exception as err:
+                if str(err).find('File not found') > -1:
+                    pass
+                else:
+                    raise DriveConnectionError(title)
+    
+    # return outcome
+        insert = 'collection'
+        if self.collection_name:
+            insert = self.collection_name
+        exit_msg = 'Contents of %s will be removed from Google Drive.' % insert
+        return exit_msg
+
     def test(self):
         
         test_id = '1dIYUS4HI20mkNr-Fut2EILXJSHdIOXVltJahMSV-xuto'
         
         list_kwargs = {
             'spaces': self.drive_space,
-            'fields': 'nextPageToken, files(id, name)'
+            'fields': 'nextPageToken, files(id, name, parents)'
         }
     
     # add query field
@@ -569,7 +796,8 @@ class driveClient(object):
         response = self.drive.list(**list_kwargs).execute()
         for file in response.get('files', []):
             # Process change
-            print('Found file: %s (%s)' % (file.get('name'), file.get('id')))
+            print('Found file: %s (%s) %s' % (file.get('name'), file.get('id'), file.get('parents')))
+            # self.delete(file.get('name'))
         # items = results.get('items', [])
         # if not items:
         #     print('No files found.')
@@ -589,6 +817,14 @@ if __name__ == '__main__':
     access_token = google_tokens['google_drive_access_token']
     drive_client = driveClient(access_token, 'Unit Test')
 
+# prevent accidental use
+    assert drive_client.drive_space == 'appDataFolder'
+    count = 0
+    for id, name, mimetype in drive_client._list_directory():
+        count += 1
+        break
+    assert not count
+
 # construct test records
     import json
     from hashlib import md5
@@ -600,7 +836,6 @@ if __name__ == '__main__':
     }
     test_data = open('../../../data/test_voice.ogg', 'rb').read()
     data_key = 'lab/voice/unittest.ogg'
-    # data_key = 'unittest.ogg'
     record_data = json.dumps(test_record).encode('utf-8')
     record_key = 'lab/device/unittest.json'
     drep_data = drep.dump(test_record, secret_key)
@@ -609,18 +844,22 @@ if __name__ == '__main__':
 # test save method
     old_hash = md5(test_data).digest()
     drive_client.save(data_key, test_data, secret_key=secret_key)
-    # drive_client.save(record_key, record_data)
-    # drive_client.save(drep_key, drep_data)
-    # assert drive_client.exists(drep_key)
-    # assert not drive_client.exists('notakey')
+    drive_client.save(record_key, record_data)
+    drive_client.save(drep_key, drep_data)
+    assert drive_client.exists(drep_key)
+    assert not drive_client.exists('notakey')
 
 # test load method
     new_data = drive_client.load(data_key, secret_key=secret_key)
     new_hash = md5(new_data).digest()
     assert old_hash == new_hash
-    
+
 # test delete method
     drive_client.delete(data_key)
 
-# list contents
-    drive_client.test()
+# test walk method
+    for file_path in drive_client._walk():
+        print(file_path)
+
+# test remove method
+    drive_client.remove()
