@@ -156,7 +156,7 @@ class driveClient(object):
         except:
             raise DriveConnectionError(title)
         if 'error' in token_details.keys():
-            raise ValueError('access_token for driveClient is %s' % token_details['error_description'])
+            raise ValueError('access_token for google drive account is %s' % token_details['error_description'])
     
     # determine collection space
         if 'scope' in token_details.keys():
@@ -226,19 +226,19 @@ class driveClient(object):
     # construct request kwargs
         list_kwargs = {
             'spaces': self.drive_space,
-            'fields': 'files(id)'
+            'fields': 'files(id, parents)'
         }
     
     # determine path segments
         path_segments = file_path.split(os.sep)
         
     # walk down parents to file name
-        parent = ''
+        parent_id = ''
         empty_string = ''
         while path_segments:
             walk_query = "name = '%s'" % path_segments.pop(0)
-            if parent:
-                walk_query += "and '%s' in parents" % parent
+            if parent_id:
+                walk_query += "and '%s' in parents" % parent_id
             list_kwargs['q'] = walk_query
             try:
                 response = self.drive.list(**list_kwargs).execute()
@@ -247,12 +247,12 @@ class driveClient(object):
             file_list = response.get('files', [])
             if file_list:
                 if path_segments:
-                    parent = file_list[0].get('id')
+                    parent_id = file_list[0].get('id')
                 else:
                     file_id = file_list[0].get('id')
-                    return file_id
+                    return file_id, parent_id
             else:
-                return empty_string
+                return empty_string, empty_string
         
     def exists(self, record_key):
         
@@ -260,7 +260,7 @@ class driveClient(object):
             a method to determine if a record exists in collection
 
         :param record_key: string with key of record
-        :return: string with file id if it exists
+        :return: boolean indicating file existence
         '''
         
         title = '%s.exists' % self.__class__.__name__
@@ -280,9 +280,10 @@ class driveClient(object):
         }
     
     # retrieve file id
-        file_id = self._get_id(record_key)
-        
-        return file_id
+        file_id, parent_id = self._get_id(record_key)
+        if file_id:
+            return True
+        return False
             
     def save(self, record_key, record_data, overwrite=True, secret_key=''):
 
@@ -335,9 +336,9 @@ class driveClient(object):
             raise Exception('%s requires an access_token with write permissions.' % title)
     
     # retrieve file id
-        file_id = self._get_id(record_key)
+        file_id, parent_id = self._get_id(record_key)
         
-    # check overwrite exception
+    # check overwrite condition
         if file_id:
             if overwrite:
                 try:
@@ -365,21 +366,73 @@ class driveClient(object):
         media_body = MediaInMemoryUpload(body=record_data, resumable=True)
         
     # determine path segments
-        file_root, file_name = os.path.split(record_key)
+        path_segments = record_key.split(os.sep)
         
     # construct upload kwargs
         create_kwargs = {
             'body': {
-                'name': file_name
+                'name': path_segments.pop()
             },
             'media_body': media_body,
             'fields': 'id'
         }
     
-    # add parents
-        if file_root:
-            folder_id = self._get_id(file_root)
-            create_kwargs['body']['parents'] = [folder_id]
+    # walk through parent directories
+        parent_id = ''
+        if path_segments:
+        
+        # construct query and creation arguments
+            walk_folders = True
+            folder_kwargs = {
+                'body': {
+                    'name': '',
+                    'mimeType' : 'application/vnd.google-apps.folder'
+                },
+                'fields': 'id'
+            }
+            query_kwargs = {
+                'spaces': self.drive_space,
+                'fields': 'files(id, parents)'
+            }
+            while path_segments:
+                folder_name = path_segments.pop(0)
+                folder_kwargs['body']['name'] = folder_name
+        
+        # search for folder id in existing hierarchy
+                if walk_folders:
+                    walk_query = "name = '%s'" % folder_name
+                    if parent_id:
+                        walk_query += "and '%s' in parents" % parent_id
+                    query_kwargs['q'] = walk_query
+                    try:
+                        response = self.drive.list(**query_kwargs).execute()
+                    except:
+                        raise DriveConnectionError(title)
+                    file_list = response.get('files', [])
+                else:
+                    file_list = []
+                if file_list:
+                    parent_id = file_list[0].get('id')
+        
+        # or create folder
+                else:
+                    try:
+                        if not parent_id:
+                            if self.drive_space == 'appDataFolder':
+                                folder_kwargs['body']['parents'] = [ self.drive_space ]
+                            else:
+                                del folder_kwargs['body']['parents']
+                        else:
+                            folder_kwargs['body']['parents'] = [parent_id]
+                        response = self.drive.create(**folder_kwargs).execute()
+                        parent_id = response.get('id')
+                        walk_folders = False
+                    except:
+                        raise DriveConnectionError(title)
+    
+    # add parent id to file creation kwargs
+        if parent_id:
+            create_kwargs['body']['parents'] = [parent_id]
         elif self.drive_space == 'appDataFolder':
             create_kwargs['body']['parents'] = [self.drive_space] 
     
@@ -389,8 +442,6 @@ class driveClient(object):
             from labpack.records.time import labDT
             drep_time = labDT.fromEpoch(1).isoformat()
             create_kwargs['body']['modifiedTime'] = drep_time
-    
-    # TODO create parent directories
             
     # send create request
         try:
@@ -427,7 +478,7 @@ class driveClient(object):
             raise Exception('%s requires an access_token with file content permissions.' % title)
             
     # retrieve file id
-        file_id = self._get_id(record_key)
+        file_id, parent_id = self._get_id(record_key)
         if not file_id:
             raise Exception('%s(record_key=%s) does not exist.' % (title, record_key))
     
@@ -472,14 +523,14 @@ class driveClient(object):
             self.fields.validate(value, '.%s' % key, object_title)
 
     # validate existence of file
-        file_id = self._get_id(record_key)
+        file_id, parent_id = self._get_id(record_key)
         if not file_id:
             exit_msg = '%s does not exist.' % record_key
             return exit_msg
             
     # remove file
         try:
-            response = self.drive.delete(fileId=file_id).execute()
+            self.drive.delete(fileId=file_id).execute()
         except:
             raise DriveConnectionError(title)
 
@@ -489,7 +540,7 @@ class driveClient(object):
     # remove empty parent folders
         try:
             while current_dir:
-                folder_id = self._get_id(current_dir)
+                folder_id, parent_id = self._get_id(current_dir)
                 if not self._list_directory(folder_id):
                     self.drive.delete(fileId=folder_id).execute()
                     current_dir = os.path.split(current_dir)[0]
@@ -549,7 +600,7 @@ if __name__ == '__main__':
     }
     test_data = open('../../../data/test_voice.ogg', 'rb').read()
     data_key = 'lab/voice/unittest.ogg'
-    data_key = 'unittest.ogg'
+    # data_key = 'unittest.ogg'
     record_data = json.dumps(test_record).encode('utf-8')
     record_key = 'lab/device/unittest.json'
     drep_data = drep.dump(test_record, secret_key)
@@ -558,8 +609,8 @@ if __name__ == '__main__':
 # test save method
     old_hash = md5(test_data).digest()
     drive_client.save(data_key, test_data, secret_key=secret_key)
-#     drive_client.save(record_key, record_data)
-#     drive_client.save(drep_key, drep_data)
+    # drive_client.save(record_key, record_data)
+    # drive_client.save(drep_key, drep_data)
     # assert drive_client.exists(drep_key)
     # assert not drive_client.exists('notakey')
 
