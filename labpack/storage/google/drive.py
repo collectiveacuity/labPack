@@ -2,6 +2,14 @@ __author__ = 'rcj1492'
 __created__ = '2017.07'
 __license__ = 'MIT'
 
+'''
+TODO: handle intermittent connectivity in export/import process
+TODO: handle variable permissions in export/import process
+TODO: add google document export method to load/save process
+TODO: store current folder path ids in import method to reduce redundant requests
+TODO: figure out a way to reduce redundant requests in list method with previous key
+'''
+
 import os
 from jsonmodel.validators import jsonModel
 
@@ -40,7 +48,9 @@ class driveClient(object):
     
     ''' a class of methods to manage file storage on Google Drive API '''
 
+    # https://developers.google.com/drive/v3/web/about-sdk
     # https://developers.google.com/api-client-library/python/apis/drive/v3
+    # https://developers.google.com/resources/api-libraries/documentation/drive/v3/python/latest/index.html
     # https://groups.google.com/forum/#!forum/risky-access-by-unreviewed-apps
 
     _class_fields = {
@@ -160,6 +170,7 @@ class driveClient(object):
             raise ValueError('access_token for google drive account is %s' % token_details['error_description'])
     
     # determine collection space
+    # https://developers.google.com/drive/v3/web/about-organization
         if 'scope' in token_details.keys():
             service_scope = token_details['scope']
             if service_scope.find('drive.appfolder') > -1:
@@ -172,6 +183,7 @@ class driveClient(object):
                     self.collection_name = 'Photos'
     
     # determine permissions
+    # https://developers.google.com/drive/v3/web/about-auth
             if service_scope.find('readonly') > -1:
                 self.permissions_write = False
             if service_scope.find('readonly.metadata') > -1:
@@ -299,13 +311,148 @@ class driveClient(object):
             pass
         elif root_path:
             root_id, root_parent = self._get_id(root_path)
-        for id, name, mimetype in self._list_directory(root_id):
+        for file_id, name, mimetype in self._list_directory(root_id):
             file_path = os.path.join(root_path, name)
             if mimetype == 'application/vnd.google-apps.folder':
-                for file_path in self._walk(root_path=file_path, root_id=id):
-                    yield file_path
+                for path, id in self._walk(root_path=file_path, root_id=file_id):
+                    yield path, id
             else:
-                yield file_path
+                yield file_path, file_id
+    
+    def _import(self, record_key, record_data, overwrite=True, last_modified=0.0, **kwargs):
+        
+        '''
+            a helper method for other storage clients to import into appdata
+            
+        :param record_key: string with key for record
+        :param record_data: byte data for body of record
+        :param overwrite: [optional] boolean to overwrite existing records
+        :param last_modified: [optional] float to record last modified date
+        :param kwargs: [optional] keyword arguments from other import methods 
+        :return: boolean indicating whether record was imported
+        '''
+        
+        title = '%s._import' % self.__class__.__name__
+    
+    # verify permissions
+        if not self.permissions_write:
+            raise Exception('%s requires an access_token with write permissions.' % title)
+    
+    # retrieve file id
+        file_id, parent_id = self._get_id(record_key)
+        
+    # check overwrite condition
+        if file_id:
+            if overwrite:
+                try:
+                    self.drive.delete(fileId=file_id).execute()
+                except:
+                    raise DriveConnectionError(title)
+            else:
+                return False
+    
+    # # check size of file
+    #     import sys
+    #     record_optimal = self.fields.metadata['record_optimal_bytes']
+    #     record_size = sys.getsizeof(record_data)
+    #     error_prefix = '%s(record_key="%s", record_data=b"...")' % (title, record_key)
+    #     if record_size > record_optimal:
+    #         print('[WARNING] %s exceeds optimal record data size of %s bytes.' % (error_prefix, record_optimal))
+            
+    # prepare file body
+        from googleapiclient.http import MediaInMemoryUpload
+        media_body = MediaInMemoryUpload(body=record_data, resumable=True)
+        
+    # determine path segments
+        path_segments = record_key.split(os.sep)
+        
+    # construct upload kwargs
+        create_kwargs = {
+            'body': {
+                'name': path_segments.pop()
+            },
+            'media_body': media_body,
+            'fields': 'id'
+        }
+    
+    # walk through parent directories
+        parent_id = ''
+        if path_segments:
+        
+        # construct query and creation arguments
+            walk_folders = True
+            folder_kwargs = {
+                'body': {
+                    'name': '',
+                    'mimeType' : 'application/vnd.google-apps.folder'
+                },
+                'fields': 'id'
+            }
+            query_kwargs = {
+                'spaces': self.drive_space,
+                'fields': 'files(id, parents)'
+            }
+            while path_segments:
+                folder_name = path_segments.pop(0)
+                folder_kwargs['body']['name'] = folder_name
+        
+        # search for folder id in existing hierarchy
+                if walk_folders:
+                    walk_query = "name = '%s'" % folder_name
+                    if parent_id:
+                        walk_query += "and '%s' in parents" % parent_id
+                    query_kwargs['q'] = walk_query
+                    try:
+                        response = self.drive.list(**query_kwargs).execute()
+                    except:
+                        raise DriveConnectionError(title)
+                    file_list = response.get('files', [])
+                else:
+                    file_list = []
+                if file_list:
+                    parent_id = file_list[0].get('id')
+        
+        # or create folder
+        # https://developers.google.com/drive/v3/web/folder
+                else:
+                    try:
+                        if not parent_id:
+                            if self.drive_space == 'appDataFolder':
+                                folder_kwargs['body']['parents'] = [ self.drive_space ]
+                            else:
+                                del folder_kwargs['body']['parents']
+                        else:
+                            folder_kwargs['body']['parents'] = [parent_id]
+                        response = self.drive.create(**folder_kwargs).execute()
+                        parent_id = response.get('id')
+                        walk_folders = False
+                    except:
+                        raise DriveConnectionError(title)
+    
+    # add parent id to file creation kwargs
+        if parent_id:
+            create_kwargs['body']['parents'] = [parent_id]
+        elif self.drive_space == 'appDataFolder':
+            create_kwargs['body']['parents'] = [self.drive_space] 
+    
+    # modify file time
+        import re
+        if re.search('\\.drep$', create_kwargs['body']['name']):
+            from labpack.records.time import labDT
+            drep_time = labDT.fromEpoch(1).isoformat()
+            create_kwargs['body']['modifiedTime'] = drep_time
+        elif last_modified:
+            from labpack.records.time import labDT
+            mod_time = labDT.fromEpoch(last_modified).isoformat()
+            create_kwargs['body']['modifiedTime'] = mod_time
+            
+    # send create request
+        try:
+            self.drive.create(**create_kwargs).execute()
+        except:
+            raise DriveConnectionError(title)
+        
+        return True
         
     def exists(self, record_key):
         
@@ -468,6 +615,7 @@ class driveClient(object):
                     parent_id = file_list[0].get('id')
         
         # or create folder
+        # https://developers.google.com/drive/v3/web/folder
                 else:
                     try:
                         if not parent_id:
@@ -550,6 +698,8 @@ class driveClient(object):
     #     while not done:
     #         status, done = record_data.next_chunk()
     
+    # TODO export google document to other format
+            
     # decrypt (if necessary)
         if secret_key:
             from labpack.encryption import cryptolab
@@ -659,7 +809,7 @@ class driveClient(object):
             root_path, file_name = path.split(prefix)
 
     # iterate over dropbox files
-        for file_path in self._walk(root_path):
+        for file_path, file_id in self._walk(root_path):
             path_segments = file_path.split(os.sep)
             record_key = os.path.join(*path_segments)
             record_key = record_key.replace('\\','/')
@@ -780,23 +930,86 @@ class driveClient(object):
         exit_msg = 'Contents of %s will be removed from Google Drive.' % insert
         return exit_msg
 
+    def export(self, storage_client, overwrite=True):
+        
+        '''
+            a method to export all the records in collection to another platform
+            
+        :param storage_client: class object with storage client methods
+        :return: string with exit message
+        '''
+        
+        title = '%s.export' % self.__class__.__name__
+        
+    # validate storage client
+        method_list = [ 'save', 'load', 'list', 'export', 'delete', 'remove', '_import', 'collection_name' ]
+        for method in method_list:
+            if not getattr(storage_client, method, None):
+                from labpack.parsing.grammar import join_words
+                raise ValueError('%s(storage_client=...) must be a client object with %s methods.' % (title, join_words(method_list)))
+            
+    # walk collection folder to find files
+        import os
+        count = 0
+        skipped = 0
+        for file_path, file_id in self._walk():
+            path_segments = file_path.split(os.sep)
+            record_key = os.path.join(*path_segments)
+            record_key = record_key.replace('\\','/')
+            
+    # retrieve data and metadata
+            try:
+                record_data = self.drive.get_media(fileId=file_id).execute()
+            except:
+                raise DriveConnectionError(title)
+            try:
+                file = self.drive.get(fileId=file_id, fields='modifiedTime').execute()
+                client_modified = file.get('modifiedTime', '')
+            except:
+                raise DriveConnectionError(title)
+            
+    # import record into storage client
+            last_modified = 0.0
+            if client_modified:
+                from labpack.records.time import labDT
+                last_modified = labDT.fromISO(client_modified).epoch()
+            outcome = storage_client._import(record_key, record_data, overwrite=overwrite, last_modified=last_modified)
+            if outcome:
+                count += 1
+            else:
+                skipped += 1
+            
+    # report outcome
+        plural = ''
+        skip_insert = ''
+        new_folder = storage_client.collection_name
+        if count != 1:
+            plural = 's'
+        if skipped > 0:
+            skip_plural = ''
+            if skipped > 1:
+                skip_plural = 's'
+            skip_insert = ' %s record%s skipped to avoid overwrite.' % (str(skipped), skip_plural)
+        exit_msg = '%s record%s exported to %s.%s' % (str(count), plural, new_folder, skip_insert)
+        return exit_msg
+    
     def test(self):
         
         test_id = '1dIYUS4HI20mkNr-Fut2EILXJSHdIOXVltJahMSV-xuto'
         
         list_kwargs = {
             'spaces': self.drive_space,
-            'fields': 'nextPageToken, files(id, name, parents)'
+            'fields': 'nextPageToken, files(id, name, parents, modifiedTime)'
         }
-    
-    # add query field
-        
     
     # send request
         response = self.drive.list(**list_kwargs).execute()
         for file in response.get('files', []):
-            # Process change
-            print('Found file: %s (%s) %s' % (file.get('name'), file.get('id'), file.get('parents')))
+            modified_time = file.get('modifiedTime')
+            from labpack.records.time import labDT
+            client_modified = labDT.fromISO(modified_time).epoch()
+            print('%s %s (%s) %s' % (file.get('name'), client_modified, file.get('id'), file.get('parents')))
+            
             # self.delete(file.get('name'))
         # items = results.get('items', [])
         # if not items:
@@ -858,8 +1071,8 @@ if __name__ == '__main__':
     drive_client.delete(data_key)
 
 # test walk method
-    for file_path in drive_client._walk():
-        print(file_path)
+    for file_path, file_id in drive_client._walk():
+        print(file_path, file_id)
 
 # test remove method
     drive_client.remove()

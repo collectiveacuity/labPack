@@ -223,13 +223,16 @@ class dropboxClient(object):
             if self.exists(record_key):
                 return False
     
-    # # check max size
-    #     import sys
-    #     record_max = self.fields.metadata['record_max_bytes']
-    #     record_size = sys.getsizeof(record_data)
-    #     if record_size > record_max:
-    #         return False
+    # check max size
+        import sys
+        record_max = self.fields.metadata['record_max_bytes']
+        record_size = sys.getsizeof(record_data)
+        error_prefix = '%s(record_key="%s", record_data=b"...")' % (title, record_key)
+        if record_size > record_max:
+            raise ValueError('%s exceeds maximum record data size of %s bytes.' % (error_prefix, record_max))
     
+    # TODO: apply session upload for files greater than record_max
+            
     # construct upload kwargs
         upload_kwargs = {
             'f': record_data,
