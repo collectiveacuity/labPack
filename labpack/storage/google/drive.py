@@ -10,6 +10,24 @@ TODO: store current folder path ids in import method to reduce redundant request
 TODO: figure out a way to reduce redundant requests in list method with previous key
 '''
 
+'''
+PLEASE NOTE:    google drive is not designed to store files in the POSIX file hierarchy
+                as a result, numerous requests are required to create the parentage
+                and ensure that records exist in the correct nodes. if preserving the
+                parentage does not matter, you can use the method specified here:
+                https://developers.google.com/drive/v3/web/manage-uploads
+
+PLEASE NOTE:    oauth2 tokens granted by google drive expire quickly - usually after
+                3600 seconds. to handle a large number of records, it may be necessary to
+                refresh the token. to obtain an access token that can interact with a 
+                google drive account, you must specify one of the following scopes in your
+                access request: https://developers.google.com/drive/v3/web/about-auth
+            
+PLEASE NOTE:    however, to write to a google drive account using a non-approved app,
+                the oauth2 grantee account must also join this google group
+                https://groups.google.com/forum/#!forum/risky-access-by-unreviewed-apps
+'''
+
 import os
 from jsonmodel.validators import jsonModel
 
@@ -107,9 +125,10 @@ class driveClient(object):
     def __init__(self, access_token, collection_name=''):
         
         '''
-            a method to initialize the dropboxClient class
+            a method to initialize the driveClient class
             
         :param access_token: string with oauth2 access token for users account
+        :param collection_name: [optional] string with name of collection for import
         '''    
 
         title = '%s.__init__' % self.__class__.__name__
@@ -262,6 +281,20 @@ class driveClient(object):
             break
         return self.space_id
   
+    def _get_data(self, file_id):
+    
+        ''' a helper method for retrieving the byte data of a file '''
+        
+        title = '%s._get_data' % self.__class__.__name__
+        
+    # request file data
+        try:
+            record_data = self.drive.get_media(fileId=file_id).execute()
+        except:
+            raise DriveConnectionError(title)
+        
+        return record_data
+        
     def _get_metadata(self, file_id, metadata_fields=''):
         
         ''' a helper method for retrieving the metadata of a file '''
@@ -1022,33 +1055,6 @@ class driveClient(object):
             skip_insert = ' %s record%s skipped to avoid overwrite.' % (str(skipped), skip_plural)
         exit_msg = '%s record%s exported to %s.%s' % (str(count), plural, new_folder, skip_insert)
         return exit_msg
-    
-    def test(self):
-        
-        test_id = '1dIYUS4HI20mkNr-Fut2EILXJSHdIOXVltJahMSV-xuto'
-        
-        list_kwargs = {
-            'spaces': self.drive_space,
-            'fields': 'nextPageToken, files(id, name, parents, modifiedTime)'
-        }
-    
-    # send request
-        response = self.drive.list(**list_kwargs).execute()
-        for file in response.get('files', []):
-            modified_time = file.get('modifiedTime')
-            from labpack.records.time import labDT
-            client_modified = labDT.fromISO(modified_time).epoch()
-            print('%s %s (%s) %s' % (file.get('name'), client_modified, file.get('id'), file.get('parents')))
-            
-            # self.delete(file.get('name'))
-        # items = results.get('items', [])
-        # if not items:
-        #     print('No files found.')
-        # else:
-        #     print('Files:')
-        #     for item in items:
-        #         print('{0} ({1})'.format(item['title'], item['id']))
-                
             
 if __name__ == '__main__':
     
