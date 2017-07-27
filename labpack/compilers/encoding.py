@@ -1,3 +1,4 @@
+''' a package for encoding/decoding record data from ext type '''
 __author__ = 'rcj1492'
 __created__ = '2017.07'
 __license__ = 'MIT'

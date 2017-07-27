@@ -8,7 +8,7 @@ labpack.compilers.drep
 ### dump
 ##### 
 **Signature:**  
-dump(map_input, secret_key)
+dump(json_input, secret_key)
 ##### 
 **Description:**  
   
@@ -17,7 +17,7 @@ dump(map_input, secret_key)
 <tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
 </thead>
 <tbody>
-<tr><td>map_input </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>json_input</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>secret_key</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 </tbody>
 </table>
@@ -35,6 +35,70 @@ load(encrypted_data, secret_key)
 <tbody>
 <tr><td>encrypted_data</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>secret_key    </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+
+## encoding.py
+### Import:
+labpack.compilers.encoding  
+### Description:
+a package for encoding/decoding record data from ext type  
+### decode_data
+##### 
+**Signature:**  
+decode_data(file_name, byte_data, mimetype="", secret_key="")
+##### 
+**Description:**  
+  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>file_name </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>byte_data </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>mimetype  </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>secret_key</td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+</tbody>
+</table>
+### encode_data
+##### 
+**Signature:**  
+encode_data(file_name, python_object, mimetype="", secret_key="")
+##### 
+**Description:**  
+  
+<table>
+<thead>
+<tr><th>Argument     </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>file_name    </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>python_object</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>mimetype     </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>secret_key   </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+</tbody>
+</table>
+
+## filters.py
+### Import:
+labpack.compilers.filters  
+### Description:
+a package of methods to compile search filters  
+### positional_filter
+##### 
+**Signature:**  
+positional_filter(positional_filters, title="")
+##### 
+**Description:**  
+a method to construct a conditional filter function to test positional arguments  
+<table>
+<thead>
+<tr><th>Argument          </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                           </th></tr>
+</thead>
+<tbody>
+<tr><td>positional_filters</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary or list of dictionaries with query criteria</td></tr>
+<tr><td>title             </td><td>str   </td><td>          </td><td>""       </td><td>string with name of function to use instead           </td></tr>
 </tbody>
 </table>
 
@@ -128,6 +192,28 @@ handle_requests(request_object)
 ##### 
 **Description:**  
   
+
+## comparison.py
+### Import:
+labpack.parsing.comparison  
+### Description:
+a package of methods to generate the differences between two data architectures  
+### compare_records
+##### 
+**Signature:**  
+compare_records(new_record, old_record)
+##### 
+**Description:**  
+a method to generate the differences between two data architectures  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                        </th></tr>
+</thead>
+<tbody>
+<tr><td>new_record</td><td>list  </td><td>Yes       </td><td>None     </td><td>set, list or dictionary with new details of an item</td></tr>
+<tr><td>old_record</td><td>list  </td><td>Yes       </td><td>None     </td><td>set, list or dictionary with old details of an item</td></tr>
+</tbody>
+</table>
 
 ## conversion.py
 ### Import:
@@ -247,7 +333,7 @@ labpack.performance.performlab
 ### repeat
 ##### 
 **Signature:**  
-repeat(function, title, count, verbose=True)
+repeat(function, kwargs, title, count, verbose=True)
 ##### 
 **Description:**  
   
@@ -257,6 +343,7 @@ repeat(function, title, count, verbose=True)
 </thead>
 <tbody>
 <tr><td>function  </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>kwargs    </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>title     </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>count     </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>verbose   </td><td>bool    </td><td>          </td><td>True     </td><td>             </td></tr>

@@ -1,6 +1,19 @@
 ChangeLog
 =========
 
+0.12 (2017.07.27)
+-----------------
+* [FEATURE ADDED] s3Client class for handling record storage on AWS s3
+* [FEATURE ADDED] dropboxClient class for handling record storage on Dropbox
+* [FEATURE ADDED] driveClient class for handling record storage on Google Drive
+* [FEATURE ADDED] comparison package to list differences between two data architectures 
+* [FEATURE ADDED] filters package of methods to compile search filters 
+* [FEATURE ADDED] encoding package for encoding/decoding record data from ext type
+* [TESTS ADDED] test scripts for s3Client, dropboxClient and driveClient
+* [REFACTOR] create method changed to save method in appdataClient class
+* [REFACTOR] read method changed to load method in appdataClient class
+* [UPDATE] body_dict arg replaced with record_data in appdataClient now requires bytes
+
 0.11 (2017.06.30)
 -----------------
 * [BUG FIX] fixed sshClient init element key name error

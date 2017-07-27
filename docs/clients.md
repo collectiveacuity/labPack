@@ -2046,19 +2046,11 @@ a method to perform rolling transcription
 ### Import:
 labpack.storage.appdata.appdataClient  
 ### Description:
-a low-level class of methods for managing file storage in local app data
+a class of methods for managing file storage on local device in app data 
 
-        NOTE:   class is designed to store json valid data nested in a dictionary
-                structure. acceptable data types include:
-                    boolean
-                    integer or float (number)
-                    string
-                    dictionary
-                    list
-                    none
-                to store other types of data, try first creating an url safe base64
-                string using something like:
-                    base64.urlsafe_b64encode(byte_data).decode()  
+        NOTE:   appdataClient is designed to store byte data, so encoding (or 
+                decoding) different types of file types must be handled by the
+                application prior (or after) data is saved (or loaded)  
 ### \__init__
 ##### 
 **Signature:**  
@@ -2077,40 +2069,55 @@ initialization method of appdata client class
 <tr><td>org_name       </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with name of organization behind product</td></tr>
 </tbody>
 </table>
-### create
+### exists
 ##### 
 **Signature:**  
-create(self, key_string, body_dict=None, byte_data="", overwrite=True, secret_key="")
+exists(self, record_key)
 ##### 
 **Description:**  
-a method to create a file in the collection folder  
+a method to determine if a record exists in collection  
 <table>
 <thead>
-<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                     </th></tr>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description              </th></tr>
 </thead>
 <tbody>
-<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                </td></tr>
-<tr><td>key_string</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name to assign file (see NOTE below)</td></tr>
-<tr><td>body_dict </td><td>dict  </td><td>          </td><td>None     </td><td>dictionary with file body details               </td></tr>
-<tr><td>byte_data </td><td>str   </td><td>          </td><td>""       </td><td>byte data to save under key string              </td></tr>
-<tr><td>overwrite </td><td>bool  </td><td>          </td><td>True     </td><td>boolean to overwrite files with same name       </td></tr>
-<tr><td>secret_key</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with key to encrypt body data </td></tr>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                         </td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with key of record</td></tr>
 </tbody>
 </table>
-### read
+### save
 ##### 
 **Signature:**  
-read(self, key_string, secret_key="")
+save(self, record_key, record_data, overwrite=True, secret_key="")
 ##### 
 **Description:**  
-a method to retrieve body details from a file  
+a method to create a record in the collection folder  
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                           </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                      </td></tr>
+<tr><td>record_key </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with name to assign to record (see NOTES below)</td></tr>
+<tr><td>record_data</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>byte data for record body                             </td></tr>
+<tr><td>overwrite  </td><td>bool    </td><td>          </td><td>True     </td><td>[optional] boolean to overwrite records with same name</td></tr>
+<tr><td>secret_key </td><td>str     </td><td>          </td><td>""       </td><td>[optional] string with key to encrypt data            </td></tr>
+</tbody>
+</table>
+### load
+##### 
+**Signature:**  
+load(self, record_key, secret_key="")
+##### 
+**Description:**  
+a method to retrieve byte data of appdata record  
 <table>
 <thead>
 <tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                           </th></tr>
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                      </td></tr>
-<tr><td>key_string</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of file              </td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of record            </td></tr>
 <tr><td>secret_key</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string used to decrypt data</td></tr>
 </tbody>
 </table>
@@ -2123,36 +2130,38 @@ conditional_filter(self, path_filters)
 a method to construct a conditional filter function for class list method  
 <table>
 <thead>
-<tr><th>Argument    </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                          </th></tr>
+<tr><th>Argument    </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                           </th></tr>
 </thead>
 <tbody>
-<tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>                                     </td></tr>
-<tr><td>path_filters</td><td>list  </td><td>Yes       </td><td>None     </td><td>list with query criteria dictionaries</td></tr>
+<tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                      </td></tr>
+<tr><td>path_filters</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary or list of dictionaries with query criteria</td></tr>
 </tbody>
 </table>
 ### list
 ##### 
 **Signature:**  
-list(self, filter_function=None, max_results=1, reverse_search=True, previous_key="")
+list(self, prefix="", delimiter="", filter_function=None, max_results=1, reverse_search=True, previous_key="")
 ##### 
 **Description:**  
 a method to list keys in the collection  
 <table>
 <thead>
-<tr><th>Argument       </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                           </th></tr>
+<tr><th>Argument       </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                                    </th></tr>
 </thead>
 <tbody>
-<tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                      </td></tr>
-<tr><td>filter_function</td><td>function</td><td>          </td><td>None     </td><td>(positional arguments) function used to filter results</td></tr>
-<tr><td>max_results    </td><td>int     </td><td>          </td><td>1        </td><td>integer with maximum number of results to return      </td></tr>
-<tr><td>reverse_search </td><td>bool    </td><td>          </td><td>True     </td><td>boolean to search keys in reverse alphanumeric order  </td></tr>
-<tr><td>previous_key   </td><td>str     </td><td>          </td><td>""       </td><td>string with key in collection to begin search after   </td></tr>
+<tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
+<tr><td>prefix         </td><td>str     </td><td>          </td><td>""       </td><td>string with prefix value to filter results                     </td></tr>
+<tr><td>delimiter      </td><td>str     </td><td>          </td><td>""       </td><td>string with value which results must not contain (after prefix)</td></tr>
+<tr><td>filter_function</td><td>function</td><td>          </td><td>None     </td><td>(positional arguments) function used to filter results         </td></tr>
+<tr><td>max_results    </td><td>int     </td><td>          </td><td>1        </td><td>integer with maximum number of results to return               </td></tr>
+<tr><td>reverse_search </td><td>bool    </td><td>          </td><td>True     </td><td>boolean to search keys in reverse alphanumeric order           </td></tr>
+<tr><td>previous_key   </td><td>str     </td><td>          </td><td>""       </td><td>string with key in collection to begin search after            </td></tr>
 </tbody>
 </table>
 ### delete
 ##### 
 **Signature:**  
-delete(self, key_string)
+delete(self, record_key)
 ##### 
 **Description:**  
 a method to delete a file  
@@ -2162,7 +2171,7 @@ a method to delete a file
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                        </td></tr>
-<tr><td>key_string</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of file</td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of file</td></tr>
 </tbody>
 </table>
 ### remove
@@ -2172,3 +2181,765 @@ remove(self)
 ##### 
 **Description:**  
 a method to remove collection and all records in the collection  
+### export
+##### 
+**Signature:**  
+export(self, storage_client, overwrite=True)
+##### 
+**Description:**  
+a method to export all the records in collection to another platform  
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                             </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object</td><td>Yes       </td><td>None     </td><td>                                        </td></tr>
+<tr><td>storage_client</td><td>type  </td><td>Yes       </td><td>None     </td><td>class object with storage client methods</td></tr>
+<tr><td>overwrite     </td><td>bool  </td><td>          </td><td>True     </td><td>                                        </td></tr>
+</tbody>
+</table>
+
+## _s3Client
+### Import:
+labpack.storage.aws.s3._s3Client  
+### Description:
+a class of methods for interacting with AWS Simple Storage Service  
+### \__init__
+##### 
+**Signature:**  
+\__init__(self, access_id, secret_key, region_name, owner_id, user_name, verbose=True)
+##### 
+**Description:**  
+a method for initializing the connection to S3  
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                          </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                     </td></tr>
+<tr><td>access_id  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with access_key_id from aws IAM user setup    </td></tr>
+<tr><td>secret_key </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with secret_access_key from aws IAM user setup</td></tr>
+<tr><td>region_name</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of aws region                       </td></tr>
+<tr><td>owner_id   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with aws account id                           </td></tr>
+<tr><td>user_name  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of user access keys are assigned to </td></tr>
+<tr><td>verbose    </td><td>bool  </td><td>          </td><td>True     </td><td>boolean to enable process messages                   </td></tr>
+</tbody>
+</table>
+### list_buckets
+##### 
+**Signature:**  
+list_buckets(self)
+##### 
+**Description:**  
+a method to retrieve a list of buckets on s3  
+### create_bucket
+##### 
+**Signature:**  
+create_bucket(self, bucket_name, access_control="private", version_control=False, log_destination=None, lifecycle_rules=None, tag_list=None, notification_settings=None, region_replication=None, access_policy=None)
+##### 
+**Description:**  
+a method for creating a bucket on AWS S3  
+<table>
+<thead>
+<tr><th>Argument             </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                    </th></tr>
+</thead>
+<tbody>
+<tr><td>self                 </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
+<tr><td>bucket_name          </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of bucket                                     </td></tr>
+<tr><td>access_control       </td><td>str   </td><td>          </td><td>"private"</td><td>string with type of access control policy                      </td></tr>
+<tr><td>version_control      </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to enable versioning of records             </td></tr>
+<tr><td>log_destination      </td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary with bucket name and prefix of log bucket</td></tr>
+<tr><td>lifecycle_rules      </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of dictionaries with rules for aging data      </td></tr>
+<tr><td>tag_list             </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of dictionaries with key and value for tag     </td></tr>
+<tr><td>notification_settings</td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of dictionaries with notification details      </td></tr>
+<tr><td>region_replication   </td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary with replication settings (WIP)          </td></tr>
+<tr><td>access_policy        </td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary with policy for user access (WIP)        </td></tr>
+</tbody>
+</table>
+### read_bucket
+##### 
+**Signature:**  
+read_bucket(self, bucket_name)
+##### 
+**Description:**  
+a method to retrieve properties of a bucket in s3  
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description               </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                          </td></tr>
+<tr><td>bucket_name</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of bucket</td></tr>
+</tbody>
+</table>
+### update_bucket
+##### 
+**Signature:**  
+update_bucket(self, bucket_name, access_control="private", version_control=False, log_destination=None, lifecycle_rules=None, tag_list=None, notification_settings=None, region_replication=None, access_policy=None)
+##### 
+**Description:**  
+a method for updating the properties of a bucket in S3  
+<table>
+<thead>
+<tr><th>Argument             </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                    </th></tr>
+</thead>
+<tbody>
+<tr><td>self                 </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
+<tr><td>bucket_name          </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of bucket                                     </td></tr>
+<tr><td>access_control       </td><td>str   </td><td>          </td><td>"private"</td><td>string with type of access control policy                      </td></tr>
+<tr><td>version_control      </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to enable versioning of records             </td></tr>
+<tr><td>log_destination      </td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary with bucket name and prefix of log bucket</td></tr>
+<tr><td>lifecycle_rules      </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of dictionaries with rules for aging data      </td></tr>
+<tr><td>tag_list             </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of dictionaries with key and value for tag     </td></tr>
+<tr><td>notification_settings</td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of dictionaries with notification details      </td></tr>
+<tr><td>region_replication   </td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary with replication settings (WIP)          </td></tr>
+<tr><td>access_policy        </td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary with policy for user access (WIP)        </td></tr>
+</tbody>
+</table>
+### delete_bucket
+##### 
+**Signature:**  
+delete_bucket(self, bucket_name)
+##### 
+**Description:**  
+a method to delete a bucket in s3 and all its contents  
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description               </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                          </td></tr>
+<tr><td>bucket_name</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of bucket</td></tr>
+</tbody>
+</table>
+### list_records
+##### 
+**Signature:**  
+list_records(self, bucket_name, prefix="", delimiter="", max_results=1000, starting_key="")
+##### 
+**Description:**  
+a method for retrieving a list of the versions of records in a bucket  
+<table>
+<thead>
+<tr><th>Argument    </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                    </th></tr>
+</thead>
+<tbody>
+<tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
+<tr><td>bucket_name </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of bucket                                     </td></tr>
+<tr><td>prefix      </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with value limiting results to key prefix    </td></tr>
+<tr><td>delimiter   </td><td>str   </td><td>          </td><td>""       </td><td>string with value which results must not contain (after prefix)</td></tr>
+<tr><td>max_results </td><td>int   </td><td>          </td><td>1000     </td><td>[optional] integer with max results to return                  </td></tr>
+<tr><td>starting_key</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with key value to continue search with       </td></tr>
+</tbody>
+</table>
+### list_versions
+##### 
+**Signature:**  
+list_versions(self, bucket_name, prefix="", delimiter="", max_results=1000, starting_key="", starting_version="")
+##### 
+**Description:**  
+a method for retrieving a list of the versions of records in a bucket  
+<table>
+<thead>
+<tr><th>Argument        </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                   </th></tr>
+</thead>
+<tbody>
+<tr><td>self            </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                              </td></tr>
+<tr><td>bucket_name     </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of bucket                                    </td></tr>
+<tr><td>prefix          </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with value limiting results to key prefix   </td></tr>
+<tr><td>delimiter       </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with value limiting results to key delimiter</td></tr>
+<tr><td>max_results     </td><td>int   </td><td>          </td><td>1000     </td><td>[optional] integer with max results to return                 </td></tr>
+<tr><td>starting_key    </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with key value to continue search with      </td></tr>
+<tr><td>starting_version</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with version id to continue search with     </td></tr>
+</tbody>
+</table>
+### create_record
+##### 
+**Signature:**  
+create_record(self, bucket_name, record_key, record_data, record_metadata=None, record_mimetype="", record_encoding="", overwrite=True)
+##### 
+**Description:**  
+a method for adding a record to an S3 bucket  
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                            </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                       </td></tr>
+<tr><td>bucket_name    </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with name of bucket                             </td></tr>
+<tr><td>record_key     </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with name of key (path) for record              </td></tr>
+<tr><td>record_data    </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>byte data for record                                   </td></tr>
+<tr><td>record_metadata</td><td>dict    </td><td>          </td><td>None     </td><td>[optional] dictionary with metadata to attach to record</td></tr>
+<tr><td>record_mimetype</td><td>str     </td><td>          </td><td>""       </td><td>[optional] string with content mimetype of record data </td></tr>
+<tr><td>record_encoding</td><td>str     </td><td>          </td><td>""       </td><td>[optional] string with content encoding of record data </td></tr>
+<tr><td>overwrite      </td><td>bool    </td><td>          </td><td>True     </td><td>[optional] boolean to overwrite any existing record    </td></tr>
+</tbody>
+</table>
+### read_headers
+##### 
+**Signature:**  
+read_headers(self, bucket_name, record_key, record_version="", version_check=False)
+##### 
+**Description:**  
+a method for retrieving the headers of a record from s3  
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                       </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                  </td></tr>
+<tr><td>bucket_name   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of bucket                        </td></tr>
+<tr><td>record_key    </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with key value of record                   </td></tr>
+<tr><td>record_version</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with aws id of version of record</td></tr>
+<tr><td>version_check </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to enable current version check</td></tr>
+</tbody>
+</table>
+### read_record
+##### 
+**Signature:**  
+read_record(self, bucket_name, record_key, record_version="", version_check=False)
+##### 
+**Description:**  
+a method for retrieving data of record from AWS S3  
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                       </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                  </td></tr>
+<tr><td>bucket_name   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of bucket                        </td></tr>
+<tr><td>record_key    </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of key (path) for record         </td></tr>
+<tr><td>record_version</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with aws id of version of record</td></tr>
+<tr><td>version_check </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to enable current version check</td></tr>
+</tbody>
+</table>
+### delete_record
+##### 
+**Signature:**  
+delete_record(self, bucket_name, record_key, record_version="")
+##### 
+**Description:**  
+a method for deleting an object record in s3  
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                       </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                  </td></tr>
+<tr><td>bucket_name   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of bucket                        </td></tr>
+<tr><td>record_key    </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with key value of record                   </td></tr>
+<tr><td>record_version</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with aws id of version of record</td></tr>
+</tbody>
+</table>
+### export_records
+##### 
+**Signature:**  
+export_records(self, bucket_name, export_path="", overwrite=True)
+##### 
+**Description:**  
+a method to export all the records from a bucket to local files  
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                    </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
+<tr><td>bucket_name</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of bucket                                     </td></tr>
+<tr><td>export_path</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with path to root directory for record dump  </td></tr>
+<tr><td>overwrite  </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to overwrite existing files matching records</td></tr>
+</tbody>
+</table>
+### import_records
+##### 
+**Signature:**  
+import_records(self, bucket_name, import_path="", overwrite=True)
+##### 
+**Description:**  
+a method to importing records from local files to a bucket  
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                    </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
+<tr><td>bucket_name</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of bucket                                     </td></tr>
+<tr><td>import_path</td><td>str   </td><td>          </td><td>""       </td><td>                                                               </td></tr>
+<tr><td>overwrite  </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to overwrite existing files matching records</td></tr>
+</tbody>
+</table>
+
+## s3Client
+### Import:
+labpack.storage.aws.s3.s3Client  
+### Description:
+a class of methods to manage file storage on AWS S3  
+### \__init__
+##### 
+**Signature:**  
+\__init__(self, access_id, secret_key, region_name, owner_id, user_name, collection_name="", prod_name="", org_name="", access_control="private", version_control=False, log_destination=None, lifecycle_rules=None, tag_list=None, notification_settings=None, region_replication=None, access_policy=None, verbose=True)
+##### 
+**Description:**  
+  
+<table>
+<thead>
+<tr><th>Argument             </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self                 </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>access_id            </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>secret_key           </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>region_name          </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>owner_id             </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>user_name            </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>collection_name      </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>prod_name            </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>org_name             </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>access_control       </td><td>str     </td><td>          </td><td>"private"</td><td>             </td></tr>
+<tr><td>version_control      </td><td>bool    </td><td>          </td><td>False    </td><td>             </td></tr>
+<tr><td>log_destination      </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>lifecycle_rules      </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>tag_list             </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>notification_settings</td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>region_replication   </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>access_policy        </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>verbose              </td><td>bool    </td><td>          </td><td>True     </td><td>             </td></tr>
+</tbody>
+</table>
+### exists
+##### 
+**Signature:**  
+exists(self, record_key)
+##### 
+**Description:**  
+a method to determine if a record exists in collection  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description              </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                         </td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with key of record</td></tr>
+</tbody>
+</table>
+### save
+##### 
+**Signature:**  
+save(self, record_key, record_data, overwrite=True, secret_key="")
+##### 
+**Description:**  
+a method to create a file in the collection folder on S3  
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                           </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                      </td></tr>
+<tr><td>record_key </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with name to assign to record (see NOTES below)</td></tr>
+<tr><td>record_data</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>byte data for record body                             </td></tr>
+<tr><td>overwrite  </td><td>bool    </td><td>          </td><td>True     </td><td>[optional] boolean to overwrite records with same name</td></tr>
+<tr><td>secret_key </td><td>str     </td><td>          </td><td>""       </td><td>[optional] string with key to encrypt data            </td></tr>
+</tbody>
+</table>
+### load
+##### 
+**Signature:**  
+load(self, record_key, secret_key="")
+##### 
+**Description:**  
+a method to retrieve byte data of an S3 record  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                           </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                      </td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of record            </td></tr>
+<tr><td>secret_key</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string used to decrypt data</td></tr>
+</tbody>
+</table>
+### conditional_filter
+##### 
+**Signature:**  
+conditional_filter(self, path_filters)
+##### 
+**Description:**  
+a method to construct a conditional filter function for class list method  
+<table>
+<thead>
+<tr><th>Argument    </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                           </th></tr>
+</thead>
+<tbody>
+<tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                      </td></tr>
+<tr><td>path_filters</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary or list of dictionaries with query criteria</td></tr>
+</tbody>
+</table>
+### list
+##### 
+**Signature:**  
+list(self, prefix="", delimiter="", filter_function=None, max_results=1, previous_key="")
+##### 
+**Description:**  
+a method to list keys in the collection  
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                              </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                         </td></tr>
+<tr><td>prefix         </td><td>str     </td><td>          </td><td>""       </td><td>string with prefix value to filter results               </td></tr>
+<tr><td>delimiter      </td><td>str     </td><td>          </td><td>""       </td><td>string with value results must not contain (after prefix)</td></tr>
+<tr><td>filter_function</td><td>function</td><td>          </td><td>None     </td><td>(positional arguments) function used to filter results   </td></tr>
+<tr><td>max_results    </td><td>int     </td><td>          </td><td>1        </td><td>integer with maximum number of results to return         </td></tr>
+<tr><td>previous_key   </td><td>str     </td><td>          </td><td>""       </td><td>string with key in collection to begin search after      </td></tr>
+</tbody>
+</table>
+### delete
+##### 
+**Signature:**  
+delete(self, record_key)
+##### 
+**Description:**  
+a method to delete a record from S3  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description              </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                         </td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with key of record</td></tr>
+</tbody>
+</table>
+### remove
+##### 
+**Signature:**  
+remove(self)
+##### 
+**Description:**  
+a method to remove collection and all records in the collection  
+### export
+##### 
+**Signature:**  
+export(self, storage_client, overwrite=True)
+##### 
+**Description:**  
+a method to export all the records in collection to another platform  
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                             </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object</td><td>Yes       </td><td>None     </td><td>                                        </td></tr>
+<tr><td>storage_client</td><td>type  </td><td>Yes       </td><td>None     </td><td>class object with storage client methods</td></tr>
+<tr><td>overwrite     </td><td>bool  </td><td>          </td><td>True     </td><td>                                        </td></tr>
+</tbody>
+</table>
+
+## dropboxClient
+### Import:
+labpack.storage.dropbox.dropboxClient  
+### Description:
+a class of methods to manage file storage on Dropbox API  
+### \__init__
+##### 
+**Signature:**  
+\__init__(self, access_token, collection_name="")
+##### 
+**Description:**  
+a method to initialize the dropboxClient class  
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                      </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                 </td></tr>
+<tr><td>access_token   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with oauth2 access token for users account</td></tr>
+<tr><td>collection_name</td><td>str   </td><td>          </td><td>""       </td><td>                                                 </td></tr>
+</tbody>
+</table>
+### exists
+##### 
+**Signature:**  
+exists(self, record_key)
+##### 
+**Description:**  
+a method to determine if a record exists in collection  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description              </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                         </td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with key of record</td></tr>
+</tbody>
+</table>
+### save
+##### 
+**Signature:**  
+save(self, record_key, record_data, overwrite=True, secret_key="")
+##### 
+**Description:**  
+a method to create a record in the collection folder  
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                           </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                      </td></tr>
+<tr><td>record_key </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with name to assign to record (see NOTES below)</td></tr>
+<tr><td>record_data</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>byte data for record body                             </td></tr>
+<tr><td>overwrite  </td><td>bool    </td><td>          </td><td>True     </td><td>[optional] boolean to overwrite records with same name</td></tr>
+<tr><td>secret_key </td><td>str     </td><td>          </td><td>""       </td><td>[optional] string with key to encrypt data            </td></tr>
+</tbody>
+</table>
+### load
+##### 
+**Signature:**  
+load(self, record_key, secret_key="")
+##### 
+**Description:**  
+a method to retrieve byte data of appdata record  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                           </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                      </td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of record            </td></tr>
+<tr><td>secret_key</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string used to decrypt data</td></tr>
+</tbody>
+</table>
+### conditional_filter
+##### 
+**Signature:**  
+conditional_filter(self, path_filters)
+##### 
+**Description:**  
+a method to construct a conditional filter function for list method  
+<table>
+<thead>
+<tr><th>Argument    </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                           </th></tr>
+</thead>
+<tbody>
+<tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                      </td></tr>
+<tr><td>path_filters</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary or list of dictionaries with query criteria</td></tr>
+</tbody>
+</table>
+### list
+##### 
+**Signature:**  
+list(self, prefix="", delimiter="", filter_function=None, max_results=1, previous_key="")
+##### 
+**Description:**  
+a method to list keys in the dropbox collection  
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                                    </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
+<tr><td>prefix         </td><td>str     </td><td>          </td><td>""       </td><td>string with prefix value to filter results                     </td></tr>
+<tr><td>delimiter      </td><td>str     </td><td>          </td><td>""       </td><td>string with value which results must not contain (after prefix)</td></tr>
+<tr><td>filter_function</td><td>function</td><td>          </td><td>None     </td><td>(positional arguments) function used to filter results         </td></tr>
+<tr><td>max_results    </td><td>int     </td><td>          </td><td>1        </td><td>integer with maximum number of results to return               </td></tr>
+<tr><td>previous_key   </td><td>str     </td><td>          </td><td>""       </td><td>string with key in collection to begin search after            </td></tr>
+</tbody>
+</table>
+### delete
+##### 
+**Signature:**  
+delete(self, record_key)
+##### 
+**Description:**  
+a method to delete a file  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description             </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                        </td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of file</td></tr>
+</tbody>
+</table>
+### remove
+##### 
+**Signature:**  
+remove(self)
+##### 
+**Description:**  
+a method to remove all records in the collection
+
+        NOTE:   this method removes all the files in the collection, but the
+                collection folder itself created by oauth2 cannot be removed.
+                only the user can remove the app folder  
+### export
+##### 
+**Signature:**  
+export(self, storage_client, overwrite=True)
+##### 
+**Description:**  
+a method to export all the records in collection to another platform  
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                             </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object</td><td>Yes       </td><td>None     </td><td>                                        </td></tr>
+<tr><td>storage_client</td><td>type  </td><td>Yes       </td><td>None     </td><td>class object with storage client methods</td></tr>
+<tr><td>overwrite     </td><td>bool  </td><td>          </td><td>True     </td><td>                                        </td></tr>
+</tbody>
+</table>
+
+## driveClient
+### Import:
+labpack.storage.google.drive.driveClient  
+### Description:
+a class of methods to manage file storage on Google Drive API  
+### \__init__
+##### 
+**Signature:**  
+\__init__(self, access_token, collection_name="")
+##### 
+**Description:**  
+a method to initialize the driveClient class  
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                         </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                    </td></tr>
+<tr><td>access_token   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with oauth2 access token for users account   </td></tr>
+<tr><td>collection_name</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with name of collection for import</td></tr>
+</tbody>
+</table>
+### exists
+##### 
+**Signature:**  
+exists(self, record_key)
+##### 
+**Description:**  
+a method to determine if a record exists in collection  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description              </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                         </td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with key of record</td></tr>
+</tbody>
+</table>
+### save
+##### 
+**Signature:**  
+save(self, record_key, record_data, overwrite=True, secret_key="")
+##### 
+**Description:**  
+a method to create a record in the collection folder  
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                           </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                      </td></tr>
+<tr><td>record_key </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with name to assign to record (see NOTES below)</td></tr>
+<tr><td>record_data</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>byte data for record body                             </td></tr>
+<tr><td>overwrite  </td><td>bool    </td><td>          </td><td>True     </td><td>[optional] boolean to overwrite records with same name</td></tr>
+<tr><td>secret_key </td><td>str     </td><td>          </td><td>""       </td><td>[optional] string with key to encrypt data            </td></tr>
+</tbody>
+</table>
+### load
+##### 
+**Signature:**  
+load(self, record_key, secret_key="")
+##### 
+**Description:**  
+a method to retrieve byte data of appdata record  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                           </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                      </td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of record            </td></tr>
+<tr><td>secret_key</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string used to decrypt data</td></tr>
+</tbody>
+</table>
+### conditional_filter
+##### 
+**Signature:**  
+conditional_filter(self, path_filters)
+##### 
+**Description:**  
+a method to construct a conditional filter function for list method  
+<table>
+<thead>
+<tr><th>Argument    </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                           </th></tr>
+</thead>
+<tbody>
+<tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                      </td></tr>
+<tr><td>path_filters</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary or list of dictionaries with query criteria</td></tr>
+</tbody>
+</table>
+### list
+##### 
+**Signature:**  
+list(self, prefix="", delimiter="", filter_function=None, max_results=1, previous_key="")
+##### 
+**Description:**  
+a method to list keys in the google drive collection  
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                                    </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
+<tr><td>prefix         </td><td>str     </td><td>          </td><td>""       </td><td>string with prefix value to filter results                     </td></tr>
+<tr><td>delimiter      </td><td>str     </td><td>          </td><td>""       </td><td>string with value which results must not contain (after prefix)</td></tr>
+<tr><td>filter_function</td><td>function</td><td>          </td><td>None     </td><td>(positional arguments) function used to filter results         </td></tr>
+<tr><td>max_results    </td><td>int     </td><td>          </td><td>1        </td><td>integer with maximum number of results to return               </td></tr>
+<tr><td>previous_key   </td><td>str     </td><td>          </td><td>""       </td><td>string with key in collection to begin search after            </td></tr>
+</tbody>
+</table>
+### delete
+##### 
+**Signature:**  
+delete(self, record_key)
+##### 
+**Description:**  
+a method to delete a file  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description             </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                        </td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of file</td></tr>
+</tbody>
+</table>
+### remove
+##### 
+**Signature:**  
+remove(self)
+##### 
+**Description:**  
+a method to remove all records in the collection
+
+        NOTE:   this method removes all the files in the collection, but the
+                collection folder itself created by oauth2 cannot be removed.
+                only the user can remove access to the app folder  
+### export
+##### 
+**Signature:**  
+export(self, storage_client, overwrite=True)
+##### 
+**Description:**  
+a method to export all the records in collection to another platform  
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                             </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object</td><td>Yes       </td><td>None     </td><td>                                        </td></tr>
+<tr><td>storage_client</td><td>type  </td><td>Yes       </td><td>None     </td><td>class object with storage client methods</td></tr>
+<tr><td>overwrite     </td><td>bool  </td><td>          </td><td>True     </td><td>                                        </td></tr>
+</tbody>
+</table>
