@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>Packages - Lab Pack</title>
+        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/font-awesome-4.5.0.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="../css/highlight.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+	
+	<script src="../js/jquery-1.10.2.min.js"></script>
+        <script src="../js/bootstrap-3.0.3.min.js"></script>
+        <script src="../js/highlight.pack.js"></script> 
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="..">Lab Pack</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+                <!-- Main navigation -->
+                <ul class="nav navbar-nav">
+                    <li >
+                        <a href="..">Home</a>
+                    </li>
+                    <li >
+                        <a href="../classes/">Classes</a>
+                    </li>
+                    <li >
+                        <a href="../clients/">Clients</a>
+                    </li>
+                    <li class="active">
+                        <a href="./">Packages</a>
+                    </li>
+                    <li >
+                        <a href="../resources/">Resources</a>
+                    </li>
+                    <li >
+                        <a href="../roadmap/">Roadmap</a>
+                    </li>
+                </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                        <i class="fa fa-search"></i> Search
+                    </a>
+                </li>
+                    <li >
+                        <a rel="next" href="../clients/">
+                            <i class="fa fa-arrow-left"></i> Previous
+                        </a>
+                    </li>
+                    <li >
+                        <a rel="prev" href="../resources/">
+                            Next <i class="fa fa-arrow-right"></i>
+                        </a>
+                    </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+        <div class="container">
+                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        <li class="main active"><a href="#packages">Packages</a></li>
+            <li><a href="#dreppy">drep.py</a></li>
+            <li><a href="#encodingpy">encoding.py</a></li>
+            <li><a href="#filterspy">filters.py</a></li>
+            <li><a href="#objectspy">objects.py</a></li>
+            <li><a href="#cryptolabpy">cryptolab.py</a></li>
+            <li><a href="#requestspy">requests.py</a></li>
+            <li><a href="#comparisonpy">comparison.py</a></li>
+            <li><a href="#conversionpy">conversion.py</a></li>
+            <li><a href="#flaskpy">flask.py</a></li>
+            <li><a href="#grammarpy">grammar.py</a></li>
+            <li><a href="#performlabpy">performlab.py</a></li>
+            <li><a href="#randomlabpy">randomlab.py</a></li>
+            <li><a href="#ippy">ip.py</a></li>
+            <li><a href="#settingspy">settings.py</a></li>
+            <li><a href="#barrelpy">barrel.py</a></li>
+    </ul>
+</div></div>
+                <div class="col-md-9" role="main">
+
+<h1 id="packages">Packages</h1>
+<h2 id="dreppy">drep.py</h2>
+<h3 id="import">Import:</h3>
+<p>labpack.compilers.drep  </p>
+<h3 id="description">Description:</h3>
+<h3 id="dump">dump</h3>
+<h5 id="_1"></h5>
+<p><strong>Signature:</strong><br />
+dump(json_input, secret_key)</p>
+<h5 id="_2"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>json_input</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>secret_key</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h3 id="load">load</h3>
+<h5 id="_3"></h5>
+<p><strong>Signature:</strong><br />
+load(encrypted_data, secret_key)</p>
+<h5 id="_4"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>encrypted_data</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>secret_key    </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h2 id="encodingpy">encoding.py</h2>
+<h3 id="import_1">Import:</h3>
+<p>labpack.compilers.encoding  </p>
+<h3 id="description_1">Description:</h3>
+<p>a package for encoding/decoding record data from ext type  </p>
+<h3 id="decode_data">decode_data</h3>
+<h5 id="_5"></h5>
+<p><strong>Signature:</strong><br />
+decode_data(file_name, byte_data, mimetype=&rdquo;&ldquo;, secret_key=&rdquo;&ldquo;)</p>
+<h5 id="_6"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>file_name </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>byte_data </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>mimetype  </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>secret_key</td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h3 id="encode_data">encode_data</h3>
+<h5 id="_7"></h5>
+<p><strong>Signature:</strong><br />
+encode_data(file_name, python_object, mimetype=&rdquo;&ldquo;, secret_key=&rdquo;&ldquo;)</p>
+<h5 id="_8"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument     </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>file_name    </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>python_object</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>mimetype     </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>secret_key   </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h2 id="filterspy">filters.py</h2>
+<h3 id="import_2">Import:</h3>
+<p>labpack.compilers.filters  </p>
+<h3 id="description_2">Description:</h3>
+<p>a package of methods to compile search filters  </p>
+<h3 id="positional_filter">positional_filter</h3>
+<h5 id="_9"></h5>
+<p><strong>Signature:</strong><br />
+positional_filter(positional_filters, title=&rdquo;&ldquo;)</p>
+<h5 id="_10"></h5>
+<p><strong>Description:</strong><br />
+a method to construct a conditional filter function to test positional arguments<br />
+<table>
+<thead>
+<tr><th>Argument          </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                           </th></tr>
+</thead>
+<tbody>
+<tr><td>positional_filters</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary or list of dictionaries with query criteria</td></tr>
+<tr><td>title             </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>string with name of function to use instead           </td></tr>
+</tbody>
+</table></p>
+<h2 id="objectspy">objects.py</h2>
+<h3 id="import_3">Import:</h3>
+<p>labpack.compilers.objects  </p>
+<h3 id="description_3">Description:</h3>
+<h3 id="retrieve_function">retrieve_function</h3>
+<h5 id="_11"></h5>
+<p><strong>Signature:</strong><br />
+retrieve_function(function_string, global_scope=None, root_path=&rdquo;./&rdquo;)</p>
+<h5 id="_12"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>function_string</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>global_scope   </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>root_path      </td><td>str     </td><td>          </td><td>"./"     </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h2 id="cryptolabpy">cryptolab.py</h2>
+<h3 id="import_4">Import:</h3>
+<p>labpack.encryption.cryptolab  </p>
+<h3 id="description_4">Description:</h3>
+<h3 id="decrypt">decrypt</h3>
+<h5 id="_13"></h5>
+<p><strong>Signature:</strong><br />
+decrypt(encrypted_data, secret_key)</p>
+<h5 id="_14"></h5>
+<p><strong>Description:</strong><br />
+uses cryptography module to decrypt byte data
+        cipher: AES (128 bit block_size)
+        hash: sha512
+        key size: 256 bit (first 32 bytes of secret key hash)
+        vector size: 128 bit (next 16 bytes of secret key hash)
+        padding: PKCS7
+        cipher mode: CBC
+        backend: openssl 1.0.2a<br />
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                           </th></tr>
+</thead>
+<tbody>
+<tr><td>encrypted_data</td><td>bytes </td><td>Yes       </td><td>None     </td><td>bytes with data to decrypt            </td></tr>
+<tr><td>secret_key    </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>[optional] string used to decrypt data</td></tr>
+</tbody>
+</table></p>
+<h3 id="encrypt">encrypt</h3>
+<h5 id="_15"></h5>
+<p><strong>Signature:</strong><br />
+encrypt(byte_data, secret_key=&rdquo;&ldquo;)</p>
+<h5 id="_16"></h5>
+<p><strong>Description:</strong><br />
+uses cryptography module to encrypt byte data
+        cipher: AES (128 bit block_size)
+        hash: sha512
+        key size: 256 bit (first 32 bytes of secret key hash)
+        vector size: 128 bit (next 16 bytes of secret key hash)
+        padding: PKCS7
+        cipher mode: CBC
+        backend: openssl 1.0.2a</p>
+<pre><code>    NOTE:   if secret_key is left blank,
+            method generates a 32 byte hexadecimal string
+</code></pre>
+<p><table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                           </th></tr>
+</thead>
+<tbody>
+<tr><td>byte_data </td><td>bytes </td><td>Yes       </td><td>None     </td><td>bytes with data to encrypt            </td></tr>
+<tr><td>secret_key</td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string used to encrypt data</td></tr>
+</tbody>
+</table></p>
+<h2 id="requestspy">requests.py</h2>
+<h3 id="import_5">Import:</h3>
+<p>labpack.handlers.requests  </p>
+<h3 id="description_5">Description:</h3>
+<h3 id="handle_requests">handle_requests</h3>
+<h5 id="_17"></h5>
+<p><strong>Signature:</strong><br />
+handle_requests(request_object)</p>
+<h5 id="_18"></h5>
+<p><strong>Description:</strong>  </p>
+<h2 id="comparisonpy">comparison.py</h2>
+<h3 id="import_6">Import:</h3>
+<p>labpack.parsing.comparison  </p>
+<h3 id="description_6">Description:</h3>
+<p>a package of methods to generate the differences between two data architectures  </p>
+<h3 id="compare_records">compare_records</h3>
+<h5 id="_19"></h5>
+<p><strong>Signature:</strong><br />
+compare_records(new_record, old_record)</p>
+<h5 id="_20"></h5>
+<p><strong>Description:</strong><br />
+a method to generate the differences between two data architectures<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                        </th></tr>
+</thead>
+<tbody>
+<tr><td>new_record</td><td>list  </td><td>Yes       </td><td>None     </td><td>set, list or dictionary with new details of an item</td></tr>
+<tr><td>old_record</td><td>list  </td><td>Yes       </td><td>None     </td><td>set, list or dictionary with old details of an item</td></tr>
+</tbody>
+</table></p>
+<h2 id="conversionpy">conversion.py</h2>
+<h3 id="import_7">Import:</h3>
+<p>labpack.parsing.conversion  </p>
+<h3 id="description_7">Description:</h3>
+<p>a package of functions to convert data architecture formats  </p>
+<h3 id="camelcase_to_lowercase">camelcase_to_lowercase</h3>
+<h5 id="_21"></h5>
+<p><strong>Signature:</strong><br />
+camelcase_to_lowercase(camelcase_input, python_input=None)</p>
+<h5 id="_22"></h5>
+<p><strong>Description:</strong><br />
+a function to recursively convert data with camelcase key names into lowercase keys<br />
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                        </th></tr>
+</thead>
+<tbody>
+<tr><td>camelcase_input</td><td>list  </td><td>Yes       </td><td>None     </td><td>list or dictionary with camelcase keys                             </td></tr>
+<tr><td>python_input   </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list or dictionary with default lowercase keys in output</td></tr>
+</tbody>
+</table></p>
+<h3 id="lowercase_to_camelcase">lowercase_to_camelcase</h3>
+<h5 id="_23"></h5>
+<p><strong>Signature:</strong><br />
+lowercase_to_camelcase(python_input, camelcase_input=None)</p>
+<h5 id="_24"></h5>
+<p><strong>Description:</strong><br />
+a function to recursively convert data with lowercase key names into camelcase keys<br />
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                        </th></tr>
+</thead>
+<tbody>
+<tr><td>python_input   </td><td>list  </td><td>Yes       </td><td>None     </td><td>[optional] list or dictionary with default camelcase keys in output</td></tr>
+<tr><td>camelcase_input</td><td>list  </td><td>          </td><td>None     </td><td>list or dictionary with lowercase keys                             </td></tr>
+</tbody>
+</table></p>
+<h2 id="flaskpy">flask.py</h2>
+<h3 id="import_8">Import:</h3>
+<p>labpack.parsing.flask  </p>
+<h3 id="description_8">Description:</h3>
+<h3 id="extract_request_details">extract_request_details</h3>
+<h5 id="_25"></h5>
+<p><strong>Signature:</strong><br />
+extract_request_details(request_object, session_object=None)</p>
+<h5 id="_26"></h5>
+<p><strong>Description:</strong><br />
+a method for extracting request details from request and session objects</p>
+<pre><code>    NOTE:   method is also a placeholder funnel for future validation
+            processes, request logging, request context building and
+            counter-measures for the nasty web
+</code></pre>
+<p><table>
+<thead>
+<tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                         </th></tr>
+</thead>
+<tbody>
+<tr><td>request_object</td><td>object</td><td>Yes       </td><td>None     </td><td>request object generated by flask from request route</td></tr>
+<tr><td>session_object</td><td>object</td><td>          </td><td>None     </td><td>session object generated by flask from client cookie</td></tr>
+</tbody>
+</table></p>
+<h3 id="extract_session_details">extract_session_details</h3>
+<h5 id="_27"></h5>
+<p><strong>Signature:</strong><br />
+extract_session_details(request_headers, session_header, secret_key)</p>
+<h5 id="_28"></h5>
+<p><strong>Description:</strong><br />
+a method to extract and validate jwt session token from request headers<br />
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                        </th></tr>
+</thead>
+<tbody>
+<tr><td>request_headers</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with header fields from request         </td></tr>
+<tr><td>session_header </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of session token header key       </td></tr>
+<tr><td>secret_key     </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with secret key to json web token encryption</td></tr>
+</tbody>
+</table></p>
+<h3 id="validate_request_content">validate_request_content</h3>
+<h5 id="_29"></h5>
+<p><strong>Signature:</strong><br />
+validate_request_content(request_content, request_model)</p>
+<h5 id="_30"></h5>
+<p><strong>Description:</strong><br />
+a method to validate the content fields of a flask request<br />
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                               </th></tr>
+</thead>
+<tbody>
+<tr><td>request_content</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with content fields to validate</td></tr>
+<tr><td>request_model  </td><td>object</td><td>Yes       </td><td>None     </td><td>object with jsonmodel class properties    </td></tr>
+</tbody>
+</table></p>
+<h2 id="grammarpy">grammar.py</h2>
+<h3 id="import_9">Import:</h3>
+<p>labpack.parsing.grammar  </p>
+<h3 id="description_9">Description:</h3>
+<h3 id="join_words">join_words</h3>
+<h5 id="_31"></h5>
+<p><strong>Signature:</strong><br />
+join_words(word_list)</p>
+<h5 id="_32"></h5>
+<p><strong>Description:</strong>  </p>
+<h2 id="performlabpy">performlab.py</h2>
+<h3 id="import_10">Import:</h3>
+<p>labpack.performance.performlab  </p>
+<h3 id="description_10">Description:</h3>
+<h3 id="repeat">repeat</h3>
+<h5 id="_33"></h5>
+<p><strong>Signature:</strong><br />
+repeat(function, kwargs, title, count, verbose=True)</p>
+<h5 id="_34"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>function  </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>kwargs    </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>title     </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>count     </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>verbose   </td><td>bool    </td><td>          </td><td>True     </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h2 id="randomlabpy">randomlab.py</h2>
+<h3 id="import_11">Import:</h3>
+<p>labpack.randomization.randomlab  </p>
+<h3 id="description_11">Description:</h3>
+<h3 id="random_binary">random_binary</h3>
+<h5 id="_35"></h5>
+<p><strong>Signature:</strong><br />
+random_binary(length)</p>
+<h5 id="_36"></h5>
+<p><strong>Description:</strong>  </p>
+<h3 id="random_bytes">random_bytes</h3>
+<h5 id="_37"></h5>
+<p><strong>Signature:</strong><br />
+random_bytes(length)</p>
+<h5 id="_38"></h5>
+<p><strong>Description:</strong>  </p>
+<h3 id="random_characters">random_characters</h3>
+<h5 id="_39"></h5>
+<p><strong>Signature:</strong><br />
+random_characters(character_set, length)</p>
+<h5 id="_40"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument     </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>character_set</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>length       </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h3 id="random_double">random_double</h3>
+<h5 id="_41"></h5>
+<p><strong>Signature:</strong><br />
+random_double(low, high)</p>
+<h5 id="_42"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>low       </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>high      </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h3 id="random_fraction">random_fraction</h3>
+<h5 id="_43"></h5>
+<p><strong>Signature:</strong><br />
+random_fraction()</p>
+<h5 id="_44"></h5>
+<p><strong>Description:</strong>  </p>
+<h3 id="random_integer">random_integer</h3>
+<h5 id="_45"></h5>
+<p><strong>Signature:</strong><br />
+random_integer(low, high)</p>
+<h5 id="_46"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>low       </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>high      </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h3 id="random_number">random_number</h3>
+<h5 id="_47"></h5>
+<p><strong>Signature:</strong><br />
+random_number(length)</p>
+<h5 id="_48"></h5>
+<p><strong>Description:</strong>  </p>
+<h3 id="random_object">random_object</h3>
+<h5 id="_49"></h5>
+<p><strong>Signature:</strong><br />
+random_object()</p>
+<h5 id="_50"></h5>
+<p><strong>Description:</strong>  </p>
+<h3 id="random_shuffle">random_shuffle</h3>
+<h5 id="_51"></h5>
+<p><strong>Signature:</strong><br />
+random_shuffle(item_list)</p>
+<h5 id="_52"></h5>
+<p><strong>Description:</strong>  </p>
+<h2 id="ippy">ip.py</h2>
+<h3 id="import_12">Import:</h3>
+<p>labpack.records.ip  </p>
+<h3 id="description_12">Description:</h3>
+<h3 id="get_ip">get_ip</h3>
+<h5 id="_53"></h5>
+<p><strong>Signature:</strong><br />
+get_ip(source=&rdquo;aws&rdquo;)</p>
+<h5 id="_54"></h5>
+<p><strong>Description:</strong><br />
+a method to get current localhost public ip address  </p>
+<h2 id="settingspy">settings.py</h2>
+<h3 id="import_13">Import:</h3>
+<p>labpack.records.settings  </p>
+<h3 id="description_13">Description:</h3>
+<h3 id="compile_settings">compile_settings</h3>
+<h5 id="_55"></h5>
+<p><strong>Signature:</strong><br />
+compile_settings(model_path, file_path, ignore_errors=False)</p>
+<h5 id="_56"></h5>
+<p><strong>Description:</strong><br />
+a method to compile configuration values from different sources</p>
+<pre><code>    NOTE:   method searches the environment variables, a local
+            configuration path and the default values for a jsonmodel
+            object for valid configuration values. if an environmental
+            variable or key inside a local config file matches the key
+            for a configuration setting declared in the jsonmodel schema,
+            its value will be added to the configuration file as long
+            as the value is model valid. SEE jsonmodel module.
+
+    NOTE:   the order of assignment:
+                first:  environment variable
+                second: configuration file
+                third:  default value
+                fourth: empty value
+
+    NOTE:   method is guaranteed to produce a full set of top-level keys
+</code></pre>
+<p><table>
+<thead>
+<tr><th>Argument     </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                    </th></tr>
+</thead>
+<tbody>
+<tr><td>model_path   </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with path to jsonmodel valid model data </td></tr>
+<tr><td>file_path    </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with path to local configuration file   </td></tr>
+<tr><td>ignore_errors</td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to ignore any invalid values</td></tr>
+</tbody>
+</table></p>
+<h3 id="ingest_environ">ingest_environ</h3>
+<h5 id="_57"></h5>
+<p><strong>Signature:</strong><br />
+ingest_environ(model_path=&rdquo;&ldquo;)</p>
+<h5 id="_58"></h5>
+<p><strong>Description:</strong><br />
+a method to convert environment variables to a python dictionary  </p>
+<h3 id="load_settings">load_settings</h3>
+<h5 id="_59"></h5>
+<p><strong>Signature:</strong><br />
+load_settings(file_path, module_name=&rdquo;&ldquo;, secret_key=&rdquo;&ldquo;)</p>
+<h5 id="_60"></h5>
+<p><strong>Description:</strong><br />
+a method to load data from json valid files<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                               </th></tr>
+</thead>
+<tbody>
+<tr><td>file_path  </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with path to settings file                         </td></tr>
+<tr><td>module_name</td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with name of module containing file path</td></tr>
+<tr><td>secret_key </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with key to decrypt drep file           </td></tr>
+</tbody>
+</table></p>
+<h3 id="remove_settings">remove_settings</h3>
+<h5 id="_61"></h5>
+<p><strong>Signature:</strong><br />
+remove_settings(file_path, retry_count=10, remove_dir=False)</p>
+<h5 id="_62"></h5>
+<p><strong>Description:</strong><br />
+a method to remove a file using a child process</p>
+<pre><code>    http://www.petercollingridge.co.uk/blog/running-multiple-processes-python
+    https://docs.python.org/3.5/library/multiprocessing.html
+</code></pre>
+<p><table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                     </th></tr>
+</thead>
+<tbody>
+<tr><td>file_path  </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with path to file to remove                              </td></tr>
+<tr><td>retry_count</td><td>int   </td><td>          </td><td>10       </td><td>integer with number of attempts to remove before error is thrown</td></tr>
+<tr><td>remove_dir </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to remove empty parent directories           </td></tr>
+</tbody>
+</table></p>
+<h3 id="save_settings">save_settings</h3>
+<h5 id="_63"></h5>
+<p><strong>Signature:</strong><br />
+save_settings(file_path, record_details, overwrite=False, secret_key=&rdquo;&ldquo;)</p>
+<h5 id="_64"></h5>
+<p><strong>Description:</strong><br />
+a method to save dictionary typed data to a local file<br />
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                       </th></tr>
+</thead>
+<tbody>
+<tr><td>file_path     </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with path to settings file                 </td></tr>
+<tr><td>record_details</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with record details                    </td></tr>
+<tr><td>overwrite     </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to overwrite existing file data</td></tr>
+<tr><td>secret_key    </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with key to decrypt drep file   </td></tr>
+</tbody>
+</table></p>
+<h2 id="barrelpy">barrel.py</h2>
+<h3 id="import_14">Import:</h3>
+<p>labpack.storage.barrel  </p>
+<h3 id="description_14">Description:</h3>
+<h3 id="main">main</h3>
+<h5 id="_65"></h5>
+<p><strong>Signature:</strong><br />
+main(args)</p>
+<h5 id="_66"></h5>
+<p><strong>Description:</strong>  </p>
+<h3 id="retrieve_values">retrieve_values</h3>
+<h5 id="_67"></h5>
+<p><strong>Signature:</strong><br />
+retrieve_values(file_path)</p>
+<h5 id="_68"></h5>
+<p><strong>Description:</strong>  </p>
+<h3 id="store_values">store_values</h3>
+<h5 id="_69"></h5>
+<p><strong>Signature:</strong><br />
+store_values(file_path, data)</p>
+<h5 id="_70"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>file_path </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>data      </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table></div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>var base_url = '..';</script>
+        <script data-main="../mkdocs/js/search.js" src="../mkdocs/js/require.js"></script>
+        <script src="../js/base.js"></script><div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form role="form">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

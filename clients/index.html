@@ -1,0 +1,3072 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+        <title>Clients - Lab Pack</title>
+        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/font-awesome-4.5.0.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="../css/highlight.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+	
+	<script src="../js/jquery-1.10.2.min.js"></script>
+        <script src="../js/bootstrap-3.0.3.min.js"></script>
+        <script src="../js/highlight.pack.js"></script> 
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="..">Lab Pack</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+                <!-- Main navigation -->
+                <ul class="nav navbar-nav">
+                    <li >
+                        <a href="..">Home</a>
+                    </li>
+                    <li >
+                        <a href="../classes/">Classes</a>
+                    </li>
+                    <li class="active">
+                        <a href="./">Clients</a>
+                    </li>
+                    <li >
+                        <a href="../packages/">Packages</a>
+                    </li>
+                    <li >
+                        <a href="../resources/">Resources</a>
+                    </li>
+                    <li >
+                        <a href="../roadmap/">Roadmap</a>
+                    </li>
+                </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                        <i class="fa fa-search"></i> Search
+                    </a>
+                </li>
+                    <li >
+                        <a rel="next" href="../classes/">
+                            <i class="fa fa-arrow-left"></i> Previous
+                        </a>
+                    </li>
+                    <li >
+                        <a rel="prev" href="../packages/">
+                            Next <i class="fa fa-arrow-right"></i>
+                        </a>
+                    </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+        <div class="container">
+                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        <li class="main active"><a href="#clients">Clients</a></li>
+            <li><a href="#movesclient">movesClient</a></li>
+            <li><a href="#iamclient">iamClient</a></li>
+            <li><a href="#oauth2client">oauth2Client</a></li>
+            <li><a href="#mailgunclient">mailgunClient</a></li>
+            <li><a href="#mandrillclient">mandrillClient</a></li>
+            <li><a href="#meetupclient">meetupClient</a></li>
+            <li><a href="#telegrambotclient">telegramBotClient</a></li>
+            <li><a href="#twilioclient">twilioClient</a></li>
+            <li><a href="#apschedulerclient">apschedulerClient</a></li>
+            <li><a href="#ec2client">ec2Client</a></li>
+            <li><a href="#sshclient">sshClient</a></li>
+            <li><a href="#dockerclient">dockerClient</a></li>
+            <li><a href="#herokuclient">herokuClient</a></li>
+            <li><a href="#localhostclient">localhostClient</a></li>
+            <li><a href="#watsonspeechclient">watsonSpeechClient</a></li>
+            <li><a href="#appdataclient">appdataClient</a></li>
+            <li><a href="#_s3client">_s3Client</a></li>
+            <li><a href="#s3client">s3Client</a></li>
+            <li><a href="#dropboxclient">dropboxClient</a></li>
+            <li><a href="#driveclient">driveClient</a></li>
+    </ul>
+</div></div>
+                <div class="col-md-9" role="main">
+
+<h1 id="clients">Clients</h1>
+<h2 id="movesclient">movesClient</h2>
+<h3 id="import">Import:</h3>
+<p>labpack.activity.moves.movesClient  </p>
+<h3 id="description">Description:</h3>
+<p>a class of methods for retrieving user data from moves api  </p>
+<h3 id="95_init__">__init__</h3>
+<h5 id="_1"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self, access_token, service_scope, usage_client=None, requests_handler=None)</p>
+<h5 id="_2"></h5>
+<p><strong>Description:</strong><br />
+initialization method for moves client class<br />
+<table>
+<thead>
+<tr><th>Argument        </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                              </th></tr>
+</thead>
+<tbody>
+<tr><td>self            </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                         </td></tr>
+<tr><td>access_token    </td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with access token for user provided by moves oauth</td></tr>
+<tr><td>service_scope   </td><td>dict    </td><td>Yes       </td><td>None     </td><td>dictionary with service type permissions                 </td></tr>
+<tr><td>usage_client    </td><td>function</td><td>          </td><td>None     </td><td>callable that records usage data                         </td></tr>
+<tr><td>requests_handler</td><td>function</td><td>          </td><td>None     </td><td>callable that handles requests errors                    </td></tr>
+</tbody>
+</table></p>
+<h3 id="list_activities">list_activities</h3>
+<h5 id="_3"></h5>
+<p><strong>Signature:</strong><br />
+list_activities(self)</p>
+<h5 id="_4"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve the details for all activities currently supported  </p>
+<h3 id="get_profile">get_profile</h3>
+<h5 id="_5"></h5>
+<p><strong>Signature:</strong><br />
+get_profile(self)</p>
+<h5 id="_6"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve profile details of user  </p>
+<h3 id="get_summary">get_summary</h3>
+<h5 id="_7"></h5>
+<p><strong>Signature:</strong><br />
+get_summary(self, timezone_offset, first_date, start=0.0, end=0.0)</p>
+<h5 id="_8"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve summary details for a period of time</p>
+<pre><code>    NOTE: start and end must be no more than 30 days, 1 second apart
+</code></pre>
+<p><table>
+<thead>
+<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                           </td></tr>
+<tr><td>timezone_offset</td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with timezone offset from user profile details     </td></tr>
+<tr><td>first_date     </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with ISO date from user profile details firstDate   </td></tr>
+<tr><td>start          </td><td>float </td><td>          </td><td>0.0      </td><td>[optional] float with starting datetime for daily summaries</td></tr>
+<tr><td>end            </td><td>float </td><td>          </td><td>0.0      </td><td>[optional] float with ending datetime for daily summaries  </td></tr>
+</tbody>
+</table></p>
+<h3 id="get_activities">get_activities</h3>
+<h5 id="_9"></h5>
+<p><strong>Signature:</strong><br />
+get_activities(self, timezone_offset, first_date, start=0.0, end=0.0)</p>
+<h5 id="_10"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve activity details for a period of time</p>
+<pre><code>    NOTE: start and end must be no more than 30 days, 1 second apart
+</code></pre>
+<p><table>
+<thead>
+<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                           </td></tr>
+<tr><td>timezone_offset</td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with timezone offset from user profile details     </td></tr>
+<tr><td>first_date     </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with ISO date from user profile details firstDate   </td></tr>
+<tr><td>start          </td><td>float </td><td>          </td><td>0.0      </td><td>[optional] float with starting datetime for daily summaries</td></tr>
+<tr><td>end            </td><td>float </td><td>          </td><td>0.0      </td><td>[optional] float with ending datetime for daily summaries  </td></tr>
+</tbody>
+</table></p>
+<h3 id="get_places">get_places</h3>
+<h5 id="_11"></h5>
+<p><strong>Signature:</strong><br />
+get_places(self, timezone_offset, first_date, start=0.0, end=0.0)</p>
+<h5 id="_12"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve place details for a period of time</p>
+<pre><code>    NOTE: start and end must be no more than 30 days, 1 second apart
+</code></pre>
+<p><table>
+<thead>
+<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                           </td></tr>
+<tr><td>timezone_offset</td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with timezone offset from user profile details     </td></tr>
+<tr><td>first_date     </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with ISO date from user profile details firstDate   </td></tr>
+<tr><td>start          </td><td>float </td><td>          </td><td>0.0      </td><td>[optional] float with starting datetime for daily summaries</td></tr>
+<tr><td>end            </td><td>float </td><td>          </td><td>0.0      </td><td>[optional] float with ending datetime for daily summaries  </td></tr>
+</tbody>
+</table></p>
+<h3 id="get_storyline">get_storyline</h3>
+<h5 id="_13"></h5>
+<p><strong>Signature:</strong><br />
+get_storyline(self, timezone_offset, first_date, start=0.0, end=0.0, track_points=False)</p>
+<h5 id="_14"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve storyline details for a period of time</p>
+<pre><code>    NOTE: start and end must be no more than 30 days, 1 second apart
+
+    NOTE: if track_points=True, start and end must be no more than 6 days, 1 second apart
+</code></pre>
+<p><table>
+<thead>
+<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                     </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                                </td></tr>
+<tr><td>timezone_offset</td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with timezone offset from user profile details          </td></tr>
+<tr><td>first_date     </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with ISO date from user profile details firstDate        </td></tr>
+<tr><td>start          </td><td>float </td><td>          </td><td>0.0      </td><td>[optional] float with starting datetime for daily summaries     </td></tr>
+<tr><td>end            </td><td>float </td><td>          </td><td>0.0      </td><td>[optional] float with ending datetime for daily summaries       </td></tr>
+<tr><td>track_points   </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to provide detailed tracking of user movement</td></tr>
+</tbody>
+</table></p>
+<h2 id="iamclient">iamClient</h2>
+<h3 id="import_1">Import:</h3>
+<p>labpack.authentication.aws.iam.iamClient  </p>
+<h3 id="description_1">Description:</h3>
+<p>a class of methods for interacting with the AWS Identity &amp; Access Management</p>
+<pre><code>    https://boto3.readthedocs.org/en/latest/
+</code></pre>
+<h3 id="95_init___1">__init__</h3>
+<h5 id="_15"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self, access_id, secret_key, region_name, owner_id, user_name, verbose=True)</p>
+<h5 id="_16"></h5>
+<p><strong>Description:</strong><br />
+a method for initializing the connection to AW IAM<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                          </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                     </td></tr>
+<tr><td>access_id  </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with access_key_id from aws IAM user setup    </td></tr>
+<tr><td>secret_key </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with secret_access_key from aws IAM user setup</td></tr>
+<tr><td>region_name</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of aws region                       </td></tr>
+<tr><td>owner_id   </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with aws account id                           </td></tr>
+<tr><td>user_name  </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of user access keys are assigned to </td></tr>
+<tr><td>verbose    </td><td>bool  </td><td>          </td><td>True     </td><td>boolean to enable process messages                   </td></tr>
+</tbody>
+</table></p>
+<h3 id="list_certificates">list_certificates</h3>
+<h5 id="_17"></h5>
+<p><strong>Signature:</strong><br />
+list_certificates(self)</p>
+<h5 id="_18"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve a list of server certificates  </p>
+<h3 id="read_certificate">read_certificate</h3>
+<h5 id="_19"></h5>
+<p><strong>Signature:</strong><br />
+read_certificate(self, certificate_name)</p>
+<h5 id="_20"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve the details about a server certificate<br />
+<table>
+<thead>
+<tr><th>Argument        </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                           </th></tr>
+</thead>
+<tbody>
+<tr><td>self            </td><td>object</td><td>Yes       </td><td>None     </td><td>                                      </td></tr>
+<tr><td>certificate_name</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of server certificate</td></tr>
+</tbody>
+</table></p>
+<h3 id="list_roles">list_roles</h3>
+<h5 id="_21"></h5>
+<p><strong>Signature:</strong><br />
+list_roles(self)</p>
+<h5 id="_22"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve a list of server certificates  </p>
+<h2 id="oauth2client">oauth2Client</h2>
+<h3 id="import_2">Import:</h3>
+<p>labpack.authentication.oauth2.oauth2Client  </p>
+<h3 id="description_2">Description:</h3>
+<p>the initialization method for oauth2 client class  </p>
+<h3 id="95_init___2">__init__</h3>
+<h5 id="_23"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self, client_id, client_secret, auth_endpoint, token_endpoint, redirect_uri, request_mimetype=&rdquo;&ldquo;, status_endpoint=&rdquo;&ldquo;, requests_handler=None, error_map=None)</p>
+<h5 id="_24"></h5>
+<p><strong>Description:</strong><br />
+the initialization method for oauth2 client class<br />
+<table>
+<thead>
+<tr><th>Argument        </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                                        </th></tr>
+</thead>
+<tbody>
+<tr><td>self            </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                                   </td></tr>
+<tr><td>client_id       </td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with client id registered for app with service              </td></tr>
+<tr><td>client_secret   </td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with client secret registered for app with service          </td></tr>
+<tr><td>auth_endpoint   </td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with service endpoint for authorization code requests       </td></tr>
+<tr><td>token_endpoint  </td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with service endpoint for token post requests               </td></tr>
+<tr><td>redirect_uri    </td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with url for redirect callback registered with service      </td></tr>
+<tr><td>request_mimetype</td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with mimetype for token post requests            </td></tr>
+<tr><td>status_endpoint </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with service endpoint to retrieve status of token</td></tr>
+<tr><td>requests_handler</td><td>function</td><td>          </td><td>None     </td><td>[optional] callable that handles requests errors                   </td></tr>
+<tr><td>error_map       </td><td>dict    </td><td>          </td><td>None     </td><td>[optional] dictionary with key value strings for service error msgs</td></tr>
+</tbody>
+</table></p>
+<h3 id="generate_url">generate_url</h3>
+<h5 id="_25"></h5>
+<p><strong>Signature:</strong><br />
+generate_url(self, service_scope=None, state_value=&rdquo;&ldquo;, additional_fields=None)</p>
+<h5 id="_26"></h5>
+<p><strong>Description:</strong><br />
+a method to generate an authorization url to oauth2 service for client<br />
+<table>
+<thead>
+<tr><th>Argument         </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                             </th></tr>
+</thead>
+<tbody>
+<tr><td>self             </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                        </td></tr>
+<tr><td>service_scope    </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list with scope of permissions for agent     </td></tr>
+<tr><td>state_value      </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with unique identifier for callback   </td></tr>
+<tr><td>additional_fields</td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary with key value strings for service</td></tr>
+</tbody>
+</table></p>
+<h3 id="get_token">get_token</h3>
+<h5 id="_27"></h5>
+<p><strong>Signature:</strong><br />
+get_token(self, auth_code)</p>
+<h5 id="_28"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve an access token from an oauth2 authorizing party<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                 </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                            </td></tr>
+<tr><td>auth_code </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with code provided by client redirect</td></tr>
+</tbody>
+</table></p>
+<h3 id="renew_token">renew_token</h3>
+<h5 id="_29"></h5>
+<p><strong>Signature:</strong><br />
+renew_token(self, refresh_token)</p>
+<h5 id="_30"></h5>
+<p><strong>Description:</strong><br />
+a method to renew an access token from an oauth2 authorizing party<br />
+<table>
+<thead>
+<tr><th>Argument     </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self         </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>refresh_token</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table></p>
+<h2 id="mailgunclient">mailgunClient</h2>
+<h3 id="import_3">Import:</h3>
+<p>labpack.email.mailgun.mailgunClient  </p>
+<h3 id="description_3">Description:</h3>
+<p>a class of methods for managing email with mailgun api  </p>
+<h3 id="95_init___3">__init__</h3>
+<h5 id="_31"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self, api_key, email_key, account_domain, usage_client=None, requests_handler=None)</p>
+<h5 id="_32"></h5>
+<p><strong>Description:</strong><br />
+initialization method for mailgun client class<br />
+<table>
+<thead>
+<tr><th>Argument        </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                        </th></tr>
+</thead>
+<tbody>
+<tr><td>self            </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                   </td></tr>
+<tr><td>api_key         </td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with api key provided by mailgun            </td></tr>
+<tr><td>email_key       </td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with email validation key provide by mailgun</td></tr>
+<tr><td>account_domain  </td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with domain from which to send email        </td></tr>
+<tr><td>usage_client    </td><td>function</td><td>          </td><td>None     </td><td>callable that records usage data                   </td></tr>
+<tr><td>requests_handler</td><td>function</td><td>          </td><td>None     </td><td>callable that handles requests errors              </td></tr>
+</tbody>
+</table></p>
+<h3 id="send_email">send_email</h3>
+<h5 id="_33"></h5>
+<p><strong>Signature:</strong><br />
+send_email(self, recipient_list, sender_email, sender_name, email_subject, content_text=&rdquo;&ldquo;, content_html=&rdquo;&ldquo;, tracking_tags=None, cc_list=None, bcc_list=None, delivery_time=0.0)</p>
+<h5 id="_34"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>recipient_list</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>sender_email  </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>sender_name   </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>email_subject </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>content_text  </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>content_html  </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>tracking_tags </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>cc_list       </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>bcc_list      </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>delivery_time </td><td>float   </td><td>          </td><td>0.0      </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h3 id="validate_email">validate_email</h3>
+<h5 id="_35"></h5>
+<p><strong>Signature:</strong><br />
+validate_email(self, email_address)</p>
+<h5 id="_36"></h5>
+<p><strong>Description:</strong><br />
+a method to validate an email address<br />
+<table>
+<thead>
+<tr><th>Argument     </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                          </th></tr>
+</thead>
+<tbody>
+<tr><td>self         </td><td>object</td><td>Yes       </td><td>None     </td><td>                                     </td></tr>
+<tr><td>email_address</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with email address to validate</td></tr>
+</tbody>
+</table></p>
+<h2 id="mandrillclient">mandrillClient</h2>
+<h3 id="import_4">Import:</h3>
+<p>labpack.email.mandrill.mandrillClient  </p>
+<h3 id="description_4">Description:</h3>
+<p>a class of methods for sending emails through the mandrill api  </p>
+<h3 id="95_init___4">__init__</h3>
+<h5 id="_37"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self, api_key, allow_fees=False, usage_client=None, requests_handler=None)</p>
+<h5 id="_38"></h5>
+<p><strong>Description:</strong><br />
+a method to initialize the mandrill client class<br />
+<table>
+<thead>
+<tr><th>Argument        </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                </th></tr>
+</thead>
+<tbody>
+<tr><td>self            </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                           </td></tr>
+<tr><td>api_key         </td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with api key generated by mandrill  </td></tr>
+<tr><td>allow_fees      </td><td>bool    </td><td>          </td><td>False    </td><td>[optional] boolean to allow additional fees</td></tr>
+<tr><td>usage_client    </td><td>function</td><td>          </td><td>None     </td><td>callable that records usage data           </td></tr>
+<tr><td>requests_handler</td><td>function</td><td>          </td><td>None     </td><td>callable that handles requests errors      </td></tr>
+</tbody>
+</table></p>
+<h3 id="send_email_1">send_email</h3>
+<h5 id="_39"></h5>
+<p><strong>Signature:</strong><br />
+send_email(self, recipient_list, sender_email, sender_name, email_subject, content_text=&rdquo;&ldquo;, content_html=&rdquo;&ldquo;, tracking_tags=None, cc_list=None, bcc_list=None, delivery_time=0.0)</p>
+<h5 id="_40"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>recipient_list</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>sender_email  </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>sender_name   </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>email_subject </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>content_text  </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>content_html  </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>tracking_tags </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>cc_list       </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>bcc_list      </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>delivery_time </td><td>float   </td><td>          </td><td>0.0      </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h2 id="meetupclient">meetupClient</h2>
+<h3 id="import_5">Import:</h3>
+<p>labpack.events.meetup.meetupClient  </p>
+<h3 id="description_5">Description:</h3>
+<p>a class of methods for managing user events, groups and profile on Meetup API  </p>
+<h3 id="95_init___5">__init__</h3>
+<h5 id="_41"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self, access_token, service_scope, usage_client=None, requests_handler=None)</p>
+<h5 id="_42"></h5>
+<p><strong>Description:</strong><br />
+initialization method for meetup client class<br />
+<table>
+<thead>
+<tr><th>Argument        </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                               </th></tr>
+</thead>
+<tbody>
+<tr><td>self            </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                          </td></tr>
+<tr><td>access_token    </td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with access token for user provided by meetup oauth</td></tr>
+<tr><td>service_scope   </td><td>dict    </td><td>Yes       </td><td>None     </td><td>dictionary with service type permissions                  </td></tr>
+<tr><td>usage_client    </td><td>function</td><td>          </td><td>None     </td><td>[optional] callable that records usage data               </td></tr>
+<tr><td>requests_handler</td><td>function</td><td>          </td><td>None     </td><td>[optional] callable that handles requests errors          </td></tr>
+</tbody>
+</table></p>
+<h3 id="get_member_brief">get_member_brief</h3>
+<h5 id="_43"></h5>
+<p><strong>Signature:</strong><br />
+get_member_brief(self, member_id=0)</p>
+<h5 id="_44"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve member profile info<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                          </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                     </td></tr>
+<tr><td>member_id </td><td>int   </td><td>          </td><td>0        </td><td>[optional] integer with member id from member profile</td></tr>
+</tbody>
+</table></p>
+<h3 id="get_member_profile">get_member_profile</h3>
+<h5 id="_45"></h5>
+<p><strong>Signature:</strong><br />
+get_member_profile(self, member_id)</p>
+<h5 id="_46"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve member profile details<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                               </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                          </td></tr>
+<tr><td>member_id </td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with member id from member profile</td></tr>
+</tbody>
+</table></p>
+<h3 id="update_member_profile">update_member_profile</h3>
+<h5 id="_47"></h5>
+<p><strong>Signature:</strong><br />
+update_member_profile(self, brief_details, profile_details)</p>
+<h5 id="_48"></h5>
+<p><strong>Description:</strong><br />
+a method to update user profile details on meetup<br />
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                               </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                          </td></tr>
+<tr><td>brief_details  </td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with member brief details with updated values  </td></tr>
+<tr><td>profile_details</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with member profile details with updated values</td></tr>
+</tbody>
+</table></p>
+<h3 id="list_member_topics">list_member_topics</h3>
+<h5 id="_49"></h5>
+<p><strong>Signature:</strong><br />
+list_member_topics(self, member_id)</p>
+<h5 id="_50"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve a list of topics member follows<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                             </td></tr>
+<tr><td>member_id </td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with meetup member id</td></tr>
+</tbody>
+</table></p>
+<h3 id="list_member_groups">list_member_groups</h3>
+<h5 id="_51"></h5>
+<p><strong>Signature:</strong><br />
+list_member_groups(self, member_id)</p>
+<h5 id="_52"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve a list of meetup groups member belongs to<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                             </td></tr>
+<tr><td>member_id </td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with meetup member id</td></tr>
+</tbody>
+</table></p>
+<h3 id="list_member_events">list_member_events</h3>
+<h5 id="_53"></h5>
+<p><strong>Signature:</strong><br />
+list_member_events(self, upcoming=True)</p>
+<h5 id="_54"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve a list of events member attended or will attend<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                            </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                       </td></tr>
+<tr><td>upcoming  </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to filter list to only future events</td></tr>
+</tbody>
+</table></p>
+<h3 id="get_member_calendar">get_member_calendar</h3>
+<h5 id="_55"></h5>
+<p><strong>Signature:</strong><br />
+get_member_calendar(self, max_results=0)</p>
+<h5 id="_56"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve the upcoming events for all groups member belongs to<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                        </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                   </td></tr>
+<tr><td>max_results</td><td>int   </td><td>          </td><td>0        </td><td>[optional] integer with number of events to include</td></tr>
+</tbody>
+</table></p>
+<h3 id="list_groups">list_groups</h3>
+<h5 id="_57"></h5>
+<p><strong>Signature:</strong><br />
+list_groups(self, topics=None, categories=None, text=&rdquo;&ldquo;, country_code=&rdquo;&ldquo;, latitude=0.0, longitude=0.0, location=&rdquo;&ldquo;, radius=0.0, zip_code=&rdquo;&ldquo;, max_results=0, member_groups=True)</p>
+<h5 id="_58"></h5>
+<p><strong>Description:</strong><br />
+a method to find meetup groups based upon a number of filters<br />
+<table>
+<thead>
+<tr><th>Argument     </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                                       </th></tr>
+</thead>
+<tbody>
+<tr><td>self         </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                                  </td></tr>
+<tr><td>topics       </td><td>list    </td><td>          </td><td>None     </td><td>[optional] list of integer meetup ids for topics                  </td></tr>
+<tr><td>categories   </td><td>NoneType</td><td>          </td><td>None     </td><td>                                                                  </td></tr>
+<tr><td>text         </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with words in groups to search                  </td></tr>
+<tr><td>country_code </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with two character country code                 </td></tr>
+<tr><td>latitude     </td><td>float   </td><td>          </td><td>0.0      </td><td>[optional] float with latitude coordinate at center of geo search </td></tr>
+<tr><td>longitude    </td><td>float   </td><td>          </td><td>0.0      </td><td>[optional] float with longitude coordinate at center of geo search</td></tr>
+<tr><td>location     </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with meetup location name fields to search      </td></tr>
+<tr><td>radius       </td><td>float   </td><td>          </td><td>0.0      </td><td>[optional] float with distance from center of geographic search   </td></tr>
+<tr><td>zip_code     </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with zip code of geographic search              </td></tr>
+<tr><td>max_results  </td><td>int     </td><td>          </td><td>0        </td><td>[optional] integer with number of groups to include               </td></tr>
+<tr><td>member_groups</td><td>bool    </td><td>          </td><td>True     </td><td>[optional] boolean to include groups member belongs to            </td></tr>
+</tbody>
+</table></p>
+<h3 id="get_group_details">get_group_details</h3>
+<h5 id="_59"></h5>
+<p><strong>Signature:</strong><br />
+get_group_details(self, group_url=&rdquo;&ldquo;, group_id=0)</p>
+<h5 id="_60"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve details about a meetup group<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                        </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                   </td></tr>
+<tr><td>group_url </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>string with meetup urlname of group</td></tr>
+<tr><td>group_id  </td><td>int   </td><td>          </td><td>0        </td><td>int with meetup id for group       </td></tr>
+</tbody>
+</table></p>
+<h3 id="list_group_events">list_group_events</h3>
+<h5 id="_61"></h5>
+<p><strong>Signature:</strong><br />
+list_group_events(self, group_url, upcoming=True)</p>
+<h5 id="_62"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve a list of upcoming events hosted by group<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                            </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                       </td></tr>
+<tr><td>group_url </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with meetup urlname field of group              </td></tr>
+<tr><td>upcoming  </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to filter list to only future events</td></tr>
+</tbody>
+</table></p>
+<h3 id="list_group_members">list_group_members</h3>
+<h5 id="_63"></h5>
+<p><strong>Signature:</strong><br />
+list_group_members(self, group_url, max_results=0)</p>
+<h5 id="_64"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve a list of members for a meetup group<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                         </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                    </td></tr>
+<tr><td>group_url  </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with meetup urlname for group                </td></tr>
+<tr><td>max_results</td><td>int   </td><td>          </td><td>0        </td><td>[optional] integer with number of members to include</td></tr>
+</tbody>
+</table></p>
+<h3 id="get_event_details">get_event_details</h3>
+<h5 id="_65"></h5>
+<p><strong>Signature:</strong><br />
+get_event_details(self, group_url, event_id)</p>
+<h5 id="_66"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve details for an event<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                              </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                         </td></tr>
+<tr><td>group_url </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with meetup urlname for host group</td></tr>
+<tr><td>event_id  </td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with meetup id for event         </td></tr>
+</tbody>
+</table></p>
+<h3 id="list_event_attendees">list_event_attendees</h3>
+<h5 id="_67"></h5>
+<p><strong>Signature:</strong><br />
+list_event_attendees(self, group_url, event_id)</p>
+<h5 id="_68"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve attendee list for event from meetup api<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                              </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                         </td></tr>
+<tr><td>group_url </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with meetup urlname for host group</td></tr>
+<tr><td>event_id  </td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with meetup id for event         </td></tr>
+</tbody>
+</table></p>
+<h3 id="get_venue_details">get_venue_details</h3>
+<h5 id="_69"></h5>
+<p><strong>Signature:</strong><br />
+get_venue_details(self, venue_id)</p>
+<h5 id="_70"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve venue details from meetup api<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                    </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                               </td></tr>
+<tr><td>venue_id  </td><td>int   </td><td>Yes       </td><td>0        </td><td>integer for meetup id for venue</td></tr>
+</tbody>
+</table></p>
+<h3 id="list_locations">list_locations</h3>
+<h5 id="_71"></h5>
+<p><strong>Signature:</strong><br />
+list_locations(self, latitude=0.0, longitude=0.0, zip_code=&rdquo;&ldquo;, city_name=&rdquo;&ldquo;, max_results=0)</p>
+<h5 id="_72"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve location address details based upon search parameters<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                       </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                                  </td></tr>
+<tr><td>latitude   </td><td>float </td><td>          </td><td>0.0      </td><td>[optional] float with latitude coordinate at center of geo search </td></tr>
+<tr><td>longitude  </td><td>float </td><td>          </td><td>0.0      </td><td>[optional] float with longitude coordinate at center of geo search</td></tr>
+<tr><td>zip_code   </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with zip code of geographic search              </td></tr>
+<tr><td>city_name  </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with name of city for search                    </td></tr>
+<tr><td>max_results</td><td>int   </td><td>          </td><td>0        </td><td>[optional] integer with number of groups to include               </td></tr>
+</tbody>
+</table></p>
+<h3 id="join_group">join_group</h3>
+<h5 id="_73"></h5>
+<p><strong>Signature:</strong><br />
+join_group(self, group_url, membership_answers=None)</p>
+<h5 id="_74"></h5>
+<p><strong>Description:</strong><br />
+a method to add member to a meetup group<br />
+<table>
+<thead>
+<tr><th>Argument          </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                              </th></tr>
+</thead>
+<tbody>
+<tr><td>self              </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                         </td></tr>
+<tr><td>group_url         </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with meetup urlname for group                     </td></tr>
+<tr><td>membership_answers</td><td>list  </td><td>          </td><td>None     </td><td>list with question id and answer for group join questions</td></tr>
+</tbody>
+</table></p>
+<h3 id="leave_group">leave_group</h3>
+<h5 id="_75"></h5>
+<p><strong>Signature:</strong><br />
+leave_group(self, group_url, member_id, exit_comment=&rdquo;&ldquo;)</p>
+<h5 id="_76"></h5>
+<p><strong>Description:</strong><br />
+a method to remove group from meetup member profile<br />
+<table>
+<thead>
+<tr><th>Argument    </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                </th></tr>
+</thead>
+<tbody>
+<tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>                                           </td></tr>
+<tr><td>group_url   </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with meetup urlname for group       </td></tr>
+<tr><td>member_id   </td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with member id from member profile </td></tr>
+<tr><td>exit_comment</td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>string with comment to leave with organizer</td></tr>
+</tbody>
+</table></p>
+<h3 id="join_topics">join_topics</h3>
+<h5 id="_77"></h5>
+<p><strong>Signature:</strong><br />
+join_topics(self, member_id, topics)</p>
+<h5 id="_78"></h5>
+<p><strong>Description:</strong><br />
+a method to add topics to member profile details on meetup<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                               </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                          </td></tr>
+<tr><td>member_id </td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with member id from member profile</td></tr>
+<tr><td>topics    </td><td>list  </td><td>Yes       </td><td>None     </td><td>list of integer meetup ids for topics     </td></tr>
+</tbody>
+</table></p>
+<h3 id="leave_topics">leave_topics</h3>
+<h5 id="_79"></h5>
+<p><strong>Signature:</strong><br />
+leave_topics(self, member_id, topics)</p>
+<h5 id="_80"></h5>
+<p><strong>Description:</strong><br />
+a method to remove topics from member profile details on meetup<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                               </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                          </td></tr>
+<tr><td>member_id </td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with member id from member profile</td></tr>
+<tr><td>topics    </td><td>list  </td><td>Yes       </td><td>None     </td><td>list of integer meetup ids for topics     </td></tr>
+</tbody>
+</table></p>
+<h3 id="join_event">join_event</h3>
+<h5 id="_81"></h5>
+<p><strong>Signature:</strong><br />
+join_event(self, group_url, event_id, additional_guests=0, attendance_answers=None, payment_service=&rdquo;&ldquo;, payment_code=&rdquo;&ldquo;)</p>
+<h5 id="_82"></h5>
+<p><strong>Description:</strong><br />
+a method to create an rsvp for a meetup event<br />
+<table>
+<thead>
+<tr><th>Argument          </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                </th></tr>
+</thead>
+<tbody>
+<tr><td>self              </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                           </td></tr>
+<tr><td>group_url         </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with meetup urlname for group                       </td></tr>
+<tr><td>event_id          </td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with meetup id for event                           </td></tr>
+<tr><td>additional_guests </td><td>int   </td><td>          </td><td>0        </td><td>[optional] integer with number of additional guests        </td></tr>
+<tr><td>attendance_answers</td><td>list  </td><td>          </td><td>None     </td><td>[optional] list with id &amp; answer for event survey questions</td></tr>
+<tr><td>payment_service   </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with name of payment service to use      </td></tr>
+<tr><td>payment_code      </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with token to authorize payment          </td></tr>
+</tbody>
+</table></p>
+<h3 id="leave_event">leave_event</h3>
+<h5 id="_83"></h5>
+<p><strong>Signature:</strong><br />
+leave_event(self, group_url, event_id)</p>
+<h5 id="_84"></h5>
+<p><strong>Description:</strong><br />
+a method to rescind an rsvp to a meetup event<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                         </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                    </td></tr>
+<tr><td>group_url </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with meetup urlname for group</td></tr>
+<tr><td>event_id  </td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with meetup id for event    </td></tr>
+</tbody>
+</table></p>
+<h2 id="telegrambotclient">telegramBotClient</h2>
+<h3 id="import_6">Import:</h3>
+<p>labpack.messaging.telegram.telegramBotClient  </p>
+<h3 id="description_6">Description:</h3>
+<p>a class of methods for interacting with telegram bot api  </p>
+<h3 id="95_init___6">__init__</h3>
+<h5 id="_85"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self, bot_id, access_token, requests_handler=None)</p>
+<h5 id="_86"></h5>
+<p><strong>Description:</strong><br />
+initialization method for moves client class<br />
+<table>
+<thead>
+<tr><th>Argument        </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                                    </th></tr>
+</thead>
+<tbody>
+<tr><td>self            </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
+<tr><td>bot_id          </td><td>int     </td><td>Yes       </td><td>0        </td><td>integer with telegram id number for bot                        </td></tr>
+<tr><td>access_token    </td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with access token for bot provided by telegram botfather</td></tr>
+<tr><td>requests_handler</td><td>function</td><td>          </td><td>None     </td><td>callable that handles requests errors                          </td></tr>
+</tbody>
+</table></p>
+<h3 id="get_me">get_me</h3>
+<h5 id="_87"></h5>
+<p><strong>Signature:</strong><br />
+get_me(self)</p>
+<h5 id="_88"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve details about the bot from telegram api  </p>
+<h3 id="get_updates">get_updates</h3>
+<h5 id="_89"></h5>
+<p><strong>Signature:</strong><br />
+get_updates(self, last_update=0)</p>
+<h5 id="_90"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve messages for bot from telegram api<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                    </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                               </td></tr>
+<tr><td>last_update</td><td>int   </td><td>          </td><td>0        </td><td>integer with update id of last message received</td></tr>
+</tbody>
+</table></p>
+<h3 id="get_route">get_route</h3>
+<h5 id="_91"></h5>
+<p><strong>Signature:</strong><br />
+get_route(self, file_id)</p>
+<h5 id="_92"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve route information for file on telegram api<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                    </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                               </td></tr>
+<tr><td>file_id   </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with id of file in a message send to bot</td></tr>
+</tbody>
+</table></p>
+<h3 id="get_file">get_file</h3>
+<h5 id="_93"></h5>
+<p><strong>Signature:</strong><br />
+get_file(self, file_route, file_name=&rdquo;&ldquo;)</p>
+<h5 id="_94"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve data for a file housed on telegram api<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                       </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                  </td></tr>
+<tr><td>file_route</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with route to file endpoint on telegram api</td></tr>
+<tr><td>file_name </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>                                                  </td></tr>
+</tbody>
+</table></p>
+<h3 id="send_message">send_message</h3>
+<h5 id="_95"></h5>
+<p><strong>Signature:</strong><br />
+send_message(self, user_id, message_text, message_style=&rdquo;&ldquo;, button_list=None, small_buttons=True, persist_buttons=False)</p>
+<h5 id="_96"></h5>
+<p><strong>Description:</strong><br />
+a method to send a message using telegram api<br />
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                   </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                              </td></tr>
+<tr><td>user_id        </td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with id of telegram user                              </td></tr>
+<tr><td>message_text   </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with message to user                                   </td></tr>
+<tr><td>message_style  </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with style to apply to text, only &lsquo;markdown&rsquo;</td></tr>
+<tr><td>button_list    </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of string to include as buttons in message    </td></tr>
+<tr><td>small_buttons  </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to resize buttons to single line           </td></tr>
+<tr><td>persist_buttons</td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to keep buttons around after exiting       </td></tr>
+</tbody>
+</table></p>
+<h3 id="send_photo">send_photo</h3>
+<h5 id="_97"></h5>
+<p><strong>Signature:</strong><br />
+send_photo(self, user_id, photo_id=&rdquo;&ldquo;, photo_path=&rdquo;&ldquo;, photo_url=&rdquo;&ldquo;, caption_text=&rdquo;&ldquo;, button_list=None, small_buttons=True, persist_buttons=False)</p>
+<h5 id="_98"></h5>
+<p><strong>Description:</strong><br />
+a method to send a photo using telegram api<br />
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                               </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                          </td></tr>
+<tr><td>user_id        </td><td>int     </td><td>Yes       </td><td>0        </td><td>integer with id of telegram user                          </td></tr>
+<tr><td>photo_id       </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with id of file stored with telegram api</td></tr>
+<tr><td>photo_path     </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with local path to file                 </td></tr>
+<tr><td>photo_url      </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with url of file                        </td></tr>
+<tr><td>caption_text   </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with caption to add to photo            </td></tr>
+<tr><td>button_list    </td><td>NoneType</td><td>          </td><td>None     </td><td>                                                          </td></tr>
+<tr><td>small_buttons  </td><td>bool    </td><td>          </td><td>True     </td><td>                                                          </td></tr>
+<tr><td>persist_buttons</td><td>bool    </td><td>          </td><td>False    </td><td>                                                          </td></tr>
+</tbody>
+</table></p>
+<h3 id="send_voice">send_voice</h3>
+<h5 id="_99"></h5>
+<p><strong>Signature:</strong><br />
+send_voice(self, user_id, voice_id=&rdquo;&ldquo;, voice_path=&rdquo;&ldquo;, voice_url=&rdquo;&ldquo;, caption_text=&rdquo;&ldquo;, button_list=None, small_buttons=True, persist_buttons=False)</p>
+<h5 id="_100"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>user_id        </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>voice_id       </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>voice_path     </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>voice_url      </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>caption_text   </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>button_list    </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>small_buttons  </td><td>bool    </td><td>          </td><td>True     </td><td>             </td></tr>
+<tr><td>persist_buttons</td><td>bool    </td><td>          </td><td>False    </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h2 id="twilioclient">twilioClient</h2>
+<h3 id="import_7">Import:</h3>
+<p>labpack.messaging.twilio.twilioClient  </p>
+<h3 id="description_7">Description:</h3>
+<p>send an SMS from the Twilio account to phone number  </p>
+<h3 id="95_init___7">__init__</h3>
+<h5 id="_101"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self, account_sid, auth_token, twilio_phone)</p>
+<h5 id="_102"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument    </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self        </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>account_sid </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>auth_token  </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>twilio_phone</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h3 id="send_message_1">send_message</h3>
+<h5 id="_103"></h5>
+<p><strong>Signature:</strong><br />
+send_message(self, phone_number, message_text)</p>
+<h5 id="_104"></h5>
+<p><strong>Description:</strong><br />
+send an SMS from the Twilio account to phone number<br />
+<table>
+<thead>
+<tr><th>Argument    </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                        </th></tr>
+</thead>
+<tbody>
+<tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                   </td></tr>
+<tr><td>phone_number</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with phone number with country and area code</td></tr>
+<tr><td>message_text</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with message text                           </td></tr>
+</tbody>
+</table></p>
+<h2 id="apschedulerclient">apschedulerClient</h2>
+<h3 id="import_8">Import:</h3>
+<p>labpack.platforms.apscheduler.apschedulerClient  </p>
+<h3 id="description_8">Description:</h3>
+<p>initialization method for apschedulerClient class  </p>
+<h3 id="95_init___8">__init__</h3>
+<h5 id="_105"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self, scheduler_url, requests_handler=None)</p>
+<h5 id="_106"></h5>
+<p><strong>Description:</strong><br />
+initialization method for apschedulerClient class<br />
+<table>
+<thead>
+<tr><th>Argument        </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                     </th></tr>
+</thead>
+<tbody>
+<tr><td>self            </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                </td></tr>
+<tr><td>scheduler_url   </td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with url of scheduler service            </td></tr>
+<tr><td>requests_handler</td><td>function</td><td>          </td><td>None     </td><td>[optional] callable for handling requests errors</td></tr>
+</tbody>
+</table></p>
+<h3 id="get_info">get_info</h3>
+<h5 id="_107"></h5>
+<p><strong>Signature:</strong><br />
+get_info(self)</p>
+<h5 id="_108"></h5>
+<p><strong>Description:</strong>  </p>
+<h3 id="list_jobs">list_jobs</h3>
+<h5 id="_109"></h5>
+<p><strong>Signature:</strong><br />
+list_jobs(self, argument_filters=None)</p>
+<h5 id="_110"></h5>
+<p><strong>Description:</strong><br />
+a method to list jobs in the scheduler<br />
+<table>
+<thead>
+<tr><th>Argument        </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                </th></tr>
+</thead>
+<tbody>
+<tr><td>self            </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                           </td></tr>
+<tr><td>argument_filters</td><td>list  </td><td>          </td><td>None     </td><td>list of query criteria dictionaries for class argument keys</td></tr>
+</tbody>
+</table></p>
+<h3 id="add_date_job">add_date_job</h3>
+<h5 id="_111"></h5>
+<p><strong>Signature:</strong><br />
+add_date_job(self, id, function, args=None, kwargs=None, dt=0.0, name=&rdquo;&ldquo;)</p>
+<h5 id="_112"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>id        </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>function  </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>args      </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>kwargs    </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>dt        </td><td>float   </td><td>          </td><td>0.0      </td><td>             </td></tr>
+<tr><td>name      </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h3 id="add_interval_job">add_interval_job</h3>
+<h5 id="_113"></h5>
+<p><strong>Signature:</strong><br />
+add_interval_job(self, id, function, interval, args=None, kwargs=None, start=0.0, end=0.0, name=&rdquo;&ldquo;)</p>
+<h5 id="_114"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>id        </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>function  </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>interval  </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>args      </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>kwargs    </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>start     </td><td>float   </td><td>          </td><td>0.0      </td><td>             </td></tr>
+<tr><td>end       </td><td>float   </td><td>          </td><td>0.0      </td><td>             </td></tr>
+<tr><td>name      </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h3 id="add_cron_job">add_cron_job</h3>
+<h5 id="_115"></h5>
+<p><strong>Signature:</strong><br />
+add_cron_job(self, id, function, month=None, day=None, weekday=None, hour=None, minute=None, second=None, args=None, kwargs=None, start=0.0, end=0.0, name=&rdquo;&ldquo;)</p>
+<h5 id="_116"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>id        </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>function  </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>month     </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>day       </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>weekday   </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>hour      </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>minute    </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>second    </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>args      </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>kwargs    </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>start     </td><td>float   </td><td>          </td><td>0.0      </td><td>             </td></tr>
+<tr><td>end       </td><td>float   </td><td>          </td><td>0.0      </td><td>             </td></tr>
+<tr><td>name      </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h3 id="delete_job">delete_job</h3>
+<h5 id="_117"></h5>
+<p><strong>Signature:</strong><br />
+delete_job(self, id)</p>
+<h5 id="_118"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>id        </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h2 id="ec2client">ec2Client</h2>
+<h3 id="import_9">Import:</h3>
+<p>labpack.platforms.aws.ec2.ec2Client  </p>
+<h3 id="description_9">Description:</h3>
+<p>a class of methods for interacting with AWS Elastic Computing Cloud</p>
+<pre><code>    https://boto3.readthedocs.org/en/latest/
+</code></pre>
+<h3 id="95_init___9">__init__</h3>
+<h5 id="_119"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self, access_id, secret_key, region_name, owner_id, user_name, verbose=True)</p>
+<h5 id="_120"></h5>
+<p><strong>Description:</strong><br />
+a method for initializing the connection to EC2<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                          </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                     </td></tr>
+<tr><td>access_id  </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with access_key_id from aws IAM user setup    </td></tr>
+<tr><td>secret_key </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with secret_access_key from aws IAM user setup</td></tr>
+<tr><td>region_name</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of aws region                       </td></tr>
+<tr><td>owner_id   </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with aws account id                           </td></tr>
+<tr><td>user_name  </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of user access keys are assigned to </td></tr>
+<tr><td>verbose    </td><td>bool  </td><td>          </td><td>True     </td><td>boolean to enable process messages                   </td></tr>
+</tbody>
+</table></p>
+<h3 id="check_instance_state">check_instance_state</h3>
+<h5 id="_121"></h5>
+<p><strong>Signature:</strong><br />
+check_instance_state(self, instance_id, wait=True)</p>
+<h5 id="_122"></h5>
+<p><strong>Description:</strong><br />
+method for checking the state of an instance on AWS EC2<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                          </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                     </td></tr>
+<tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with AWS id of instance                       </td></tr>
+<tr><td>wait       </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to wait for instance while pending</td></tr>
+</tbody>
+</table></p>
+<h3 id="check_instance_status">check_instance_status</h3>
+<h5 id="_123"></h5>
+<p><strong>Signature:</strong><br />
+check_instance_status(self, instance_id, wait=True)</p>
+<h5 id="_124"></h5>
+<p><strong>Description:</strong><br />
+a method to wait until AWS instance reports an OK status<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                               </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                          </td></tr>
+<tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string of instance id on AWS                              </td></tr>
+<tr><td>wait       </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to wait for instance while initializing</td></tr>
+</tbody>
+</table></p>
+<h3 id="list_instances">list_instances</h3>
+<h5 id="_125"></h5>
+<p><strong>Signature:</strong><br />
+list_instances(self, tag_values=None)</p>
+<h5 id="_126"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve the list of instances on AWS EC2<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                             </td></tr>
+<tr><td>tag_values</td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of tag values</td></tr>
+</tbody>
+</table></p>
+<h3 id="read_instance">read_instance</h3>
+<h5 id="_127"></h5>
+<p><strong>Signature:</strong><br />
+read_instance(self, instance_id)</p>
+<h5 id="_128"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieving the details of a single instances on AWS EC2<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                 </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                            </td></tr>
+<tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string of instance id on AWS</td></tr>
+</tbody>
+</table></p>
+<h3 id="tag_instance">tag_instance</h3>
+<h5 id="_129"></h5>
+<p><strong>Signature:</strong><br />
+tag_instance(self, instance_id, tag_list)</p>
+<h5 id="_130"></h5>
+<p><strong>Description:</strong><br />
+a method for adding or updating tags on an AWS instance<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                   </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                              </td></tr>
+<tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string of instance id on AWS  </td></tr>
+<tr><td>tag_list   </td><td>list  </td><td>Yes       </td><td>None     </td><td>list of single key-value pairs</td></tr>
+</tbody>
+</table></p>
+<h3 id="create_instance">create_instance</h3>
+<h5 id="_131"></h5>
+<p><strong>Signature:</strong><br />
+create_instance(self, image_id, pem_file, group_ids, instance_type, volume_type=&rdquo;gp2&rdquo;, ebs_optimized=False, instance_monitoring=False, iam_profile=&rdquo;&ldquo;, tag_list=None, auction_bid=0.0)</p>
+<h5 id="_132"></h5>
+<p><strong>Description:</strong><br />
+a method for starting an instance on AWS EC2<br />
+<table>
+<thead>
+<tr><th>Argument           </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                 </th></tr>
+</thead>
+<tbody>
+<tr><td>self               </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                            </td></tr>
+<tr><td>image_id           </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with aws id of image for instance                    </td></tr>
+<tr><td>pem_file           </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with path to pem file to access image                </td></tr>
+<tr><td>group_ids          </td><td>list  </td><td>Yes       </td><td>None     </td><td>list with aws id of security group(s) to attach to instance </td></tr>
+<tr><td>instance_type      </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with type of instance resource to use                </td></tr>
+<tr><td>volume_type        </td><td>str   </td><td>          </td><td>&ldquo;gp2&rdquo;    </td><td>string with type of on-disk storage                         </td></tr>
+<tr><td>ebs_optimized      </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to activate ebs optimization             </td></tr>
+<tr><td>instance_monitoring</td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to active instance monitoring            </td></tr>
+<tr><td>iam_profile        </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with name of iam instance profile role    </td></tr>
+<tr><td>tag_list           </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of single key-pair tags for instance        </td></tr>
+<tr><td>auction_bid        </td><td>float </td><td>          </td><td>0.0      </td><td>[optional] float with dollar amount to bid for instance hour</td></tr>
+</tbody>
+</table></p>
+<h3 id="delete_instance">delete_instance</h3>
+<h5 id="_133"></h5>
+<p><strong>Signature:</strong><br />
+delete_instance(self, instance_id)</p>
+<h5 id="_134"></h5>
+<p><strong>Description:</strong><br />
+method for removing an instance from AWS EC2<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                 </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                            </td></tr>
+<tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string of instance id on AWS</td></tr>
+</tbody>
+</table></p>
+<h3 id="check_image_state">check_image_state</h3>
+<h5 id="_135"></h5>
+<p><strong>Signature:</strong><br />
+check_image_state(self, image_id, wait=True)</p>
+<h5 id="_136"></h5>
+<p><strong>Description:</strong><br />
+method for checking the state of an image on AWS EC2<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                       </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                  </td></tr>
+<tr><td>image_id  </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with AWS id of image                       </td></tr>
+<tr><td>wait      </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to wait for image while pending</td></tr>
+</tbody>
+</table></p>
+<h3 id="list_images">list_images</h3>
+<h5 id="_137"></h5>
+<p><strong>Signature:</strong><br />
+list_images(self, tag_values=None)</p>
+<h5 id="_138"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve the list of images of account on AWS EC2<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                             </td></tr>
+<tr><td>tag_values</td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of tag values</td></tr>
+</tbody>
+</table></p>
+<h3 id="read_image">read_image</h3>
+<h5 id="_139"></h5>
+<p><strong>Signature:</strong><br />
+read_image(self, image_id)</p>
+<h5 id="_140"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve the details of a single image on AWS EC2<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                           </td></tr>
+<tr><td>image_id  </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with AWS id of image</td></tr>
+</tbody>
+</table></p>
+<h3 id="tag_image">tag_image</h3>
+<h5 id="_141"></h5>
+<p><strong>Signature:</strong><br />
+tag_image(self, image_id, tag_list)</p>
+<h5 id="_142"></h5>
+<p><strong>Description:</strong><br />
+a method for adding or updating tags on an AWS instance<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                    </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                               </td></tr>
+<tr><td>image_id  </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with AWS id of instance </td></tr>
+<tr><td>tag_list  </td><td>list  </td><td>Yes       </td><td>None     </td><td>list of tags to add to instance</td></tr>
+</tbody>
+</table></p>
+<h3 id="create_image">create_image</h3>
+<h5 id="_143"></h5>
+<p><strong>Signature:</strong><br />
+create_image(self, instance_id, image_name, tag_list=None)</p>
+<h5 id="_144"></h5>
+<p><strong>Description:</strong><br />
+method for imaging an instance on AWS EC2<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                      </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                 </td></tr>
+<tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with AWS id of running instance           </td></tr>
+<tr><td>image_name </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name to give new image               </td></tr>
+<tr><td>tag_list   </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of resources tags to add to image</td></tr>
+</tbody>
+</table></p>
+<h3 id="delete_image">delete_image</h3>
+<h5 id="_145"></h5>
+<p><strong>Signature:</strong><br />
+delete_image(self, image_id)</p>
+<h5 id="_146"></h5>
+<p><strong>Description:</strong><br />
+method for removing an image from AWS EC2<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                   </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                              </td></tr>
+<tr><td>image_id  </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with AWS id of instance</td></tr>
+</tbody>
+</table></p>
+<h3 id="import_image">import_image</h3>
+<h5 id="_147"></h5>
+<p><strong>Signature:</strong><br />
+import_image(self, image_id, region_name)</p>
+<h5 id="_148"></h5>
+<p><strong>Description:</strong><br />
+a method to import an image from another AWS region</p>
+<pre><code>        https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/CopyingAMIs.html
+
+        REQUIRED: aws credentials must have valid access to both regions
+</code></pre>
+<p><table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                           </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                      </td></tr>
+<tr><td>image_id   </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with AWS id of source image    </td></tr>
+<tr><td>region_name</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with AWS region of source image</td></tr>
+</tbody>
+</table></p>
+<h3 id="export_image">export_image</h3>
+<h5 id="_149"></h5>
+<p><strong>Signature:</strong><br />
+export_image(self, image_id, region_name)</p>
+<h5 id="_150"></h5>
+<p><strong>Description:</strong><br />
+a method to add a copy of an image to another AWS region</p>
+<pre><code>        https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/CopyingAMIs.html
+
+        REQUIRED: iam credentials must have valid access to both regions
+</code></pre>
+<p><table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                           </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                      </td></tr>
+<tr><td>image_id   </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string of AWS id of image to be copied</td></tr>
+<tr><td>region_name</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string of AWS region to copy image to </td></tr>
+</tbody>
+</table></p>
+<h3 id="list_keypairs">list_keypairs</h3>
+<h5 id="_151"></h5>
+<p><strong>Signature:</strong><br />
+list_keypairs(self)</p>
+<h5 id="_152"></h5>
+<p><strong>Description:</strong><br />
+a method to discover the list of key pairs on AWS  </p>
+<h3 id="list_subnets">list_subnets</h3>
+<h5 id="_153"></h5>
+<p><strong>Signature:</strong><br />
+list_subnets(self, tag_values=None)</p>
+<h5 id="_154"></h5>
+<p><strong>Description:</strong><br />
+a method to discover the list of subnets on AWS EC2<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                             </td></tr>
+<tr><td>tag_values</td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of tag values</td></tr>
+</tbody>
+</table></p>
+<h3 id="read_subnet">read_subnet</h3>
+<h5 id="_155"></h5>
+<p><strong>Signature:</strong><br />
+read_subnet(self, subnet_id)</p>
+<h5 id="_156"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve the details about a subnet<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                 </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                            </td></tr>
+<tr><td>subnet_id </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with AWS id of subnet</td></tr>
+</tbody>
+</table></p>
+<h3 id="list_security_groups">list_security_groups</h3>
+<h5 id="_157"></h5>
+<p><strong>Signature:</strong><br />
+list_security_groups(self, tag_values=None)</p>
+<h5 id="_158"></h5>
+<p><strong>Description:</strong><br />
+a method to discover the list of security groups on AWS EC2<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                             </td></tr>
+<tr><td>tag_values</td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of tag values</td></tr>
+</tbody>
+</table></p>
+<h3 id="read_security_group">read_security_group</h3>
+<h5 id="_159"></h5>
+<p><strong>Signature:</strong><br />
+read_security_group(self, group_id)</p>
+<h5 id="_160"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve the details about a security group<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                         </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                    </td></tr>
+<tr><td>group_id  </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with AWS id of security group</td></tr>
+</tbody>
+</table></p>
+<h3 id="cleanup">cleanup</h3>
+<h5 id="_161"></h5>
+<p><strong>Signature:</strong><br />
+cleanup(self)</p>
+<h5 id="_162"></h5>
+<p><strong>Description:</strong><br />
+a method for removing instances and images in unusual states  </p>
+<h2 id="sshclient">sshClient</h2>
+<h3 id="import_10">Import:</h3>
+<p>labpack.platforms.aws.ssh.sshClient  </p>
+<h3 id="description_10">Description:</h3>
+<p>a class of methods to run commands on an active AWS instance</p>
+<pre><code>    NOTE:   Make sure that VPC rules allow SSH access to your local IP
+    NOTE:   SCP protocol requires SCP installed on Remote Host
+</code></pre>
+<h3 id="95_init___10">__init__</h3>
+<h5 id="_163"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self, instance_id, pem_file, access_id, secret_key, region_name, owner_id, user_name, login_name=&rdquo;&ldquo;, verbose=True)</p>
+<h5 id="_164"></h5>
+<p><strong>Description:</strong><br />
+a method for initializing the SSH connection parameters to the EC2 instance<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                          </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                     </td></tr>
+<tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with AWS id of instance                       </td></tr>
+<tr><td>pem_file   </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with path to keypair pem file                 </td></tr>
+<tr><td>access_id  </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with access_key_id from aws IAM user setup    </td></tr>
+<tr><td>secret_key </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with secret_access_key from aws IAM user setup</td></tr>
+<tr><td>region_name</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of aws region                       </td></tr>
+<tr><td>owner_id   </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with aws account id                           </td></tr>
+<tr><td>user_name  </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of user access keys are assigned to </td></tr>
+<tr><td>login_name </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with name of login user            </td></tr>
+<tr><td>verbose    </td><td>bool  </td><td>          </td><td>True     </td><td>boolean to enable process messages                   </td></tr>
+</tbody>
+</table></p>
+<h3 id="terminal">terminal</h3>
+<h5 id="_165"></h5>
+<p><strong>Signature:</strong><br />
+terminal(self, confirmation=True)</p>
+<h5 id="_166"></h5>
+<p><strong>Description:</strong><br />
+method to open an SSH terminal inside AWS instance<br />
+<table>
+<thead>
+<tr><th>Argument    </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                      </th></tr>
+</thead>
+<tbody>
+<tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                 </td></tr>
+<tr><td>confirmation</td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to prompt keypair confirmation</td></tr>
+</tbody>
+</table></p>
+<h3 id="script">script</h3>
+<h5 id="_167"></h5>
+<p><strong>Signature:</strong><br />
+script(self, commands, synopsis=True)</p>
+<h5 id="_168"></h5>
+<p><strong>Description:</strong><br />
+a method to run a list of shell command scripts on AWS instance<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                   </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                              </td></tr>
+<tr><td>commands  </td><td>list  </td><td>Yes       </td><td>None     </td><td>list of strings with shell commands to pass through connection</td></tr>
+<tr><td>synopsis  </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to simplify progress messages to one line  </td></tr>
+</tbody>
+</table></p>
+<h3 id="put">put</h3>
+<h5 id="_169"></h5>
+<p><strong>Signature:</strong><br />
+put(self, local_path, remote_path=&rdquo;&ldquo;, overwrite=False, synopsis=True)</p>
+<h5 id="_170"></h5>
+<p><strong>Description:</strong><br />
+a method to copy a folder or file from local device to AWS instance<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                 </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                            </td></tr>
+<tr><td>local_path </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with path to folder or file on local host            </td></tr>
+<tr><td>remote_path</td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with path to copy contents on remote host </td></tr>
+<tr><td>overwrite  </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to enable file overwrite on remote host  </td></tr>
+<tr><td>synopsis   </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to simplify progress messages to one line</td></tr>
+</tbody>
+</table></p>
+<h3 id="get">get</h3>
+<h5 id="_171"></h5>
+<p><strong>Signature:</strong><br />
+get(self, remote_path, local_path=&rdquo;&ldquo;, overwrite=False, synopsis=True)</p>
+<h5 id="_172"></h5>
+<p><strong>Description:</strong><br />
+a method to copy a folder or file from AWS instance to local device<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                 </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                            </td></tr>
+<tr><td>remote_path</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with path to copy contents on remote host            </td></tr>
+<tr><td>local_path </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with path to folder or file on local host </td></tr>
+<tr><td>overwrite  </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to enable file overwrite on remote host  </td></tr>
+<tr><td>synopsis   </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to simplify progress messages to one line</td></tr>
+</tbody>
+</table></p>
+<h3 id="responsive">responsive</h3>
+<h5 id="_173"></h5>
+<p><strong>Signature:</strong><br />
+responsive(self, port=80, timeout=600)</p>
+<h5 id="_174"></h5>
+<p><strong>Description:</strong><br />
+a method for waiting until web server on AWS instance has restarted<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                        </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                   </td></tr>
+<tr><td>port      </td><td>int   </td><td>          </td><td>80       </td><td>integer with port number to check                  </td></tr>
+<tr><td>timeout   </td><td>int   </td><td>          </td><td>600      </td><td>integer with number of seconds to continue to check</td></tr>
+</tbody>
+</table></p>
+<h2 id="dockerclient">dockerClient</h2>
+<h3 id="import_11">Import:</h3>
+<p>labpack.platforms.docker.dockerClient  </p>
+<h3 id="description_11">Description:</h3>
+<p>a method to initialize the dockerClient class  </p>
+<h3 id="95_init___11">__init__</h3>
+<h5 id="_175"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self, virtualbox_name=&rdquo;&ldquo;, verbose=False)</p>
+<h5 id="_176"></h5>
+<p><strong>Description:</strong><br />
+a method to initialize the dockerClient class<br />
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                    </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                               </td></tr>
+<tr><td>virtualbox_name</td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with name of virtualbox image</td></tr>
+<tr><td>verbose        </td><td>bool  </td><td>          </td><td>False    </td><td>                                               </td></tr>
+</tbody>
+</table></p>
+<h3 id="images">images</h3>
+<h5 id="_177"></h5>
+<p><strong>Signature:</strong><br />
+images(self)</p>
+<h5 id="_178"></h5>
+<p><strong>Description:</strong>  </p>
+<h3 id="ps">ps</h3>
+<h5 id="_179"></h5>
+<p><strong>Signature:</strong><br />
+ps(self)</p>
+<h5 id="_180"></h5>
+<p><strong>Description:</strong>  </p>
+<h3 id="inspect">inspect</h3>
+<h5 id="_181"></h5>
+<p><strong>Signature:</strong><br />
+inspect(self, container_alias=&rdquo;&ldquo;, docker_image=&rdquo;&ldquo;, image_tag=&rdquo;&ldquo;)</p>
+<h5 id="_182"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                  </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                             </td></tr>
+<tr><td>container_alias</td><td>str   </td><td>          </td><td>""       </td><td>string with name of container</td></tr>
+<tr><td>docker_image   </td><td>str   </td><td>          </td><td>""       </td><td>                             </td></tr>
+<tr><td>image_tag      </td><td>str   </td><td>          </td><td>""       </td><td>                             </td></tr>
+</tbody>
+</table>
+
+<h3 id="run">run</h3>
+<h5 id="_183"></h5>
+<p><strong>Signature:</strong><br />
+run(self, run_script)</p>
+<h5 id="_184"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>run_script</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h3 id="rm">rm</h3>
+<h5 id="_185"></h5>
+<p><strong>Signature:</strong><br />
+rm(self, container_alias)</p>
+<h5 id="_186"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>container_alias</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h3 id="rmi">rmi</h3>
+<h5 id="_187"></h5>
+<p><strong>Signature:</strong><br />
+rmi(self, image_id)</p>
+<h5 id="_188"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>image_id  </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h3 id="ip">ip</h3>
+<h5 id="_189"></h5>
+<p><strong>Signature:</strong><br />
+ip(self)</p>
+<h5 id="_190"></h5>
+<p><strong>Description:</strong>  </p>
+<h3 id="command">command</h3>
+<h5 id="_191"></h5>
+<p><strong>Signature:</strong><br />
+command(self, sys_command)</p>
+<h5 id="_192"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description               </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                          </td></tr>
+<tr><td>sys_command</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with docker command</td></tr>
+</tbody>
+</table>
+
+<h3 id="synopsis">synopsis</h3>
+<h5 id="_193"></h5>
+<p><strong>Signature:</strong><br />
+synopsis(self, container_settings)</p>
+<h5 id="_194"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument          </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                  </th></tr>
+</thead>
+<tbody>
+<tr><td>self              </td><td>object</td><td>Yes       </td><td>None     </td><td>                                             </td></tr>
+<tr><td>container_settings</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary returned from dockerConfig.inspect</td></tr>
+</tbody>
+</table>
+
+<h3 id="enter">enter</h3>
+<h5 id="_195"></h5>
+<p><strong>Signature:</strong><br />
+enter(self, container_alias)</p>
+<h5 id="_196"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>container_alias</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h2 id="herokuclient">herokuClient</h2>
+<h3 id="import_12">Import:</h3>
+<p>labpack.platforms.heroku.herokuClient  </p>
+<h3 id="description_12">Description:</h3>
+<p>a method to initialize the herokuClient class  </p>
+<h3 id="95_init___12">__init__</h3>
+<h5 id="_197"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self, account_email, auth_token, verbose=True)</p>
+<h5 id="_198"></h5>
+<p><strong>Description:</strong><br />
+a method to initialize the herokuClient class<br />
+<table>
+<thead>
+<tr><th>Argument     </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self         </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>account_email</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>auth_token   </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>verbose      </td><td>bool    </td><td>          </td><td>True     </td><td>             </td></tr>
+</tbody>
+</table></p>
+<h3 id="access">access</h3>
+<h5 id="_199"></h5>
+<p><strong>Signature:</strong><br />
+access(self, app_subdomain)</p>
+<h5 id="_200"></h5>
+<p><strong>Description:</strong><br />
+a method to validate user can access app<br />
+<table>
+<thead>
+<tr><th>Argument     </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self         </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>app_subdomain</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table></p>
+<h3 id="deploy_docker">deploy_docker</h3>
+<h5 id="_201"></h5>
+<p><strong>Signature:</strong><br />
+deploy_docker(self, dockerfile_path, virtualbox_name=&rdquo;default&rdquo;)</p>
+<h5 id="_202"></h5>
+<p><strong>Description:</strong><br />
+a method to deploy app to heroku using docker<br />
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>dockerfile_path</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>virtualbox_name</td><td>str     </td><td>          </td><td>&ldquo;default&rdquo;</td><td>             </td></tr>
+</tbody>
+</table></p>
+<h3 id="deploy_app">deploy_app</h3>
+<h5 id="_203"></h5>
+<p><strong>Signature:</strong><br />
+deploy_app(self, site_folder, runtime_type=&rdquo;&ldquo;)</p>
+<h5 id="_204"></h5>
+<p><strong>Description:</strong><br />
+a method to deploy a static html page to heroku using php<br />
+<table>
+<thead>
+<tr><th>Argument    </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self        </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>site_folder </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>runtime_type</td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>             </td></tr>
+</tbody>
+</table></p>
+<h2 id="localhostclient">localhostClient</h2>
+<h3 id="import_13">Import:</h3>
+<p>labpack.platforms.localhost.localhostClient  </p>
+<h3 id="description_13">Description:</h3>
+<p>a class of methods to interact with the localhost  </p>
+<h3 id="95_init___13">__init__</h3>
+<h5 id="_205"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self)</p>
+<h5 id="_206"></h5>
+<p><strong>Description:</strong><br />
+a method to initialize a client class to interact with the localhost  </p>
+<h3 id="app_data">app_data</h3>
+<h5 id="_207"></h5>
+<p><strong>Signature:</strong><br />
+app_data(self, org_name, prod_name)</p>
+<h5 id="_208"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve the os appropriate path to user app data</p>
+<pre><code>    # https://www.chromium.org/user-experience/user-data-directory
+</code></pre>
+<p><table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                           </td></tr>
+<tr><td>org_name  </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of product/service creator</td></tr>
+<tr><td>prod_name </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of product/service        </td></tr>
+</tbody>
+</table></p>
+<h3 id="walk">walk</h3>
+<h5 id="_209"></h5>
+<p><strong>Signature:</strong><br />
+walk(self, walk_root=&rdquo;&ldquo;, reverse_order=False, previous_file=&rdquo;&ldquo;)</p>
+<h5 id="_210"></h5>
+<p><strong>Description:</strong><br />
+a generator method of file paths on localhost from walk of directories<br />
+<table>
+<thead>
+<tr><th>Argument     </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                      </th></tr>
+</thead>
+<tbody>
+<tr><td>self         </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                                 </td></tr>
+<tr><td>walk_root    </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>string with path from which to root walk of localhost directories</td></tr>
+<tr><td>reverse_order</td><td>bool  </td><td>          </td><td>False    </td><td>boolean to determine alphabetical direction of walk              </td></tr>
+<tr><td>previous_file</td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>string with path of file after which to start walk               </td></tr>
+</tbody>
+</table></p>
+<h3 id="metadata">metadata</h3>
+<h5 id="_211"></h5>
+<p><strong>Signature:</strong><br />
+metadata(self, file_path)</p>
+<h5 id="_212"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve the metadata of a file on the localhost<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description             </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                        </td></tr>
+<tr><td>file_path </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with path to file</td></tr>
+</tbody>
+</table></p>
+<h3 id="conditional_filter">conditional_filter</h3>
+<h5 id="_213"></h5>
+<p><strong>Signature:</strong><br />
+conditional_filter(self, metadata_filters)</p>
+<h5 id="_214"></h5>
+<p><strong>Description:</strong><br />
+a method to construct a conditional filter function for the list method<br />
+<table>
+<thead>
+<tr><th>Argument        </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                          </th></tr>
+</thead>
+<tbody>
+<tr><td>self            </td><td>object</td><td>Yes       </td><td>None     </td><td>                                     </td></tr>
+<tr><td>metadata_filters</td><td>list  </td><td>Yes       </td><td>None     </td><td>list with query criteria dictionaries</td></tr>
+</tbody>
+</table></p>
+<h3 id="list">list</h3>
+<h5 id="_215"></h5>
+<p><strong>Signature:</strong><br />
+list(self, filter_function=None, list_root=&rdquo;&ldquo;, max_results=1, reverse_order=False, previous_file=&rdquo;&ldquo;)</p>
+<h5 id="_216"></h5>
+<p><strong>Description:</strong><br />
+a method to list files on localhost from walk of directories<br />
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                                </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                           </td></tr>
+<tr><td>filter_function</td><td>function</td><td>          </td><td>None     </td><td>(keyword arguments) function used to filter results        </td></tr>
+<tr><td>list_root      </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>string with localhost path from which to root list of files</td></tr>
+<tr><td>max_results    </td><td>int     </td><td>          </td><td>1        </td><td>integer with maximum number of results to return           </td></tr>
+<tr><td>reverse_order  </td><td>bool    </td><td>          </td><td>False    </td><td>boolean to determine alphabetical direction of walk        </td></tr>
+<tr><td>previous_file  </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>string with absolute path of file to begin search after    </td></tr>
+</tbody>
+</table></p>
+<h2 id="watsonspeechclient">watsonSpeechClient</h2>
+<h3 id="import_14">Import:</h3>
+<p>labpack.speech.watson.watsonSpeechClient  </p>
+<h3 id="description_14">Description:</h3>
+<p>a class of methods to convert speech to text using IBM Watson api </p>
+<pre><code>    https://console.ng.bluemix.net/catalog/services/text-to-speech
+</code></pre>
+<h3 id="95_init___14">__init__</h3>
+<h5 id="_217"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self, service_username, service_password, requests_handler=None, magic_file=&rdquo;&ldquo;)</p>
+<h5 id="_218"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument        </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self            </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>service_username</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>service_password</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>requests_handler</td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>magic_file      </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h3 id="convert_audio">convert_audio</h3>
+<h5 id="_219"></h5>
+<p><strong>Signature:</strong><br />
+convert_audio(self, file_path, new_mimetype, overwrite=False)</p>
+<h5 id="_220"></h5>
+<p><strong>Description:</strong><br />
+a method to convert an audio file into a different codec<br />
+<table>
+<thead>
+<tr><th>Argument    </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                  </th></tr>
+</thead>
+<tbody>
+<tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>                                             </td></tr>
+<tr><td>file_path   </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with path to file on localhost        </td></tr>
+<tr><td>new_mimetype</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with mimetype for new file            </td></tr>
+<tr><td>overwrite   </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to overwrite existing file</td></tr>
+</tbody>
+</table></p>
+<h3 id="transcribe_file">transcribe_file</h3>
+<h5 id="_221"></h5>
+<p><strong>Signature:</strong><br />
+transcribe_file(self, file_path, clip_length=10, compress=True)</p>
+<h5 id="_222"></h5>
+<p><strong>Description:</strong><br />
+a method to transcribe the text from an audio file</p>
+<pre><code>    EXAMPLE: https://github.com/dannguyen/watson-word-watcher
+</code></pre>
+<p><table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                         </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                    </td></tr>
+<tr><td>file_path  </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with path to audio file on localhost         </td></tr>
+<tr><td>clip_length</td><td>int   </td><td>          </td><td>10       </td><td>[optional] integer with seconds to divide clips into</td></tr>
+<tr><td>compress   </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to convert file to audio/ogg     </td></tr>
+</tbody>
+</table></p>
+<h3 id="transcribe_url">transcribe_url</h3>
+<h5 id="_223"></h5>
+<p><strong>Signature:</strong><br />
+transcribe_url(self, file_url, clip_length=0, compress=True)</p>
+<h5 id="_224"></h5>
+<p><strong>Description:</strong><br />
+a method to transcribe the text from an audio url<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                         </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                    </td></tr>
+<tr><td>file_url   </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>                                                    </td></tr>
+<tr><td>clip_length</td><td>int     </td><td>          </td><td>0        </td><td>[optional] integer with seconds to divide clips into</td></tr>
+<tr><td>compress   </td><td>bool    </td><td>          </td><td>True     </td><td>[optional] boolean to convert file to audio/ogg     </td></tr>
+</tbody>
+</table></p>
+<h3 id="transcribe_bytes">transcribe_bytes</h3>
+<h5 id="_225"></h5>
+<p><strong>Signature:</strong><br />
+transcribe_bytes(self, byte_data, clip_length=0, audio_mimetype=&rdquo;&ldquo;, compress=True)</p>
+<h5 id="_226"></h5>
+<p><strong>Description:</strong><br />
+a method to transcribe text from audio byte data<br />
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                         </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                    </td></tr>
+<tr><td>byte_data     </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>byte data in buffer with audio data                 </td></tr>
+<tr><td>clip_length   </td><td>int     </td><td>          </td><td>0        </td><td>[optional] integer with seconds to divide clips into</td></tr>
+<tr><td>audio_mimetype</td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with byte data mimetype           </td></tr>
+<tr><td>compress      </td><td>bool    </td><td>          </td><td>True     </td><td>[optional] boolean to convert file to audio/ogg     </td></tr>
+</tbody>
+</table></p>
+<h3 id="transcribe_stream">transcribe_stream</h3>
+<h5 id="_227"></h5>
+<p><strong>Signature:</strong><br />
+transcribe_stream(self, data_stream)</p>
+<h5 id="_228"></h5>
+<p><strong>Description:</strong><br />
+a method to perform rolling transcription<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>data_stream</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table></p>
+<h2 id="appdataclient">appdataClient</h2>
+<h3 id="import_15">Import:</h3>
+<p>labpack.storage.appdata.appdataClient  </p>
+<h3 id="description_15">Description:</h3>
+<p>a class of methods for managing file storage on local device in app data </p>
+<pre><code>    NOTE:   appdataClient is designed to store byte data, so encoding (or 
+            decoding) different types of file types must be handled by the
+            application prior (or after) data is saved (or loaded)
+</code></pre>
+<h3 id="95_init___15">__init__</h3>
+<h5 id="_229"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self, collection_name=&rdquo;&ldquo;, prod_name=&rdquo;&ldquo;, org_name=&rdquo;&ldquo;)</p>
+<h5 id="_230"></h5>
+<p><strong>Description:</strong><br />
+initialization method of appdata client class<br />
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                               </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                          </td></tr>
+<tr><td>collection_name</td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with name of collection to store records</td></tr>
+<tr><td>prod_name      </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with name of application product        </td></tr>
+<tr><td>org_name       </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with name of organization behind product</td></tr>
+</tbody>
+</table></p>
+<h3 id="exists">exists</h3>
+<h5 id="_231"></h5>
+<p><strong>Signature:</strong><br />
+exists(self, record_key)</p>
+<h5 id="_232"></h5>
+<p><strong>Description:</strong><br />
+a method to determine if a record exists in collection<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description              </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                         </td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with key of record</td></tr>
+</tbody>
+</table></p>
+<h3 id="save">save</h3>
+<h5 id="_233"></h5>
+<p><strong>Signature:</strong><br />
+save(self, record_key, record_data, overwrite=True, secret_key=&rdquo;&ldquo;)</p>
+<h5 id="_234"></h5>
+<p><strong>Description:</strong><br />
+a method to create a record in the collection folder<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                           </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                      </td></tr>
+<tr><td>record_key </td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name to assign to record (see NOTES below)</td></tr>
+<tr><td>record_data</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>byte data for record body                             </td></tr>
+<tr><td>overwrite  </td><td>bool    </td><td>          </td><td>True     </td><td>[optional] boolean to overwrite records with same name</td></tr>
+<tr><td>secret_key </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with key to encrypt data            </td></tr>
+</tbody>
+</table></p>
+<h3 id="load">load</h3>
+<h5 id="_235"></h5>
+<p><strong>Signature:</strong><br />
+load(self, record_key, secret_key=&rdquo;&ldquo;)</p>
+<h5 id="_236"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve byte data of appdata record<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                           </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                      </td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of record            </td></tr>
+<tr><td>secret_key</td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string used to decrypt data</td></tr>
+</tbody>
+</table></p>
+<h3 id="conditional_filter_1">conditional_filter</h3>
+<h5 id="_237"></h5>
+<p><strong>Signature:</strong><br />
+conditional_filter(self, path_filters)</p>
+<h5 id="_238"></h5>
+<p><strong>Description:</strong><br />
+a method to construct a conditional filter function for class list method<br />
+<table>
+<thead>
+<tr><th>Argument    </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                           </th></tr>
+</thead>
+<tbody>
+<tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                      </td></tr>
+<tr><td>path_filters</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary or list of dictionaries with query criteria</td></tr>
+</tbody>
+</table></p>
+<h3 id="list_1">list</h3>
+<h5 id="_239"></h5>
+<p><strong>Signature:</strong><br />
+list(self, prefix=&rdquo;&ldquo;, delimiter=&rdquo;&ldquo;, filter_function=None, max_results=1, reverse_search=True, previous_key=&rdquo;&ldquo;)</p>
+<h5 id="_240"></h5>
+<p><strong>Description:</strong><br />
+a method to list keys in the collection<br />
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                                    </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
+<tr><td>prefix         </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>string with prefix value to filter results                     </td></tr>
+<tr><td>delimiter      </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>string with value which results must not contain (after prefix)</td></tr>
+<tr><td>filter_function</td><td>function</td><td>          </td><td>None     </td><td>(positional arguments) function used to filter results         </td></tr>
+<tr><td>max_results    </td><td>int     </td><td>          </td><td>1        </td><td>integer with maximum number of results to return               </td></tr>
+<tr><td>reverse_search </td><td>bool    </td><td>          </td><td>True     </td><td>boolean to search keys in reverse alphanumeric order           </td></tr>
+<tr><td>previous_key   </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>string with key in collection to begin search after            </td></tr>
+</tbody>
+</table></p>
+<h3 id="delete">delete</h3>
+<h5 id="_241"></h5>
+<p><strong>Signature:</strong><br />
+delete(self, record_key)</p>
+<h5 id="_242"></h5>
+<p><strong>Description:</strong><br />
+a method to delete a file<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description             </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                        </td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of file</td></tr>
+</tbody>
+</table></p>
+<h3 id="remove">remove</h3>
+<h5 id="_243"></h5>
+<p><strong>Signature:</strong><br />
+remove(self)</p>
+<h5 id="_244"></h5>
+<p><strong>Description:</strong><br />
+a method to remove collection and all records in the collection  </p>
+<h3 id="export">export</h3>
+<h5 id="_245"></h5>
+<p><strong>Signature:</strong><br />
+export(self, storage_client, overwrite=True)</p>
+<h5 id="_246"></h5>
+<p><strong>Description:</strong><br />
+a method to export all the records in collection to another platform<br />
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                             </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object</td><td>Yes       </td><td>None     </td><td>                                        </td></tr>
+<tr><td>storage_client</td><td>type  </td><td>Yes       </td><td>None     </td><td>class object with storage client methods</td></tr>
+<tr><td>overwrite     </td><td>bool  </td><td>          </td><td>True     </td><td>                                        </td></tr>
+</tbody>
+</table></p>
+<h2 id="_s3client">_s3Client</h2>
+<h3 id="import_16">Import:</h3>
+<p>labpack.storage.aws.s3._s3Client  </p>
+<h3 id="description_16">Description:</h3>
+<p>a class of methods for interacting with AWS Simple Storage Service  </p>
+<h3 id="95_init___16">__init__</h3>
+<h5 id="_247"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self, access_id, secret_key, region_name, owner_id, user_name, verbose=True)</p>
+<h5 id="_248"></h5>
+<p><strong>Description:</strong><br />
+a method for initializing the connection to S3<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                          </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                     </td></tr>
+<tr><td>access_id  </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with access_key_id from aws IAM user setup    </td></tr>
+<tr><td>secret_key </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with secret_access_key from aws IAM user setup</td></tr>
+<tr><td>region_name</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of aws region                       </td></tr>
+<tr><td>owner_id   </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with aws account id                           </td></tr>
+<tr><td>user_name  </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of user access keys are assigned to </td></tr>
+<tr><td>verbose    </td><td>bool  </td><td>          </td><td>True     </td><td>boolean to enable process messages                   </td></tr>
+</tbody>
+</table></p>
+<h3 id="list_buckets">list_buckets</h3>
+<h5 id="_249"></h5>
+<p><strong>Signature:</strong><br />
+list_buckets(self)</p>
+<h5 id="_250"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve a list of buckets on s3  </p>
+<h3 id="create_bucket">create_bucket</h3>
+<h5 id="_251"></h5>
+<p><strong>Signature:</strong><br />
+create_bucket(self, bucket_name, access_control=&rdquo;private&rdquo;, version_control=False, log_destination=None, lifecycle_rules=None, tag_list=None, notification_settings=None, region_replication=None, access_policy=None)</p>
+<h5 id="_252"></h5>
+<p><strong>Description:</strong><br />
+a method for creating a bucket on AWS S3<br />
+<table>
+<thead>
+<tr><th>Argument             </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                    </th></tr>
+</thead>
+<tbody>
+<tr><td>self                 </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
+<tr><td>bucket_name          </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of bucket                                     </td></tr>
+<tr><td>access_control       </td><td>str   </td><td>          </td><td>&ldquo;private&rdquo;</td><td>string with type of access control policy                      </td></tr>
+<tr><td>version_control      </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to enable versioning of records             </td></tr>
+<tr><td>log_destination      </td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary with bucket name and prefix of log bucket</td></tr>
+<tr><td>lifecycle_rules      </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of dictionaries with rules for aging data      </td></tr>
+<tr><td>tag_list             </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of dictionaries with key and value for tag     </td></tr>
+<tr><td>notification_settings</td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of dictionaries with notification details      </td></tr>
+<tr><td>region_replication   </td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary with replication settings (WIP)          </td></tr>
+<tr><td>access_policy        </td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary with policy for user access (WIP)        </td></tr>
+</tbody>
+</table></p>
+<h3 id="read_bucket">read_bucket</h3>
+<h5 id="_253"></h5>
+<p><strong>Signature:</strong><br />
+read_bucket(self, bucket_name)</p>
+<h5 id="_254"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve properties of a bucket in s3<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description               </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                          </td></tr>
+<tr><td>bucket_name</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of bucket</td></tr>
+</tbody>
+</table></p>
+<h3 id="update_bucket">update_bucket</h3>
+<h5 id="_255"></h5>
+<p><strong>Signature:</strong><br />
+update_bucket(self, bucket_name, access_control=&rdquo;private&rdquo;, version_control=False, log_destination=None, lifecycle_rules=None, tag_list=None, notification_settings=None, region_replication=None, access_policy=None)</p>
+<h5 id="_256"></h5>
+<p><strong>Description:</strong><br />
+a method for updating the properties of a bucket in S3<br />
+<table>
+<thead>
+<tr><th>Argument             </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                    </th></tr>
+</thead>
+<tbody>
+<tr><td>self                 </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
+<tr><td>bucket_name          </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of bucket                                     </td></tr>
+<tr><td>access_control       </td><td>str   </td><td>          </td><td>&ldquo;private&rdquo;</td><td>string with type of access control policy                      </td></tr>
+<tr><td>version_control      </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to enable versioning of records             </td></tr>
+<tr><td>log_destination      </td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary with bucket name and prefix of log bucket</td></tr>
+<tr><td>lifecycle_rules      </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of dictionaries with rules for aging data      </td></tr>
+<tr><td>tag_list             </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of dictionaries with key and value for tag     </td></tr>
+<tr><td>notification_settings</td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of dictionaries with notification details      </td></tr>
+<tr><td>region_replication   </td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary with replication settings (WIP)          </td></tr>
+<tr><td>access_policy        </td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary with policy for user access (WIP)        </td></tr>
+</tbody>
+</table></p>
+<h3 id="delete_bucket">delete_bucket</h3>
+<h5 id="_257"></h5>
+<p><strong>Signature:</strong><br />
+delete_bucket(self, bucket_name)</p>
+<h5 id="_258"></h5>
+<p><strong>Description:</strong><br />
+a method to delete a bucket in s3 and all its contents<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description               </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                          </td></tr>
+<tr><td>bucket_name</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of bucket</td></tr>
+</tbody>
+</table></p>
+<h3 id="list_records">list_records</h3>
+<h5 id="_259"></h5>
+<p><strong>Signature:</strong><br />
+list_records(self, bucket_name, prefix=&rdquo;&ldquo;, delimiter=&rdquo;&ldquo;, max_results=1000, starting_key=&rdquo;&ldquo;)</p>
+<h5 id="_260"></h5>
+<p><strong>Description:</strong><br />
+a method for retrieving a list of the versions of records in a bucket<br />
+<table>
+<thead>
+<tr><th>Argument    </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                    </th></tr>
+</thead>
+<tbody>
+<tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
+<tr><td>bucket_name </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of bucket                                     </td></tr>
+<tr><td>prefix      </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with value limiting results to key prefix    </td></tr>
+<tr><td>delimiter   </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>string with value which results must not contain (after prefix)</td></tr>
+<tr><td>max_results </td><td>int   </td><td>          </td><td>1000     </td><td>[optional] integer with max results to return                  </td></tr>
+<tr><td>starting_key</td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with key value to continue search with       </td></tr>
+</tbody>
+</table></p>
+<h3 id="list_versions">list_versions</h3>
+<h5 id="_261"></h5>
+<p><strong>Signature:</strong><br />
+list_versions(self, bucket_name, prefix=&rdquo;&ldquo;, delimiter=&rdquo;&ldquo;, max_results=1000, starting_key=&rdquo;&ldquo;, starting_version=&rdquo;&ldquo;)</p>
+<h5 id="_262"></h5>
+<p><strong>Description:</strong><br />
+a method for retrieving a list of the versions of records in a bucket<br />
+<table>
+<thead>
+<tr><th>Argument        </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                   </th></tr>
+</thead>
+<tbody>
+<tr><td>self            </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                              </td></tr>
+<tr><td>bucket_name     </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of bucket                                    </td></tr>
+<tr><td>prefix          </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with value limiting results to key prefix   </td></tr>
+<tr><td>delimiter       </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with value limiting results to key delimiter</td></tr>
+<tr><td>max_results     </td><td>int   </td><td>          </td><td>1000     </td><td>[optional] integer with max results to return                 </td></tr>
+<tr><td>starting_key    </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with key value to continue search with      </td></tr>
+<tr><td>starting_version</td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with version id to continue search with     </td></tr>
+</tbody>
+</table></p>
+<h3 id="create_record">create_record</h3>
+<h5 id="_263"></h5>
+<p><strong>Signature:</strong><br />
+create_record(self, bucket_name, record_key, record_data, record_metadata=None, record_mimetype=&rdquo;&ldquo;, record_encoding=&rdquo;&ldquo;, overwrite=True)</p>
+<h5 id="_264"></h5>
+<p><strong>Description:</strong><br />
+a method for adding a record to an S3 bucket<br />
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                            </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                       </td></tr>
+<tr><td>bucket_name    </td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of bucket                             </td></tr>
+<tr><td>record_key     </td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of key (path) for record              </td></tr>
+<tr><td>record_data    </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>byte data for record                                   </td></tr>
+<tr><td>record_metadata</td><td>dict    </td><td>          </td><td>None     </td><td>[optional] dictionary with metadata to attach to record</td></tr>
+<tr><td>record_mimetype</td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with content mimetype of record data </td></tr>
+<tr><td>record_encoding</td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with content encoding of record data </td></tr>
+<tr><td>overwrite      </td><td>bool    </td><td>          </td><td>True     </td><td>[optional] boolean to overwrite any existing record    </td></tr>
+</tbody>
+</table></p>
+<h3 id="read_headers">read_headers</h3>
+<h5 id="_265"></h5>
+<p><strong>Signature:</strong><br />
+read_headers(self, bucket_name, record_key, record_version=&rdquo;&ldquo;, version_check=False)</p>
+<h5 id="_266"></h5>
+<p><strong>Description:</strong><br />
+a method for retrieving the headers of a record from s3<br />
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                       </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                  </td></tr>
+<tr><td>bucket_name   </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of bucket                        </td></tr>
+<tr><td>record_key    </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with key value of record                   </td></tr>
+<tr><td>record_version</td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with aws id of version of record</td></tr>
+<tr><td>version_check </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to enable current version check</td></tr>
+</tbody>
+</table></p>
+<h3 id="read_record">read_record</h3>
+<h5 id="_267"></h5>
+<p><strong>Signature:</strong><br />
+read_record(self, bucket_name, record_key, record_version=&rdquo;&ldquo;, version_check=False)</p>
+<h5 id="_268"></h5>
+<p><strong>Description:</strong><br />
+a method for retrieving data of record from AWS S3<br />
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                       </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                  </td></tr>
+<tr><td>bucket_name   </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of bucket                        </td></tr>
+<tr><td>record_key    </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of key (path) for record         </td></tr>
+<tr><td>record_version</td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with aws id of version of record</td></tr>
+<tr><td>version_check </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to enable current version check</td></tr>
+</tbody>
+</table></p>
+<h3 id="delete_record">delete_record</h3>
+<h5 id="_269"></h5>
+<p><strong>Signature:</strong><br />
+delete_record(self, bucket_name, record_key, record_version=&rdquo;&ldquo;)</p>
+<h5 id="_270"></h5>
+<p><strong>Description:</strong><br />
+a method for deleting an object record in s3<br />
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                       </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                  </td></tr>
+<tr><td>bucket_name   </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of bucket                        </td></tr>
+<tr><td>record_key    </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with key value of record                   </td></tr>
+<tr><td>record_version</td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with aws id of version of record</td></tr>
+</tbody>
+</table></p>
+<h3 id="export_records">export_records</h3>
+<h5 id="_271"></h5>
+<p><strong>Signature:</strong><br />
+export_records(self, bucket_name, export_path=&rdquo;&ldquo;, overwrite=True)</p>
+<h5 id="_272"></h5>
+<p><strong>Description:</strong><br />
+a method to export all the records from a bucket to local files<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                    </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
+<tr><td>bucket_name</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of bucket                                     </td></tr>
+<tr><td>export_path</td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with path to root directory for record dump  </td></tr>
+<tr><td>overwrite  </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to overwrite existing files matching records</td></tr>
+</tbody>
+</table></p>
+<h3 id="import_records">import_records</h3>
+<h5 id="_273"></h5>
+<p><strong>Signature:</strong><br />
+import_records(self, bucket_name, import_path=&rdquo;&ldquo;, overwrite=True)</p>
+<h5 id="_274"></h5>
+<p><strong>Description:</strong><br />
+a method to importing records from local files to a bucket<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                    </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
+<tr><td>bucket_name</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of bucket                                     </td></tr>
+<tr><td>import_path</td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>                                                               </td></tr>
+<tr><td>overwrite  </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to overwrite existing files matching records</td></tr>
+</tbody>
+</table></p>
+<h2 id="s3client">s3Client</h2>
+<h3 id="import_17">Import:</h3>
+<p>labpack.storage.aws.s3.s3Client  </p>
+<h3 id="description_17">Description:</h3>
+<p>a class of methods to manage file storage on AWS S3  </p>
+<h3 id="95_init___17">__init__</h3>
+<h5 id="_275"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self, access_id, secret_key, region_name, owner_id, user_name, collection_name=&rdquo;&ldquo;, prod_name=&rdquo;&ldquo;, org_name=&rdquo;&ldquo;, access_control=&rdquo;private&rdquo;, version_control=False, log_destination=None, lifecycle_rules=None, tag_list=None, notification_settings=None, region_replication=None, access_policy=None, verbose=True)</p>
+<h5 id="_276"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument             </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self                 </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>access_id            </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>secret_key           </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>region_name          </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>owner_id             </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>user_name            </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>collection_name      </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>prod_name            </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>org_name             </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>access_control       </td><td>str     </td><td>          </td><td>"private"</td><td>             </td></tr>
+<tr><td>version_control      </td><td>bool    </td><td>          </td><td>False    </td><td>             </td></tr>
+<tr><td>log_destination      </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>lifecycle_rules      </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>tag_list             </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>notification_settings</td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>region_replication   </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>access_policy        </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>verbose              </td><td>bool    </td><td>          </td><td>True     </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h3 id="exists_1">exists</h3>
+<h5 id="_277"></h5>
+<p><strong>Signature:</strong><br />
+exists(self, record_key)</p>
+<h5 id="_278"></h5>
+<p><strong>Description:</strong><br />
+a method to determine if a record exists in collection<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description              </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                         </td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with key of record</td></tr>
+</tbody>
+</table></p>
+<h3 id="save_1">save</h3>
+<h5 id="_279"></h5>
+<p><strong>Signature:</strong><br />
+save(self, record_key, record_data, overwrite=True, secret_key=&rdquo;&ldquo;)</p>
+<h5 id="_280"></h5>
+<p><strong>Description:</strong><br />
+a method to create a file in the collection folder on S3<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                           </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                      </td></tr>
+<tr><td>record_key </td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name to assign to record (see NOTES below)</td></tr>
+<tr><td>record_data</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>byte data for record body                             </td></tr>
+<tr><td>overwrite  </td><td>bool    </td><td>          </td><td>True     </td><td>[optional] boolean to overwrite records with same name</td></tr>
+<tr><td>secret_key </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with key to encrypt data            </td></tr>
+</tbody>
+</table></p>
+<h3 id="load_1">load</h3>
+<h5 id="_281"></h5>
+<p><strong>Signature:</strong><br />
+load(self, record_key, secret_key=&rdquo;&ldquo;)</p>
+<h5 id="_282"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve byte data of an S3 record<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                           </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                      </td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of record            </td></tr>
+<tr><td>secret_key</td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string used to decrypt data</td></tr>
+</tbody>
+</table></p>
+<h3 id="conditional_filter_2">conditional_filter</h3>
+<h5 id="_283"></h5>
+<p><strong>Signature:</strong><br />
+conditional_filter(self, path_filters)</p>
+<h5 id="_284"></h5>
+<p><strong>Description:</strong><br />
+a method to construct a conditional filter function for class list method<br />
+<table>
+<thead>
+<tr><th>Argument    </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                           </th></tr>
+</thead>
+<tbody>
+<tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                      </td></tr>
+<tr><td>path_filters</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary or list of dictionaries with query criteria</td></tr>
+</tbody>
+</table></p>
+<h3 id="list_2">list</h3>
+<h5 id="_285"></h5>
+<p><strong>Signature:</strong><br />
+list(self, prefix=&rdquo;&ldquo;, delimiter=&rdquo;&ldquo;, filter_function=None, max_results=1, previous_key=&rdquo;&ldquo;)</p>
+<h5 id="_286"></h5>
+<p><strong>Description:</strong><br />
+a method to list keys in the collection<br />
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                              </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                         </td></tr>
+<tr><td>prefix         </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>string with prefix value to filter results               </td></tr>
+<tr><td>delimiter      </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>string with value results must not contain (after prefix)</td></tr>
+<tr><td>filter_function</td><td>function</td><td>          </td><td>None     </td><td>(positional arguments) function used to filter results   </td></tr>
+<tr><td>max_results    </td><td>int     </td><td>          </td><td>1        </td><td>integer with maximum number of results to return         </td></tr>
+<tr><td>previous_key   </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>string with key in collection to begin search after      </td></tr>
+</tbody>
+</table></p>
+<h3 id="delete_1">delete</h3>
+<h5 id="_287"></h5>
+<p><strong>Signature:</strong><br />
+delete(self, record_key)</p>
+<h5 id="_288"></h5>
+<p><strong>Description:</strong><br />
+a method to delete a record from S3<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description              </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                         </td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with key of record</td></tr>
+</tbody>
+</table></p>
+<h3 id="remove_1">remove</h3>
+<h5 id="_289"></h5>
+<p><strong>Signature:</strong><br />
+remove(self)</p>
+<h5 id="_290"></h5>
+<p><strong>Description:</strong><br />
+a method to remove collection and all records in the collection  </p>
+<h3 id="export_1">export</h3>
+<h5 id="_291"></h5>
+<p><strong>Signature:</strong><br />
+export(self, storage_client, overwrite=True)</p>
+<h5 id="_292"></h5>
+<p><strong>Description:</strong><br />
+a method to export all the records in collection to another platform<br />
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                             </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object</td><td>Yes       </td><td>None     </td><td>                                        </td></tr>
+<tr><td>storage_client</td><td>type  </td><td>Yes       </td><td>None     </td><td>class object with storage client methods</td></tr>
+<tr><td>overwrite     </td><td>bool  </td><td>          </td><td>True     </td><td>                                        </td></tr>
+</tbody>
+</table></p>
+<h2 id="dropboxclient">dropboxClient</h2>
+<h3 id="import_18">Import:</h3>
+<p>labpack.storage.dropbox.dropboxClient  </p>
+<h3 id="description_18">Description:</h3>
+<p>a class of methods to manage file storage on Dropbox API  </p>
+<h3 id="95_init___18">__init__</h3>
+<h5 id="_293"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self, access_token, collection_name=&rdquo;&ldquo;)</p>
+<h5 id="_294"></h5>
+<p><strong>Description:</strong><br />
+a method to initialize the dropboxClient class<br />
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                      </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                 </td></tr>
+<tr><td>access_token   </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with oauth2 access token for users account</td></tr>
+<tr><td>collection_name</td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>                                                 </td></tr>
+</tbody>
+</table></p>
+<h3 id="exists_2">exists</h3>
+<h5 id="_295"></h5>
+<p><strong>Signature:</strong><br />
+exists(self, record_key)</p>
+<h5 id="_296"></h5>
+<p><strong>Description:</strong><br />
+a method to determine if a record exists in collection<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description              </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                         </td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with key of record</td></tr>
+</tbody>
+</table></p>
+<h3 id="save_2">save</h3>
+<h5 id="_297"></h5>
+<p><strong>Signature:</strong><br />
+save(self, record_key, record_data, overwrite=True, secret_key=&rdquo;&ldquo;)</p>
+<h5 id="_298"></h5>
+<p><strong>Description:</strong><br />
+a method to create a record in the collection folder<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                           </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                      </td></tr>
+<tr><td>record_key </td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name to assign to record (see NOTES below)</td></tr>
+<tr><td>record_data</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>byte data for record body                             </td></tr>
+<tr><td>overwrite  </td><td>bool    </td><td>          </td><td>True     </td><td>[optional] boolean to overwrite records with same name</td></tr>
+<tr><td>secret_key </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with key to encrypt data            </td></tr>
+</tbody>
+</table></p>
+<h3 id="load_2">load</h3>
+<h5 id="_299"></h5>
+<p><strong>Signature:</strong><br />
+load(self, record_key, secret_key=&rdquo;&ldquo;)</p>
+<h5 id="_300"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve byte data of appdata record<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                           </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                      </td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of record            </td></tr>
+<tr><td>secret_key</td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string used to decrypt data</td></tr>
+</tbody>
+</table></p>
+<h3 id="conditional_filter_3">conditional_filter</h3>
+<h5 id="_301"></h5>
+<p><strong>Signature:</strong><br />
+conditional_filter(self, path_filters)</p>
+<h5 id="_302"></h5>
+<p><strong>Description:</strong><br />
+a method to construct a conditional filter function for list method<br />
+<table>
+<thead>
+<tr><th>Argument    </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                           </th></tr>
+</thead>
+<tbody>
+<tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                      </td></tr>
+<tr><td>path_filters</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary or list of dictionaries with query criteria</td></tr>
+</tbody>
+</table></p>
+<h3 id="list_3">list</h3>
+<h5 id="_303"></h5>
+<p><strong>Signature:</strong><br />
+list(self, prefix=&rdquo;&ldquo;, delimiter=&rdquo;&ldquo;, filter_function=None, max_results=1, previous_key=&rdquo;&ldquo;)</p>
+<h5 id="_304"></h5>
+<p><strong>Description:</strong><br />
+a method to list keys in the dropbox collection<br />
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                                    </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
+<tr><td>prefix         </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>string with prefix value to filter results                     </td></tr>
+<tr><td>delimiter      </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>string with value which results must not contain (after prefix)</td></tr>
+<tr><td>filter_function</td><td>function</td><td>          </td><td>None     </td><td>(positional arguments) function used to filter results         </td></tr>
+<tr><td>max_results    </td><td>int     </td><td>          </td><td>1        </td><td>integer with maximum number of results to return               </td></tr>
+<tr><td>previous_key   </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>string with key in collection to begin search after            </td></tr>
+</tbody>
+</table></p>
+<h3 id="delete_2">delete</h3>
+<h5 id="_305"></h5>
+<p><strong>Signature:</strong><br />
+delete(self, record_key)</p>
+<h5 id="_306"></h5>
+<p><strong>Description:</strong><br />
+a method to delete a file<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description             </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                        </td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of file</td></tr>
+</tbody>
+</table></p>
+<h3 id="remove_2">remove</h3>
+<h5 id="_307"></h5>
+<p><strong>Signature:</strong><br />
+remove(self)</p>
+<h5 id="_308"></h5>
+<p><strong>Description:</strong><br />
+a method to remove all records in the collection</p>
+<pre><code>    NOTE:   this method removes all the files in the collection, but the
+            collection folder itself created by oauth2 cannot be removed.
+            only the user can remove the app folder
+</code></pre>
+<h3 id="export_2">export</h3>
+<h5 id="_309"></h5>
+<p><strong>Signature:</strong><br />
+export(self, storage_client, overwrite=True)</p>
+<h5 id="_310"></h5>
+<p><strong>Description:</strong><br />
+a method to export all the records in collection to another platform<br />
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                             </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object</td><td>Yes       </td><td>None     </td><td>                                        </td></tr>
+<tr><td>storage_client</td><td>type  </td><td>Yes       </td><td>None     </td><td>class object with storage client methods</td></tr>
+<tr><td>overwrite     </td><td>bool  </td><td>          </td><td>True     </td><td>                                        </td></tr>
+</tbody>
+</table></p>
+<h2 id="driveclient">driveClient</h2>
+<h3 id="import_19">Import:</h3>
+<p>labpack.storage.google.drive.driveClient  </p>
+<h3 id="description_19">Description:</h3>
+<p>a class of methods to manage file storage on Google Drive API  </p>
+<h3 id="95_init___19">__init__</h3>
+<h5 id="_311"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self, access_token, collection_name=&rdquo;&ldquo;)</p>
+<h5 id="_312"></h5>
+<p><strong>Description:</strong><br />
+a method to initialize the driveClient class<br />
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                         </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                    </td></tr>
+<tr><td>access_token   </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with oauth2 access token for users account   </td></tr>
+<tr><td>collection_name</td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with name of collection for import</td></tr>
+</tbody>
+</table></p>
+<h3 id="exists_3">exists</h3>
+<h5 id="_313"></h5>
+<p><strong>Signature:</strong><br />
+exists(self, record_key)</p>
+<h5 id="_314"></h5>
+<p><strong>Description:</strong><br />
+a method to determine if a record exists in collection<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description              </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                         </td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with key of record</td></tr>
+</tbody>
+</table></p>
+<h3 id="save_3">save</h3>
+<h5 id="_315"></h5>
+<p><strong>Signature:</strong><br />
+save(self, record_key, record_data, overwrite=True, secret_key=&rdquo;&ldquo;)</p>
+<h5 id="_316"></h5>
+<p><strong>Description:</strong><br />
+a method to create a record in the collection folder<br />
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                           </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                      </td></tr>
+<tr><td>record_key </td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name to assign to record (see NOTES below)</td></tr>
+<tr><td>record_data</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>byte data for record body                             </td></tr>
+<tr><td>overwrite  </td><td>bool    </td><td>          </td><td>True     </td><td>[optional] boolean to overwrite records with same name</td></tr>
+<tr><td>secret_key </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with key to encrypt data            </td></tr>
+</tbody>
+</table></p>
+<h3 id="load_3">load</h3>
+<h5 id="_317"></h5>
+<p><strong>Signature:</strong><br />
+load(self, record_key, secret_key=&rdquo;&ldquo;)</p>
+<h5 id="_318"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve byte data of appdata record<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                           </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                      </td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of record            </td></tr>
+<tr><td>secret_key</td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string used to decrypt data</td></tr>
+</tbody>
+</table></p>
+<h3 id="conditional_filter_4">conditional_filter</h3>
+<h5 id="_319"></h5>
+<p><strong>Signature:</strong><br />
+conditional_filter(self, path_filters)</p>
+<h5 id="_320"></h5>
+<p><strong>Description:</strong><br />
+a method to construct a conditional filter function for list method<br />
+<table>
+<thead>
+<tr><th>Argument    </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                           </th></tr>
+</thead>
+<tbody>
+<tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                      </td></tr>
+<tr><td>path_filters</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary or list of dictionaries with query criteria</td></tr>
+</tbody>
+</table></p>
+<h3 id="list_4">list</h3>
+<h5 id="_321"></h5>
+<p><strong>Signature:</strong><br />
+list(self, prefix=&rdquo;&ldquo;, delimiter=&rdquo;&ldquo;, filter_function=None, max_results=1, previous_key=&rdquo;&ldquo;)</p>
+<h5 id="_322"></h5>
+<p><strong>Description:</strong><br />
+a method to list keys in the google drive collection<br />
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                                    </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
+<tr><td>prefix         </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>string with prefix value to filter results                     </td></tr>
+<tr><td>delimiter      </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>string with value which results must not contain (after prefix)</td></tr>
+<tr><td>filter_function</td><td>function</td><td>          </td><td>None     </td><td>(positional arguments) function used to filter results         </td></tr>
+<tr><td>max_results    </td><td>int     </td><td>          </td><td>1        </td><td>integer with maximum number of results to return               </td></tr>
+<tr><td>previous_key   </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>string with key in collection to begin search after            </td></tr>
+</tbody>
+</table></p>
+<h3 id="delete_3">delete</h3>
+<h5 id="_323"></h5>
+<p><strong>Signature:</strong><br />
+delete(self, record_key)</p>
+<h5 id="_324"></h5>
+<p><strong>Description:</strong><br />
+a method to delete a file<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description             </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                        </td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of file</td></tr>
+</tbody>
+</table></p>
+<h3 id="remove_3">remove</h3>
+<h5 id="_325"></h5>
+<p><strong>Signature:</strong><br />
+remove(self)</p>
+<h5 id="_326"></h5>
+<p><strong>Description:</strong><br />
+a method to remove all records in the collection</p>
+<pre><code>    NOTE:   this method removes all the files in the collection, but the
+            collection folder itself created by oauth2 cannot be removed.
+            only the user can remove access to the app folder
+</code></pre>
+<h3 id="export_3">export</h3>
+<h5 id="_327"></h5>
+<p><strong>Signature:</strong><br />
+export(self, storage_client, overwrite=True)</p>
+<h5 id="_328"></h5>
+<p><strong>Description:</strong><br />
+a method to export all the records in collection to another platform<br />
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                             </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object</td><td>Yes       </td><td>None     </td><td>                                        </td></tr>
+<tr><td>storage_client</td><td>type  </td><td>Yes       </td><td>None     </td><td>class object with storage client methods</td></tr>
+<tr><td>overwrite     </td><td>bool  </td><td>          </td><td>True     </td><td>                                        </td></tr>
+</tbody>
+</table></p></div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>var base_url = '..';</script>
+        <script data-main="../mkdocs/js/search.js" src="../mkdocs/js/require.js"></script>
+        <script src="../js/base.js"></script><div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form role="form">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>

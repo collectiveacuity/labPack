@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="None">
+        
+        
+        <link rel="shortcut icon" href="./img/favicon.ico">
+        <title>Lab Pack</title>
+        <link href="./css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="./css/font-awesome-4.5.0.css" rel="stylesheet">
+        <link href="./css/base.css" rel="stylesheet">
+        <link rel="stylesheet" href="./css/highlight.css">
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+	
+	<script src="./js/jquery-1.10.2.min.js"></script>
+        <script src="./js/bootstrap-3.0.3.min.js"></script>
+        <script src="./js/highlight.pack.js"></script> 
+    </head>
+
+    <body class="homepage">
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href=".">Lab Pack</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+                <!-- Main navigation -->
+                <ul class="nav navbar-nav">
+                    <li class="active">
+                        <a href=".">Home</a>
+                    </li>
+                    <li >
+                        <a href="classes/">Classes</a>
+                    </li>
+                    <li >
+                        <a href="clients/">Clients</a>
+                    </li>
+                    <li >
+                        <a href="packages/">Packages</a>
+                    </li>
+                    <li >
+                        <a href="resources/">Resources</a>
+                    </li>
+                    <li >
+                        <a href="roadmap/">Roadmap</a>
+                    </li>
+                </ul>
+
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
+                        <i class="fa fa-search"></i> Search
+                    </a>
+                </li>
+                    <li class="disabled">
+                        <a rel="next" >
+                            <i class="fa fa-arrow-left"></i> Previous
+                        </a>
+                    </li>
+                    <li >
+                        <a rel="prev" href="classes/">
+                            Next <i class="fa fa-arrow-right"></i>
+                        </a>
+                    </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+        <div class="container">
+                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+        <li class="main active"><a href="#lab-pack">Lab Pack</a></li>
+            <li><a href="#introduction">Introduction</a></li>
+            <li><a href="#installation">Installation</a></li>
+            <li><a href="#getting-started">Getting Started</a></li>
+            <li><a href="#further-reading">Further Reading</a></li>
+    </ul>
+</div></div>
+                <div class="col-md-9" role="main">
+
+<h1 id="lab-pack">Lab Pack</h1>
+<p><em>A Collection of Methods for Data Collection &amp; Processing</em><br />
+by <a href="http://collectiveacuity.com">Collective Acuity</a></p>
+<table>
+  <tbody>
+    <tr>
+      <td><b>Downloads</b></td>
+      <td><a href="http://pypi.python.org/pypi/labpack">http://pypi.python.org/pypi/labPack</a></td>
+    </tr>
+    <tr>
+      <td><b>Source</b></td>
+      <td><a href="https://github.com/collectiveacuity/labpack">https://github.com/collectiveacuity/labPack</a></td>
+    </tr>
+    <tr>
+      <td><b>Documentation</b></td>
+      <td><a href="https://collectiveacuity.github.io/labPack">https://collectiveacuity.github.io/labPack/</a></td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="introduction">Introduction</h2>
+<p>Lab Pack is designed to make the process of retrieving, managing and processing data more uniform across a variety of different sources and structures. The classes and methods in this module aggregate and curate python resources and online APIs to provide a set of best practices for handling data across laboratory projects.</p>
+<h2 id="installation">Installation</h2>
+<p>From PyPi</p>
+<pre><code class="bash">    $ pip install labpack
+</code></pre>
+
+<p>From GitHub</p>
+<pre><code class="bash">    $ git clone https://github.com/collectiveacuity/labpack
+    $ cd labpack
+    $ python setup.py install
+</code></pre>
+
+<h2 id="getting-started">Getting Started</h2>
+<p>This module contains a variety of classes, clients and packages for use in laboratory projects. For example to store records in an indexed file store on the local device, you can use the following methods:</p>
+<p>Create an unique ID for records::</p>
+<pre><code>from labpack.records.id import labID
+
+id = labID()
+url_safe_id_string = id.id48
+id_datetime = id.epoch
+id_mac_address = id.mac
+</code></pre>
+<p>Save record data in local user data::</p>
+<pre><code>from labpack.storage.appdata import appdataClient
+
+msg_key = '%s/%s.yaml' % (id_mac_address, id_datetime)
+msg_details = { 'dt': id_datetime, 'mac': id_mac_address, 'msg': 'Text me back' }
+msg_client = appdataClient('Outgoing', 'My Team', 'My App')
+mgs_client.create(msg_key, msg_details)
+</code></pre>
+<h2 id="further-reading">Further Reading</h2>
+<p>For a list of the methods in this module, refer to the <a href="classes/">Classes</a>, <a href="clients/">Clients</a> and <a href="packages/">Packages</a> pages.</p></div>
+        </div>
+
+        <footer class="col-md-12">
+            <hr>
+            <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p>
+        </footer>
+        <script>var base_url = '.';</script>
+        <script data-main="./mkdocs/js/search.js" src="./mkdocs/js/require.js"></script>
+        <script src="./js/base.js"></script><div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
+            </div>
+            <div class="modal-body">
+                <p>
+                    From here you can search these documents. Enter
+                    your search terms below.
+                </p>
+                <form role="form">
+                    <div class="form-group">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query">
+                    </div>
+                </form>
+                <div id="mkdocs-search-results"></div>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+    </div>
+</div>
+
+    </body>
+</html>
+
+<!--
+MkDocs version : 0.16.3
+Build Date UTC : 2017-07-27 18:14:19
+-->
