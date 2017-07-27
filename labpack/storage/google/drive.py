@@ -99,7 +99,8 @@ class driveClient(object):
             }
         },
         'metadata': {
-            'record_optimal_bytes': 10000 * 1024
+            'record_optimal_bytes': 10000 * 1024,
+            'file_object': {}
         }
     }
     
@@ -148,6 +149,12 @@ class driveClient(object):
         else:
             self.collection_name = 'My Drive'
     
+    # construct file object
+        from labpack import __module__
+        from jsonmodel.loader import jsonLoader
+        drive_rules = jsonLoader(__module__, 'storage/google/drive-rules.json')
+        self.object_file = drive_rules['file_object']
+        
     # validate access token
         self._validate_token()
         
@@ -255,6 +262,29 @@ class driveClient(object):
             break
         return self.space_id
   
+    def _get_metadata(self, file_id, metadata_fields=''):
+        
+        ''' a helper method for retrieving the metadata of a file '''
+        
+        title = '%s._get_metadata' % self.__class__.__name__
+        
+    # construct fields arg
+        if not metadata_fields:
+            metadata_fields = ','.join(self.object_file.keys())
+        else:
+            field_list = metadata_fields.split(',')
+            for field in field_list:
+                if not field in self.object_file.keys():
+                    raise ValueError('%s(metadata_fields="%s") is not a valid drive file field' % (title, field))
+    
+    # send request
+        try:
+            metadata_details = self.drive.get(fileId=file_id, fields=metadata_fields).execute()
+        except:
+            raise DriveConnectionError(title)
+        
+        return metadata_details
+        
     def _list_directory(self, folder_id=''):
     
         ''' a generator method for listing the contents of a directory '''
@@ -1062,17 +1092,41 @@ if __name__ == '__main__':
     assert drive_client.exists(drep_key)
     assert not drive_client.exists('notakey')
 
+# test list with different filters
+    data_filter = { 2:{'must_contain': ['ogg$']}}
+    filter_function = drive_client.conditional_filter(data_filter)
+    data_search = drive_client.list(filter_function=filter_function, max_results=3)
+    prefix_search = drive_client.list(prefix='lab/dev', delimiter='drep', max_results=3)
+    print(prefix_search)
+
+# test import and export method
+    try:
+        from labpack.storage.appdata import appdataClient
+        export_client = appdataClient(collection_name='Test Export')
+        drive_client.export(export_client)
+        export_status = drive_client.export(export_client, overwrite=False)
+        print(export_status)
+        export_list = export_client.list(filter_function=filter_function, max_results=3)
+        print(export_list)
+        import_status = export_client.export(drive_client)
+        print(import_status)
+        export_client.remove()
+    except Exception as err:
+        print(err)
+
 # test load method
-    new_data = drive_client.load(data_key, secret_key=secret_key)
+    new_data = drive_client.load(data_search[0], secret_key=secret_key)
     new_hash = md5(new_data).digest()
     assert old_hash == new_hash
+    load_data = drive_client.load(prefix_search[0])
+    record_details = json.loads(load_data.decode())
+    assert record_details == test_record
+    with pytest.raises(Exception):
+        drive_client.load('notakey')
 
-# test delete method
-    drive_client.delete(data_key)
+# test delete
+    delete_status = drive_client.delete(data_key)
 
-# test walk method
-    for file_path, file_id in drive_client._walk():
-        print(file_path, file_id)
-
-# test remove method
-    drive_client.remove()
+# test removal
+    remove_status = drive_client.remove()
+    print(remove_status)

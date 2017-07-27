@@ -1,0 +1,145 @@
+{
+  "file_object": {
+    "kind": "drive#file",
+    "id": "",
+    "name": "",
+    "mimeType": "",
+    "description": "",
+    "starred": false,
+    "trashed": false,
+    "explicitlyTrashed": false,
+    "trashingUser": {
+      "kind": "drive#user",
+      "displayName": "",
+      "photoLink": "",
+      "me": false,
+      "permissionId": "",
+      "emailAddress": ""
+    },
+    "trashedTime": "",
+    "parents": [
+      ""
+    ],
+    "properties": {
+    },
+    "appProperties": {
+    },
+    "spaces": [
+      ""
+    ],
+    "version": "",
+    "webContentLink": "",
+    "webViewLink": "",
+    "iconLink": "",
+    "hasThumbnail": false,
+    "thumbnailLink": "",
+    "thumbnailVersion": "",
+    "viewedByMe": false,
+    "viewedByMeTime": "",
+    "createdTime": "",
+    "modifiedTime": "",
+    "modifiedByMeTime": "",
+    "modifiedByMe": false,
+    "sharedWithMeTime": "",
+    "sharingUser": {
+      "kind": "drive#user",
+      "displayName": "",
+      "photoLink": "",
+      "me": false,
+      "permissionId": "",
+      "emailAddress": ""
+    },
+    "owners": [
+      {
+        "kind": "drive#user",
+        "displayName": "",
+        "photoLink": "",
+        "me": false,
+        "permissionId": "",
+        "emailAddress": ""
+      }
+    ],
+    "teamDriveId": "",
+    "lastModifyingUser": {
+      "kind": "drive#user",
+      "displayName": "",
+      "photoLink": "",
+      "me": false,
+      "permissionId": "",
+      "emailAddress": ""
+    },
+    "shared": false,
+    "ownedByMe": false,
+    "capabilities": {
+      "canAddChildren": false,
+      "canChangeViewersCanCopyContent": false,
+      "canComment": false,
+      "canCopy": false,
+      "canDelete": false,
+      "canDownload": false,
+      "canEdit": false,
+      "canListChildren": false,
+      "canMoveItemIntoTeamDrive": false,
+      "canMoveTeamDriveItem": false,
+      "canReadRevisions": false,
+      "canReadTeamDrive": false,
+      "canRemoveChildren": false,
+      "canRename": false,
+      "canShare": false,
+      "canTrash": false,
+      "canUntrash": false
+    },
+    "viewersCanCopyContent": false,
+    "writersCanShare": false,
+    "permissions": [],
+    "hasAugmentedPermissions": false,
+    "folderColorRgb": "",
+    "originalFilename": "",
+    "fullFileExtension": "",
+    "fileExtension": "",
+    "md5Checksum": "",
+    "size": "",
+    "quotaBytesUsed": "",
+    "headRevisionId": "",
+    "contentHints": {
+      "thumbnail": {
+        "image": "",
+        "mimeType": ""
+      },
+      "indexableText": ""
+    },
+    "imageMediaMetadata": {
+      "width": 0,
+      "height": 0,
+      "rotation": 0,
+      "location": {
+        "latitude": 0.0,
+        "longitude": 0.0,
+        "altitude": 0.0
+      },
+      "time": "",
+      "cameraMake": "",
+      "cameraModel": "",
+      "exposureTime": 0.0,
+      "aperture": 0.0,
+      "flashUsed": false,
+      "focalLength": 0.0,
+      "isoSpeed": 0,
+      "meteringMode": "",
+      "sensor": "",
+      "exposureMode": "",
+      "colorSpace": "",
+      "whiteBalance": "",
+      "exposureBias": 0.0,
+      "maxApertureValue": 0.0,
+      "subjectDistance": 0,
+      "lens": ""
+    },
+    "videoMediaMetadata": {
+      "width": 0,
+      "height": 0,
+      "durationMillis": ""
+    },
+    "isAppAuthorized": false
+  }
+}
