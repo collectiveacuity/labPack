@@ -184,3 +184,5 @@ if __name__ == '__main__':
     test_comparison = _compare_dict(newRecord, oldRecord, [], [])
     assert test_comparison[0]['path'][4] == 'key'
     print(test_comparison)
+    test_comparison = compare_records(newRecord, oldRecord)
+    print(test_comparison)
