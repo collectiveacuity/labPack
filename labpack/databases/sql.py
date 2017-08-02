@@ -122,61 +122,60 @@ class sqlClient(object):
     
     # retrieve existing table object properties
         table_list = self.engine.table_names()
-        existing_columns = []
-        existing_names = []
+        existing_map = {}
         if self.collection_name in table_list:
             metadata.reflect(self.engine)
             existing_table = metadata.tables[self.collection_name]
             for column in existing_table.columns:
-                existing_names.append(column.key)
-                from copy import deepcopy
                 column_type = None
                 if column.type.__class__ == FLOAT().__class__:
-                    column_type = Float()
+                    column_type = 'float'
                 elif column.type.__class__ == INTEGER().__class__:
-                    column_type = Integer()
+                    column_type = 'integer'
                 elif column.type.__class__ == VARCHAR().__class__:
-                    column_type = String()
+                    column_type = 'string'
                 elif column.type.__class__ == BLOB().__class__:
-                    column_type = Binary()
+                    column_type = 'list'
                 elif column.type.__class__ == BOOLEAN().__class__:
-                    column_type = Boolean()
-                existing_columns.append((column.key, column_type, column.primary_key, deepcopy(column)))
+                    column_type = 'boolean'
+                existing_map[column.key] = (column.key, column_type, column.primary_key, '')
             metadata = MetaData()
         
     # construct table object
-        table_args = [ self.collection_name, metadata, Column('id', String, primary_key=True) ]
-        column_list = self._construct_columns()
-        if column_list:
-            if column_list[0].key == 'id':
-                table_args.pop()
-        table_args.extend(column_list)
+        column_map = self._parse_columns()
+        table_args = [ self.collection_name, metadata ]
+        column_args = self._construct_columns(column_map)
+        table_args.extend(column_args)
         self.table = Table(*table_args)
     
     # process table updates
-        if existing_columns:
+        if existing_map:
         
         # determine columns to add, remove, rename and change datatypes
-            names = []
             add_columns = []
             remove_columns = []
             rename_columns = []
             retype_columns = []
-            for column in self.table.columns:
-                names.append(column.key)
-                if column.key not in existing_names:
-                    add_columns.append(column)
+            primary_columns = []
+            for key, value in column_map.items():
+                if key not in existing_map.keys():
+                    column_object = getattr(self.table.c, key)
+                    add_columns.append(column_object)
+                    if value[3]:
+                        if value[3] in existing_map.keys():
+                            rename_columns.append((key, value[3]))
+                            add_columns.pop()
                 else:
-                    column_index = existing_names.index(column.key)
-                    if column.type.__class__ != existing_columns[column_index][1].__class__:
-                        add_columns.append(column)
-                        remove_columns.append(existing_columns[column_index][3])
-                    elif column.primary_key != existing_columns[column_index][2]:
-                        add_columns.append(column)
-                        remove_columns.append(existing_columns[column_index][3])
-            for i in range(len(existing_names)):
-                if existing_names[i] not in names:
-                    remove_columns.append(existing_columns[i][3])
+                    if value[1] != existing_map[key][1]:
+                        retype_columns.append((key, value[1]))
+                    elif value[2] != value[2]:
+                        for k, v in existing_map.items():
+                            if v[2]:
+                                primary_columns.append((key, k))
+                                break
+            remove_keys = set(existing_map.keys()) - set(column_map.keys())
+            if remove_keys:
+                remove_columns.extend(list(remove_keys))
         
         # remove and add columns
         # https://sqlalchemy-migrate.readthedocs.io/en/latest/versioning.html#modifying-existing-tables
@@ -195,65 +194,96 @@ class sqlClient(object):
                 column_name = column.compile(dialect=self.engine.dialect)
                 self.engine.execute('ALTER TABLE %s DROP COLUMN %s' % (self.collection_name, column_name))
         
-        # TODO SQLITE doesn't support drop (only add column and rename table)
-            for column in remove_columns:
-                _remove_column(column)
-                print('%s removed from collection %s' % (column.key, self.collection_name))
+        # TODO rebuild database
+            if remove_columns or rename_columns or retype_columns or primary_columns:
+                raise ValueError('%s table in %s database must be rebuilt in order to be updated to current record_schema' % (self.collection_name, self.database_name))
             for column in add_columns:
                 _add_column(column)
                 print('%s added to collection %s' % (column.key, self.collection_name))
-            
-            if add_columns or remove_columns or rename_columns or retype_columns:
-                print('%s table updated in %s database.' % (self.collection_name, self.database_name))
                 
     # or create new table
         else:
             self.table.create(self.engine)                    
             print('%s table created in %s database.' % (self.collection_name, self.database_name))
     
-    def _construct_columns(self):
+    def _parse_columns(self):
     
-        ''' a helper method for constructing the columns for a table object '''
-        
-        from sqlalchemy import Column, String, Boolean, Integer, Float, Binary
+        ''' a helper method for parsing the column properties from the record schema '''
         
     # define item key pattern
         import re
         self.item_key = re.compile('\[0\]')
     
     # construct column list
-        column_list = []
+        column_map = {}
         for key, value in self.model.keyMap.items():
             record_key = key[1:]
             if record_key:
                 if self.item_key.findall(record_key):
                     pass
-                elif record_key == 'id':
-                    if value['value_datatype'] == 'string':
-                        column_list.insert(0, Column(record_key, String, primary_key=True))
-                    elif value['value_datatype'] == 'number':
-                        column_value = Column(record_key, Float, primary_key=True)
-                        if 'integer_data' in value.keys():
-                            if value['integer_data']:
-                                column_value = Column(record_key, Integer, primary_key=True)
-                        column_list.insert(0, column_value)
                 else:
-                    if value['value_datatype'] == 'boolean':
-                        column_list.append(Column(record_key, Boolean))
-                    elif value['value_datatype'] == 'string':
-                        column_list.append(Column(record_key, String))
-                    elif value['value_datatype'] == 'number':
-                        column_value = Column(record_key, Float)
+                    datatype = value['value_datatype']
+                    if value['value_datatype'] == 'number':
+                        datatype = 'float'
                         if 'integer_data' in value.keys():
                             if value['integer_data']:
-                                column_value = Column(record_key, Integer)
-                        column_list.append(column_value)
-                    elif value['value_datatype'] == 'list':
-                        column_list.append(Column(record_key, Binary))
+                                datatype = 'integer'
+                    primary_key = False
+                    replace_key = ''
+                    if 'field_metadata' in value.keys():
+                        if 'primary_key' in value['field_metadata'].keys():
+                            if value['field_metadata']['primary_key']:
+                                primary_key = True
+                        if 'replace_key' in value['field_metadata'].keys():
+                            if isinstance(value['field_metadata']['replace_key'], str):
+                                replace_key = value['field_metadata']['replace_key']
+                    column_map[record_key] = (record_key, datatype, primary_key, replace_key)
         
-        return column_list
+        return column_map
+    
+    def _construct_columns(self, column_map):
         
-    def _reconstruct(self, record_object):
+        ''' a helper method for constructing the column objects for a table object '''
+        
+        from sqlalchemy import Column, String, Boolean, Integer, Float, Binary 
+        
+        primary = False
+        column_args = []
+        for key, value in column_map.items():
+            record_key = value[0]
+            datatype = value[1]
+            primary_key = value[2]
+            if primary_key:
+                if primary:
+                    raise ValueError('Only one field in record_schema can be designated as a primary_key.')
+                elif datatype in ('string', 'float', 'integer'):
+                    primary = True
+                    if datatype == 'string':
+                        column_args.insert(0, Column(record_key, String, primary_key=True))
+                    elif datatype == 'float':
+                        column_args.insert(0, Column(record_key, Float, primary_key=True))
+                    elif datatype == 'integer':
+                        column_args.insert(0, Column(record_key, Integer, primary_key=True))
+                else:
+                    raise ValueError('Field %s in record_schema must be a string, float or integer.' % record_key)
+            else:
+                if datatype == 'boolean':
+                    column_args.append(Column(record_key, Boolean))
+                elif datatype == 'string':
+                    column_args.append(Column(record_key, String))
+                elif datatype == 'float':
+                    column_args.append(Column(record_key, Float))
+                elif datatype == 'integer':
+                    column_args.append(Column(record_key, Integer))
+                elif datatype == 'list':
+                    column_args.append(Column(record_key, Binary))
+                    
+        if not primary:
+            column_args.insert(0, Column('id', String, primary_key=True))
+        
+        return column_args
+        
+    def _reconstruct_record(self, record_object):
         
         ''' a helper method for reconstructing record fields from record object '''
         
@@ -343,7 +373,6 @@ class sqlClient(object):
     
     # insert record into table
         insert_statement = self.table.insert().values(**create_kwargs)
-        print(insert_statement)
         self.session.execute(insert_statement)
         
         return create_kwargs['id']
@@ -362,7 +391,7 @@ class sqlClient(object):
             raise ValueError('%s(primary_key=%s) does not exist.' % (title, primary_key))
         
     # reconstruct record details
-        record_details = self._reconstruct(record_object)
+        record_details = self._reconstruct_record(record_object)
                     
         return record_details
 
@@ -507,5 +536,5 @@ if __name__ == '__main__':
     exit_msg = sql_client.delete(record_id)
     print(exit_msg)
     assert not sql_client.exists(record_id)
-    # exit_msg = sql_client.remove()
-    # print(exit_msg)
+    exit_msg = sql_client.remove()
+    print(exit_msg)
