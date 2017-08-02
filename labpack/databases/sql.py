@@ -117,50 +117,166 @@ class sqlClient(object):
     
     # construct table metadata storage object
         from sqlalchemy import Column, String, Boolean, Integer, Float, Binary, Table, MetaData
+        from sqlalchemy import VARCHAR, INTEGER, BLOB, BOOLEAN, FLOAT
         metadata = MetaData()
     
-    # define table fields
-        import re
-        self.list_key = re.compile('\[0\]')
+    # retrieve existing table objects
+        table_list = self.engine.table_names()
+        existing_columns = []
+        existing_names = []
+        if self.collection_name in table_list:
+            metadata.reflect(self.engine)
+            existing_table = metadata.tables[self.collection_name]
+            for column in existing_table.columns:
+                existing_names.append(column.key)
+                from copy import deepcopy
+                column_type = None
+                if column.type.__class__ == FLOAT().__class__:
+                    column_type = Float()
+                elif column.type.__class__ == INTEGER().__class__:
+                    column_type = Integer()
+                elif column.type.__class__ == VARCHAR().__class__:
+                    column_type = String()
+                elif column.type.__class__ == BLOB().__class__:
+                    column_type = Binary()
+                elif column.type.__class__ == BOOLEAN().__class__:
+                    column_type = Boolean()
+                existing_columns.append((column.key, column_type, column.primary_key, deepcopy(column)))
+            metadata = MetaData()
+        
+    # construct table object
         table_args = [ self.collection_name, metadata, Column('id', String, primary_key=True) ]
+        column_list = self._construct_columns()
+        if column_list:
+            if column_list[0].key == 'id':
+                table_args.pop()
+        table_args.extend(column_list)
+        self.table = Table(*table_args)
+    
+    # process table updates
+        if existing_columns:
+        
+        # determine columns to add and remove
+            names = []
+            add_columns = []
+            remove_columns = []
+            for column in self.table.columns:
+                names.append(column.key)
+                if column.key not in existing_names:
+                    add_columns.append(column)
+                else:
+                    column_index = existing_names.index(column.key)
+                    if column.type.__class__ != existing_columns[column_index][1].__class__:
+                        add_columns.append(column)
+                        remove_columns.append(existing_columns[column_index][3])
+                    elif column.primary_key != existing_columns[column_index][2]:
+                        add_columns.append(column)
+                        remove_columns.append(existing_columns[column_index][3])
+            for i in range(len(existing_names)):
+                if existing_names[i] not in names:
+                    remove_columns.append(existing_columns[i][3])
+
+            print(add_columns)
+            print(remove_columns)
+        
+        # remove and add columns
+        # https://sqlalchemy-migrate.readthedocs.io/en/latest/versioning.html#modifying-existing-tables
+        # http://docs.sqlalchemy.org/en/latest/core/metadata.html#sqlalchemy.schema.Table.drop
+        
+        # define update functions
+        # http://www.1keydata.com/sql/sql-alter-table.html
+        # https://stackoverflow.com/questions/7300948/add-column-to-sqlalchemy-table
+            def _add_column(column):
+                column_name = column.compile(dialect=self.engine.dialect)
+                column_type = column.type.compile(self.engine.dialect)
+                self.engine.execute('ALTER TABLE %s ADD COLUMN %s %s' % (self.collection_name, column_name, column_type))
+        
+            def _remove_column(column):
+                column_name = column.compile(dialect=self.engine.dialect)
+                self.engine.execute('ALTER TABLE %s DROP COLUMN %s' % (self.collection_name, column_name))
+        
+        # TODO SQLITE doesn't support drop (only add column and rename table)
+            for column in remove_columns:
+                print('%s removed from collection %s' % (column.key, self.collection_name))
+                _remove_column(column)
+            for column in add_columns:
+                print('%s added to collection %s' % (column.key, self.collection_name))
+                _add_column(column)
+    
+    # or create new table
+        else:
+            print('%s table created in %s database.' % (self.collection_name, self.database_name))
+            self.table.create(self.engine)                    
+    
+    def _construct_columns(self):
+    
+        ''' a helper method for constructing the columns for a table object '''
+        
+        from sqlalchemy import Column, String, Boolean, Integer, Float, Binary
+        
+    # define item key pattern
+        import re
+        self.item_key = re.compile('\[0\]')
+    
+    # construct column list
+        column_list = []
         for key, value in self.model.keyMap.items():
             record_key = key[1:]
             if record_key:
-                if self.list_key.findall(record_key):
+                if self.item_key.findall(record_key):
                     pass
                 elif record_key == 'id':
                     if value['value_datatype'] == 'string':
-                        table_args[2] = Column(record_key, String, primary_key=True)
+                        column_list.insert(0, Column(record_key, String, primary_key=True))
                     elif value['value_datatype'] == 'number':
                         column_value = Column(record_key, Float, primary_key=True)
                         if 'integer_data' in value.keys():
                             if value['integer_data']:
                                 column_value = Column(record_key, Integer, primary_key=True)
-                        table_args[2] = column_value
+                        column_list.insert(0, column_value)
                 else:
                     if value['value_datatype'] == 'boolean':
-                        table_args.append(Column(record_key, Boolean))
+                        column_list.append(Column(record_key, Boolean))
                     elif value['value_datatype'] == 'string':
-                        table_args.append(Column(record_key, String))
+                        column_list.append(Column(record_key, String))
                     elif value['value_datatype'] == 'number':
                         column_value = Column(record_key, Float)
                         if 'integer_data' in value.keys():
                             if value['integer_data']:
                                 column_value = Column(record_key, Integer)
-                        table_args.append(column_value)
+                        column_list.append(column_value)
                     elif value['value_datatype'] == 'list':
-                        table_args.append(Column(record_key, Binary))
-    
-    # TODO, update table with new columns
-    # https://sqlalchemy-migrate.readthedocs.io/en/latest/
-    # http://docs.sqlalchemy.org/en/latest/core/metadata.html#sqlalchemy.schema.Table.drop
-                        
-    # construct table object and add to database
-        self.table = Table(*table_args)
-        if not self.table.exists(self.engine):
-            print('%s table created in %s database.' % (self.collection_name, self.database_name))
-            self.table.create(self.engine)
-    
+                        column_list.append(Column(record_key, Binary))
+        
+        return column_list
+        
+    def _reconstruct(self, record_object):
+        
+        ''' a helper method for reconstructing record fields from record object '''
+        
+        record_details = { 'id': record_object.id }
+        current_details = record_details
+        for key, value in self.model.keyMap.items():
+            record_key = key[1:]
+            if record_key:
+                record_value = getattr(record_object, record_key, None)
+                if record_value != None:
+                    record_segments = record_key.split('.')
+                    for i in range(len(record_segments)):
+                        segment = record_segments[i]
+                        if i + 1 < len(record_segments):
+                            if segment not in record_details.keys():
+                                current_details[segment] = {}
+                            current_details = current_details[segment]
+                        else:
+                            if isinstance(record_value, bytes):
+                                current_details[segment] = pickle.loads(record_value)
+                            else:
+                                current_details[segment] = record_value
+                    current_details = record_details
+                    
+        return record_details
+        
     def exists(self, primary_key):
         
         ''' a method to determine if record exists '''
@@ -202,7 +318,7 @@ class sqlClient(object):
         for key, value in self.model.keyMap.items():
             record_key = key[1:]
             if record_key:
-                if self.list_key.findall(record_key):
+                if self.item_key.findall(record_key):
                     pass
                 else:
                     if value['value_datatype'] in ('boolean', 'string', 'number'):
@@ -242,30 +358,13 @@ class sqlClient(object):
             raise ValueError('%s(primary_key=%s) does not exist.' % (title, primary_key))
         
     # reconstruct record details
-        record_details = { 'id': record_object.id }
-        current_details = record_details
-        for key, value in self.model.keyMap.items():
-            record_key = key[1:]
-            if record_key:
-                record_value = getattr(record_object, record_key, None)
-                if record_value != None:
-                    record_segments = record_key.split('.')
-                    for i in range(len(record_segments)):
-                        segment = record_segments[i]
-                        if i + 1 < len(record_segments):
-                            if segment not in record_details.keys():
-                                current_details[segment] = {}
-                            current_details = current_details[segment]
-                        else:
-                            if isinstance(record_value, bytes):
-                                current_details[segment] = pickle.loads(record_value)
-                            else:
-                                current_details[segment] = record_value
-                    current_details = record_details
+        record_details = self._reconstruct(record_object)
                     
         return record_details
 
     def update(self, new_details, old_details):
+        
+        ''' a method to upsert changes to a record in the collection '''
         
         title = '%s.update' % self.__class__.__name__
         
@@ -401,5 +500,5 @@ if __name__ == '__main__':
     exit_msg = sql_client.delete(record_id)
     print(exit_msg)
     assert not sql_client.exists(record_id)
-    exit_msg = sql_client.remove()
-    print(exit_msg)
+    # exit_msg = sql_client.remove()
+    # print(exit_msg)
