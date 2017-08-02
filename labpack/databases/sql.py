@@ -120,7 +120,7 @@ class sqlClient(object):
         from sqlalchemy import VARCHAR, INTEGER, BLOB, BOOLEAN, FLOAT
         metadata = MetaData()
     
-    # retrieve existing table objects
+    # retrieve existing table object properties
         table_list = self.engine.table_names()
         existing_columns = []
         existing_names = []
@@ -156,10 +156,12 @@ class sqlClient(object):
     # process table updates
         if existing_columns:
         
-        # determine columns to add and remove
+        # determine columns to add, remove, rename and change datatypes
             names = []
             add_columns = []
             remove_columns = []
+            rename_columns = []
+            retype_columns = []
             for column in self.table.columns:
                 names.append(column.key)
                 if column.key not in existing_names:
@@ -175,19 +177,17 @@ class sqlClient(object):
             for i in range(len(existing_names)):
                 if existing_names[i] not in names:
                     remove_columns.append(existing_columns[i][3])
-
-            print(add_columns)
-            print(remove_columns)
         
         # remove and add columns
         # https://sqlalchemy-migrate.readthedocs.io/en/latest/versioning.html#modifying-existing-tables
         # http://docs.sqlalchemy.org/en/latest/core/metadata.html#sqlalchemy.schema.Table.drop
         
         # define update functions
-        # http://www.1keydata.com/sql/sql-alter-table.html
         # https://stackoverflow.com/questions/7300948/add-column-to-sqlalchemy-table
             def _add_column(column):
-                column_name = column.compile(dialect=self.engine.dialect)
+                column_name = column.key
+                if column_name.find('.') > -1:
+                    column_name = '"%s"' % column_name
                 column_type = column.type.compile(self.engine.dialect)
                 self.engine.execute('ALTER TABLE %s ADD COLUMN %s %s' % (self.collection_name, column_name, column_type))
         
@@ -197,16 +197,19 @@ class sqlClient(object):
         
         # TODO SQLITE doesn't support drop (only add column and rename table)
             for column in remove_columns:
-                print('%s removed from collection %s' % (column.key, self.collection_name))
                 _remove_column(column)
+                print('%s removed from collection %s' % (column.key, self.collection_name))
             for column in add_columns:
-                print('%s added to collection %s' % (column.key, self.collection_name))
                 _add_column(column)
-    
+                print('%s added to collection %s' % (column.key, self.collection_name))
+            
+            if add_columns or remove_columns or rename_columns or retype_columns:
+                print('%s table updated in %s database.' % (self.collection_name, self.database_name))
+                
     # or create new table
         else:
-            print('%s table created in %s database.' % (self.collection_name, self.database_name))
             self.table.create(self.engine)                    
+            print('%s table created in %s database.' % (self.collection_name, self.database_name))
     
     def _construct_columns(self):
     
@@ -340,6 +343,7 @@ class sqlClient(object):
     
     # insert record into table
         insert_statement = self.table.insert().values(**create_kwargs)
+        print(insert_statement)
         self.session.execute(insert_statement)
         
         return create_kwargs['id']
@@ -458,13 +462,16 @@ if __name__ == '__main__':
     
     record_schema = {
       'schema': {
+        'city': '',
+        'test': '',
         'token_id': '',
         'expires_at': 0,
         'service_scope': '',
         'active': False,
         'address': {
           'number': 0,
-          'street': ''
+          'street': '',
+          'city': ''
         },
         'places': ['']
       },
@@ -486,7 +493,7 @@ if __name__ == '__main__':
         'record_schema': record_schema
     }
     sql_client = sqlClient(**sql_kwargs)
-    record_details = { 'token_id': 'unittest', 'places': ['here', 'there'], 'address': {'number': 3 } }
+    record_details = { 'token_id': 'unittest', 'places': ['here', 'there'], 'address': {'number': 3, 'city': 'motown' } }
     record_id = sql_client.create(record_details)
     record_details = sql_client.read(record_id)
     print(record_details)
