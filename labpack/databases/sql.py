@@ -23,7 +23,7 @@ class sqlClient(object):
     
     _class_fields = {
         'schema': {
-            'collection_name': 'User Data',
+            'table_name': 'User Data',
             'database_url': 'sqlite:///../../data/records.db',
             'record_schema': {
                 'schema': {}
@@ -36,7 +36,7 @@ class sqlClient(object):
             }
         },
         'components': {
-            '.collection_name': {
+            '.table_name': {
                 'max_length': 255,
                 'must_not_contain': ['/', '^\\.']
             },
@@ -52,7 +52,17 @@ class sqlClient(object):
         }
     }
     
-    def __init__(self, collection_name, database_url, record_schema, verbose=False):
+    def __init__(self, table_name, database_url, record_schema, rebuild=True, verbose=False):
+        
+        '''
+            the initialization method for the sqlClient class
+            
+        :param table_name: string with name for table of records
+        :param database_url: string with unique resource identifier to database
+        :param record_schema: dictionary with jsonmodel valid schema for records
+        :param rebuild: [optional] boolean to rebuild table with schema changes 
+        :param verbose: [optional] boolean to enable database logging to stdout
+        '''
         
         title = '%s.__init__' % self.__class__.__name__
         
@@ -62,7 +72,7 @@ class sqlClient(object):
     
     # validate inputs
         input_fields = {
-            'collection_name': collection_name,
+            'table_name': table_name,
             'database_url': database_url,
             'record_schema': record_schema
         }
@@ -90,13 +100,23 @@ class sqlClient(object):
         else:
             db_cred, db_file = db_path.split('@')
     
+    # construct verbose method
+        self.printer_on = True
+        def _printer(msg, flush=False):
+            if verbose and self.printer_on:
+                if flush:
+                    print(msg, end='', flush=True)
+                else:
+                    print(msg)
+        self.printer = _printer
+        
     # construct record model
         self.model = jsonModel(record_schema)
                 
     # construct database session
         self.engine = create_engine(database_url, echo=verbose)
         self.session = self.engine.connect()
-        self.collection_name = collection_name
+        self.table_name = table_name
         self.database_name = db_file
     
     # # ORM construct
@@ -107,7 +127,7 @@ class sqlClient(object):
     #     self.session = dbSession()
     #     self.base = declarative_base()
     #     class RecordObject(self.base):
-    #         __tablename__ = collection_name
+    #         __tablename__ = table_name
     #         id = Column(String, primary_key=True)
     #     self.base.metadata.create_all(self.engine)
     
@@ -115,17 +135,74 @@ class sqlClient(object):
         from labpack.records.id import labID
         self.labID = labID
     
-    # construct table metadata storage object
-        from sqlalchemy import Column, String, Boolean, Integer, Float, Binary, Table, MetaData
-        from sqlalchemy import VARCHAR, INTEGER, BLOB, BOOLEAN, FLOAT
+    # construct table metadata and prior table properties
+        from sqlalchemy import Table, MetaData
         metadata = MetaData()
+        prior_columns = self._extract_columns(self.table_name, metadata)
+        metadata = MetaData()
+        
+    # construct new table object
+        current_columns = self._parse_columns()
+        if not 'id' in current_columns.keys():
+            current_columns['id'] = [ 'id', 'string', True, '' ]
+        table_args = [ self.table_name, metadata ]
+        column_args = self._construct_columns(current_columns)
+        table_args.extend(column_args)
+        self.table = Table(*table_args)
     
-    # retrieve existing table object properties
+    # process table updates
+        if prior_columns:
+        
+        # determine columns to add, remove, rename and change properties
+            add_columns, remove_columns, rename_columns, retype_columns = self._compare_columns(current_columns, prior_columns)
+        
+        # define update functions
+        # https://stackoverflow.com/questions/7300948/add-column-to-sqlalchemy-table
+            def _add_column(column_key):
+                column = getattr(self.table.c, column_key)
+                column_name = column.key
+                if column_name.find('.') > -1:
+                    column_name = '"%s"' % column_name
+                column_type = column.type.compile(self.engine.dialect)
+                self.engine.execute('ALTER TABLE %s ADD COLUMN %s %s' % (self.table_name, column_name, column_type))
+        
+            def _remove_column(column):
+                column_name = column.compile(dialect=self.engine.dialect)
+                self.engine.execute('ALTER TABLE %s DROP COLUMN %s' % (self.table_name, column_name))
+        
+        # update table schema
+            if remove_columns or rename_columns or retype_columns:
+                if not rebuild:
+                    raise ValueError('%s table in %s database must be rebuilt in order to update to desired record_schema. try: rebuild=True' % (self.table_name, self.database_name))
+                else:
+                    new_name = self.table_name
+                    old_name = '%s_old_%s' % (self.table_name, labID().id24.replace('-','_'))
+                    self._rebuild_table(new_name, old_name, current_columns, prior_columns)
+                    
+            elif add_columns:
+                column_names = []
+                for column_key in add_columns.keys():
+                    _add_column(column_key)
+                    column_names.append(column_key)
+                from labpack.parsing.grammar import join_words
+                self.printer('%s columns added to table %s' % (join_words(column_names), self.table_name))
+                
+    # or create new table
+        else:
+            self.table.create(self.engine)                    
+            self.printer('%s table created in %s database.' % (self.table_name, self.database_name))
+    
+    def _extract_columns(self, table_name, metadata_object):
+        
+        ''' a method to extract the column properties of an existing table '''
+        
+        from sqlalchemy import VARCHAR, INTEGER, BLOB, BOOLEAN, FLOAT
+        
         table_list = self.engine.table_names()
-        existing_map = {}
-        if self.collection_name in table_list:
-            metadata.reflect(self.engine)
-            existing_table = metadata.tables[self.collection_name]
+        prior_columns = {}
+        if table_name in table_list:
+            metadata_object.reflect(self.engine)
+            existing_table = metadata_object.tables[table_name]
             for column in existing_table.columns:
                 column_type = None
                 if column.type.__class__ == FLOAT().__class__:
@@ -138,74 +215,10 @@ class sqlClient(object):
                     column_type = 'list'
                 elif column.type.__class__ == BOOLEAN().__class__:
                     column_type = 'boolean'
-                existing_map[column.key] = (column.key, column_type, column.primary_key, '')
-            metadata = MetaData()
+                prior_columns[column.key] = (column.key, column_type, '')
         
-    # construct table object
-        column_map = self._parse_columns()
-        table_args = [ self.collection_name, metadata ]
-        column_args = self._construct_columns(column_map)
-        table_args.extend(column_args)
-        self.table = Table(*table_args)
-    
-    # process table updates
-        if existing_map:
+        return prior_columns
         
-        # determine columns to add, remove, rename and change datatypes
-            add_columns = []
-            remove_columns = []
-            rename_columns = []
-            retype_columns = []
-            primary_columns = []
-            for key, value in column_map.items():
-                if key not in existing_map.keys():
-                    column_object = getattr(self.table.c, key)
-                    add_columns.append(column_object)
-                    if value[3]:
-                        if value[3] in existing_map.keys():
-                            rename_columns.append((key, value[3]))
-                            add_columns.pop()
-                else:
-                    if value[1] != existing_map[key][1]:
-                        retype_columns.append((key, value[1]))
-                    elif value[2] != value[2]:
-                        for k, v in existing_map.items():
-                            if v[2]:
-                                primary_columns.append((key, k))
-                                break
-            remove_keys = set(existing_map.keys()) - set(column_map.keys())
-            if remove_keys:
-                remove_columns.extend(list(remove_keys))
-        
-        # remove and add columns
-        # https://sqlalchemy-migrate.readthedocs.io/en/latest/versioning.html#modifying-existing-tables
-        # http://docs.sqlalchemy.org/en/latest/core/metadata.html#sqlalchemy.schema.Table.drop
-        
-        # define update functions
-        # https://stackoverflow.com/questions/7300948/add-column-to-sqlalchemy-table
-            def _add_column(column):
-                column_name = column.key
-                if column_name.find('.') > -1:
-                    column_name = '"%s"' % column_name
-                column_type = column.type.compile(self.engine.dialect)
-                self.engine.execute('ALTER TABLE %s ADD COLUMN %s %s' % (self.collection_name, column_name, column_type))
-        
-            def _remove_column(column):
-                column_name = column.compile(dialect=self.engine.dialect)
-                self.engine.execute('ALTER TABLE %s DROP COLUMN %s' % (self.collection_name, column_name))
-        
-        # TODO rebuild database
-            if remove_columns or rename_columns or retype_columns or primary_columns:
-                raise ValueError('%s table in %s database must be rebuilt in order to be updated to current record_schema' % (self.collection_name, self.database_name))
-            for column in add_columns:
-                _add_column(column)
-                print('%s added to collection %s' % (column.key, self.collection_name))
-                
-    # or create new table
-        else:
-            self.table.create(self.engine)                    
-            print('%s table created in %s database.' % (self.collection_name, self.database_name))
-    
     def _parse_columns(self):
     
         ''' a helper method for parsing the column properties from the record schema '''
@@ -222,22 +235,20 @@ class sqlClient(object):
                 if self.item_key.findall(record_key):
                     pass
                 else:
+                    if value['value_datatype'] == 'map':
+                        continue
                     datatype = value['value_datatype']
                     if value['value_datatype'] == 'number':
                         datatype = 'float'
                         if 'integer_data' in value.keys():
                             if value['integer_data']:
                                 datatype = 'integer'
-                    primary_key = False
                     replace_key = ''
                     if 'field_metadata' in value.keys():
-                        if 'primary_key' in value['field_metadata'].keys():
-                            if value['field_metadata']['primary_key']:
-                                primary_key = True
                         if 'replace_key' in value['field_metadata'].keys():
                             if isinstance(value['field_metadata']['replace_key'], str):
                                 replace_key = value['field_metadata']['replace_key']
-                    column_map[record_key] = (record_key, datatype, primary_key, replace_key)
+                    column_map[record_key] = (record_key, datatype, replace_key)
         
         return column_map
     
@@ -247,17 +258,12 @@ class sqlClient(object):
         
         from sqlalchemy import Column, String, Boolean, Integer, Float, Binary 
         
-        primary = False
         column_args = []
         for key, value in column_map.items():
             record_key = value[0]
             datatype = value[1]
-            primary_key = value[2]
-            if primary_key:
-                if primary:
-                    raise ValueError('Only one field in record_schema can be designated as a primary_key.')
-                elif datatype in ('string', 'float', 'integer'):
-                    primary = True
+            if record_key == 'id':
+                if datatype in ('string', 'float', 'integer'):
                     if datatype == 'string':
                         column_args.insert(0, Column(record_key, String, primary_key=True))
                     elif datatype == 'float':
@@ -265,7 +271,7 @@ class sqlClient(object):
                     elif datatype == 'integer':
                         column_args.insert(0, Column(record_key, Integer, primary_key=True))
                 else:
-                    raise ValueError('Field %s in record_schema must be a string, float or integer.' % record_key)
+                    raise ValueError('Field "id" in record_schema must be a string, float or integer.')
             else:
                 if datatype == 'boolean':
                     column_args.append(Column(record_key, Boolean))
@@ -277,9 +283,6 @@ class sqlClient(object):
                     column_args.append(Column(record_key, Integer))
                 elif datatype == 'list':
                     column_args.append(Column(record_key, Binary))
-                    
-        if not primary:
-            column_args.insert(0, Column('id', String, primary_key=True))
         
         return column_args
         
@@ -309,7 +312,132 @@ class sqlClient(object):
                     current_details = record_details
                     
         return record_details
+    
+    def _compare_columns(self, new_columns, old_columns):
         
+        ''' a helper method for generating differences between column properties '''
+        
+        add_columns = {}
+        remove_columns = {}
+        rename_columns = {}
+        retype_columns = {}
+        for key, value in new_columns.items():
+            if key not in old_columns.keys():
+                add_columns[key] = True
+                if value[2]:
+                    if value[2] in old_columns.keys():
+                        rename_columns[key] = value[2]
+                        del add_columns[key]
+            else:
+                if value[1] != old_columns[key][1]:
+                    retype_columns[key] = value[1]
+        remove_keys = set(old_columns.keys()) - set(new_columns.keys())
+        if remove_keys:
+            for key in list(remove_keys):
+                remove_columns[key] = True
+        
+        return add_columns, remove_columns, rename_columns, retype_columns
+        
+    def _rebuild_table(self, new_name, old_name, new_columns, old_columns): 
+        
+        ''' a helper method for rebuilding table (by renaming & migrating) '''
+        
+        self.printer('Rebuilding %s table in %s database' % (self.table_name, self.database_name), flush=True)
+        
+        from sqlalchemy import Table, MetaData
+        metadata_object = MetaData()
+    
+    # construct old table
+        old_table_args = [ old_name, metadata_object ]
+        old_column_args = self._construct_columns(old_columns)
+        old_table_args.extend(old_column_args)
+        old_table = Table(*old_table_args)
+    
+    # construct new table
+        new_table_args = [ new_name, metadata_object ]
+        new_column_args = self._construct_columns(new_columns)
+        new_table_args.extend(new_column_args)
+        new_table = Table(*new_table_args)
+    
+    # determine differences between tables
+        add_columns, remove_columns, rename_columns, retype_columns = self._compare_columns(new_columns, old_columns)
+        
+    # rename table and recreate table if it doesn't already exist
+        table_list = self.engine.table_names()
+        if not old_name in table_list:
+            self.engine.execute('ALTER TABLE %s RENAME TO %s' % (new_name, old_name))
+            new_table.create(self.engine)
+    
+    # define insert kwarg constructor
+        def _construct_inserts(record, new_columns, rename_columns, retype_columns):
+            
+            insert_kwargs = {}
+            
+            for key, value in new_columns.items():
+            
+            # retrieve value for key (or from old key name)
+                if key in rename_columns.keys():
+                    record_value = getattr(record, rename_columns[key], None)
+                else:
+                    record_value = getattr(record, key, None)
+            
+            # attempt to convert datatype
+                if key in retype_columns.keys():
+                    try:
+                        old_list = False
+                        if isinstance(record_value, bytes):
+                            record_value = pickle.loads(record_value)
+                            old_list = True
+                        if retype_columns[key] == 'boolean':
+                            record_value = bool(record_value)
+                        elif retype_columns[key] == 'string':
+                            if old_list:
+                                record_value = ','.join(record_value)
+                            else:
+                                record_value = str(record_value)
+                        elif retype_columns[key] == 'integer':
+                            if old_list:
+                                record_value = int(record_value[0])
+                            else:
+                                record_value = int(record_value)
+                        elif retype_columns[key] == 'float':
+                            if old_list:
+                                record_value = int(record_value[0])
+                            else:
+                                record_value = float(record_value)
+                        elif retype_columns[key] == 'list':
+                            if isinstance(record_value, str):
+                                record_value = pickle.dumps(record_value.split(','))
+                            else:
+                                record_value = pickle.dumps([record_value])
+                    except:
+                        record_value = None
+                
+                if record_value:
+                    insert_kwargs[key] = record_value
+            
+            return insert_kwargs
+            
+    # migrate records from old to new
+        list_statement = old_table.select()
+        count = 0
+        for record in self.session.execute(list_statement).fetchall():
+            create_kwargs = _construct_inserts(record, new_columns, rename_columns, retype_columns)
+            insert_statement = new_table.insert().values(**create_kwargs)
+            self.session.execute(insert_statement)
+            delete_statement = old_table.delete(old_table.c.id==record.id)
+            self.session.execute(delete_statement)
+            if not count % 10:
+                self.printer('.', flush=True)
+            count += 1
+            
+    # drop old table
+        if not self.session.execute(list_statement).first():
+            old_table.drop(self.engine)
+        
+        self.printer(' done.')
+        return True
+    
     def exists(self, primary_key):
         
         ''' a method to determine if record exists '''
@@ -319,11 +447,20 @@ class sqlClient(object):
         if record_object:
             return True
         return False
+    
+    def list(self):
         
+        list_statement = self.table.select()
+        # print(list_statement)
+        for record in self.session.execute(list_statement).fetchall():
+            print(record.id)
+            
+        return True
+    
     def create(self, record_details): 
     
         '''
-            a method to create a new record in the collection 
+            a method to create a new record in the table 
         
             NOTE:   this class uses the id key as the primary key for all records
                     if record_details includes an id field that is an integer, float
@@ -337,7 +474,7 @@ class sqlClient(object):
             
             NOTE:   lists fields are pickled before they are saved to disk and
                     are not possible to search using normal querying. it is
-                    recommended that lists be stored instead as separate collections
+                    recommended that lists be stored instead as separate tables
                     
         :param record_details: dictionary with record fields 
         :return: string with primary key for record
@@ -379,13 +516,13 @@ class sqlClient(object):
 
     def read(self, primary_key):
     
-        ''' a method to retrieve the details for a record in the collection '''
+        ''' a method to retrieve the details for a record in the table '''
         
         title = '%s.read' % self.__class__.__name__
         
     # retrieve record object
         # record_object = self.session.query(self.record).filter_by(id=primary_key).first()
-        select_statement = self.table.select(self.table).where(self.table.c.id==primary_key)
+        select_statement = self.table.select(self.table.c.id==primary_key)
         record_object = self.session.execute(select_statement).first()
         if not record_object:
             raise ValueError('%s(primary_key=%s) does not exist.' % (title, primary_key))
@@ -397,7 +534,7 @@ class sqlClient(object):
 
     def update(self, new_details, old_details):
         
-        ''' a method to upsert changes to a record in the collection '''
+        ''' a method to upsert changes to a record in the table '''
         
         title = '%s.update' % self.__class__.__name__
         
@@ -459,19 +596,19 @@ class sqlClient(object):
                         update_kwargs[save_path] = None
             
     # send update command
-        update_statement = self.table.update().where(self.table.c.id==primary_key).values(**update_kwargs)
+        update_statement = self.table.update(self.table.c.id==primary_key).values(**update_kwargs)
         self.session.execute(update_statement)
         
         return primary_key
     
     def delete(self, primary_key):
         
-        ''' a method to delete a record in the collection '''
+        ''' a method to delete a record in the table '''
         
         title = '%s.delete' % self.__class__.__name__
     
     # delete object
-        delete_statement = self.table.delete().where(self.table.c.id==primary_key)
+        delete_statement = self.table.delete(self.table.c.id==primary_key)
         self.session.execute(delete_statement)
     
     # return message
@@ -480,21 +617,19 @@ class sqlClient(object):
         
     def remove(self):
         
-        ''' a method to remove the entire collection '''
+        ''' a method to remove the entire table '''
         
         self.table.drop(self.engine)
         
-        exit_msg = '%s table has been removed from %s database.' % (self.collection_name, self.database_name)
+        exit_msg = '%s table has been removed from %s database.' % (self.table_name, self.database_name)
         return exit_msg
-        
+
 if __name__ == '__main__':
     
     record_schema = {
       'schema': {
-        'city': '',
-        'test': '',
         'token_id': '',
-        'expires_at': 0,
+        'expires_at': 0.0,
         'service_scope': '',
         'active': False,
         'address': {
@@ -517,9 +652,10 @@ if __name__ == '__main__':
       }
     }
     sql_kwargs = {
-        'collection_name': 'tokens',
+        'table_name': 'tokens',
         'database_url': 'sqlite:///../../data/records.db',
-        'record_schema': record_schema
+        'record_schema': record_schema,
+        'verbose': True
     }
     sql_client = sqlClient(**sql_kwargs)
     record_details = { 'token_id': 'unittest', 'places': ['here', 'there'], 'address': {'number': 3, 'city': 'motown' } }
@@ -533,8 +669,9 @@ if __name__ == '__main__':
     del new_details['address']['number']
     sql_client.update(new_details, record_details)
     print(sql_client.read(record_id))
-    exit_msg = sql_client.delete(record_id)
-    print(exit_msg)
-    assert not sql_client.exists(record_id)
-    exit_msg = sql_client.remove()
-    print(exit_msg)
+    sql_client.list()
+    # exit_msg = sql_client.delete(record_id)
+    # print(exit_msg)
+    # assert not sql_client.exists(record_id)
+    # exit_msg = sql_client.remove()
+    # print(exit_msg)
