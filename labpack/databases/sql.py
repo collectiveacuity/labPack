@@ -111,6 +111,7 @@ class sqlClient(object):
         self.printer = _printer
         
     # construct record model
+        self.record_schema = record_schema
         self.model = jsonModel(record_schema)
                 
     # construct database session
@@ -146,6 +147,8 @@ class sqlClient(object):
         current_columns = self._parse_columns()
         if not 'id' in current_columns.keys():
             current_columns['id'] = [ 'id', 'string', True, '' ]
+            self.record_schema['schema']['id'] = ''
+            self.model = jsonModel(self.record_schema)
         table_args = [ self.table_name, metadata ]
         column_args = self._construct_columns(current_columns)
         table_args.extend(column_args)
@@ -186,12 +189,15 @@ class sqlClient(object):
                     _add_column(column_key)
                     column_names.append(column_key)
                 from labpack.parsing.grammar import join_words
-                self.printer('%s columns added to table %s' % (join_words(column_names), self.table_name))
+                plural = ''
+                if len(column_names) > 1:
+                    plural = 's'
+                print('%s column%s added to table %s' % (join_words(column_names), plural, self.table_name))
                 
     # or create new table
         else:
             self.table.create(self.engine)                    
-            self.printer('%s table created in %s database.' % (self.table_name, self.database_name))
+            print('%s table created in %s database.' % (self.table_name, self.database_name))
     
     def _extract_columns(self, table_name):
         
@@ -292,7 +298,7 @@ class sqlClient(object):
         
         ''' a helper method for reconstructing record fields from record object '''
         
-        record_details = { 'id': record_object.id }
+        record_details = {}
         current_details = record_details
         for key, value in self.model.keyMap.items():
             record_key = key[1:]
@@ -344,11 +350,8 @@ class sqlClient(object):
         
         ''' a helper method for rebuilding table (by renaming & migrating) '''
     
-    # handle verbosity
-        self.printer('Rebuilding %s table in %s database' % (self.table_name, self.database_name), flush=True)
-        self.session.close()
-        self.engine = create_engine(self.database_url, echo=False)
-        self.session = self.engine.connect()
+    # verbosity
+        print('Rebuilding %s table in %s database' % (self.table_name, self.database_name), end='', flush=True)
         
         from sqlalchemy import Table, MetaData
         metadata_object = MetaData()
@@ -388,38 +391,38 @@ class sqlClient(object):
                     record_value = getattr(record, key, None)
             
             # attempt to convert datatype
-                if key in retype_columns.keys():
-                    try:
-                        old_list = False
-                        if isinstance(record_value, bytes):
-                            record_value = pickle.loads(record_value)
-                            old_list = True
-                        if retype_columns[key] == 'boolean':
-                            record_value = bool(record_value)
-                        elif retype_columns[key] == 'string':
-                            if old_list:
-                                record_value = ','.join(record_value)
-                            else:
-                                record_value = str(record_value)
-                        elif retype_columns[key] == 'integer':
-                            if old_list:
-                                record_value = int(record_value[0])
-                            else:
-                                record_value = int(record_value)
-                        elif retype_columns[key] == 'float':
-                            if old_list:
-                                record_value = int(record_value[0])
-                            else:
-                                record_value = float(record_value)
-                        elif retype_columns[key] == 'list':
-                            if isinstance(record_value, str):
-                                record_value = pickle.dumps(record_value.split(','))
-                            else:
-                                record_value = pickle.dumps([record_value])
-                    except:
-                        record_value = None
-                
                 if record_value:
+                    if key in retype_columns.keys():
+                        try:
+                            old_list = False
+                            if isinstance(record_value, bytes):
+                                record_value = pickle.loads(record_value)
+                                old_list = True
+                            if retype_columns[key] == 'boolean':
+                                record_value = bool(record_value)
+                            elif retype_columns[key] == 'string':
+                                if old_list:
+                                    record_value = ','.join(record_value)
+                                else:
+                                    record_value = str(record_value)
+                            elif retype_columns[key] == 'integer':
+                                if old_list:
+                                    record_value = int(record_value[0])
+                                else:
+                                    record_value = int(record_value)
+                            elif retype_columns[key] == 'float':
+                                if old_list:
+                                    record_value = int(record_value[0])
+                                else:
+                                    record_value = float(record_value)
+                            elif retype_columns[key] == 'list':
+                                if isinstance(record_value, str):
+                                    record_value = pickle.dumps(record_value.split(','))
+                                else:
+                                    record_value = pickle.dumps([record_value])
+                        except:
+                            record_value = None
+                
                     insert_kwargs[key] = record_value
             
             return insert_kwargs
@@ -434,7 +437,7 @@ class sqlClient(object):
             delete_statement = old_table.delete(old_table.c.id==record.id)
             self.session.execute(delete_statement)
             if not count % 10:
-                self.printer('.', flush=True)
+                print('.', end='', flush=True)
             count += 1
             
     # drop old table
@@ -442,10 +445,7 @@ class sqlClient(object):
             old_table.drop(self.engine)
     
     # handle verbosity   
-        self.printer(' done.')
-        self.session.close()
-        self.engine = create_engine(self.database_url, echo=self.verbose)
-        self.session = self.engine.connect()
+        print(' done.')
         
         return True
     
@@ -459,14 +459,47 @@ class sqlClient(object):
             return True
         return False
     
-    def list(self):
+    def list(self, query_criteria=None):
         
-        list_statement = self.table.select()
-        # print(list_statement)
-        for record in self.session.execute(list_statement).fetchall():
-            print(record.id)
+        '''
+            a generator method to list records in table which match query criteria
             
-        return True
+        :param query_criteria: dictionary with schema dot-path field names and query qualifiers 
+        :return: generator object with string of primary key
+        
+        an example of how to construct the query_criteria argument:
+
+        query_criteria = {
+            '.path.to.number': {
+                'min_value': 4.5
+            },
+            '.path.to.string': {
+                'must_contain': [ '\\regex' ]
+            }
+        }
+
+        NOTE:   for a full list of operators for query_criteria based upon field
+                datatype, see either the query-rules.json file or REFERENCE file for
+                the jsonmodel module
+                
+        # http://collectiveacuity.github.io/jsonModel/reference/#query-criteria
+        # http://docs.sqlalchemy.org/en/latest/orm/tutorial.html#common-filter-operators
+        '''
+        
+        if query_criteria:
+            self.model.query(query_criteria)
+            
+        select_object = self.table.select()
+        for key, value in query_criteria.items():
+            for k, v in value.items():
+                if k == 'discrete_values':
+                    column_object = getattr(self.table.c, key[1:])
+                    select_object = select_object.where(column_object.in_(v))
+        
+        print(select_object)
+        
+        for record in self.session.execute(select_object).fetchall():
+            yield record.id
     
     def create(self, record_details): 
     
@@ -668,8 +701,7 @@ if __name__ == '__main__':
     sql_kwargs = {
         'table_name': 'tokens',
         'database_url': 'sqlite:///../../data/records.db',
-        'record_schema': record_schema,
-        'verbose': True
+        'record_schema': record_schema
     }
     sql_client = sqlClient(**sql_kwargs)
     record_details = { 'token_id': 'unittest', 'places': ['here', 'there'], 'address': {'number': 3, 'city': 'motown' } }
@@ -683,7 +715,8 @@ if __name__ == '__main__':
     del new_details['address']['number']
     sql_client.update(new_details, record_details)
     print(sql_client.read(record_id))
-    sql_client.list()
+    for record_id in sql_client.list({'.id':{'discrete_values': ['zZyl9ipT25Id0SfMyvcUUbQts9Br8ONlSjjw']}}):
+        print(record_id)
     # exit_msg = sql_client.delete(record_id)
     # print(exit_msg)
     # assert not sql_client.exists(record_id)
