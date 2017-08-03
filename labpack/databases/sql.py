@@ -118,6 +118,8 @@ class sqlClient(object):
         self.session = self.engine.connect()
         self.table_name = table_name
         self.database_name = db_file
+        self.database_url = database_url
+        self.verbose = verbose
     
     # # ORM construct
     #     from sqlalchemy.orm import sessionmaker
@@ -138,8 +140,7 @@ class sqlClient(object):
     # construct table metadata and prior table properties
         from sqlalchemy import Table, MetaData
         metadata = MetaData()
-        prior_columns = self._extract_columns(self.table_name, metadata)
-        metadata = MetaData()
+        prior_columns = self._extract_columns(self.table_name)
         
     # construct new table object
         current_columns = self._parse_columns()
@@ -192,12 +193,13 @@ class sqlClient(object):
             self.table.create(self.engine)                    
             self.printer('%s table created in %s database.' % (self.table_name, self.database_name))
     
-    def _extract_columns(self, table_name, metadata_object):
+    def _extract_columns(self, table_name):
         
         ''' a method to extract the column properties of an existing table '''
         
-        from sqlalchemy import VARCHAR, INTEGER, BLOB, BOOLEAN, FLOAT
+        from sqlalchemy import MetaData, VARCHAR, INTEGER, BLOB, BOOLEAN, FLOAT
         
+        metadata_object = MetaData()
         table_list = self.engine.table_names()
         prior_columns = {}
         if table_name in table_list:
@@ -341,8 +343,12 @@ class sqlClient(object):
     def _rebuild_table(self, new_name, old_name, new_columns, old_columns): 
         
         ''' a helper method for rebuilding table (by renaming & migrating) '''
-        
+    
+    # handle verbosity
         self.printer('Rebuilding %s table in %s database' % (self.table_name, self.database_name), flush=True)
+        self.session.close()
+        self.engine = create_engine(self.database_url, echo=False)
+        self.session = self.engine.connect()
         
         from sqlalchemy import Table, MetaData
         metadata_object = MetaData()
@@ -434,8 +440,13 @@ class sqlClient(object):
     # drop old table
         if not self.session.execute(list_statement).first():
             old_table.drop(self.engine)
-        
+    
+    # handle verbosity   
         self.printer(' done.')
+        self.session.close()
+        self.engine = create_engine(self.database_url, echo=self.verbose)
+        self.session = self.engine.connect()
+        
         return True
     
     def exists(self, primary_key):
@@ -630,7 +641,7 @@ if __name__ == '__main__':
       'schema': {
         'token_id': '',
         'expires_at': 0.0,
-        'service_scope': '',
+        'service_scope': [''],
         'active': False,
         'address': {
           'number': 0,
@@ -647,6 +658,9 @@ if __name__ == '__main__':
           'integer_data': True
         },
         '.places': {
+          'required_field': False
+        },
+        '.service_scope': {
           'required_field': False
         }
       }
