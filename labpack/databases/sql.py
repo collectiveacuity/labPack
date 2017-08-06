@@ -491,15 +491,30 @@ class sqlClient(object):
             
         select_object = self.table.select()
         for key, value in query_criteria.items():
+            column_object = getattr(self.table.c, key[1:])
             for k, v in value.items():
                 if k == 'discrete_values':
-                    column_object = getattr(self.table.c, key[1:])
                     select_object = select_object.where(column_object.in_(v))
+                elif k == 'excluded_values':
+                    select_object = select_object.where(~column_object.in_(v))
+                elif k == 'value_exists':
+                    if v:
+                        select_object = select_object.where(column_object!=None)
+                    else:
+                        select_object = select_object.where(column_object==None)
+                elif k == 'greater_than':
+                    select_object = select_object.where(column_object.__gt__(v))
+                elif k == 'less_than':
+                    select_object = select_object.where(column_object.__lt__(v))
+                elif k == 'max_value':
+                    select_object = select_object.where(column_object.__le__(v))
+                elif k == 'min_value':
+                    select_object = select_object.where(column_object.__ge__(v))
         
         print(select_object)
         
         for record in self.session.execute(select_object).fetchall():
-            yield record.id
+            yield self._reconstruct_record(record)
     
     def create(self, record_details): 
     
@@ -669,7 +684,9 @@ class sqlClient(object):
         return exit_msg
 
 if __name__ == '__main__':
-    
+
+# construct client
+    from copy import deepcopy
     record_schema = {
       'schema': {
         'token_id': '',
@@ -704,21 +721,40 @@ if __name__ == '__main__':
         'record_schema': record_schema
     }
     sql_client = sqlClient(**sql_kwargs)
+
+# test create
     record_details = { 'token_id': 'unittest', 'places': ['here', 'there'], 'address': {'number': 3, 'city': 'motown' } }
     record_id = sql_client.create(record_details)
-    record_details = sql_client.read(record_id)
-    print(record_details)
-    from copy import deepcopy
-    new_details = deepcopy(record_details)
+
+# test read
+    generated_details = sql_client.read(record_id)
+    anonymous_details = deepcopy(generated_details)
+    del anonymous_details['id']
+    assert anonymous_details == record_details
+    
+# test update
+    new_details = deepcopy(generated_details)
     new_details['address']['street'] = 'construction road'
     new_details['places'].append('everywhere')
     del new_details['address']['number']
-    sql_client.update(new_details, record_details)
-    print(sql_client.read(record_id))
-    for record_id in sql_client.list({'.id':{'discrete_values': ['zZyl9ipT25Id0SfMyvcUUbQts9Br8ONlSjjw']}}):
-        print(record_id)
-    # exit_msg = sql_client.delete(record_id)
-    # print(exit_msg)
-    # assert not sql_client.exists(record_id)
+    sql_client.update(new_details, generated_details)
+    updated_details = sql_client.read(record_id)
+    assert len(updated_details['places']) == 3
+    assert updated_details['address']['street']
+
+# test list
+    for record in sql_client.list({
+        '.id':{'discrete_values': ['zZyl9ipT25Id0SfMyvcUUbQts9Br8ONlSjjw']}, 
+        '.places': { 'value_exists': True }, 
+        '.address.city': { 'greater_than': 'mot' },
+        '.address.number': { 'value_exists': False },
+        '.address.street': { 'less_than': 'cont' }
+    }):
+        print(record)
+
+# test delete and exists
+    exit_msg = sql_client.delete(record_id)
+    print(exit_msg)
+    assert not sql_client.exists(record_id)
     # exit_msg = sql_client.remove()
     # print(exit_msg)
