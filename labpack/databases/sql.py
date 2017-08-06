@@ -493,7 +493,9 @@ class sqlClient(object):
         for key, value in query_criteria.items():
             column_object = getattr(self.table.c, key[1:])
             for k, v in value.items():
-                if k == 'discrete_values':
+                if k == 'equal_to':
+                    select_object = select_object.where(column_object==v)
+                elif k == 'discrete_values':
                     select_object = select_object.where(column_object.in_(v))
                 elif k == 'excluded_values':
                     select_object = select_object.where(~column_object.in_(v))
@@ -744,11 +746,12 @@ if __name__ == '__main__':
 
 # test list
     for record in sql_client.list({
-        '.id':{'discrete_values': ['zZyl9ipT25Id0SfMyvcUUbQts9Br8ONlSjjw']}, 
+        '.id':{ 'equal_to': 'zZyl9ipT25Id0SfMyvcUUbQts9Br8ONlSjjw' }, 
         '.places': { 'value_exists': True }, 
         '.address.city': { 'greater_than': 'mot' },
         '.address.number': { 'value_exists': False },
-        '.address.street': { 'less_than': 'cont' }
+        '.address.street': { 'less_than': 'cont' },
+        '.token_id': { 'discrete_values': [ 'unittest', 'lab', 'unittests']}
     }):
         print(record)
 
