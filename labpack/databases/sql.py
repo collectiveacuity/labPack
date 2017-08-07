@@ -16,10 +16,13 @@ except:
     sys.exit(1)
 
 import pickle
-    
+
+# TODO: migrate and _import methods
+# TODO: sequence integration for integer IDs
+
 class sqlClient(object):
     
-    ''' a class of methods for storing records in a sql database '''
+    ''' a class of methods for storing json valid records in a sql database '''
     
     _class_fields = {
         'schema': {
@@ -38,7 +41,7 @@ class sqlClient(object):
         'components': {
             '.table_name': {
                 'max_length': 255,
-                'must_not_contain': ['/', '^\\.']
+                'must_not_contain': ['/', '^\\.', '-']
             },
             '.record_schema': {
                 'extra_fields': True
@@ -99,7 +102,7 @@ class sqlClient(object):
                     makedirs(db_root)
         else:
             db_cred, db_file = db_path.split('@')
-    
+        
     # construct verbose method
         self.printer_on = True
         def _printer(msg, flush=False):
@@ -121,7 +124,15 @@ class sqlClient(object):
         self.database_name = db_file
         self.database_url = database_url
         self.verbose = verbose
+        self.database_dialect = sql_dialect
     
+    # verify max length criteria for string fields for certain sql dialects
+        if not self.database_dialect in ('sqlite', 'postgres'):
+            for key, value in self.model.keyMap.items():
+                if value['value_datatype'] == 'string':
+                    if not 'max_length' in value.keys():
+                        raise ValueError('%s database requires a "max_length" be declared for string field %s in record_schema.' % (self.database_dialect, key))
+                        
     # # ORM construct
     #     from sqlalchemy.orm import sessionmaker
     #     from sqlalchemy.ext.declarative import declarative_base
@@ -144,12 +155,20 @@ class sqlClient(object):
         prior_columns = self._extract_columns(self.table_name)
         
     # construct new table object
+        add_sequence = False
         current_columns = self._parse_columns()
         if not 'id' in current_columns.keys():
-            current_columns['id'] = [ 'id', 'string', True, '' ]
+            current_columns['id'] = [ 'id', 'string', '', None ]
+            if not self.database_dialect in ('sqlite', 'postgres'):
+                current_columns['id'] = [ 'id', 'string', '', 24 ]
             self.record_schema['schema']['id'] = ''
             self.model = jsonModel(self.record_schema)
+        elif isinstance(current_columns['id'], int):
+            if not current_columns['id']:
+                add_sequence = True
         table_args = [ self.table_name, metadata ]
+    # TODO add sequence for integer ids
+    # http://docs.sqlalchemy.org/en/latest/core/defaults.html#sqlalchemy.schema.Sequence
         column_args = self._construct_columns(current_columns)
         table_args.extend(column_args)
         self.table = Table(*table_args)
@@ -158,7 +177,7 @@ class sqlClient(object):
         if prior_columns:
         
         # determine columns to add, remove, rename and change properties
-            add_columns, remove_columns, rename_columns, retype_columns = self._compare_columns(current_columns, prior_columns)
+            add_columns, remove_columns, rename_columns, retype_columns, resize_columns = self._compare_columns(current_columns, prior_columns)
         
         # define update functions
         # https://stackoverflow.com/questions/7300948/add-column-to-sqlalchemy-table
@@ -175,12 +194,18 @@ class sqlClient(object):
                 self.engine.execute('ALTER TABLE %s DROP COLUMN %s' % (self.table_name, column_name))
         
         # update table schema
-            if remove_columns or rename_columns or retype_columns:
+            if remove_columns or rename_columns or retype_columns or resize_columns:
                 if not rebuild:
                     raise ValueError('%s table in %s database must be rebuilt in order to update to desired record_schema. try: rebuild=True' % (self.table_name, self.database_name))
                 else:
                     new_name = self.table_name
                     old_name = '%s_old_%s' % (self.table_name, labID().id24.replace('-','_'))
+                    table_pattern = '%s_old_\w{24}' % self.table_name
+                    table_regex = re.compile(table_pattern)
+                    for table_name in self.engine.table_names():
+                        if table_regex.findall(table_name):
+                            old_name = table_name
+                            break
                     self._rebuild_table(new_name, old_name, current_columns, prior_columns)
                     
             elif add_columns:
@@ -203,27 +228,41 @@ class sqlClient(object):
         
         ''' a method to extract the column properties of an existing table '''
         
+        import re
         from sqlalchemy import MetaData, VARCHAR, INTEGER, BLOB, BOOLEAN, FLOAT
-        
+    
+    # retrieve list of tables
         metadata_object = MetaData()
         table_list = self.engine.table_names()
+    
+    # check for old table name
+        table_pattern = '%s_old_\w{24}' % self.table_name
+        table_regex = re.compile(table_pattern)
+        for table in self.engine.table_names():
+            if table_regex.findall(table):
+                table_name = table
+                break
+    
+    # determine columns
         prior_columns = {}
         if table_name in table_list:
             metadata_object.reflect(self.engine)
             existing_table = metadata_object.tables[table_name]
             for column in existing_table.columns:
                 column_type = None
+                column_length = None
                 if column.type.__class__ == FLOAT().__class__:
                     column_type = 'float'
                 elif column.type.__class__ == INTEGER().__class__:
                     column_type = 'integer'
                 elif column.type.__class__ == VARCHAR().__class__:
+                    column_length = getattr(column.type, 'length', None)
                     column_type = 'string'
                 elif column.type.__class__ == BLOB().__class__:
                     column_type = 'list'
                 elif column.type.__class__ == BOOLEAN().__class__:
                     column_type = 'boolean'
-                prior_columns[column.key] = (column.key, column_type, '')
+                prior_columns[column.key] = (column.key, column_type, '', column_length)
         
         return prior_columns
         
@@ -256,7 +295,10 @@ class sqlClient(object):
                         if 'replace_key' in value['field_metadata'].keys():
                             if isinstance(value['field_metadata']['replace_key'], str):
                                 replace_key = value['field_metadata']['replace_key']
-                    column_map[record_key] = (record_key, datatype, replace_key)
+                    max_length = None
+                    if 'max_length' in value.keys():
+                        max_length = value['max_length']
+                    column_map[record_key] = (record_key, datatype, replace_key, max_length)
         
         return column_map
     
@@ -265,15 +307,19 @@ class sqlClient(object):
         ''' a helper method for constructing the column objects for a table object '''
         
         from sqlalchemy import Column, String, Boolean, Integer, Float, Binary 
-        
+    
         column_args = []
         for key, value in column_map.items():
             record_key = value[0]
             datatype = value[1]
+            max_length = value[2]
             if record_key == 'id':
                 if datatype in ('string', 'float', 'integer'):
                     if datatype == 'string':
-                        column_args.insert(0, Column(record_key, String, primary_key=True))
+                        if max_length:
+                            column_args.insert(0, Column(record_key, String(max_length), primary_key=True))
+                        else:
+                            column_args.insert(0, Column(record_key, String, primary_key=True))
                     elif datatype == 'float':
                         column_args.insert(0, Column(record_key, Float, primary_key=True))
                     elif datatype == 'integer':
@@ -284,7 +330,10 @@ class sqlClient(object):
                 if datatype == 'boolean':
                     column_args.append(Column(record_key, Boolean))
                 elif datatype == 'string':
-                    column_args.append(Column(record_key, String))
+                    if max_length:
+                        column_args.append(Column(record_key, String(max_length)))
+                    else:
+                        column_args.append(Column(record_key, String))
                 elif datatype == 'float':
                     column_args.append(Column(record_key, Float))
                 elif datatype == 'integer':
@@ -329,6 +378,7 @@ class sqlClient(object):
         remove_columns = {}
         rename_columns = {}
         retype_columns = {}
+        resize_columns = {}
         for key, value in new_columns.items():
             if key not in old_columns.keys():
                 add_columns[key] = True
@@ -339,12 +389,14 @@ class sqlClient(object):
             else:
                 if value[1] != old_columns[key][1]:
                     retype_columns[key] = value[1]
+                if value[3] != old_columns[key][3]:
+                    resize_columns[key] = value[3]
         remove_keys = set(old_columns.keys()) - set(new_columns.keys())
         if remove_keys:
             for key in list(remove_keys):
                 remove_columns[key] = True
         
-        return add_columns, remove_columns, rename_columns, retype_columns
+        return add_columns, remove_columns, rename_columns, retype_columns, resize_columns
         
     def _rebuild_table(self, new_name, old_name, new_columns, old_columns): 
         
@@ -369,7 +421,7 @@ class sqlClient(object):
         new_table = Table(*new_table_args)
     
     # determine differences between tables
-        add_columns, remove_columns, rename_columns, retype_columns = self._compare_columns(new_columns, old_columns)
+        add_columns, remove_columns, rename_columns, retype_columns, resize_columns = self._compare_columns(new_columns, old_columns)
         
     # rename table and recreate table if it doesn't already exist
         table_list = self.engine.table_names()
@@ -378,7 +430,7 @@ class sqlClient(object):
             new_table.create(self.engine)
     
     # define insert kwarg constructor
-        def _construct_inserts(record, new_columns, rename_columns, retype_columns):
+        def _construct_inserts(record, new_columns, rename_columns, retype_columns, resize_columns):
             
             insert_kwargs = {}
             
@@ -422,7 +474,16 @@ class sqlClient(object):
                                     record_value = pickle.dumps([record_value])
                         except:
                             record_value = None
-                
+            
+            # attempt to resize string data 
+                    if key in resize_columns.keys():
+                        max_length = resize_columns[key]
+                        try:
+                            if len(record_value) > max_length:
+                                record_value = record_value[0:max_length]
+                        except:
+                            record_value = None
+                        
                     insert_kwargs[key] = record_value
             
             return insert_kwargs
@@ -431,7 +492,7 @@ class sqlClient(object):
         list_statement = old_table.select()
         count = 0
         for record in self.session.execute(list_statement).fetchall():
-            create_kwargs = _construct_inserts(record, new_columns, rename_columns, retype_columns)
+            create_kwargs = _construct_inserts(record, new_columns, rename_columns, retype_columns, resize_columns)
             insert_statement = new_table.insert().values(**create_kwargs)
             self.session.execute(insert_statement)
             delete_statement = old_table.delete(old_table.c.id==record.id)
@@ -451,7 +512,12 @@ class sqlClient(object):
     
     def exists(self, primary_key):
         
-        ''' a method to determine if record exists '''
+        '''
+            a method to determine if record exists
+            
+        :param primary_key: string with primary key of record 
+        :return: boolean to indicate existence of record
+        '''
         
         select_statement = self.table.select(self.table).where(self.table.c.id==primary_key)
         record_object = self.session.execute(select_statement).first()
@@ -474,49 +540,92 @@ class sqlClient(object):
                 'min_value': 4.5
             },
             '.path.to.string': {
-                'must_contain': [ '\\regex' ]
+                'discrete_values': [ 'pond', 'lake', 'stream', 'brook' ]
             }
         }
 
-        NOTE:   for a full list of operators for query_criteria based upon field
-                datatype, see either the query-rules.json file or REFERENCE file for
-                the jsonmodel module
-                
-        # http://collectiveacuity.github.io/jsonModel/reference/#query-criteria
-        # http://docs.sqlalchemy.org/en/latest/orm/tutorial.html#common-filter-operators
-        '''
+        NOTE:   sql only supports a limited number of query conditions and all list
+                fields in a record are stored as a blob. this method constructs a
+                sql query which contains clauses wherever the query conditions can
+                be translated one-to-one into sql keywords and returns the entire
+                record of each qualifying record. once sql returns its results, the
+                remaining query conditions are applied to the record and only those
+                results which match all conditions are yield by the generator. as
+                such, depending upon the conditions selected, this method acts more
+                or less like a SCAN of the entire database. if no sql supported
+                conditions are provided, the method will look through all records.
         
+                native SQL supported conditions
+                
+                float, integer & strings:
+                    value_exists
+                    equal_to
+                    discrete_values
+                    excluded_values
+                    greater_than
+                    less_than
+                    max_value
+                    min_value
+                
+                booleans:
+                    value_exists
+                    equal_to
+                    
+                lists:
+                    value_exists
+        
+        NOTE:   the full list of all criteria are found in the reference page for the
+                jsonmodel module as well as the query-rules.json file included in the
+                module. 
+                http://collectiveacuity.github.io/jsonModel/reference/#query-criteria
+        '''
+    
+    # validate inputs
         if query_criteria:
             self.model.query(query_criteria)
-            
+    
+    # construct select statement with sql supported conditions
+    # http://docs.sqlalchemy.org/en/latest/orm/tutorial.html#common-filter-operators
         select_object = self.table.select()
         for key, value in query_criteria.items():
-            column_object = getattr(self.table.c, key[1:])
-            for k, v in value.items():
-                if k == 'equal_to':
-                    select_object = select_object.where(column_object==v)
-                elif k == 'discrete_values':
-                    select_object = select_object.where(column_object.in_(v))
-                elif k == 'excluded_values':
-                    select_object = select_object.where(~column_object.in_(v))
-                elif k == 'value_exists':
-                    if v:
-                        select_object = select_object.where(column_object!=None)
-                    else:
-                        select_object = select_object.where(column_object==None)
-                elif k == 'greater_than':
-                    select_object = select_object.where(column_object.__gt__(v))
-                elif k == 'less_than':
-                    select_object = select_object.where(column_object.__lt__(v))
-                elif k == 'max_value':
-                    select_object = select_object.where(column_object.__le__(v))
-                elif k == 'min_value':
-                    select_object = select_object.where(column_object.__ge__(v))
+            record_key = key[1:]
+            if record_key:
+                if self.item_key.findall(record_key):
+                    pass
+                else:
+                    column_object = getattr(self.table.c, record_key)
+                    for k, v in value.items():
+                        if k == 'value_exists':
+                            if self.model.keyMap[key]['value_datatype'] in ('string', 'number', 'boolean', 'list'):
+                                if v:
+                                    select_object = select_object.where(column_object!=None)
+                                else:
+                                    select_object = select_object.where(column_object==None)
+                        else:
+                            if self.model.keyMap[key]['value_datatype'] in ('string', 'number', 'boolean'):
+                                if k == 'equal_to':
+                                    select_object = select_object.where(column_object==v)
+                                elif k == 'discrete_values':
+                                    select_object = select_object.where(column_object.in_(v))
+                                elif k == 'excluded_values':
+                                    select_object = select_object.where(~column_object.in_(v))
+                                elif k == 'greater_than':
+                                    select_object = select_object.where(column_object.__gt__(v))
+                                elif k == 'less_than':
+                                    select_object = select_object.where(column_object.__lt__(v))
+                                elif k == 'max_value':
+                                    select_object = select_object.where(column_object.__le__(v))
+                                elif k == 'min_value':
+                                    select_object = select_object.where(column_object.__ge__(v))
         
-        print(select_object)
-        
+    # execute query on database
+        # print(select_object)
         for record in self.session.execute(select_object).fetchall():
-            yield self._reconstruct_record(record)
+            record_details = self._reconstruct_record(record)
+        
+        # filter results with non-sql supported conditions
+            if self.model.query(query_criteria, record_details):
+                yield record_details
     
     def create(self, record_details): 
     
@@ -526,15 +635,15 @@ class sqlClient(object):
             NOTE:   this class uses the id key as the primary key for all records
                     if record_details includes an id field that is an integer, float
                     or string, then it will be used as the primary key. if the id
-                    field is missing, a 36 character url safe string will be created
-                    for the record and included in the record_details
+                    field is missing, a unique 24 character url safe string will be 
+                    created for the id field and included in the record_details
             
             NOTE:   record_details fields which do not exist in the record_model
                     or whose value do not match the requirements of the record_model
                     will throw an InputValidationError
             
             NOTE:   lists fields are pickled before they are saved to disk and
-                    are not possible to search using normal querying. it is
+                    are not possible to search using sql query statements. it is
                     recommended that lists be stored instead as separate tables
                     
         :param record_details: dictionary with record fields 
@@ -567,8 +676,13 @@ class sqlClient(object):
     
     # add id field if missing     
         if not 'id' in create_kwargs.keys():
-            create_kwargs['id'] = self.labID().id36
-    
+            create_kwargs['id'] = self.labID().id24
+        elif isinstance(create_kwargs['id'], int):
+            if not create_kwargs['id']:
+                if not self.model.keyMap['.id']['declared_value']:
+        # TODO increment record on sequence
+                    pass
+                    
     # insert record into table
         insert_statement = self.table.insert().values(**create_kwargs)
         self.session.execute(insert_statement)
@@ -577,7 +691,12 @@ class sqlClient(object):
 
     def read(self, primary_key):
     
-        ''' a method to retrieve the details for a record in the table '''
+        ''' 
+            a method to retrieve the details for a record in the table 
+            
+        :param primary_key: string with primary key of record 
+        :return: dictionary with record fields 
+        '''
         
         title = '%s.read' % self.__class__.__name__
         
@@ -595,7 +714,12 @@ class sqlClient(object):
 
     def update(self, new_details, old_details):
         
-        ''' a method to upsert changes to a record in the table '''
+        ''' a method to upsert changes to a record in the table
+        
+        :param new_details: dictionary with updated record fields
+        :param old_details: dictionary with original record fields 
+        :return: list of dictionaries with updated field details
+        '''
         
         title = '%s.update' % self.__class__.__name__
         
@@ -660,11 +784,16 @@ class sqlClient(object):
         update_statement = self.table.update(self.table.c.id==primary_key).values(**update_kwargs)
         self.session.execute(update_statement)
         
-        return primary_key
+        return update_list
     
     def delete(self, primary_key):
         
-        ''' a method to delete a record in the table '''
+        ''' 
+            a method to delete a record in the table
+         
+        :param primary_key: string with primary key of record 
+        :return: string with status message
+        '''
         
         title = '%s.delete' % self.__class__.__name__
     
@@ -678,7 +807,11 @@ class sqlClient(object):
         
     def remove(self):
         
-        ''' a method to remove the entire table '''
+        ''' 
+            a method to remove the entire table 
+        
+        :return string with status message    
+        '''
         
         self.table.drop(self.engine)
         
@@ -692,13 +825,14 @@ if __name__ == '__main__':
     record_schema = {
       'schema': {
         'token_id': '',
-        'expires_at': 0.0,
+        'expires_at': '',
         'service_scope': [''],
         'active': False,
         'address': {
           'number': 0,
           'street': '',
-          'city': ''
+          'city': '',
+          'zip': ''
         },
         'places': ['']
       },
@@ -751,7 +885,8 @@ if __name__ == '__main__':
         '.address.city': { 'greater_than': 'mot' },
         '.address.number': { 'value_exists': False },
         '.address.street': { 'less_than': 'cont' },
-        '.token_id': { 'discrete_values': [ 'unittest', 'lab', 'unittests']}
+        '.token_id': { 'discrete_values': [ 'unittest', 'lab', 'unittests']},
+        '.places[0]': { 'contains_either': [ 'there'] }
     }):
         print(record)
 
