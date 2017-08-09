@@ -149,10 +149,21 @@ class sqlClient(object):
         from labpack.records.id import labID
         self.labID = labID
     
-    # construct table metadata and prior table properties
+    # construct table metadata
         from sqlalchemy import Table, MetaData
         metadata = MetaData()
-        prior_columns = self._extract_columns(self.table_name)
+    
+    # determine if there is a prior table
+        migration_complete = True
+        prior_name = self.table_name
+        table_pattern = '%s_old_\w{24}' % self.table_name
+        table_regex = re.compile(table_pattern)
+        for table in self.engine.table_names():
+            if table_regex.findall(table):
+                prior_name = table
+                migration_complete = False
+                break
+        prior_columns = self._extract_columns(prior_name)
         
     # construct new table object
         add_sequence = False
@@ -200,12 +211,8 @@ class sqlClient(object):
                 else:
                     new_name = self.table_name
                     old_name = '%s_old_%s' % (self.table_name, labID().id24.replace('-','_'))
-                    table_pattern = '%s_old_\w{24}' % self.table_name
-                    table_regex = re.compile(table_pattern)
-                    for table_name in self.engine.table_names():
-                        if table_regex.findall(table_name):
-                            old_name = table_name
-                            break
+                    if not migration_complete:
+                        old_name = prior_name
                     self._rebuild_table(new_name, old_name, current_columns, prior_columns)
                     
             elif add_columns:
@@ -218,9 +225,13 @@ class sqlClient(object):
                 if len(column_names) > 1:
                     plural = 's'
                 print('%s column%s added to table %s' % (join_words(column_names), plural, self.table_name))
+            
+            elif not migration_complete:
+                print('Update of %s table previously interrupted...' % self.table_name)
+                self._rebuild_table(self.table_name, prior_name, current_columns, prior_columns)
                 
     # or create new table
-        else:
+        else:                
             self.table.create(self.engine)                    
             print('%s table created in %s database.' % (self.table_name, self.database_name))
     
@@ -234,14 +245,6 @@ class sqlClient(object):
     # retrieve list of tables
         metadata_object = MetaData()
         table_list = self.engine.table_names()
-    
-    # check for old table name
-        table_pattern = '%s_old_\w{24}' % self.table_name
-        table_regex = re.compile(table_pattern)
-        for table in self.engine.table_names():
-            if table_regex.findall(table):
-                table_name = table
-                break
     
     # determine columns
         prior_columns = {}
@@ -257,6 +260,9 @@ class sqlClient(object):
                     column_type = 'integer'
                 elif column.type.__class__ == VARCHAR().__class__:
                     column_length = getattr(column.type, 'length', None)
+                    if column_length == 1:
+                        if column.primary_key:
+                            column_length = None
                     column_type = 'string'
                 elif column.type.__class__ == BLOB().__class__:
                     column_type = 'list'
@@ -583,6 +589,8 @@ class sqlClient(object):
     # validate inputs
         if query_criteria:
             self.model.query(query_criteria)
+        else:
+            query_criteria = {}
     
     # construct select statement with sql supported conditions
     # http://docs.sqlalchemy.org/en/latest/orm/tutorial.html#common-filter-operators
@@ -817,82 +825,3 @@ class sqlClient(object):
         
         exit_msg = '%s table has been removed from %s database.' % (self.table_name, self.database_name)
         return exit_msg
-
-if __name__ == '__main__':
-
-# construct client
-    from copy import deepcopy
-    record_schema = {
-      'schema': {
-        'token_id': '',
-        'expires_at': '',
-        'service_scope': [''],
-        'active': False,
-        'address': {
-          'number': 0,
-          'street': '',
-          'city': '',
-          'zip': ''
-        },
-        'places': ['']
-      },
-      'components': {
-        '.address': {
-          'required_field': False
-        },
-        '.address.number': {
-          'integer_data': True
-        },
-        '.places': {
-          'required_field': False
-        },
-        '.service_scope': {
-          'required_field': False
-        }
-      }
-    }
-    sql_kwargs = {
-        'table_name': 'tokens',
-        'database_url': 'sqlite:///../../data/records.db',
-        'record_schema': record_schema
-    }
-    sql_client = sqlClient(**sql_kwargs)
-
-# test create
-    record_details = { 'token_id': 'unittest', 'places': ['here', 'there'], 'address': {'number': 3, 'city': 'motown' } }
-    record_id = sql_client.create(record_details)
-
-# test read
-    generated_details = sql_client.read(record_id)
-    anonymous_details = deepcopy(generated_details)
-    del anonymous_details['id']
-    assert anonymous_details == record_details
-    
-# test update
-    new_details = deepcopy(generated_details)
-    new_details['address']['street'] = 'construction road'
-    new_details['places'].append('everywhere')
-    del new_details['address']['number']
-    sql_client.update(new_details, generated_details)
-    updated_details = sql_client.read(record_id)
-    assert len(updated_details['places']) == 3
-    assert updated_details['address']['street']
-
-# test list
-    for record in sql_client.list({
-        '.id':{ 'equal_to': 'zZyl9ipT25Id0SfMyvcUUbQts9Br8ONlSjjw' }, 
-        '.places': { 'value_exists': True }, 
-        '.address.city': { 'greater_than': 'mot' },
-        '.address.number': { 'value_exists': False },
-        '.address.street': { 'less_than': 'cont' },
-        '.token_id': { 'discrete_values': [ 'unittest', 'lab', 'unittests']},
-        '.places[0]': { 'contains_either': [ 'there'] }
-    }):
-        print(record)
-
-# test delete and exists
-    exit_msg = sql_client.delete(record_id)
-    print(exit_msg)
-    assert not sql_client.exists(record_id)
-    # exit_msg = sql_client.remove()
-    # print(exit_msg)

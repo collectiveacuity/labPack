@@ -1,6 +1,10 @@
 ChangeLog
 =========
 
+0.13 (2017.08.??)
+-----------------
+* [FEATURE ADDED] sqlClient class for handling records stored in SQL databases
+
 0.12 (2017.07.27)
 -----------------
 * [FEATURE ADDED] s3Client class for handling record storage on AWS s3
