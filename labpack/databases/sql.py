@@ -720,13 +720,17 @@ class sqlClient(object):
                     
         return record_details
 
-    def update(self, new_details, old_details):
+    def update(self, new_details, old_details=None):
         
         ''' a method to upsert changes to a record in the table
         
         :param new_details: dictionary with updated record fields
-        :param old_details: dictionary with original record fields 
+        :param old_details: [optional] dictionary with original record fields 
         :return: list of dictionaries with updated field details
+        
+        NOTE:   if old_details is empty, method will poll database for the
+                most recent version of the record with which to compare the
+                new details for changes
         '''
         
         title = '%s.update' % self.__class__.__name__
@@ -737,19 +741,29 @@ class sqlClient(object):
             'old_details': old_details
         }
         for key, value in input_fields.items():
-            object_title = '%s(%s=%s)' % (title, key, str(value))
-            self.fields.validate(value, '.%s' % key, object_title)
-        if new_details['id'] != old_details['id']:
-            raise ValueError('%s old_details["id"] value must match new_details["id"]'  % title)
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+        if old_details:
+            if new_details['id'] != old_details['id']:
+                raise ValueError('%s old_details["id"] value must match new_details["id"]'  % title)
     
     # extract primary key
         primary_key = new_details['id']
         del new_details['id']
-        del old_details['id']
+        if old_details:
+            del old_details['id']
     
     # validate new details against record model
         new_details = self.model.validate(new_details)
     
+    # retrieve old record if not specified
+        if not old_details:
+            try:
+                old_details = self.read(primary_key)
+            except:
+                raise ValueError('%s new_details["id"] does not exist.' % title)
+                
     # determine record differences
         from labpack.parsing.comparison import compare_records
         update_list = compare_records(new_details, old_details)
