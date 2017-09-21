@@ -36,7 +36,8 @@ class sqlClient(object):
             },
             'new_details': {
                 'id': None
-            }
+            },
+            'order_criteria': [ { } ]
         },
         'components': {
             '.table_name': {
@@ -65,6 +66,12 @@ class sqlClient(object):
         :param record_schema: dictionary with jsonmodel valid schema for records
         :param rebuild: [optional] boolean to rebuild table with schema changes 
         :param verbose: [optional] boolean to enable database logging to stdout
+        
+        NOTE:   init will automatically update the table schema if the record schema
+                differs from the existing table. in order to change the name of a field
+                without losing the data associated with the old name, add the old key 
+                name to the field's metadata in the schema declaration:
+                components['.new_field']['field_metadata']['replace_key'] = '.old_field'
         '''
         
         title = '%s.__init__' % self.__class__.__name__
@@ -112,11 +119,15 @@ class sqlClient(object):
                 else:
                     print(msg)
         self.printer = _printer
-        
+    
     # construct record model
         self.record_schema = record_schema
         self.model = jsonModel(record_schema)
-                
+    
+    # define item key pattern
+        import re
+        self.item_key = re.compile('\[0\]')
+        
     # construct database session
         self.engine = create_engine(database_url, echo=verbose)
         self.session = self.engine.connect()
@@ -158,7 +169,8 @@ class sqlClient(object):
         prior_name = self.table_name
         table_pattern = '%s_old_\w{24}' % self.table_name
         table_regex = re.compile(table_pattern)
-        for table in self.engine.table_names():
+        self.tables = self.engine.table_names()
+        for table in self.tables:
             if table_regex.findall(table):
                 prior_name = table
                 migration_complete = False
@@ -210,11 +222,15 @@ class sqlClient(object):
                     raise ValueError('%s table in %s database must be rebuilt in order to update to desired record_schema. try: rebuild=True' % (self.table_name, self.database_name))
                 else:
                     new_name = self.table_name
-                    old_name = '%s_old_%s' % (self.table_name, labID().id24.replace('-','_'))
+                    old_name = '%s_old_%s' % (self.table_name, labID().id24.replace('-','_').lower())
                     if not migration_complete:
                         old_name = prior_name
                     self._rebuild_table(new_name, old_name, current_columns, prior_columns)
-                    
+            
+            elif not migration_complete:
+                print('Update of %s table previously interrupted...' % self.table_name)
+                self._rebuild_table(self.table_name, prior_name, current_columns, prior_columns)
+                
             elif add_columns:
                 column_names = []
                 for column_key in add_columns.keys():
@@ -225,15 +241,14 @@ class sqlClient(object):
                 if len(column_names) > 1:
                     plural = 's'
                 print('%s column%s added to table %s' % (join_words(column_names), plural, self.table_name))
-            
-            elif not migration_complete:
-                print('Update of %s table previously interrupted...' % self.table_name)
-                self._rebuild_table(self.table_name, prior_name, current_columns, prior_columns)
-                
+              
     # or create new table
         else:                
             self.table.create(self.engine)                    
             print('%s table created in %s database.' % (self.table_name, self.database_name))
+    
+    # add tables property with list of tables in database
+        self.tables = self.engine.table_names()
     
     def _extract_columns(self, table_name):
         
@@ -241,6 +256,7 @@ class sqlClient(object):
         
         import re
         from sqlalchemy import MetaData, VARCHAR, INTEGER, BLOB, BOOLEAN, FLOAT
+        from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION, BIT, BYTEA
     
     # retrieve list of tables
         metadata_object = MetaData()
@@ -256,6 +272,8 @@ class sqlClient(object):
                 column_length = None
                 if column.type.__class__ == FLOAT().__class__:
                     column_type = 'float'
+                elif column.type.__class__ == DOUBLE_PRECISION().__class__: # Postgres
+                    column_type = 'float'
                 elif column.type.__class__ == INTEGER().__class__:
                     column_type = 'integer'
                 elif column.type.__class__ == VARCHAR().__class__:
@@ -265,6 +283,8 @@ class sqlClient(object):
                             column_length = None
                     column_type = 'string'
                 elif column.type.__class__ == BLOB().__class__:
+                    column_type = 'list'
+                elif column.type.__class__ in (BIT().__class__, BYTEA().__class__):
                     column_type = 'list'
                 elif column.type.__class__ == BOOLEAN().__class__:
                     column_type = 'boolean'
@@ -276,10 +296,6 @@ class sqlClient(object):
     
         ''' a helper method for parsing the column properties from the record schema '''
         
-    # define item key pattern
-        import re
-        self.item_key = re.compile('\[0\]')
-    
     # construct column list
         column_map = {}
         for key, value in self.model.keyMap.items():
@@ -379,6 +395,9 @@ class sqlClient(object):
     def _compare_columns(self, new_columns, old_columns):
         
         ''' a helper method for generating differences between column properties '''
+        
+        # print(new_columns)
+        # print(old_columns)
         
         add_columns = {}
         remove_columns = {}
@@ -494,6 +513,8 @@ class sqlClient(object):
             
             return insert_kwargs
             
+    # wait for renamed table to be responsive
+                
     # migrate records from old to new
         list_statement = old_table.select()
         count = 0
@@ -506,10 +527,13 @@ class sqlClient(object):
             if not count % 10:
                 print('.', end='', flush=True)
             count += 1
-            
+        
     # drop old table
-        if not self.session.execute(list_statement).first():
+        record_list = self.session.execute(list_statement).first()
+        if not record_list:
+            self.session.close()
             old_table.drop(self.engine)
+            self.session = self.engine.connect()
     
     # handle verbosity   
         print(' done.')
@@ -531,12 +555,13 @@ class sqlClient(object):
             return True
         return False
     
-    def list(self, query_criteria=None):
+    def list(self, query_criteria=None, order_criteria=None):
         
         '''
             a generator method to list records in table which match query criteria
             
-        :param query_criteria: dictionary with schema dot-path field names and query qualifiers 
+        :param query_criteria: dictionary with schema dot-path field names and query qualifiers
+        :param order_criteria: list of single keypair dictionaries with field names to order by 
         :return: generator object with string of primary key
         
         an example of how to construct the query_criteria argument:
@@ -584,13 +609,38 @@ class sqlClient(object):
                 jsonmodel module as well as the query-rules.json file included in the
                 module. 
                 http://collectiveacuity.github.io/jsonModel/reference/#query-criteria
+        
+        an example of how to construct the order_criteria argument:
+        
+        order_criteria = [
+            { '.path.to.number': 'descend' }, 
+            { '.path.to.string': '' }
+        ]
+        
+        NOTE:   results can be ordered either by ascending or descending values. to
+                order in ascending order, leave the value for the field empty. any value
+                for the field key automatically is interpreted as descending order
+        
         '''
-    
+        
+        title = '%s.list' % self.__class__.__name__
+        
+        from sqlalchemy import desc as order_desc
+        
     # validate inputs
         if query_criteria:
             self.model.query(query_criteria)
         else:
             query_criteria = {}
+        if order_criteria:
+            object_title = '%s(%s=%s)' % (title, 'order_criteria', str(order_criteria))
+            self.fields.validate(order_criteria, '.order_criteria', object_title)
+            for criterion in order_criteria:
+                for key, value in criterion.items():
+                    if key not in self.model.keyMap.keys():
+                        raise ValueError('%s(order_criteria=[...]) item %s key %s does not exist in record_schema.' % (title, str(criterion), key))
+        else:
+            order_criteria = []
     
     # construct select statement with sql supported conditions
     # http://docs.sqlalchemy.org/en/latest/orm/tutorial.html#common-filter-operators
@@ -625,7 +675,21 @@ class sqlClient(object):
                                     select_object = select_object.where(column_object.__le__(v))
                                 elif k == 'min_value':
                                     select_object = select_object.where(column_object.__ge__(v))
-        
+    
+    # add order criteria
+        for criterion in order_criteria:
+            key, value = next(iter(criterion.items()))
+            record_key = key[1:]
+            if record_key:
+                if self.item_key.findall(record_key):
+                    pass
+                else:
+                    column_object = getattr(self.table.c, record_key)
+                    if value:
+                        select_object = select_object.order_by(order_desc(column_object))
+                    else:
+                        select_object = select_object.order_by(column_object)
+                        
     # execute query on database
         # print(select_object)
         for record in self.session.execute(select_object).fetchall():
@@ -750,13 +814,16 @@ class sqlClient(object):
     
     # extract primary key
         primary_key = new_details['id']
-        del new_details['id']
-        if old_details:
-            del old_details['id']
+    
+    # # handle missing id
+    #     if not '.id' in self.model.keyMap.keys():
+    #         del new_details['id']
+    #         if old_details:
+    #             del old_details['id']
     
     # validate new details against record model
         new_details = self.model.validate(new_details)
-    
+            
     # retrieve old record if not specified
         if not old_details:
             try:
@@ -803,8 +870,9 @@ class sqlClient(object):
                         update_kwargs[save_path] = None
             
     # send update command
-        update_statement = self.table.update(self.table.c.id==primary_key).values(**update_kwargs)
-        self.session.execute(update_statement)
+        if update_kwargs:
+            update_statement = self.table.update(self.table.c.id==primary_key).values(**update_kwargs)
+            self.session.execute(update_statement)
         
         return update_list
     

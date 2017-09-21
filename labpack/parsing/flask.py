@@ -150,21 +150,36 @@ def validate_request_content(request_content, request_model):
     }
 
 # validate request details
-    for key, value in request_model.schema.items():
-        comp_key = '.%s' % key
-        if request_model.keyMap[comp_key]['required_field']:
-            if not key in request_content.keys():
-                status_details['code'] = 400
-                status_details['error'] = "request is missing a value for required field '%s'" % key
-                break
-        elif key in request_content.keys():
-            try:
-                object_title = "request field '%s'" % key
-                request_model.validate(request_content[key], '.%s' % key, object_title)
-            except InputValidationError as err:
-                status_details['error'] = err.message.replace('\n',' ').lstrip()
-                status_details['code'] = 400
-                break
+    try:
+        request_model.validate(request_content)
+    except InputValidationError as err:
+        if err.error['input_criteria']['required_field'] and err.error['failed_test'] == 'required_field':
+            required_field = err.error['input_path']
+            if err.error['input_criteria']['value_datatype'] == 'map':
+                if isinstance(err.error['error_value'], list):
+                    required_field = err.error['error_value'][0]
+            error_message = 'request is missing required field %s' % required_field 
+        else:
+            failed_key = err.error['failed_test']
+            error_message = '%s value for request field %s is invalid. %s must be %s' % (err.error['error_value'], err.error['input_path'], err.error['failed_test'], err.error['input_criteria'][failed_key])
+        status_details['error'] = error_message
+        status_details['code'] = 400
+        
+#     for key, value in request_model.schema.items():
+#         comp_key = '.%s' % key
+#         if request_model.keyMap[comp_key]['required_field']:
+#             if not key in request_content.keys():
+#                 status_details['code'] = 400
+#                 status_details['error'] = "request is missing a value for required field '%s'" % key
+#                 break
+#         elif key in request_content.keys():
+#             try:
+#                 object_title = "request field '%s'" % key
+#                 request_model.validate(request_content[key], '.%s' % key, object_title)
+#             except InputValidationError as err:
+#                 status_details['error'] = err.message.replace('\n',' ').lstrip()
+#                 status_details['code'] = 400
+#                 break
 
     return status_details
 

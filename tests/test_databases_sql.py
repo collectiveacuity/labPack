@@ -60,7 +60,7 @@ if __name__ == '__main__':
     new_details['address']['street'] = 'construction road'
     new_details['places'].append('everywhere')
     del new_details['address']['number']
-    sql_client.update(new_details, generated_details)
+    update_list = sql_client.update(new_details, generated_details)
     updated_details = sql_client.read(record_id)
     assert len(updated_details['places']) == 3
     assert updated_details['address']['street']
@@ -78,6 +78,14 @@ if __name__ == '__main__':
     for record in sql_client.list(query_criteria):
         print(record)
 
+# test descending order by
+    order_criteria = [
+        { '.id': 'descend' }
+    ]
+    for record in sql_client.list(order_criteria=order_criteria):
+        print(record)
+        break
+        
 # test delete and exists
     exit_msg = sql_client.delete(record_id)
     print(exit_msg)

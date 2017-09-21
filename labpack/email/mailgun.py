@@ -4,6 +4,8 @@ __license__ = 'MIT'
 
 ''' 
 PLEASE NOTE:    mailgun requires domain verification to send messages
+                api uses postmaster@sub.domain.com as sender address
+                make sure to add mx record under the mailgun subdomain
 
 SETUP:          https://documentation.mailgun.com/quickstart-sending.html#how-to-verify-your-domain    
 '''
@@ -223,6 +225,8 @@ class mailgunClient(object):
             'data': {
                 'to': recipient_list,
                 'from': '%s <%s>' % (sender_name, sender_email),
+                'h:X-Mailgun-Native-Send': True,
+                # 'o:require-tls': True,
                 'subject': email_subject
             }
         }
@@ -293,7 +297,7 @@ if __name__ == '__main__':
     mailgun_kwargs = {
         'api_key': mailgun_cred['mailgun_api_key'],
         'email_key': mailgun_cred['mailgun_email_key'],
-        'account_domain': mailgun_cred['mailgun_sandbox_domain'],
+        'account_domain': mailgun_cred['mailgun_spf_route'],
         'requests_handler': handle_requests
     }
     mailgun_client = mailgunClient(**mailgun_kwargs)
@@ -311,7 +315,7 @@ if __name__ == '__main__':
         'sender_name': 'Collective Acuity',
         'email_subject': 'Test Mailgun API %s' % time(),
         'content_text': 'Great to see it works!',
-        'delivery_time': time() + 20
+        'delivery_time': time() + 5
     }
     response_details = mailgun_client.send_email(**send_kwargs)
     assert response_details['code'] == 200
