@@ -39,7 +39,10 @@ def describe_ip(ip_address, source='whatismyip'):
         source_url = 'https://whatismyipaddress.com/ip/%s' % ip_address
     else:
         raise Exception('describe_ip currently only supports queries to nekudo')
-    
+
+    # TODO incorporate geoip module and c dependencies with local database
+    # http://tech.marksblogg.com/ip-address-lookups-in-python.html
+
 # send request
     ip_details = {
         'accuracy_radius': 0,
