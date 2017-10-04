@@ -28,7 +28,7 @@ class oauth2Client(object):
                 'discrete_values': ['web', 'mobile']
             },
             '.redirect_uri': {
-                'must_contain': ['^https://']
+                'must_contain': ['^https?://']
             },
             '.auth_endpoint': {
                 'must_contain': ['^https://']
