@@ -142,7 +142,7 @@ class labDT(datetime):
         dtLocal = self.astimezone(get_tz)
         return format(dtLocal, js_format)
 
-    def humanFriendly(self, time_zone=''):
+    def humanFriendly(self, time_zone='', include_day=True, include_time=True):
 
         ''' a method to report a human friendly string from a labDT object
 
@@ -153,7 +153,12 @@ class labDT(datetime):
     # validate inputs
         zeroHourPattern = re.compile('\s0\d:')
         title = 'Timezone input for labDT.humanFriendly'
-        human_format = '%A, %B %d, %Y %I:%M%p %Z'
+        human_format = ''
+        if include_day:
+            human_format += '%A, '
+        human_format += '%B %d, %Y'
+        if include_time:
+            human_format += ' %I:%M%p %Z'
         get_tz = get_localzone()
         if time_zone:
             # if time_zone.lower() in ('utc', 'uct', 'universal', 'zulu'):
