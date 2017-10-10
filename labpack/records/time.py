@@ -97,8 +97,8 @@ class labDT(datetime):
         get_tz = get_localzone()
         title = 'Timezone input for labDT.pyLocal'
         if time_zone:
-            if time_zone.lower() in ('utc', 'uct', 'universal', 'zulu'):
-                raise ValueError('time_zone cannot be UTC. %s requires a local timezone value. Try:\nfor tz in pytz.all_timezones:\n  print tz' % title)
+            # if time_zone.lower() in ('utc', 'uct', 'universal', 'zulu'):
+            #     raise ValueError('time_zone cannot be UTC. %s requires a local timezone value. Try:\nfor tz in pytz.all_timezones:\n  print tz' % title)
             try:
                 get_tz = tz.gettz(time_zone)
             except:
@@ -131,8 +131,8 @@ class labDT(datetime):
         title = 'Timezone input for labDT.jsLocal'
         get_tz = get_localzone()
         if time_zone:
-            if time_zone.lower() in ('utc', 'uct', 'universal', 'zulu'):
-                raise ValueError('time_zone cannot be UTC. %s requires a local timezone value. Try:\nfor tz in pytz.all_timezones:\n  print tz' % title)
+            # if time_zone.lower() in ('utc', 'uct', 'universal', 'zulu'):
+            #     raise ValueError('time_zone cannot be UTC. %s requires a local timezone value. Try:\nfor tz in pytz.all_timezones:\n  print tz' % title)
             try:
                 get_tz = tz.gettz(time_zone)
             except:
@@ -156,13 +156,13 @@ class labDT(datetime):
         human_format = '%A, %B %d, %Y %I:%M%p %Z'
         get_tz = get_localzone()
         if time_zone:
-            if time_zone.lower() in ('utc', 'uct', 'universal', 'zulu'):
-                raise ValueError('time_zone cannot be UTC. %s requires a local timezone value. Try:\nfor tz in pytz.all_timezones:\n  print tz' % title)
+            # if time_zone.lower() in ('utc', 'uct', 'universal', 'zulu'):
+            #     raise ValueError('time_zone cannot be UTC. %s requires a local timezone value. Try:\nfor tz in pytz.all_timezones:\n  print tz' % title)
             try:
                 get_tz = tz.gettz(time_zone)
             except:
                 raise ValueError('%s is not a valid timezone format. Try:\nfor tz in pytz.all_timezones:\n  print tz' % title)
-
+        
     # construct human friendly string from labDT
         dtLocal = self.astimezone(get_tz)
         dtString = format(dtLocal, human_format)
@@ -345,6 +345,6 @@ class labDT(datetime):
 
 if __name__ == '__main__':
     dt = labDT.new()
-    print(dt.humanFriendly('America/Seattle'))
+    print(dt.humanFriendly('US/Hawaii'))
     print(dt.rfc2822())
     print(dt.isoformat().replace('T', ' ')[0:19])
