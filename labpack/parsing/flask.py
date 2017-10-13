@@ -121,13 +121,14 @@ def extract_session_details(request_headers, session_header, secret_key):
 
     return session_details
 
-def validate_request_content(request_content, request_model):
+def validate_request_content(request_content, request_model, request_component='body'):
     
     '''
         a method to validate the content fields of a flask request
         
     :param request_content: dictionary with content fields to validate 
     :param request_model: object with jsonmodel class properties
+    :param request_component: string with name of component of request evaluated
     :return: dictionary with validation status details
     '''
 
@@ -158,14 +159,17 @@ def validate_request_content(request_content, request_model):
             if err.error['input_criteria']['value_datatype'] == 'map':
                 if isinstance(err.error['error_value'], list):
                     required_field = err.error['error_value'][0]
-            error_message = 'request is missing required field %s' % required_field 
+            error_message = 'request %s is missing required field %s' % (request_component, required_field) 
         else:
             failed_key = err.error['failed_test']
-            error_message = '%s value for request field %s is invalid. %s must be %s' % (err.error['error_value'], err.error['input_path'], err.error['failed_test'], err.error['input_criteria'][failed_key])
+            error_value = ''
+            if err.error['error_value']:
+                error_value = '%s ' % err.error['error_value']
+            error_message = '%svalue for request %s field %s is invalid. %s must be %s' % (error_value, request_component, err.error['input_path'], err.error['failed_test'], err.error['input_criteria'][failed_key])
         status_details['error'] = error_message
         status_details['code'] = 400
     except:
-        status_details['error'] = 'request body fields are invalid.'
+        status_details['error'] = 'request %s fields are invalid.' % request_component
         status_details['error'] = 400
 
     return status_details
