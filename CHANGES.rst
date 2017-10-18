@@ -1,9 +1,11 @@
 ChangeLog
 =========
 
-0.13 (2017.08.??)
+0.13 (2017.10.??)
 -----------------
 * [FEATURE ADDED] sqlClient class for handling records stored in SQL databases
+* [FEATURE ADDED] ip package added to records to obtain ip address information
+* [UPDATE] error reporting is improved in validate_request_content method
 
 0.12 (2017.07.27)
 -----------------
