@@ -74,7 +74,92 @@ class depositsClient(object):
             'requests_handler': 'labpack.handlers.requests.handle_requests',
             'usage_client': '',
             'additional_fields': {},
-            'product_id': 0
+            'application_id': '',
+            "customer_ip": "123.456.789.0",
+            "first_name": "Glenn",
+            "last_name": "Curtiss",
+            "middle_name": "",
+            "tax_id": "123456789",
+            "tax_id_type": "SSN",
+            "date_of_birth": "2017-10-10",
+            "address_line_1": "1 Cloud Drive",
+            "address_line_2": "",
+            "city_name": "Server Farm",
+            "state_code": "VA",
+            "postal_code": "10101",
+            "phone_number": "2125005000",
+            "phone_type": "mobile",
+            "email_address": "no-reply@collectiveacuity.com",
+            "citizenship_country": "USA",
+            "secondary_citizenship_country": "",
+            "employment_status": "Employed",
+            "job_title": "",
+            "annual_income": 0,
+            "product_id": 3000,
+            "cd_term": "",
+            "funding_type": "fundach",
+            "funding_amount": 0.1,
+            "account_number": "00123456789",
+            "routing_number": "012345678",
+            "account_owner": "primary",
+            "accept_terms": False,
+            "accept_tcpa": False,
+            "backup_withholding": False,
+            "secondary_application": {}
+        },
+        "components": {
+            ".address_line_1": {
+                "must_not_contain": [ "p|P\.?o|O\.?\sb|Bo|Ox|X" ]
+            },
+            ".tax_id": { 
+                "must_contain": [ "\d{3}\-?\d{2}\-?\d{4}" ]
+            },
+            ".tax_id_type": {
+                "discrete_values": [ 'SSN', 'ITIN' ]
+            },
+            ".state_code": { 
+                "must_contain": [ "[A-Z]{2}" ]
+            },
+            ".date_of_birth": {
+                "must_contain": [ "\d{4}\-?\d{2}\-?\d{2}" ]
+            },
+            ".phone_number": {
+                "must_contain": [ "\d{3}\.|\-?\d{3}\.|\-?\d{4}" ]
+            },
+            ".phone_type": {
+                "discrete_values": ['mobile', 'home', 'work']
+            },
+            "citizenship_country": { 
+                "must_contain": [ "[A-Z]{3}" ]
+            },
+            "secondary_citizenship_country": { 
+                "must_contain": [ "[A-Z]{3}" ]
+            },
+            ".employment_status": {
+                "discrete_values": [ 'Employed', 'Self-Employed', 'Retired', 'Student', 'Unemployed' ]
+            },
+            ".annual_income": { 
+                "min_value": 0,
+                "integer_data": True
+            },
+            ".product_id": {
+                "discrete_values": [ 3000, 3300, 3500 ]
+            },
+            ".funding_type": {
+                "discrete_values": [ 'fundach' ]
+            },
+            ".funding_amount": {
+                "min_value": 0.01
+            },
+            ".account_number": { 
+                "must_contain": [ "\d{3}\d+" ]
+            },
+            ".routing_number": { 
+                "must_contain": [ "\d{9}" ]
+            },
+            ".account_owner": {
+                "discrete_values": [ 'primary', 'secondary', 'both' ]
+            }
         }
     }
     
@@ -342,79 +427,46 @@ class depositsClient(object):
         :param city_name: string with name of city of address of applicant
         :param state_code: string with code for the state of address of applicant
         :param postal_code: string with postal code of address of applicant
-        :param phone_number: 
-        :param email_address: 
-        :param citizenship_country: 
-        :param employment_status: 
-        :param product_id: 
-        :param funding_amount: 
-        :param account_number: 
-        :param routing_number: 
-        :param backup_withholding: 
-        :param phone_type: 
-        :param accept_tcpa: 
-        :param accept_terms: 
-        :param address_line_2: 
-        :param middle_name: string with middle name of applicant
-        :param tax_id_type: 
-        :param secondary_citizenship_country: 
-        :param job_title: 
-        :param annual_income: 
-        :param cd_term: 
-        :param funding_type: 
-        :param account_owner: 
-        :param secondary_application: 
+        :param phone_number: string with phone number and area code of applicant
+        :param email_address: string with email address of applicant
+        :param citizenship_country: string with ISO 3166 alpha-3 country code of citizenship of applicant
+        :param employment_status: string with employment status of applicant
+        :param product_id: integer with id of account product to apply for
+        :param funding_amount: float with amount of dollars to initially fund account
+        :param account_number: string with pre-existing bank account number of applicant
+        :param routing_number: string with aba routing number for bank of pre-existing account of applicant
+        :param backup_withholding: [optional] boolean to indicate backup withholding on accounts of applicant
+        :param phone_type: [optional] string with type of phone of applicant
+        :param accept_tcpa: boolean to accept to be contacted by citizen one marketing on their phone number 
+        :param accept_terms: boolean to accept the terms and conditions associated with new account
+        :param address_line_2: [optional] string with second line of address of applicant
+        :param middle_name: [optional] string with middle name of applicant
+        :param tax_id_type: string with type of tax id of applicant
+        :param secondary_citizenship_country: [optional] string with ISO 3166 alpha-3 country code of secondary citizenship
+        :param job_title: [optional] string with job title of applicant
+        :param annual_income: [optional] integer with dollar value of annual income of applicant 
+        :param cd_term: [optional] string with term for the cd account product to apply for
+        :param funding_type: string with funding method selected by the applicant to fund new account
+        :param account_owner: string with role of applicant who owns pre-existing bank account
+        :param secondary_application: dictionary with applicant fields of secondary account holder
         :return: dictionary with successful response details in ['json'] key
-        
-        "customer_ip": "123.456.789.0",
-        "first_name": "tom",
-        "last_name": "curtiss,
-        "middle_name": "",
-        "tax_id": "123456789",
-        "tax_id_type": "SSN",
-        "date_of_birth": "2017-10-10",
-        "address_line_1": "1 Cloud Drive",
-        "city_name": "Server Farm",
-        "state_code": "VA",
-        "postal_code": "10101"
-        
-            "components": {
-                ".tax_id": { 
-                    "must_contain": [ "\d{3}\-?\d{2}\-?\d{4}" ]
-                },
-                ".date_of_birth": {
-                    "must_contain": [ "\d{4}\-?\d{2}\-?\d{2}" ]
-                },
-                ".phone_type": {
-                    "discrete_values": ['mobile', 'home', 'work']
-                },
-                ".tax_id_type": {
-                    "discrete_values": [ 'SSN', 'ITIN' ]
-                },
-                ".employment_status": {
-                    "discrete_values": [ 'Employed', 'Self-Employed', 'Retired', 'Student', 'Unemployed' ]
-                },
-                ".product_id": {
-                    "discrete_values": [ 3000, 3300, 3500 ]
-                },
-                ".funding_type": {
-                    "discrete_values": [ 'fundach' ]
-                },
-                ".funding_amount": {
-                    "min_value": 0.01
-                },
-                ".account_owner": {
-                    "discrete_values": [ 'primary', 'secondary', 'both' ]
-                }
-            }
+
         response details:
         { 
             "error": "",
             "code": 200,
             "method": "GET",
             "url": "https://...",
-            "headers": { },
-            "json": { }
+            "headers": { 
+                "Location": "https://www.capitalone.com"
+            },
+            "json": { 
+                "applicationId": "adfasdf812381asdf",
+                "applicationStatus": "Approved",
+                "applicationStatusDescription": "The application is approved and account is created",
+                "bankABANumber": "031176110",
+                "accountNumber": "12345678909876"
+            }
         }
         '''
     
@@ -424,15 +476,44 @@ class depositsClient(object):
         
     # validate general inputs
         input_fields = {
-            'customer_ip': customer_ip
+            'customer_ip': customer_ip,
+            'product_id': product_id,
+            'cd_term': cd_term,
+            'funding_type': funding_type,
+            'funding_amount': funding_amount,
+            'account_number': account_number,
+            'routing_number': routing_number,
+            'account_owner': account_owner,
+            'accept_terms': accept_terms,
+            'accept_tcpa': accept_tcpa,
+            'secondary_application': secondary_application
         }
         for key, value in input_fields.items():
             object_title = '%s(%s=%s)' % (title, key, str(value))
             self.fields.validate(value, '.%s' % key, object_title)
 
-    # validate other fields
+    # validate applicant fields
         app_fields = {
-            'address_line_1': address_line_1
+            'address_line_1': address_line_1,
+            'address_line_2': address_line_2,
+            'city_name': city_name,
+            'state_code': state_code,
+            'postal_code': postal_code,
+            'first_name': first_name,
+            'middle_name': middle_name,
+            'last_name': last_name,
+            'tax_id_type': tax_id_type,
+            'tax_id': tax_id,
+            'date_of_birth': date_of_birth,
+            'email_address': email_address,
+            'backup_withholding': backup_withholding,
+            'citizenship_country': citizenship_country,
+            'secondary_citizenship_country': secondary_citizenship_country,
+            'employment_status': employment_status,
+            'job_title': job_title,
+            'annual_income': annual_income,
+            'phone_number': phone_number,
+            'phone_type': phone_type
         }
         for key, value in app_fields.items():
             object_title = '%s(%s=%s)' % (title, key, str(value))
@@ -443,7 +524,8 @@ class depositsClient(object):
     
     # construct method specific errors
         error_map = { 
-            404: 'Not Found. No products found for the provided productId.'
+            404: 'Not Found. No products found for the provided productId.',
+            409: 'The application could not be processed due to a business error. Currently, this status is only returned when an existing Capital One customer attempts to open a new account using this API.'
         }
 
     # construct headers
@@ -475,15 +557,24 @@ class depositsClient(object):
                 'homeAddress': {
                     'addressLine1': app_fields['address_line_1'],
                     'city': app_fields['city_name'],
-                    'stateCode': app_fields['state_code'],
                     'postalCode': app_fields['postal_code']
                 },
-                'tax_id_type': app_fields['tax_id_type'],
+                'taxIdType': app_fields['tax_id_type'],
+                'emailAddress': app_fields['email_address'],
+                'backupWithholding': app_fields['backup_withholding'],
+                'employmentStatus': app_fields['employment_status']
             }
 
         # add optional middle name and second address
             if app_fields['middle_name']:
                 applicant_kwargs['middleName'] = app_fields['middle_name']
+        
+        # add state code
+            from labpack.datasets.iso_3166_2_US import compile_map as map_3166_2
+            state_codes = map_3166_2()
+            if not app_fields['state_code'] in state_codes.keys():
+                raise ValueError('%s(state_code=%s) must be a valid 3 letter country code.' % (title, app_fields['state_code']))
+            applicant_kwargs['homeAddress']['stateCode'] = app_fields['state_code']
         
         # add tax id
             if len(app_fields['tax_id']) < 10:
@@ -492,7 +583,32 @@ class depositsClient(object):
             else:
                 tax_string = tax_id
             applicant_kwargs['taxId'] = tax_string
-            
+        
+        # add date of birth
+            if not '-' in app_fields['date_of_birth']:
+                dob_temp = app_fields['date_of_birth']
+                app_fields['date_of_birth'] = dob_temp[0:4] + '-' + dob_temp[4:6] + '-' + dob_temp[6:8]
+            if not len(app_fields['date_of_birth']) == 10:
+                raise ValueError('%s(date_of_birth=%s) must be in ISO format YYYY-MM-DD or YYYYMMDD' % (title, app_fields['date_of_birth']))
+            applicant_kwargs['dateOfBirth'] = app_fields['date_of_birth']
+        
+        # add citizenship country
+            from labpack.datasets.iso_3166 import compile_map as map_3166
+            country_codes = map_3166()
+            if not app_fields['citizenship_country'] in country_codes.keys():
+                raise ValueError('%s(citizenship_country=%s) must be a valid 3 letter country code.' % (title, app_fields['citizenship_country']))
+            applicant_kwargs['citizenshipCountry'] = app_fields['citizenship_country']
+        
+        # add secondary citizenship country
+            if app_fields['secondary_citizenship_country']:
+                if not app_fields['secondary_citizenship_country'] in country_codes.keys():
+                    raise ValueError('%s(secondary_citizenship_country=%s) must be a valid 3 letter country code.' % (title, app_fields['secondary_citizenship_country']))
+                applicant_kwargs['secondaryCitizenshipCountry'] = app_fields['secondary_citizenship_country']
+        
+        # add job title
+            if app_fields['job_title']:
+                applicant_kwargs['jobTitle'] = app_fields['job_title']
+                
         # add annual income field
             if app_fields['annual_income']:
                 income_category = 250000
@@ -525,7 +641,7 @@ class depositsClient(object):
     # construct data fields
         data_kwargs = {
             'applicants': applicant_list,
-            'productId': product_id
+            'productId': str(product_id)
         }
         
     # add cd term
@@ -533,6 +649,7 @@ class depositsClient(object):
             if not cd_term:
                 raise IndexError('%s(cd_term=0) must not be empty if product_id=3500')
             else:
+    # TODO validate cd terms in account product 
                 data_kwargs['cdTerm'] = cd_term
         
     # add funding details
@@ -559,3 +676,40 @@ class depositsClient(object):
         details = self._requests(url, method='POST', headers=headers_kwargs, data=data_kwargs, errors=error_map)
 
         return details
+
+# TODO finish out of wallet questions
+    def wallet_questions(self, application_id, customer_ip):
+    
+        title = '%s.wallet_questions' % self.__class__.__name__
+
+    # validate general inputs
+        input_fields = {
+            'customer_ip': customer_ip,
+            'application_id': application_id
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+    
+    # construct url
+        url = self.deposits_endpoint + 'account-applications/' + application_id + '/out-of-wallet'
+    
+    # construct method specific errors
+        error_map = { 
+            404: 'No application was found with the provided applicationId.'
+        }
+
+    # construct headers
+        headers_kwargs = {
+            'Customer-IP-Address': customer_ip
+        }
+
+# TODO create out of wallet answer method
+    def wallet_answers(self, application_id, customer_ip, answer_dict):
+        
+        pass
+
+# TODO create application details method
+    def application_details(self):
+        
+        pass
