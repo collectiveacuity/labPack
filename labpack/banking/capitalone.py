@@ -67,6 +67,12 @@ class depositsHandler(object):
     
 class depositsClient(object):
     
+    ''' 
+        a class to manage the capital one bank account starter api 
+    
+    https://developer.capitalone.com/products/bank-account-starter/documentation/
+    '''
+    
     _class_fields = {
         'schema': {
             'client_id': 'abcdefghijkl0123456789mnopqrstuvwxyz',
@@ -129,10 +135,10 @@ class depositsClient(object):
             ".phone_type": {
                 "discrete_values": ['mobile', 'home', 'work']
             },
-            "citizenship_country": { 
+            ".citizenship_country": { 
                 "must_contain": [ "[A-Z]{3}" ]
             },
-            "secondary_citizenship_country": { 
+            ".secondary_citizenship_country": { 
                 "must_contain": [ "[A-Z]{3}" ]
             },
             ".employment_status": {

@@ -107,6 +107,7 @@ class telegramBotClient(object):
             'message_text': 'am i too needy?',
             'message_style': 'markdown',
             'button_list': [ 'yes' ],
+            'keypad_type': 'phone',
             'photo_id': '',
             'photo_path': '',
             'photo_url': '',
@@ -133,6 +134,9 @@ class telegramBotClient(object):
             },
             '.message_style': {
                 'discrete_values': [ 'markdown' ]
+            },
+            '.keypad_type': {
+                'discrete_values': [ 'phone', 'calculator' ]
             },
             '.button_list[0]': {
                 'max_length': 32
@@ -243,7 +247,7 @@ class telegramBotClient(object):
         :param button_list: list of strings with button values
         :param small_buttons: boolean to resize buttons to fit text size
         :param persist_buttons: boolean to keep buttons around after exiting
-        :return: byte object in json serial format
+        :return: string in json serial format
         '''
 
         import json
@@ -254,6 +258,43 @@ class telegramBotClient(object):
             'keyboard': keyboard_list,
             'one_time_keyboard': not persist_buttons,
             'resize_keyboard': small_buttons
+        }
+        json_data = json.dumps(keyboard_kwargs)
+        return json_data
+
+    def _compile_keypad(self, keypad_type, persist_buttons):
+        
+        ''' a helper method to compile keypad buttons to telegram api format
+
+        :param keypad_type: string with type of keypad to emulate
+        :param persist_buttons: boolean to keep buttons around after exiting
+        :return: string in json serial format
+        '''
+
+        import json
+        keyboard_list = []
+        if keypad_type == 'phone':
+            row_list = [ {'text': '1'}, {'text': '2'}, {'text': '3'} ]
+            keyboard_list.append(row_list)
+            row_list = [ {'text': '4'}, {'text': '5'}, {'text': '6'} ]
+            keyboard_list.append(row_list)
+            row_list = [ {'text': '7'}, {'text': '8'}, {'text': '9'} ]
+            keyboard_list.append(row_list)
+            row_list = [ {'text': '*'}, {'text': '0'}, {'text': '#'} ]
+            keyboard_list.append(row_list)
+        elif keypad_type == 'calculator':
+            row_list = [ {'text': '7'}, {'text': '8'}, {'text': '9'}, {'text': '/'} ]
+            keyboard_list.append(row_list)
+            row_list = [ {'text': '4'}, {'text': '5'}, {'text': '6'}, {'text': '*'} ]
+            keyboard_list.append(row_list)
+            row_list = [ {'text': '1'}, {'text': '2'}, {'text': '3'}, {'text': '-'} ]
+            keyboard_list.append(row_list)
+            row_list = [ {'text': '0'}, {'text': '.'}, {'text': '='}, {'text': '+'} ]
+            keyboard_list.append(row_list)
+        keyboard_kwargs = {
+            'keyboard': keyboard_list,
+            'one_time_keyboard': not persist_buttons,
+            'resize_keyboard': True
         }
         json_data = json.dumps(keyboard_kwargs)
         return json_data
@@ -567,7 +608,7 @@ class telegramBotClient(object):
 
         return data_buffer
 
-    def send_message(self, user_id, message_text, message_style='', button_list=None, small_buttons=True, persist_buttons=False):
+    def send_message(self, user_id, message_text, message_style='', button_list=None, small_buttons=True, persist_buttons=False, link_preview=True, keypad_type=''):
 
         ''' a method to send a message using telegram api
 
@@ -577,6 +618,8 @@ class telegramBotClient(object):
         :param button_list: [optional] list of string to include as buttons in message
         :param small_buttons: [optional] boolean to resize buttons to single line
         :param persist_buttons: [optional] boolean to keep buttons around after exiting
+        :param link_preview: [optional] boolean to open up a preview window of a link in message
+        :param keypad_type: [optional] string with type of keypad to emulate
         :return: dictionary of response details with message details in [json][result]
 
         {
@@ -613,7 +656,8 @@ class telegramBotClient(object):
             'user_id': user_id,
             'message_text': message_text,
             'message_style': message_style,
-            'button_list': button_list
+            'button_list': button_list,
+            'keypad_type': keypad_type
         }
         for key, value in input_fields.items():
             if value:
@@ -635,6 +679,10 @@ class telegramBotClient(object):
                 request_kwargs['data']['parse_mode'] = 'HTML'
         if button_list:
             request_kwargs['data']['reply_markup'] = self._compile_buttons(button_list, small_buttons, persist_buttons)
+        elif keypad_type:
+            request_kwargs['data']['reply_markup'] = self._compile_keypad(keypad_type, persist_buttons)
+        if not link_preview:
+            request_kwargs['data']['disable_web_page_preview'] = True
 
     # send request
         response_details = self._post_request(**request_kwargs)
