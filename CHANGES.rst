@@ -6,6 +6,7 @@ ChangeLog
 * [FEATURE ADDED] sqlClient class for handling records stored in SQL databases
 * [FEATURE ADDED] ip package added to records to obtain ip address information
 * [UPDATE] error reporting is improved in validate_request_content method
+* [UPDATE] added relative path option for appdataClient root folder
 
 0.12 (2017.07.27)
 -----------------

@@ -87,23 +87,21 @@ if __name__ == '__main__':
         break
 
 # test migration of database
-    try:
-        migration_kwargs = {
-            'table_name': 'migrated_tokens',
-            'database_url': 'sqlite:///../data/migrated-records.db',
-            'record_schema': record_schema
-        }
-        migration_client = sqlClient(**migration_kwargs)
-        sql_client.migrate(migration_client)
-        for record in migration_client.list(order_criteria=order_criteria):
-            print(record)
-            break
-    except Exception as err:
-        exit_msg = sql_client.delete(record_id)
-        print(exit_msg)
-        assert not sql_client.exists(record_id)
-        raise
-        
+    migration_kwargs = {
+        'table_name': 'migrated_tokens',
+        'database_url': 'sqlite:///../data/migrated-records.db',
+        'record_schema': record_schema
+    }
+    migration_client = sqlClient(**migration_kwargs)
+    sql_client.export(migration_client)
+    for record in migration_client.list(order_criteria=order_criteria):
+        print(record)
+        break
+
+# remove migration database
+    exit_msg = migration_client.remove()
+    print(exit_msg)
+
 # test delete and exists
     exit_msg = sql_client.delete(record_id)
     print(exit_msg)

@@ -80,6 +80,7 @@ class depositsClient(object):
             'requests_handler': 'labpack.handlers.requests.handle_requests',
             'usage_client': '',
             'additional_fields': {},
+            'method': 'GET',
             'application_id': '',
             "customer_ip": "123.456.789.0",
             "first_name": "Glenn",
@@ -114,6 +115,9 @@ class depositsClient(object):
             "secondary_application": {}
         },
         "components": {
+            ".method": {
+                "discrete_values": [ "GET", "POST" ]
+            },
             ".address_line_1": {
                 "must_not_contain": [ "p|P\.?o|O\.?\sb|Bo|Ox|X" ]
             },
@@ -169,13 +173,13 @@ class depositsClient(object):
         }
     }
     
-    def __init__(self, client_id, client_secret, get_details=True, sandbox=False, requests_handler=None, usage_client=None):
+    def __init__(self, client_id, client_secret, retrieve_details=True, sandbox=False, requests_handler=None, usage_client=None):
         
         ''' the initialization method for the capital one client
 
         :param client_id: string with client id registered for app with service
         :param client_secret: string with client secret registered for app with service
-        :param get_details: boolean to automatically retrieve, store and refresh account details
+        :param retrieve_details: boolean to automatically retrieve, store and refresh account details
         :param sandbox: boolean to send requests to test sandbox
         :param requests_handler: callable that handles requests errors
         :param usage_client: callable that records usage data
@@ -213,7 +217,80 @@ class depositsClient(object):
         self.requests_handler = requests_handler
         self.response_handler = depositsHandler(usage_client)
 
-    def access_token(self):
+    # retrieve access token
+        self.retrieve_details = False
+        if retrieve_details:
+            self.retrieve_details = True
+            self.get_token()
+            self.get_details()
+
+    def _requests(self, url, method='GET', headers=None, params=None, data=None, errors=None):
+
+        ''' a helper method for relaying requests from client to api '''
+
+        title = '%s._requests' % self.__class__.__name__
+    
+    # import dependencies
+        from time import time
+        import requests
+
+    # validate access token
+        if not self.access_token:
+            self.get_token()
+            if self.retrieve_details:
+                self.get_details()
+    
+    # refresh token
+        current_time = time()
+        if current_time > self.expires_at:
+            self.get_token()
+            if self.retrieve_details:
+                self.get_details()
+
+    # construct request kwargs
+        request_kwargs = {
+            'url': url,
+            'headers': { 'Authorization': 'Bearer %s' % self.access_token },
+            'params': {},
+            'data': {}
+        }
+        if headers:
+            request_kwargs['headers'].update(headers)
+        if params:
+            request_kwargs['params'].update(params)
+        if data:
+            request_kwargs['data'].update(data)
+
+    # send request
+        if method == 'POST':
+            try:
+                response = requests.post(**request_kwargs)
+            except Exception:
+                if self.requests_handler:
+                    request_kwargs['method'] = 'POST'
+                    request_object = requests.Request(**request_kwargs)
+                    return self.requests_handler(request_object)
+                else:
+                    raise
+        elif method == 'GET':
+            try:
+                response = requests.get(**request_kwargs)
+            except Exception:
+                if self.requests_handler:
+                    request_kwargs['method'] = 'GET'
+                    request_object = requests.Request(**request_kwargs)
+                    return self.requests_handler(request_object)
+                else:
+                    raise
+        else:
+            raise ValueError('%s(method='') must be either GET or POST' % title)
+
+    # handle response
+        response_details = self.response_handler.handle(response, errors)
+        
+        return response_details
+    
+    def get_token(self):
 
         ''' a method to acquire an oauth access token '''
 
@@ -254,66 +331,7 @@ class depositsClient(object):
             
         return self.access_token
 
-    def _requests(self, url, method='GET', headers=None, params=None, data=None, errors=None):
-
-        ''' a helper method for relaying requests from client to api '''
-
-        from time import time
-        import requests
-
-    # validate access token
-        if not self.access_token:
-            self.access_token()
-    
-    # refresh token
-        current_time = time()
-        if current_time > self.expires_at:
-            self.access_token()
-
-    # construct request kwargs
-        request_kwargs = {
-            'url': url,
-            'headers': { 'Authorization': 'Bearer %s' % self.access_token },
-            'params': {},
-            'data': {}
-        }
-        if headers:
-            request_kwargs['headers'].update(headers)
-        if params:
-            request_kwargs['params'].update(params)
-        if data:
-            request_kwargs['data'].update(data)
-
-    # send request
-        if method == 'POST':
-            try:
-                response = requests.post(**request_kwargs)
-            except Exception:
-                if self.requests_handler:
-                    request_kwargs['method'] = 'POST'
-                    request_object = requests.Request(**request_kwargs)
-                    return self.requests_handler(request_object)
-                else:
-                    raise
-        elif method == 'GET':
-            try:
-                response = requests.get(**request_kwargs)
-            except Exception:
-                if self.requests_handler:
-                    request_kwargs['method'] = 'GET'
-                    request_object = requests.Request(**request_kwargs)
-                    return self.requests_handler(request_object)
-                else:
-                    raise
-        else:
-            raise ValueError('_request(method='') must be either GET or POST')
-
-    # handle response
-        response_details = self.response_handler.handle(response, errors)
-        
-        return response_details
-    
-    def account_products(self):
+    def get_products(self):
         
         ''' a method to retrieve a list of the account products 
 
@@ -345,7 +363,7 @@ class depositsClient(object):
 
         return details
     
-    def account_product(self, product_id):
+    def get_product(self, product_id):
         
         ''' a method to retrieve details about a particular account product 
         
@@ -414,10 +432,31 @@ class depositsClient(object):
 
         return details
 
-# TODO retrieve account product details at init    
     def get_details(self):
         
-        pass
+        ''' a method to retrieve account product details at initialization '''
+    
+    # request product list
+        products_request = self.get_products()
+        if products_request['error']:
+            raise Exception(products_request['error'])
+
+    # construct list of product ids
+        product_ids = []
+        for product in products_request["json"]["entries"]:
+            product_ids.append(product['productId'])
+    
+    # construct default product map
+        self.account_products = {}
+    
+    # request product details
+        for id in product_ids:
+            product_request = self.get_product(id)
+            if product_request['error']:
+                raise Exception(product_request['error'])
+            self.account_products[id] = product_request['json']
+
+        return self.account_products
     
     def account_application(self, customer_ip, first_name, last_name, tax_id, date_of_birth, address_line_1, city_name, state_code, postal_code, phone_number, email_address, citizenship_country, employment_status, product_id, funding_amount, account_number, routing_number, backup_withholding=False, phone_type='mobile', accept_tcpa=False, accept_terms=True, address_line_2='', middle_name='', tax_id_type='SSN', secondary_citizenship_country='', job_title='', annual_income=0, cd_term='', funding_type='fundach', account_owner='primary', secondary_application=None):
 
@@ -719,3 +758,27 @@ class depositsClient(object):
     def application_details(self):
         
         pass
+    
+if __name__ == '__main__':
+
+# construct client
+    from labpack.records.settings import load_settings
+    from labpack.handlers.requests import handle_requests
+    capitalone_cred = load_settings('../../../cred/capitalone.yaml')
+    deposits_kwargs = {
+        'client_id': '39431d8ab32e42fe9e2340d1614e909c',
+        'client_secret': 'a45767821132699bd305d635ba61c98a',
+        'sandbox': True,
+        'requests_handler': handle_requests,
+        'retrieve_details': False
+    }
+    deposits_client = depositsClient(**deposits_kwargs)
+
+# test get token
+    deposits_client.get_token()
+    assert deposits_client.access_token
+
+# test get products
+    import json
+    products_request = deposits_client.get_product(3500)
+    print(products_request)

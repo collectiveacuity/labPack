@@ -912,23 +912,23 @@ class sqlClient(object):
         exit_msg = '%s table has been removed from %s database.' % (self.table_name, self.database_name)
         return exit_msg
 
-    def migrate(self, sql_client, merge_rule='skip', coerce=False):
+    def export(self, sql_client, merge_rule='skip', coerce=False):
 
         '''
-            a method to migrate all the records in table to another table
-            
+            a method to export all the records in table to another table
+
         :param sql_client: class object with sql client methods
         :param merge_rule: string with name of rule to adopt for pre-existing records
         :param coerce: boolean to enable migration even if table schemas don't match
         :return: string with exit message
-        
+
         NOTE:   available merge rules include: overwrite, skip and upsert
         '''
-        
-        title = '%s.migrate' % self.__class__.__name__
-        
-    # validate storage client
-        method_list = [ 'list', 'create', 'read', 'update', 'delete', 'remove', 'migrate', 'exists', '_construct_inserts', '_parse_columns', '_compare_columns', 'table', 'session', 'table_name', 'database_name' ]
+
+        title = '%s.export' % self.__class__.__name__
+
+    # validate sql client
+        method_list = [ 'list', 'create', 'read', 'update', 'delete', 'remove', 'export', 'exists', '_construct_inserts', '_parse_columns', '_compare_columns', 'table', 'session', 'table_name', 'database_name' ]
         for method in method_list:
             if getattr(sql_client, method, None) == None:
                 from labpack.parsing.grammar import join_words
