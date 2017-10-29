@@ -17,7 +17,6 @@ except:
 
 import pickle
 
-# TODO: migrate and _import methods
 # TODO: sequence integration for integer IDs
 
 class sqlClient(object):
@@ -28,6 +27,7 @@ class sqlClient(object):
         'schema': {
             'table_name': 'User Data',
             'database_url': 'sqlite:///../../data/records.db',
+            'merge_rule': 'overwrite',
             'record_schema': {
                 'schema': {}
             },
@@ -43,6 +43,9 @@ class sqlClient(object):
             '.table_name': {
                 'max_length': 255,
                 'must_not_contain': ['/', '^\\.', '-']
+            },
+            '.merge_rule': {
+                'discrete_values': [ 'overwrite', 'skip', 'upsert' ]
             },
             '.record_schema': {
                 'extra_fields': True
@@ -422,7 +425,67 @@ class sqlClient(object):
                 remove_columns[key] = True
         
         return add_columns, remove_columns, rename_columns, retype_columns, resize_columns
+
+    def _construct_inserts(self, record, new_columns, rename_columns, retype_columns, resize_columns):
+
+        ''' a helper method for constructing the insert kwargs for a record '''
+
+        insert_kwargs = {}
+
+        for key, value in new_columns.items():
+
+        # retrieve value for key (or from old key name)
+            if key in rename_columns.keys():
+                record_value = getattr(record, rename_columns[key], None)
+            else:
+                record_value = getattr(record, key, None)
+
+        # attempt to convert datatype
+            if record_value:
+                if key in retype_columns.keys():
+                    try:
+                        old_list = False
+                        if isinstance(record_value, bytes):
+                            record_value = pickle.loads(record_value)
+                            old_list = True
+                        if retype_columns[key] == 'boolean':
+                            record_value = bool(record_value)
+                        elif retype_columns[key] == 'string':
+                            if old_list:
+                                record_value = ','.join(record_value)
+                            else:
+                                record_value = str(record_value)
+                        elif retype_columns[key] == 'integer':
+                            if old_list:
+                                record_value = int(record_value[0])
+                            else:
+                                record_value = int(record_value)
+                        elif retype_columns[key] == 'float':
+                            if old_list:
+                                record_value = int(record_value[0])
+                            else:
+                                record_value = float(record_value)
+                        elif retype_columns[key] == 'list':
+                            if isinstance(record_value, str):
+                                record_value = pickle.dumps(record_value.split(','))
+                            else:
+                                record_value = pickle.dumps([record_value])
+                    except:
+                        record_value = None
         
+        # attempt to resize string data 
+                if key in resize_columns.keys():
+                    max_length = resize_columns[key]
+                    try:
+                        if len(record_value) > max_length:
+                            record_value = record_value[0:max_length]
+                    except:
+                        record_value = None
+
+                insert_kwargs[key] = record_value
+
+        return insert_kwargs
+    
     def _rebuild_table(self, new_name, old_name, new_columns, old_columns): 
         
         ''' a helper method for rebuilding table (by renaming & migrating) '''
@@ -453,73 +516,14 @@ class sqlClient(object):
         if not old_name in table_list:
             self.engine.execute('ALTER TABLE %s RENAME TO %s' % (new_name, old_name))
             new_table.create(self.engine)
-    
-    # define insert kwarg constructor
-        def _construct_inserts(record, new_columns, rename_columns, retype_columns, resize_columns):
-            
-            insert_kwargs = {}
-            
-            for key, value in new_columns.items():
-            
-            # retrieve value for key (or from old key name)
-                if key in rename_columns.keys():
-                    record_value = getattr(record, rename_columns[key], None)
-                else:
-                    record_value = getattr(record, key, None)
-            
-            # attempt to convert datatype
-                if record_value:
-                    if key in retype_columns.keys():
-                        try:
-                            old_list = False
-                            if isinstance(record_value, bytes):
-                                record_value = pickle.loads(record_value)
-                                old_list = True
-                            if retype_columns[key] == 'boolean':
-                                record_value = bool(record_value)
-                            elif retype_columns[key] == 'string':
-                                if old_list:
-                                    record_value = ','.join(record_value)
-                                else:
-                                    record_value = str(record_value)
-                            elif retype_columns[key] == 'integer':
-                                if old_list:
-                                    record_value = int(record_value[0])
-                                else:
-                                    record_value = int(record_value)
-                            elif retype_columns[key] == 'float':
-                                if old_list:
-                                    record_value = int(record_value[0])
-                                else:
-                                    record_value = float(record_value)
-                            elif retype_columns[key] == 'list':
-                                if isinstance(record_value, str):
-                                    record_value = pickle.dumps(record_value.split(','))
-                                else:
-                                    record_value = pickle.dumps([record_value])
-                        except:
-                            record_value = None
-            
-            # attempt to resize string data 
-                    if key in resize_columns.keys():
-                        max_length = resize_columns[key]
-                        try:
-                            if len(record_value) > max_length:
-                                record_value = record_value[0:max_length]
-                        except:
-                            record_value = None
-                        
-                    insert_kwargs[key] = record_value
-            
-            return insert_kwargs
-            
+     
     # wait for renamed table to be responsive
                 
     # migrate records from old to new
         list_statement = old_table.select()
         count = 0
         for record in self.session.execute(list_statement).fetchall():
-            create_kwargs = _construct_inserts(record, new_columns, rename_columns, retype_columns, resize_columns)
+            create_kwargs = self._construct_inserts(record, new_columns, rename_columns, retype_columns, resize_columns)
             insert_statement = new_table.insert().values(**create_kwargs)
             self.session.execute(insert_statement)
             delete_statement = old_table.delete(old_table.c.id==record.id)
@@ -907,3 +911,122 @@ class sqlClient(object):
         
         exit_msg = '%s table has been removed from %s database.' % (self.table_name, self.database_name)
         return exit_msg
+
+    def migrate(self, sql_client, merge_rule='skip', coerce=False):
+
+        '''
+            a method to migrate all the records in table to another table
+            
+        :param sql_client: class object with sql client methods
+        :param merge_rule: string with name of rule to adopt for pre-existing records
+        :param coerce: boolean to enable migration even if table schemas don't match
+        :return: string with exit message
+        
+        NOTE:   available merge rules include: overwrite, skip and upsert
+        '''
+        
+        title = '%s.migrate' % self.__class__.__name__
+        
+    # validate storage client
+        method_list = [ 'list', 'create', 'read', 'update', 'delete', 'remove', 'migrate', 'exists', '_construct_inserts', '_parse_columns', '_compare_columns', 'table', 'session', 'table_name', 'database_name' ]
+        for method in method_list:
+            if getattr(sql_client, method, None) == None:
+                from labpack.parsing.grammar import join_words
+                raise ValueError('%s(sql_client=...) must be a client object with %s methods.' % (title, join_words(method_list)))
+    
+    # verbosity
+        export_name = self.table_name
+        import_name = sql_client.table_name
+        print('Migrating %s table in %s database to %s table in %s database' % (export_name, self.database_name, import_name, sql_client.database_name), end='', flush=True)
+
+    # determine differences between tables
+        export_columns = self._parse_columns()
+        import_columns = sql_client._parse_columns()
+        add_columns, remove_columns, rename_columns, retype_columns, resize_columns = self._compare_columns(import_columns, export_columns)
+        if remove_columns or retype_columns or resize_columns:
+            if not coerce:
+                raise ValueError("Migration from %s to %s prevented because schemas don't match and data could be lost." % (export_name, import_name))
+
+    # define upsert reconstructor
+        def _reconstruct_upsert(update_kwargs):
+            record_details = {}
+            current_details = record_details
+            for key, value in update_kwargs.items():
+                record_key = key
+                record_value = value
+                record_segments = record_key.split('.')
+                for i in range(len(record_segments)):
+                    segment = record_segments[i]
+                    if i + 1 < len(record_segments):
+                        if segment not in record_details.keys():
+                            current_details[segment] = {}
+                        current_details = current_details[segment]
+                    else:
+                        if isinstance(record_value, bytes):
+                            current_details[segment] = pickle.loads(record_value)
+                        else:
+                            current_details[segment] = record_value
+                current_details = record_details
+            return record_details
+
+    # migrate records from old to new
+        list_statement = self.table.select()
+        count = 0
+        added = 0
+        skipped = 0
+        upserted = 0
+        overwritten = 0
+        for record in self.session.execute(list_statement).fetchall():
+            record_details = self._reconstruct_record(record)
+            primary_key = record_details['id']
+            if not sql_client.exists(primary_key):
+                create_kwargs = self._construct_inserts(record, import_columns, rename_columns, retype_columns, resize_columns)
+                insert_statement = sql_client.table.insert().values(**create_kwargs)
+                sql_client.session.execute(insert_statement)
+                added += 1
+            elif merge_rule == 'overwrite':
+                sql_client.delete(primary_key)
+                create_kwargs = self._construct_inserts(record, import_columns, rename_columns, retype_columns, resize_columns)
+                insert_statement = sql_client.table.insert().values(**create_kwargs)
+                sql_client.session.execute(insert_statement)
+                overwritten += 1
+            elif merge_rule == 'skip':
+                skipped += 1
+            elif merge_rule == 'upsert':
+                update_kwargs = self._construct_inserts(record, import_columns, rename_columns, retype_columns, resize_columns)
+                update_details = _reconstruct_upsert(update_kwargs)
+                sql_client.update(update_details)
+                upserted += 1
+            count = added + overwritten + skipped + upserted
+            if not count % 10:
+                print('.', end='', flush=True)
+
+    # handle verbosity
+        print(' done.')
+
+    # report outcome
+        plural = ''
+        skip_insert = ''
+        overwrite_insert = ''
+        upsert_insert = ''
+        if added != 1:
+            plural = 's'
+        if skipped > 0:
+            skip_plural = ''
+            if skipped > 1:
+                skip_plural = 's'
+            skip_insert = ' %s record%s skipped to avoid overwrite.' % (str(skipped), skip_plural)
+        if overwritten > 0:
+            overwrite_plural = ''
+            if overwritten > 1:
+                overwrite_plural = 's'
+            overwrite_insert = ' %s record%s overwritten.' % (str(overwritten), overwrite_plural)
+        if upserted > 0:
+            upsert_plural = ''
+            if upserted > 1:
+                upsert_plural = 's'
+            upsert_insert = ' %s record%s upserted.' % (str(upserted), upsert_plural)
+        exit_msg = '%s record%s added to %s.%s%s%s' % (str(added), plural, import_name, skip_insert, overwrite_insert, upsert_insert)
+        print(exit_msg)
+
+        return count
