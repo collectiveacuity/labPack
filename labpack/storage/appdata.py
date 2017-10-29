@@ -21,6 +21,7 @@ class appdataClient(object):
             'org_name': 'Collective Acuity',
             'prod_name': 'labPack',
             'collection_name': 'User Data',
+            'root_path': '../data',
             'record_key': 'obs/terminal/2016-03-17T17-24-51-687845Z.ogg',
             'record_key_dict': 'obs/terminal/2016-03-17T17-24-51-687845Z.yaml',
             'record_key_path': '/home/user/.config/collective-acuity-labpack/user-data/obs/terminal',
@@ -73,15 +74,18 @@ class appdataClient(object):
         }
     }
 
-    def __init__(self, collection_name='', prod_name='', org_name=''):
+    def __init__(self, collection_name='', prod_name='', org_name='', root_path=''):
 
         ''' initialization method of appdata client class
 
         :param collection_name: [optional] string with name of collection to store records
         :param prod_name: [optional] string with name of application product
         :param org_name: [optional] string with name of organization behind product
+        :param root_path: [optional] string with path to root of collections (defaults to user home)
         '''
 
+        title = '%s.__init__' % self.__class__.__name__
+        
     # add localhost property to class
         self.localhost = localhostClient()
 
@@ -106,8 +110,18 @@ class appdataClient(object):
         from copy import deepcopy
         self.collection_name = deepcopy(collection_name)
 
+    # construct app folder
+        if not root_path:
+            self.app_folder = self.localhost.app_data(org_name=org_name, prod_name=prod_name)
+        else:
+            root_path = self.fields.validate(root_path, '.root_path')
+            if not os.path.exists(root_path):
+                raise ValueError('%s(root_path="%s") is not a valid path.' % (title, root_path))
+            elif not os.path.isdir(root_path):
+                raise ValueError('%s(root_path="%s") is not a valid directory.' % (title, root_path))
+            self.app_folder = os.path.abspath(root_path)
+
     # validate existence of file data folder in app data (or create)
-        self.app_folder = self.localhost.app_data(org_name=org_name, prod_name=prod_name)
         if self.localhost.os in ('Linux', 'FreeBSD', 'Solaris'):
             collection_name = collection_name.replace(' ', '-').lower()
         self.collection_folder = os.path.join(self.app_folder, collection_name)
