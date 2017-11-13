@@ -102,7 +102,7 @@ class depositsClient(object):
             "employment_status": "Employed",
             "job_title": "",
             "annual_income": 0,
-            "product_id": 3000,
+            "product_id": '3000',
             "cd_term": "",
             "funding_type": "fundach",
             "funding_amount": 0.1,
@@ -153,7 +153,7 @@ class depositsClient(object):
                 "integer_data": True
             },
             ".product_id": {
-                "discrete_values": [ 3000, 3300, 3500 ]
+                "discrete_values": [ '3000', '3300', '3500' ]
             },
             ".funding_type": {
                 "discrete_values": [ 'fundach' ]
@@ -210,7 +210,7 @@ class depositsClient(object):
         if sandbox:
             self.token_endpoint = 'https://api-sandbox.capitalone.com/oauth2/token'
             self.deposits_endpoint = 'https://api-sandbox.capitalone.com/deposits/'
-        self.access_token = None
+        self._access_token = None
         self.expires_at = 0
 
     # construct handlers
@@ -218,11 +218,11 @@ class depositsClient(object):
         self.response_handler = depositsHandler(usage_client)
 
     # retrieve access token
-        self.retrieve_details = False
+        self.retrieve_details = retrieve_details
+        self.products = None
         if retrieve_details:
-            self.retrieve_details = True
-            self.get_token()
-            self.get_details()
+            self.access_token()
+            self._get_products()
 
     def _requests(self, url, method='GET', headers=None, params=None, data=None, errors=None):
 
@@ -235,22 +235,25 @@ class depositsClient(object):
         import requests
 
     # validate access token
-        if not self.access_token:
-            self.get_token()
+        if not self._access_token:
+            self.access_token()
             if self.retrieve_details:
-                self.get_details()
+                self._get_products()
     
     # refresh token
         current_time = time()
         if current_time > self.expires_at:
-            self.get_token()
+            self.access_token()
             if self.retrieve_details:
-                self.get_details()
+                self._get_products()
 
     # construct request kwargs
         request_kwargs = {
             'url': url,
-            'headers': { 'Authorization': 'Bearer %s' % self.access_token },
+            'headers': { 
+                'Authorization': 'Bearer %s' % self._access_token,
+                'Accept': 'application/json;v=2'
+            },
             'params': {},
             'data': {}
         }
@@ -290,7 +293,33 @@ class depositsClient(object):
         
         return response_details
     
-    def get_token(self):
+    def _get_products(self):
+        
+        ''' a method to retrieve account product details at initialization '''
+    
+    # request product list
+        products_request = self.account_products()
+        if products_request['error']:
+            raise Exception(products_request['error'])
+
+    # construct list of product ids
+        product_ids = []
+        for product in products_request["json"]["entries"]:
+            product_ids.append(product['productId'])
+    
+    # construct default product map
+        self.products = {}
+    
+    # request product details
+        for id in product_ids:
+            product_request = self.account_product(id)
+            if product_request['error']:
+                raise Exception(product_request['error'])
+            self.products[id] = product_request['json']
+
+        return self.products
+    
+    def access_token(self):
 
         ''' a method to acquire an oauth access token '''
 
@@ -325,13 +354,13 @@ class depositsClient(object):
         response_details = self.response_handler.handle(response)
 
         if response_details['json']:
-            self.access_token = response_details['json']['access_token']
+            self._access_token = response_details['json']['access_token']
             expires_in = response_details['json']['expires_in']
             self.expires_at = current_time + expires_in
             
-        return self.access_token
+        return self._access_token
 
-    def get_products(self):
+    def account_products(self):
         
         ''' a method to retrieve a list of the account products 
 
@@ -363,7 +392,7 @@ class depositsClient(object):
 
         return details
     
-    def get_product(self, product_id):
+    def account_product(self, product_id):
         
         ''' a method to retrieve details about a particular account product 
         
@@ -432,32 +461,6 @@ class depositsClient(object):
 
         return details
 
-    def get_details(self):
-        
-        ''' a method to retrieve account product details at initialization '''
-    
-    # request product list
-        products_request = self.get_products()
-        if products_request['error']:
-            raise Exception(products_request['error'])
-
-    # construct list of product ids
-        product_ids = []
-        for product in products_request["json"]["entries"]:
-            product_ids.append(product['productId'])
-    
-    # construct default product map
-        self.account_products = {}
-    
-    # request product details
-        for id in product_ids:
-            product_request = self.get_product(id)
-            if product_request['error']:
-                raise Exception(product_request['error'])
-            self.account_products[id] = product_request['json']
-
-        return self.account_products
-    
     def account_application(self, customer_ip, first_name, last_name, tax_id, date_of_birth, address_line_1, city_name, state_code, postal_code, phone_number, email_address, citizenship_country, employment_status, product_id, funding_amount, account_number, routing_number, backup_withholding=False, phone_type='mobile', accept_tcpa=False, accept_terms=True, address_line_2='', middle_name='', tax_id_type='SSN', secondary_citizenship_country='', job_title='', annual_income=0, cd_term='', funding_type='fundach', account_owner='primary', secondary_application=None):
 
         '''
@@ -690,7 +693,7 @@ class depositsClient(object):
         }
         
     # add cd term
-        if product_id == 3500:
+        if product_id == '3500':
             if not cd_term:
                 raise IndexError('%s(cd_term=0) must not be empty if product_id=3500')
             else:
@@ -766,19 +769,23 @@ if __name__ == '__main__':
     from labpack.handlers.requests import handle_requests
     capitalone_cred = load_settings('../../../cred/capitalone.yaml')
     deposits_kwargs = {
-        'client_id': '39431d8ab32e42fe9e2340d1614e909c',
-        'client_secret': 'a45767821132699bd305d635ba61c98a',
+        'client_id': capitalone_cred['capitalone_client_id'],
+        'client_secret': capitalone_cred['capitalone_client_secret'],
         'sandbox': True,
         'requests_handler': handle_requests,
-        'retrieve_details': False
+        'retrieve_details': True
     }
     deposits_client = depositsClient(**deposits_kwargs)
-
-# test get token
-    deposits_client.get_token()
-    assert deposits_client.access_token
-
-# test get products
-    import json
-    products_request = deposits_client.get_product(3500)
-    print(products_request)
+    print(deposits_client.products)
+    
+# # test access token
+#     deposits_client.access_token()
+#     assert deposits_client._access_token
+# 
+# # test account products
+#     products_request = deposits_client.account_products()
+#     product_id = products_request['json']['entries'][0]['productId']
+# 
+# # test account product
+#     product_request = deposits_client.account_product(product_id)
+#     assert product_request['json']

@@ -5,6 +5,7 @@ ChangeLog
 -----------------
 * [FEATURE ADDED] sqlClient class for handling records stored in SQL databases
 * [FEATURE ADDED] ip package added to records to obtain ip address information
+* [FEATURE ADDED] pollyClient class for synthesizing speech with AWS Polly API
 * [UPDATE] error reporting is improved in validate_request_content method
 * [UPDATE] added relative path option for appdataClient root folder
 

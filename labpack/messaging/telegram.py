@@ -608,7 +608,7 @@ class telegramBotClient(object):
 
         return data_buffer
 
-    def send_message(self, user_id, message_text, message_style='', button_list=None, small_buttons=True, persist_buttons=False, link_preview=True, keypad_type=''):
+    def send_message(self, user_id, message_text, message_style='', button_list=None, small_buttons=True, persist_buttons=False, link_preview=True):
 
         ''' a method to send a message using telegram api
 
@@ -619,7 +619,6 @@ class telegramBotClient(object):
         :param small_buttons: [optional] boolean to resize buttons to single line
         :param persist_buttons: [optional] boolean to keep buttons around after exiting
         :param link_preview: [optional] boolean to open up a preview window of a link in message
-        :param keypad_type: [optional] string with type of keypad to emulate
         :return: dictionary of response details with message details in [json][result]
 
         {
@@ -679,8 +678,8 @@ class telegramBotClient(object):
                 request_kwargs['data']['parse_mode'] = 'HTML'
         if button_list:
             request_kwargs['data']['reply_markup'] = self._compile_buttons(button_list, small_buttons, persist_buttons)
-        elif keypad_type:
-            request_kwargs['data']['reply_markup'] = self._compile_keypad(keypad_type, persist_buttons)
+        # elif keypad_type:
+        #     request_kwargs['data']['reply_markup'] = self._compile_keypad(keypad_type, persist_buttons)
         if not link_preview:
             request_kwargs['data']['disable_web_page_preview'] = True
 

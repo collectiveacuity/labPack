@@ -1,0 +1,19 @@
+{
+  "schema": {
+    "message_text": "string",
+    "voice_id": "Nicole",
+    "output_format": "mp3",
+    "sample_rate": "22050"
+  },
+  "components": {
+    ".voice_id": {
+      "discrete_values": [ "Geraint", "Gwyneth", "Mads", "Naja", "Hans", "Marlene", "Nicole", "Russell", "Amy", "Brian", "Emma", "Raveena", "Ivy", "Joanna", "Joey", "Justin", "Kendra", "Kimberly", "Matthew", "Salli", "Conchita", "Enrique", "Miguel", "Penelope", "Chantal", "Celine", "Mathieu", "Dora", "Karl", "Carla", "Giorgio", "Mizuki", "Liv", "Lotte", "Ruben", "Ewa", "Jacek", "Jan", "Maja", "Ricardo", "Vitoria", "Cristiano", "Ines", "Carmen", "Maxim", "Tatyana", "Astrid", "Filiz", "Vicki", "Takumi" ]
+    },
+    ".output_format": {
+      "discrete_values": [ "json", "mp3", "ogg_vorbis", "pcm" ]
+    },
+    ".sample_rate": {
+      "discrete_values": [ "8000", "16000", "22050" ]
+    }
+  }
+}
