@@ -22,7 +22,7 @@ from labpack.authentication.aws.iam import AWSConnectionError
 
 class pollyClient(object):
     
-    ''' a class of methods for interacting with Polly '''
+    ''' a class of methods for interacting with AWS Polly API '''
     
     def __init__(self, access_id, secret_key, region_name, owner_id, user_name, verbose=True, usage_client=None):
 
@@ -120,9 +120,8 @@ class pollyClient(object):
             'sample_rate': sample_rate
         }
         for key, value in input_fields.items():
-            if value:
-                object_title = '%s(%s=%s)' % (title, key, str(value))
-                self.fields.validate(value, '.%s' % key, object_title)
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
 
     # construct speech params
         speech_params = {
