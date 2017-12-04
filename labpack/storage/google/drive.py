@@ -793,6 +793,7 @@ class driveClient(object):
             "byte_data": false,
             "discrete_values": [ "" ],
             "excluded_values": [ "" ],
+            "equal_to": "",
             "greater_than": "",
             "less_than": "",
             "max_length": 0,
