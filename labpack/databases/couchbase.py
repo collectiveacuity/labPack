@@ -188,48 +188,202 @@ __license__ = 'MIT'
 #     
 #     return purged_list
 
+'''
+alternatives:
+https://developer.couchbase.com/documentation/server/4.5/sdk/python/start-using-sdk.html
+http://pythonhosted.org/couchbase/index.html
+'''
+from labpack import __module__
 import requests
 
-class syncGatewayAdmin(object):
+class syncGatewayClient(object):
     
     # https://developer.couchbase.com/documentation/mobile/current/references/sync-gateway/admin-rest-api/index.html
+    _class_fields = {
+        'schema': {
+            'table_name': '',
+            'database_url': '',
+            'user_id': '',
+            'previous_id': '',
+            'index_schema': {
+                'schema': {}
+            },
+            'configs': {
+                'name': '',
+                'bucket': '',
+                'pool': '',
+                'server': '',
+                'allow_empty_password': False,
+                'unsupported':{
+                    'oidc_test_provider': {},
+                    'user_views': {
+                      'enabled': False
+                    }
+                },
+                'sync': ''
+            }
+        },
+        'components': {
+            '.configs': {
+                'extra_fields': True
+            },
+            '.configs.unsupported': {
+                'required_field': False
+            },
+            '.configs.server': {
+                'default_value': 'walrus:/opt/couchbase-sync-gateway/data'
+            },
+            '.configs.unsupported.oidc_test_provider': {
+                'required_field': False,
+            },
+            '.configs.unsupported.user_views': {
+                'required_field': False,
+            },
+            '.configs.unsupported.user_views.enabled': {
+                'default_value': True
+            },
+            '.configs.sync': {
+                'default_value': ''
+            },
+            '.configs.pool': {
+                'default_value': 'default'
+            }
+        }
+    }
     
-    def __init__(self, table_name, database_url, **configs):
+    def __init__(self, table_name, database_url, admin_access=True, index_schema=None, verbose=False, configs=None):
 
         ''' the initialization method for syncGatewayAdmin class '''
         
-        title = '%s.__init__' % self.__class__.__name__
+        # https://developer.couchbase.com/documentation/mobile/1.5/guides/sync-gateway/config-properties/index.html
         
-        self.table_name = table_name
-        self.database_url = database_url
-        self.table_url = database_url + '/%s' % table_name
-        self.configs = {}
-        for key, value in configs.items():
-            self.configs[key] = value
+        title = '%s.__init__' % self.__class__.__name__
 
+    # import default sync function
+        from os import path
+        from importlib.util import find_spec
+        module_path = find_spec(__module__).submodule_search_locations[0]
+        sync_path = path.join(module_path, 'databases/models/sync_function.js')
+        sync_text = open(sync_path).read()
+        sync_text = self._clean_js(sync_text)
+
+    # TODO inject data validation into sync text
+
+    # construct fields
+        self._class_fields['components']['.configs.sync']['default_value'] = sync_text
+        from jsonmodel.validators import jsonModel
+        self.fields = jsonModel(self._class_fields)
+    
+    # validate inputs
+        input_fields = {
+            'table_name': table_name,
+            'database_url': database_url,
+            'index_schema': index_schema,
+            'configs': configs
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+        
     # test connection to db
         try:
-            response = requests.get(self.database_url)
+            response = requests.get(database_url)
             response = response.json()
-            print(response)
+            if not 'ADMIN' in response.keys():
+                raise '%s(database_url="%s") is not a valid couchbase url.' % (title, database_url)
+            elif admin_access and not response['ADMIN']:
+                raise '%s(database_url="%s") is not a valid couchbase url with admin access.' % (title, database_url)
         except:
-            raise '%s is not a valid couchbase url.' % database_url
+            raise '%s(database_url="%s") is not a valid couchbase url.' % (title, database_url)
+    
+    # construct class properties
+        from os import path
+        self.table_name = table_name
+        self.database_url = database_url
+        self.table_url = path.join(database_url, table_name)
+        self.admin_access = admin_access
         
+    # construct verbose method
+        self.printer_on = True
+        def _printer(msg, flush=False):
+            if verbose and self.printer_on:
+                if flush:
+                    print(msg, end='', flush=True)
+                else:
+                    print(msg)
+        self.printer = _printer
+    
+    # construct index model
+        self.model = None
+        if index_schema:
+            from jsonmodel.validators import jsonModel
+            self.model = jsonModel(index_schema)
+        else:
+            self.model = jsonModel({'schema': { 'user_id': '' }})
+        if not 'user_id' in self.model.schema.keys():
+            index_schema['schema']['user_id'] = ''
+            self.model = jsonModel(index_schema)
+
+    # construct configs
+        if configs:
+            self.configs = configs
+        else:
+            default_fields = self.fields.ingest(**{})
+            self.configs = default_fields['configs']
+            self.configs['bucket'] = self.table_name
+            self.configs['name'] = self.table_name
+        
+    # construct lab record generator
+        from labpack.records.id import labID
+        self.labID = labID
+    
     # create db (update config) if none exists
+        self._update_table()
     
-    def _update_config(self):
-    
-    # retrieve config from db
+    def _clean_js(self, js_text):
         
-    # construct default sync function
+        import re
+        comment_regex = re.compile('//.*')
+        newline_regex = re.compile('\\n')
+        js_text = comment_regex.sub('', js_text)
+        js_text = newline_regex.sub('', js_text)
+        js_text = " ".join(js_text.split())
+        
+        return js_text
+        
+    def _update_table(self):
     
-    # construct default config
+    # https://developer.couchbase.com/documentation/mobile/1.5/references/sync-gateway/admin-rest-api/index.html#/database/put__db__
     
-    # update defaults
+    # determine existence of table
+        table_url = self.table_url + '/'
+        response = requests.get(table_url)
+        response = response.json()
     
-        pass
+    # create new table
+        if not 'db_name' in response.keys():
+            requests.put(table_url, json=self.configs)
+            self.printer('Table "%s" created in database.' % self.table_name)
     
-    def _create_index(self, user_id=''):
+    # update configs if there is a change from prior version
+        else:
+            config_url = table_url + '_config'
+            response = requests.get(config_url)
+            response = response.json()
+            response['sync'] = self._clean_js(response['sync'])
+            from labpack.parsing.comparison import compare_records
+            comparison = compare_records(self.configs, response)
+            if comparison:
+                if len(comparison) > 1:
+                    requests.put(config_url, json=self.configs)
+                    self.printer('Configuration updated for table "%s".' % self.table_name)
+                elif comparison[0]['path']:
+                    if comparison[0]['path'][0] != 'allow_empty_password':
+                        requests.put(config_url, json=self.configs)
+                        self.printer('Configuration updated for table "%s".' % self.table_name)
+    
+    def _create_index(self, user_id):
     
         ''' a method to create an index in the table to be able to retrieve all documents '''
         
@@ -237,9 +391,7 @@ class syncGatewayAdmin(object):
         # https://developer.couchbase.com/documentation/server/3.x/admin/Views/views-writing.html
         
     # compose function string
-        function_string = 'function(doc, meta) { emit(null, null); }'
-        if user_id:
-            function_string = 'function(doc, meta) { if (doc.user_id == "%s") { emit(null, null); } }' % user_id
+        function_string = 'function(doc, meta) { if (doc.user_id == "%s") { emit(null, null); } }' % user_id
 
     # compose json body
         json_body = {
@@ -251,10 +403,7 @@ class syncGatewayAdmin(object):
         }
 
     # compose request url
-        index = 'all'
-        if user_id:
-            index = user_id
-        url = self.table_url + '/_design/%s' % index
+        url = self.table_url + '/_design/%s' % user_id
     
     # create index if not existing
         response = requests.get(url)
@@ -263,19 +412,92 @@ class syncGatewayAdmin(object):
     
         return response.status_code
 
-    def create_user(self, user_id):
+    def add_user(self, user_id):
         pass
     
-    def update_user(self, user_id):
+    def update_password(self, user_id):
         pass
     
+    def disable_user(self, user_id):
+        pass
+        
     def exists(self, doc_id):
         
         return True
     
+    def list(self, user_id='', query_criteria=None, previous_id=''):
+    
+        ''' a generator method for retrieving documents from the table '''
+
+        title = '%s.list' % self.__class__.__name__
+    
+    # validate inputs
+        input_fields = {
+            'user_id': user_id,
+            'previous_id': previous_id
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+
+    # validate inputs
+        if query_criteria:
+            self.model.query(query_criteria)
+        else:
+            query_criteria = {}
+
+    # determine index to use
+        url = self.table_url + '/_all_docs'
+        if user_id:
+             url = self.table_url + '/_design/%s/_view/all' % user_id
+    
+    # determine query params
+        params = {
+            'limit': 101
+        }
+        if previous_id:
+            params['startkey'] = previous_id
+        break_off = False
+
+    # send request
+        while True:
+            response = requests.get(url, params=params)
+        
+        # report records
+            response_details = response.json()
+        # TODO fix bug associated with couchbase view declaration
+            if not 'rows' in response_details.keys():
+                self.printer(str(response_details))
+                break
+            else:
+                if not response_details['rows']:
+                    break
+                for i in range(len(response_details['rows'])):
+    
+                # skip previous key
+                    if not 'startkey' in params.keys() or i:
+                        row = response_details['rows'][i]
+                        doc_details = self.read(row['id'])
+                        params['startkey'] = row['id']
+    
+                    # filter results with query criteria
+                        if query_criteria:
+                            if self.model.query(query_criteria, doc_details):
+                                yield doc_details
+                        else:
+                            yield doc_details
+    
+                # end if no more results
+                    elif len(response_details['rows']) == 1:
+                        break_off = True
+                        break
+            if break_off:
+                break
+
     def create(self, doc_details):
         
-        return True
+        pass
     
     def read(self, doc_id):
 
@@ -290,40 +512,30 @@ class syncGatewayAdmin(object):
     
     def delete(self, doc_id):
         pass
-    
-    def list(self, user_id='', full_document=False):
-    
-        ''' a generator method '''
+
+    def remove(self):
+
+        '''
+            a method to remove the entire table from the database 
+
+        :return: string with confirmation message 
+        '''
+
+        # https://developer.couchbase.com/documentation/mobile/1.5/references/sync-gateway/admin-rest-api/index.html#/database/delete__db__
+
+        table_url = self.table_url + '/'
+        requests.delete(table_url)
         
-    # determine index quality
-        index = 'all'
-        if user_id:
-            index = user_id
-    
-    # construct url
-        url = self.table_url + '/_design/%s/_view/all' % index
+        exit_msg = 'Table "%s" removed from database.' % self.table_name
+        self.printer(exit_msg)
+        
+        return exit_msg
 
-    # send request
-        response = requests.get(url)
-    
-    # interpret response
-        response_details = response.json()
-        doc_list = []
-        for row in response_details['rows']:
-            if full_document:
-                doc_details = self.read(row['id'])
-                doc_list.append(doc_details)
-            else:
-                doc_list.append(row['id'])
-    
-        return doc_list
-
-    
 if __name__ == '__main__':
     
     database_url = 'http://localhost:4985'
     table_name = 'lab'
     
-    lab_admin = syncGatewayAdmin(table_name, database_url)
-    doc_list = lab_admin.list(full_document=True)
-    print(doc_list)
+    lab_admin = syncGatewayClient(table_name, database_url, verbose=True)
+    for doc in lab_admin.list('test1'):
+        print(doc)

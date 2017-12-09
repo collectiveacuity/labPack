@@ -700,7 +700,10 @@ class sqlClient(object):
             record_details = self._reconstruct_record(record)
         
         # filter results with non-sql supported conditions
-            if self.model.query(query_criteria, record_details):
+            if query_criteria:
+                if self.model.query(query_criteria, record_details):
+                    yield record_details
+            else:
                 yield record_details
     
     def create(self, record_details): 
@@ -910,6 +913,8 @@ class sqlClient(object):
         self.table.drop(self.engine)
         
         exit_msg = '%s table has been removed from %s database.' % (self.table_name, self.database_name)
+        self.printer(exit_msg)
+        
         return exit_msg
 
     def export(self, sql_client, merge_rule='skip', coerce=False):
