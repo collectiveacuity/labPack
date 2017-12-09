@@ -205,6 +205,9 @@ class syncGatewayClient(object):
             'database_url': '',
             'user_id': '',
             'previous_id': '',
+            'doc_id': '',
+            'rev_id': '',
+            'doc_ids': [ '' ],
             'index_schema': {
                 'schema': {}
             },
@@ -251,7 +254,7 @@ class syncGatewayClient(object):
         }
     }
     
-    def __init__(self, table_name, database_url, admin_access=True, index_schema=None, verbose=False, configs=None):
+    def __init__(self, table_name, database_url, index_schema=None, verbose=False, configs=None):
 
         ''' the initialization method for syncGatewayAdmin class '''
         
@@ -291,18 +294,16 @@ class syncGatewayClient(object):
             response = requests.get(database_url)
             response = response.json()
             if not 'ADMIN' in response.keys():
-                raise '%s(database_url="%s") is not a valid couchbase url.' % (title, database_url)
-            elif admin_access and not response['ADMIN']:
-                raise '%s(database_url="%s") is not a valid couchbase url with admin access.' % (title, database_url)
+                raise Exception('%s(database_url="%s") is not a valid couchbase url.' % (title, database_url))
         except:
-            raise '%s(database_url="%s") is not a valid couchbase url.' % (title, database_url)
+            raise Exception('%s(database_url="%s") is not a valid couchbase url.' % (title, database_url))
     
     # construct class properties
         from os import path
         self.table_name = table_name
         self.database_url = database_url
         self.table_url = path.join(database_url, table_name)
-        self.admin_access = admin_access
+        self.admin_access = response['ADMIN']
         
     # construct verbose method
         self.printer_on = True
@@ -320,9 +321,13 @@ class syncGatewayClient(object):
             from jsonmodel.validators import jsonModel
             self.model = jsonModel(index_schema)
         else:
-            self.model = jsonModel({'schema': { 'user_id': '' }})
+            self.model = jsonModel({'schema': { 'user_id': 'abc012XYZ789' }, 'components': {'.': { 'extra_fields': True}}})
         if not 'user_id' in self.model.schema.keys():
-            index_schema['schema']['user_id'] = ''
+            index_schema['schema']['user_id'] = 'abc012XYZ789'
+        if not '.' in self.model.components.keys():
+            index_schema['components']['.'] = {}
+        if not 'extra_fields' in self.model.components['.'].keys():
+            index_schema['components']['.']['extra_fields'] = True
             self.model = jsonModel(index_schema)
 
     # construct configs
@@ -363,11 +368,13 @@ class syncGatewayClient(object):
     
     # create new table
         if not 'db_name' in response.keys():
+            if not self.admin_access:
+                raise Exception('%s.__init__(table_name="%s") does not exist. Table creation requires admin access.' % (self.__class__.__name__, self.table_name))
             requests.put(table_url, json=self.configs)
             self.printer('Table "%s" created in database.' % self.table_name)
     
     # update configs if there is a change from prior version
-        else:
+        elif self.admin_access:
             config_url = table_url + '_config'
             response = requests.get(config_url)
             response = response.json()
@@ -409,7 +416,12 @@ class syncGatewayClient(object):
         response = requests.get(url)
         if response.status_code == 404:
             response = requests.put(url, json=json_body)
-    
+        else:
+            response_details = response.json()
+            if 'all' not in response_details['views'].keys():
+                response_details['views']['all'] = { 'map': function_string }
+                response = requests.put(url, json=response_details)
+
         return response.status_code
 
     def add_user(self, user_id):
@@ -421,10 +433,30 @@ class syncGatewayClient(object):
     def disable_user(self, user_id):
         pass
         
-    def exists(self, doc_id):
+    def exists(self, doc_id, rev_id=''):
         
-        return True
+        title = '%s.exists' % self.__class__.__name__
+        
+    # validate inputs
+        input_fields = {
+            'doc_id': doc_id,
+            'rev_id': rev_id
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
     
+    # send request and construct response
+        url = self.table_url + '/%s' % doc_id
+        params = None
+        if rev_id:
+            params = { 'rev': rev_id }
+        response = requests.get(url, params=params)
+        if not 'error' in response.json():
+            return True
+        return False
+
     def list(self, user_id='', query_criteria=None, previous_id=''):
     
         ''' a generator method for retrieving documents from the table '''
@@ -450,11 +482,20 @@ class syncGatewayClient(object):
     # determine index to use
         url = self.table_url + '/_all_docs'
         if user_id:
-             url = self.table_url + '/_design/%s/_view/all' % user_id
-    
+            validate_url = self.table_url + '/_design/%s' % user_id
+            response = requests.get(validate_url)
+            response = response.json()
+            error_message = '%s(user_id="%s") requires a table index. Try: %s._create_index(%s)' % (title, user_id, self.__class__.__name__, user_id)
+            if 'error' in response.keys():
+                raise Exception(error_message)
+            elif not 'all' in response['views'].keys():
+                raise Exception(error_message)
+            url = self.table_url + '/_design/%s/_view/all' % user_id
+
     # determine query params
         params = {
-            'limit': 101
+            'limit': 101,
+            'revs': True
         }
         if previous_id:
             params['startkey'] = previous_id
@@ -463,13 +504,15 @@ class syncGatewayClient(object):
     # send request
         while True:
             response = requests.get(url, params=params)
-        
+
         # report records
             response_details = response.json()
+
         # TODO fix bug associated with couchbase view declaration
             if not 'rows' in response_details.keys():
-                self.printer(str(response_details))
+                self.printer('BUG: ' + str(response_details))
                 break
+
             else:
                 if not response_details['rows']:
                     break
@@ -482,11 +525,14 @@ class syncGatewayClient(object):
                         params['startkey'] = row['id']
     
                     # filter results with query criteria
-                        if query_criteria:
-                            if self.model.query(query_criteria, doc_details):
-                                yield doc_details
+                        if not doc_details:
+                            self.purge(row['id']) # eliminate stranded records
                         else:
-                            yield doc_details
+                            if query_criteria:
+                                if self.model.query(query_criteria, doc_details):
+                                    yield doc_details
+                            else:
+                                yield doc_details
     
                 # end if no more results
                     elif len(response_details['rows']) == 1:
@@ -496,23 +542,172 @@ class syncGatewayClient(object):
                 break
 
     def create(self, doc_details):
+
+        '''
+            a method to create a new document in the collection
+
+        :param doc_details: dictionary with document details and user id value
+        :return: dictionary with document details and _id and _rev values
+        '''
         
-        pass
-    
-    def read(self, doc_id):
+        # https://developer.couchbase.com/documentation/mobile/1.5/references/sync-gateway/admin-rest-api/index.html#/document/post__db___doc_
 
+        title = '%s.create' % self.__class__.__name__
+
+    # validate input
+        doc_details = self.model.validate(doc_details, object_title='%s(doc_details={...}' % title)
+
+    # define url
+        url = self.table_url + '/'
+
+    # send request and construct output
+        response = requests.post(url, json=doc_details)
+        response = response.json()
+        doc_details['_id'] = response['id']
+        doc_details['_rev'] = response['rev']
+    
+        return doc_details
+
+    def read(self, doc_id, rev_id=''):
+    
+        title = '%s.read' % self.__class__.__name__
+        
+    # validate inputs
+        input_fields = {
+            'doc_id': doc_id,
+            'rev_id': rev_id
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+    
+    # send request and construct response
         url = self.table_url + '/%s' % doc_id
+        params = None
+        if rev_id:
+            params = { 'rev': rev_id }
+        response = requests.get(url, params=params)
+        response = response.json()
+        if 'error' in response.keys():
+            response = {}
 
-        response = requests.get(url)
-    
-        return response.json()
+        return response
 
     def update(self, doc_details):
-        pass
+        
+        title = '%s.update' % self.__class__.__name__
+        
+    # validate input
+        doc_details = self.model.validate(doc_details, object_title='%s(doc_details={...}' % title)
+        
+    # create json body
+        doc_id = ''
+        rev_id = ''
+        json_body = {}
+        for key, value in doc_details.items():
+            if key not in ('_id', '_rev'):
+                json_body[key] = value
+            elif key == '_id':
+                doc_id = value
+            elif key == '_rev':
+                rev_id = value
     
-    def delete(self, doc_id):
-        pass
+    # validate existence of doc and rev IDs
+        if not doc_id or not rev_id:
+            raise Exception('%s(doc_details={...} must contain _id and _rev fields.' % title)
 
+    # send request and construct response
+        url = self.table_url + '/%s' % doc_id
+        params = { 'rev': rev_id }
+        response = requests.put(url, params=params, json=json_body)
+        response = response.json()
+        if 'error' in response.keys():
+            doc_details = {}
+        else:
+            doc_details['_id'] = response['id']
+            doc_details['_rev'] = response['rev']
+
+        return doc_details
+
+    def delete(self, doc_id, rev_id):
+    
+        '''
+            a method to mark a document for deletion
+            
+        :param doc_id: string with id of document in table 
+        :param rev_id: string with revision id of document in table
+        :return: string with id of deleted document
+        '''
+        
+        title = '%s.delete' % self.__class__.__name__
+        
+    # validate inputs
+        input_fields = {
+            'doc_id': doc_id,
+            'rev_id': rev_id
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+            
+    # send request and construct response
+        url = self.table_url + '/%s' % doc_id
+        params = { 'rev': rev_id }
+        response = requests.delete(url, params=params)
+        response = response.json()
+        if 'error' in response.keys():
+            doc_id = ''
+        else:
+            doc_id = response['id']
+        
+        return doc_id
+
+    def purge(self, doc_ids):
+
+        '''
+            a method to remove docs from the collection
+            
+        :param doc_ids: string or list of strings with document ids to purge 
+        :return: list of strings of doc ids purged
+        '''
+        
+        # https://developer.couchbase.com/documentation/mobile/1.5/references/sync-gateway/admin-rest-api/index.html#/document/post__db___purge
+    
+        title = '%s.purge' % self.__class__.__name__
+        
+    # ingest arguments
+        if isinstance(doc_ids, str):
+            doc_ids = [ doc_ids ]
+        
+    # validate inputs
+        input_fields = {
+            'doc_ids': doc_ids
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+    
+    # construct request fields
+        url = self.table_url + '/_purge'
+        json_body = {}
+        for doc in doc_ids:
+            json_body[doc] = [ "*" ]
+    
+    # send request 
+        response = requests.post(url, json=json_body)
+
+    # construct output from response
+        purged_list = []
+        purged_map = {}
+        response_details = response.json()
+        if 'purged' in response_details.keys():
+            purged_map = response_details['purged']
+        for key in purged_map.keys():
+            purged_list.append(key)
+        
+        return purged_list
+    
     def remove(self):
 
         '''
@@ -531,11 +726,26 @@ class syncGatewayClient(object):
         
         return exit_msg
 
+    def export(self):
+        pass
+
 if __name__ == '__main__':
-    
+
     database_url = 'http://localhost:4985'
     table_name = 'lab'
-    
+
     lab_admin = syncGatewayClient(table_name, database_url, verbose=True)
-    for doc in lab_admin.list('test1'):
-        print(doc)
+    lab_admin.create({ 'user_id': 'test1', 'test': 'you'})
+    lab_admin.create({ 'user_id': 'test1', 'test': 'me' })
+    lab_admin.create({ 'user_id': 'test1', 'test': 'them' })
+    for doc in lab_admin.list(query_criteria={ '.user_id': { 'equal_to': 'test1' } }):
+        if doc:
+            doc['test'] = 'us'
+            response = lab_admin.update(doc)
+            print(response)
+            doc_id = response['_id']
+            rev_id = response['_rev']
+            response = lab_admin.delete(doc_id, rev_id)
+            print(response)
+            response = lab_admin.purge(doc_id)
+            print(response)
