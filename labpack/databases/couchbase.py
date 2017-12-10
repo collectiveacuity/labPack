@@ -2,196 +2,43 @@ __author__ = 'rcj1492'
 __created__ = '2017.12'
 __license__ = 'MIT'
 
-# https://developer.couchbase.com/documentation/mobile/1.5/guides/sync-gateway/authorizing-users/index.html
-# https://developer.couchbase.com/documentation/mobile/1.5/guides/sync-gateway/config-properties/index.html#1.5/databases-foo_db-server
+def create_design(query_index, json_body):
 
+    base_url = 'http://localhost:%s/%s/_design/%s' % (admin_port, db_name, query_index)
 
-# sync function
-# https://developer.couchbase.com/documentation/mobile/current/guides/sync-gateway/sync-function-api-guide/index.html
+    response = requests.put(base_url, json=json_body)
 
-# curl http://localhost:4985
+    return response.status_code
 
-# admin_port = '4985'
-# db_name = 'lab'
-# 
-# import requests
-# 
-# def create_user(user_id, user_password, user_channels=None, user_roles=None):
-# 
-#     url = 'http://localhost:%s/%s/_user/' % (admin_port, db_name)
-#     
-#     json_data = {
-#         'admin_channels': [ user_id ],
-#         'admin_roles': [ user_id ],
-#         'name': user_id,
-#         'password': user_password,
-#         'disabled': False
-#     }
-#     
-#     if user_channels:
-#         json_data['admin_channels'].extend(user_channels)
-#     if user_roles:
-#         json_data['admin_roles'].extend(user_roles)
-#     
-#     response = requests.post(url, json=json_data)
-#     
-#     return response.status_code
-# 
-# def update_user(user_id, user_password, user_channels=None, user_roles=None):
-#     
-#     url = 'http://localhost:%s/%s/_user/%s' % (admin_port, db_name, user_id)
-#     
-#     json_data = {
-#         'admin_channels': [ user_id ],
-#         'admin_roles': [ user_id ],
-#         'password': user_password,
-#         'disabled': False
-#     }
-#     
-#     if user_channels:
-#         json_data['admin_channels'].extend(user_channels)
-#     if user_roles:
-#         json_data['admin_roles'].extend(user_roles)
-#     
-#     response = requests.put(url, json=json_data)
-#     
-#     return response.status_code
-#     
-# def disable_user(user_id, user_password, user_channels=None, user_roles=None):
-#     
-#     url = 'http://localhost:%s/%s/_user/%s' % (admin_port, db_name, user_id)
-#     
-#     json_data = {
-#         'admin_channels': [ user_id ],
-#         'admin_roles': [ user_id ],
-#         'password': user_password,
-#         'disabled': True
-#     }
-#     
-#     if user_channels:
-#         json_data['admin_channels'].extend(user_channels)
-#     if user_roles:
-#         json_data['admin_roles'].extend(user_roles)
-#     
-#     response = requests.put(url, json=json_data)
-#     
-#     return response.status_code
-# 
-# def delete_user(user_id):
-#     
-#     url = 'http://localhost:%s/%s/_user/%s' % (admin_port, db_name, user_id)
-#     
-#     response = requests.delete(url)
-#     
-#     return response.status_code
-# 
-# def get_user(user_id):
-#     
-#     url = 'http://localhost:%s/%s/_user/%s' % (admin_port, db_name, user_id)
-#     
-#     response = requests.get(url)
-#     
-#     return response.json()
-# 
-# def list_users():
-#     
-#     url = 'http://localhost:%s/%s/_user/' % (admin_port, db_name)
-#     
-#     response = requests.get(url)
-#     
-#     return response.json()
-# 
-# def create_session(user_id):
-#     
-#     url = 'http://localhost:%s/%s/_session' % (admin_port, db_name)
-#     
-#     json_data = {
-#         'name': user_id
-#     }
-#     
-#     response = requests.post(url, json=json_data)
-#     
-#     return response.json()
-# 
-# def delete_session(session_id):
-#     
-#    url = 'http://localhost:%s/%s/_session/%s' % (admin_port, db_name, session_id)
-#    
-#    response = requests.delete(url)
-#    
-#    return response.status_code
-# 
-# def delete_sessions(user_id):
-#     
-#     url = 'http://localhost:%s/%s/_user/%s/_session' % (admin_port, db_name, user_id)
-#     
-#     response = requests.delete(url)
-#     
-#     return response.status_code
-# 
-# def create_design(query_index, json_body):
-#     
-#     base_url = 'http://localhost:%s/%s/_design/%s' % (admin_port, db_name, query_index)
-#     
-#     response = requests.put(base_url, json=json_body)
-#     
-#     return response.status_code
-# 
-# def create_table_design(user_id, table_name):
-# 
-#     function_string = 'function(doc, meta) { if (doc.table == "%s" && doc.user_id == "%s") { emit(doc.user_id, doc) } }' % (table_name, user_id)
-#     
-#     json_body = {
-#         "views": {
-#             table_name: {
-#                 "map": function_string
-#             }
-#         }
-#     }
-#     
-#     design_doc = read_design('docs')
-#     
-#     print(design_doc)
-#    
-# def read_design(query_index):
-#     
-#     base_url = 'http://localhost:%s/%s/_design/%s' % (admin_port, db_name, query_index)
-#     
-#     response = requests.get(base_url)
-#     
-#     return response.json()
-# 
-#
-# 
-# def purge_documents(doc_ids):
-#     
-#     # https://developer.couchbase.com/documentation/mobile/1.5/references/sync-gateway/admin-rest-api/index.html#/document/post__db___purge
-#     
-#     if isinstance(doc_ids, str):
-#         doc_ids = [ doc_ids ]
-#         
-#     base_url = 'http://localhost:%s/%s/_purge' % (admin_port, db_name)
-#     
-#     json_body = {}
-#     for doc in doc_ids:
-#         json_body[doc] = [ "*" ]
-#         
-#     response = requests.post(base_url, json=json_body)
-#     
-#     purged_list = []
-#     purged_map = {}
-#     response_details = response.json()
-#     if 'purged' in response_details.keys():
-#         purged_map = response_details['purged']
-#     for key in purged_map.keys():
-#         purged_list.append(key)
-#     
-#     return purged_list
+def create_table_design(user_id, table_name):
+
+    function_string = 'function(doc, meta) { if (doc.table == "%s" && doc.user_id == "%s") { emit(doc.user_id, doc) } }' % (table_name, user_id)
+
+    json_body = {
+        "views": {
+            table_name: {
+                "map": function_string
+            }
+        }
+    }
+
+    design_doc = read_design('docs')
+
+    print(design_doc)
+
+def read_design(query_index):
+
+    base_url = 'http://localhost:%s/%s/_design/%s' % (admin_port, db_name, query_index)
+
+    response = requests.get(base_url)
+
+    return response.json()
 
 '''
 alternatives:
 https://developer.couchbase.com/documentation/server/4.5/sdk/python/start-using-sdk.html
 http://pythonhosted.org/couchbase/index.html
+curl http://localhost:4985
 '''
 from labpack import __module__
 import requests
@@ -199,15 +46,21 @@ import requests
 class syncGatewayClient(object):
     
     # https://developer.couchbase.com/documentation/mobile/current/references/sync-gateway/admin-rest-api/index.html
+    
     _class_fields = {
         'schema': {
             'table_name': '',
             'database_url': '',
             'user_id': '',
+            'user_password': '',
+            'duration': 0,
+            'session_id': '',
             'previous_id': '',
             'doc_id': '',
             'rev_id': '',
             'doc_ids': [ '' ],
+            'user_roles': [ '' ],
+            'user_channels': [ '' ],
             'index_schema': {
                 'schema': {}
             },
@@ -227,6 +80,10 @@ class syncGatewayClient(object):
             }
         },
         'components': {
+            '.duration': {
+                'integer_data': True,
+                'min_value': 0
+            },
             '.configs': {
                 'extra_fields': True
             },
@@ -259,6 +116,7 @@ class syncGatewayClient(object):
         ''' the initialization method for syncGatewayAdmin class '''
         
         # https://developer.couchbase.com/documentation/mobile/1.5/guides/sync-gateway/config-properties/index.html
+        # https://developer.couchbase.com/documentation/mobile/current/guides/sync-gateway/sync-function-api-guide/index.html
         
         title = '%s.__init__' % self.__class__.__name__
 
@@ -290,11 +148,12 @@ class syncGatewayClient(object):
                 self.fields.validate(value, '.%s' % key, object_title)
         
     # test connection to db
+        self.admin_access = True
         try:
             response = requests.get(database_url)
             response = response.json()
             if not 'ADMIN' in response.keys():
-                raise Exception('%s(database_url="%s") is not a valid couchbase url.' % (title, database_url))
+                self.admin_access = False
         except:
             raise Exception('%s(database_url="%s") is not a valid couchbase url.' % (title, database_url))
     
@@ -303,7 +162,6 @@ class syncGatewayClient(object):
         self.table_name = table_name
         self.database_url = database_url
         self.table_url = path.join(database_url, table_name)
-        self.admin_access = response['ADMIN']
         
     # construct verbose method
         self.printer_on = True
@@ -356,7 +214,7 @@ class syncGatewayClient(object):
         js_text = " ".join(js_text.split())
         
         return js_text
-        
+
     def _update_table(self):
     
     # https://developer.couchbase.com/documentation/mobile/1.5/references/sync-gateway/admin-rest-api/index.html#/database/put__db__
@@ -365,6 +223,11 @@ class syncGatewayClient(object):
         table_url = self.table_url + '/'
         response = requests.get(table_url)
         response = response.json()
+    
+    # handle login errors
+        if 'error' in response.keys():
+            if not self.admin_access:
+                raise Exception('%s.__init__(table_name="%s") error: %s' % (self.__class__.__name__, self.table_name, str(response)))
     
     # create new table
         if not 'db_name' in response.keys():
@@ -424,16 +287,252 @@ class syncGatewayClient(object):
 
         return response.status_code
 
-    def add_user(self, user_id):
-        pass
+    def _delete_index(self, user_id):
     
-    def update_password(self, user_id):
-        pass
+    # https://developer.couchbase.com/documentation/mobile/1.5/references/sync-gateway/admin-rest-api/index.html#/query/delete__db___design__ddoc_
     
-    def disable_user(self, user_id):
-        pass
+    # compose request url
+        url = self.table_url + '/_design/%s' % user_id
+    
+    # send request
+        response = requests.delete(url)
+    
+        return response.status_code
+
+    def list_users(self):
+    
+        ''' a method to list all the user ids of all users in the table '''
         
+    # construct url
+        url = self.table_url + '/_user/'
+
+    # send request and unwrap response
+        response = requests.get(url)
+        response = response.json()
+
+        return response
+
+    def save_user(self, user_id, user_password, user_channels=None, user_roles=None, create_indices=True, disable_account=False):
+
+        '''
+            a method to add or update an authorized user to the table
+            
+        :param user_id: string with id to assign to user
+        :param user_password: string with password to assign to user
+        :param user_channels: [optional] list of strings with channels to subscribe to user
+        :param user_roles: [optional] list of strings with roles to assign to user
+        :param create_indices: boolean to enable creation of index for user id
+        :param disable_account: boolean to disable access to records by user
+        :return: integer with status code of user account creation
+        '''
+
+    # https://developer.couchbase.com/documentation/mobile/1.5/references/sync-gateway/admin-rest-api/index.html#/user/put__db___user__name_
+    # https://developer.couchbase.com/documentation/mobile/1.5/guides/sync-gateway/authorizing-users/index.html
+    
+        title = '%s.save_user' % self.__class__.__name__
+        
+    # validate inputs
+        input_fields = {
+            'user_id': user_id,
+            'user_password': user_password,
+            'user_channels': user_channels,
+            'user_roles': user_roles
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+    
+    # construct url
+        url = self.table_url + '/_user/%s' % user_id
+
+    # create default settings
+        json_data = {
+            'admin_channels': [ user_id ],
+            'admin_roles': [ user_id ],
+            'name': user_id,
+            'password': user_password,
+            'disabled': disable_account
+        }
+    
+    # add optional additional channels and roles
+        if user_channels:
+            json_data['admin_channels'].extend(user_channels)
+        if user_roles:
+            json_data['admin_roles'].extend(user_roles)
+
+    # send request
+        response = requests.put(url, json=json_data)
+
+    # create indices
+        if response.status_code in (200, 201):
+            if create_indices:
+                self._create_index(user_id)
+
+        return response.status_code
+
+    def load_user(self, user_id):
+    
+        '''
+            a method to retrieve the account details of a user in the table
+            
+        :param user_id: string with id of user in table 
+        :return: dictionary with account fields for user
+        '''
+    
+        title = '%s.load_user' % self.__class__.__name__
+        
+    # validate inputs
+        input_fields = {
+            'user_id': user_id
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+    
+    # construct url
+        url = self.table_url + '/_user/%s' % user_id
+        
+    # send request and unwrap response
+        response = requests.get(url)
+        response = response.json()
+    
+        return response
+
+    def delete_user(self, user_id, delete_indices=True):
+        
+        '''
+            a method to retrieve the account details of a user in the table
+            
+        :param user_id: string with id of user in table
+        :param delete_indices: boolean to remove indices attached to user
+        :return: integer with status of delete operation
+        '''
+    
+        title = '%s.delete_user' % self.__class__.__name__
+        
+    # validate inputs
+        input_fields = {
+            'user_id': user_id
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+    
+    # construct url
+        url = self.table_url + '/_user/%s' % user_id
+
+    # send request
+        response = requests.delete(url)
+
+    # create indices
+        if response.status_code in (200, 201):
+            if delete_indices:
+                self._delete_index(user_id)
+    
+        return response.status_code
+
+    def create_session(self, user_id, duration=0):
+
+        '''
+            a method to create a session token for the user
+            
+        :param user_id: string with id of user in table
+        :param duration: integer with number of seconds to last (default: 24hrs) 
+        :return: dictionary with account fields for user
+        '''
+    
+        title = '%s.create_session' % self.__class__.__name__
+        
+    # validate inputs
+        input_fields = {
+            'user_id': user_id,
+            'duration': duration
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+        
+    # construct request fields
+        url = self.table_url + '/_session'
+        json_data = {
+            'name': user_id
+        }
+        if duration:
+            json_data['ttl'] = duration
+    
+    # send request and unwrap response
+        response = requests.post(url, json=json_data)
+        response = response.json()
+    
+        return response
+
+    def delete_session(self, session_id):
+    
+        '''
+            a method to create a session token for the user
+            
+        :param session_id: string with id of user session token in table
+        :return: integer with status code of operation
+        '''
+        
+        title = '%s.delete_session' % self.__class__.__name__
+        
+    # validate inputs
+        input_fields = {
+            'session_id': session_id
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+    
+    # construct url
+        url = self.table_url + '/_session/%s' % session_id
+        
+    # send request
+        response = requests.delete(url)
+        
+        return response.status_code
+
+    def delete_sessions(self, user_id):
+        
+        '''
+            a method to delete all session tokens associated with a user
+            
+        :param user_id: string with id of user in table
+        :return: integer with status code of delete operation
+        '''
+    
+        title = '%s.delete_session' % self.__class__.__name__
+        
+    # validate inputs
+        input_fields = {
+            'user_id': user_id
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+    
+    # construct url
+        url = self.table_url + '/_user/%s/_session' % user_id
+    
+    # send request
+        response = requests.delete(url)
+
+        return response.status_code
+
     def exists(self, doc_id, rev_id=''):
+        
+        '''
+            a method to determine if document exists
+            
+        :param doc_id: string with id of document in table 
+        :param rev_id: [optional] string with revision id of document in table
+        :return: boolean indicating existence of document
+        '''
         
         title = '%s.exists' % self.__class__.__name__
         
@@ -707,7 +806,7 @@ class syncGatewayClient(object):
             purged_list.append(key)
         
         return purged_list
-    
+
     def remove(self):
 
         '''
@@ -732,20 +831,31 @@ class syncGatewayClient(object):
 if __name__ == '__main__':
 
     database_url = 'http://localhost:4985'
+    test_table = 'test'
+    test_user = 'test1'
+    test_password = 'password'
+    updated_password = 'newPassW0rd'
+    new_user = 'test2'
+    new_password = 'password2'
+    
     table_name = 'lab'
-
     lab_admin = syncGatewayClient(table_name, database_url, verbose=True)
-    lab_admin.create({ 'user_id': 'test1', 'test': 'you'})
-    lab_admin.create({ 'user_id': 'test1', 'test': 'me' })
-    lab_admin.create({ 'user_id': 'test1', 'test': 'them' })
-    for doc in lab_admin.list(query_criteria={ '.user_id': { 'equal_to': 'test1' } }):
-        if doc:
-            doc['test'] = 'us'
-            response = lab_admin.update(doc)
-            print(response)
-            doc_id = response['_id']
-            rev_id = response['_rev']
-            response = lab_admin.delete(doc_id, rev_id)
-            print(response)
-            response = lab_admin.purge(doc_id)
-            print(response)
+    user_list = lab_admin.list_users()
+    for user_id in user_list:
+        print(lab_admin.load_user(user_id))
+
+    # lab_admin.create({ 'user_id': 'test1', 'test': 'you'})
+    # lab_admin.create({ 'user_id': 'test1', 'test': 'me' })
+    # lab_admin.create({ 'user_id': 'test1', 'test': 'them' })
+    # for doc in lab_admin.list(query_criteria={ '.user_id': { 'equal_to': 'test1' } }):
+    #     if doc:
+    #         doc['test'] = 'us'
+    #         response = lab_admin.update(doc)
+    #         print(response)
+    #         doc_id = response['_id']
+    #         rev_id = response['_rev']
+    #         response = lab_admin.delete(doc_id, rev_id)
+    #         print(response)
+    #         response = lab_admin.purge(doc_id)
+    #         print(response)
+    #     pass
