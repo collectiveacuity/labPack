@@ -20,7 +20,7 @@ class syncGatewayClient(object):
         'schema': {
             'bucket_name': '',
             'database_url': '',
-            'user_id': '',
+            'uid': '',
             'user_password': '',
             'duration': 0,
             'session_id': '',
@@ -30,7 +30,7 @@ class syncGatewayClient(object):
             'doc_ids': [ '' ],
             'user_roles': [ '' ],
             'user_channels': [ '' ],
-            'index_schema': {
+            'record_schema': {
                 'schema': {}
             },
             'configs': {
@@ -146,9 +146,9 @@ class syncGatewayClient(object):
             from jsonmodel.validators import jsonModel
             self.model = jsonModel(record_schema)
         else:
-            self.model = jsonModel({'schema': { 'user_id': 'abc012XYZ789' }, 'components': {'.': { 'extra_fields': True}}})
-        if not 'user_id' in self.model.schema.keys():
-            record_schema['schema']['user_id'] = 'abc012XYZ789'
+            self.model = jsonModel({'schema': { 'uid': 'abc012XYZ789' }, 'components': {'.': { 'extra_fields': True}}})
+        if not 'uid' in self.model.schema.keys():
+            record_schema['schema']['uid'] = 'abc012XYZ789'
         if not '.' in self.model.components.keys():
             record_schema['components']['.'] = {}
         if not 'extra_fields' in self.model.components['.'].keys():
@@ -223,50 +223,118 @@ class syncGatewayClient(object):
                     if comparison[0]['path'][0] != 'allow_empty_password':
                         requests.put(config_url, json=self.configs)
                         self.printer('Configuration updated for bucket "%s".' % self.bucket_name)
+
+    def create_view(self, query_criteria=None, uid='_all_users'):
     
-    def _create_index(self, user_id):
-    
-        ''' a method to create an index in the bucket to be able to retrieve all documents '''
+        ''' a method to create a view in the bucket to run a query '''
         
         # https://developer.couchbase.com/documentation/mobile/1.5/references/sync-gateway/admin-rest-api/index.html#/query/put__db___design__ddoc_
         # https://developer.couchbase.com/documentation/server/3.x/admin/Views/views-writing.html
-        
-    # compose function string
-        function_string = 'function(doc, meta) { if (doc.user_id == "%s") { emit(null, null); } }' % user_id
-
-    # compose json body
-        json_body = {
-            "views": {
-                'all': {
-                    "map": function_string
-                }
-            }
-        }
-
-    # compose request url
-        url = self.bucket_url + '/_design/%s' % user_id
     
-    # create index if not existing
-        response = requests.get(url)
-        if response.status_code == 404:
-            response = requests.put(url, json=json_body)
+        title = '%s.create_view' % self.__class__.__name__
+    
+    # catch missing args
+        if not query_criteria and not uid:
+            raise IndexError('%s requires either a uid or query_criteria argument.' % title)
+    
+    # create a view of all user documents
         else:
-            response_details = response.json()
-            if 'all' not in response_details['views'].keys():
-                response_details['views']['all'] = { 'map': function_string }
-                response = requests.put(url, json=response_details)
-
+            
+        # retrieve the design document for the uid
+            url = self.bucket_url + '/_design/%s' % uid
+            design_details = {
+                'views': {}
+            }
+            response = requests.get(url)
+            if response.status_code in (200, 201):
+                design_details = response.json()
+        
+        # create a view of all docs for the uid
+            if not query_criteria:
+                if uid == '_all_users':
+                    pass
+                else:
+                    function_string = 'function(doc, meta) { if (doc.uid == "%s") { emit(null, null); } }' % uid
+                    design_details['views']['_all_docs'] = { 'map': function_string }
+            
+        # construct a view for a query criteria
+            else:
+                
+            # determine hashed key for criteria
+                import hashlib
+                from collections import OrderedDict
+                ordered_criteria = OrderedDict(**query_criteria)
+                hashed_criteria = hashlib.md5(str(ordered_criteria).encode('utf-8')).hexdigest()
+            
+            # determine function string for criteria
+                uid_insert = 'emit();'
+                if uid != '_all_users':
+                    uid_insert = 'if (doc.uid == "%s") { emit(); }' % uid
+                function_string = 'function(doc, meta) { %s }' % uid_insert
+                emit_insert = 'emit(null, ['
+                count = 0
+                for key in ordered_criteria.keys():
+                    if count:
+                        emit_insert += ','
+                    emit_insert += 'doc%s' % key
+                emit_insert += ']);'
+                function_string.replace('emit();', emit_insert)
+            
+            # construct updated design details
+                design_details['views'][hashed_criteria] = { 'map': function_string}
+            
+        # send update of design document
+            response = requests.put(url, json=design_details)
+        
         return response.status_code
 
-    def _delete_index(self, user_id):
+    def delete_view(self, query_criteria=None, uid='_all_users'):
     
+        '''
+            a method to delete a view associated with a user design doc
+            
+        :param query_criteria: [optional] dictionary with query criteria to be used in list method
+        :param uid: [optional] string with uid of design document to update
+        :return: integer with status of operation
+        
+        NOTE:   if a query_criteria is not specified, then the entire user design doc is removed
+                otherwise, the existing design document is updated. 
+        '''
     # https://developer.couchbase.com/documentation/mobile/1.5/references/sync-gateway/admin-rest-api/index.html#/query/delete__db___design__ddoc_
     
-    # compose request url
-        url = self.bucket_url + '/_design/%s' % user_id
+        title = '%s.delete_view' % self.__class__.__name__
     
-    # send request
-        response = requests.delete(url)
+    # handle deleting user design doc
+        if not query_criteria:
+            url = self.bucket_url + '/_design/%s' % uid
+            response = requests.delete(url)
+    
+    # catch missing args
+        elif not uid:
+            raise IndexError('%s requires either a uid or query_criteria argument.' % title)
+    
+    # handle removing a view from a design doc
+        else:
+            
+    # determine hash of query criteria
+            import hashlib
+            from collections import OrderedDict
+            ordered_criteria = OrderedDict(**query_criteria)
+            hashed_criteria = hashlib.md5(str(ordered_criteria).encode('utf-8')).hexdigest()       
+    
+    # determine design document to update
+            url = self.bucket_url + '/_design/%s' % uid
+    
+    # remove view from design document and update
+            response = requests.get(url)
+            if response.status_code in (200, 201):
+                design_details = response.json()
+                if hashed_criteria in design_details['views'].keys():
+                    del design_details['views'][hashed_criteria]
+                    if design_details:
+                        response = requests.put(url, json=design_details)
+                    else:
+                        response = requests.delete(url)
     
         return response.status_code
 
@@ -283,16 +351,16 @@ class syncGatewayClient(object):
 
         return response
 
-    def save_user(self, user_id, user_password, user_channels=None, user_roles=None, create_indices=True, disable_account=False):
+    def save_user(self, uid, user_password, user_channels=None, user_roles=None, user_views=None, disable_account=False):
 
         '''
             a method to add or update an authorized user to the bucket
             
-        :param user_id: string with id to assign to user
+        :param uid: string with id to assign to user
         :param user_password: string with password to assign to user
         :param user_channels: [optional] list of strings with channels to subscribe to user
         :param user_roles: [optional] list of strings with roles to assign to user
-        :param create_indices: boolean to enable creation of index for user id
+        :param user_views: [optional] list of query criteria to create as views for user
         :param disable_account: boolean to disable access to records by user
         :return: integer with status code of user account creation
         '''
@@ -304,7 +372,7 @@ class syncGatewayClient(object):
         
     # validate inputs
         input_fields = {
-            'user_id': user_id,
+            'uid': uid,
             'user_password': user_password,
             'user_channels': user_channels,
             'user_roles': user_roles
@@ -315,13 +383,13 @@ class syncGatewayClient(object):
                 self.fields.validate(value, '.%s' % key, object_title)
     
     # construct url
-        url = self.bucket_url + '/_user/%s' % user_id
+        url = self.bucket_url + '/_user/%s' % uid
 
     # create default settings
         json_data = {
-            'admin_channels': [ user_id ],
-            'admin_roles': [ user_id ],
-            'name': user_id,
+            'admin_channels': [ uid ],
+            'admin_roles': [ uid ],
+            'name': uid,
             'password': user_password,
             'disabled': disable_account
         }
@@ -337,17 +405,22 @@ class syncGatewayClient(object):
 
     # create indices
         if response.status_code in (200, 201):
-            if create_indices:
-                self._create_index(user_id)
+            self.create_view(uid=uid)
+            if user_views:
+                for criteria in user_views:
+                    self.create_view(query_criteria=criteria, uid=uid)
 
+    # report outcome
+        self.printer('User "%s" updated in bucket "%s"' % (uid, self.bucket_name))
+        
         return response.status_code
 
-    def load_user(self, user_id):
+    def load_user(self, uid):
     
         '''
             a method to retrieve the account details of a user in the bucket
             
-        :param user_id: string with id of user in bucket 
+        :param uid: string with id of user in bucket 
         :return: dictionary with account fields for user
         '''
     
@@ -355,7 +428,7 @@ class syncGatewayClient(object):
         
     # validate inputs
         input_fields = {
-            'user_id': user_id
+            'uid': uid
         }
         for key, value in input_fields.items():
             if value:
@@ -363,7 +436,7 @@ class syncGatewayClient(object):
                 self.fields.validate(value, '.%s' % key, object_title)
     
     # construct url
-        url = self.bucket_url + '/_user/%s' % user_id
+        url = self.bucket_url + '/_user/%s' % uid
         
     # send request and unwrap response
         response = requests.get(url)
@@ -371,13 +444,13 @@ class syncGatewayClient(object):
     
         return response
 
-    def delete_user(self, user_id, delete_indices=True):
+    def delete_user(self, uid, delete_views=True):
         
         '''
             a method to retrieve the account details of a user in the bucket
             
-        :param user_id: string with id of user in bucket
-        :param delete_indices: boolean to remove indices attached to user
+        :param uid: string with id of user in bucket
+        :param delete_views: boolean to remove indices attached to user
         :return: integer with status of delete operation
         '''
     
@@ -385,32 +458,37 @@ class syncGatewayClient(object):
         
     # validate inputs
         input_fields = {
-            'user_id': user_id
+            'uid': uid
         }
         for key, value in input_fields.items():
             if value:
                 object_title = '%s(%s=%s)' % (title, key, str(value))
                 self.fields.validate(value, '.%s' % key, object_title)
     
+    # delete any existing sessions
+        self.delete_sessions(uid)
+    
+    # delete any existing views
+        if delete_views:
+            self.delete_view(uid=uid)
+            
     # construct url
-        url = self.bucket_url + '/_user/%s' % user_id
+        url = self.bucket_url + '/_user/%s' % uid
 
     # send request
         response = requests.delete(url)
-
-    # create indices
-        if response.status_code in (200, 201):
-            if delete_indices:
-                self._delete_index(user_id)
     
+    # report outcome
+        self.printer('User "%s" removed from bucket "%s"' % (uid, self.bucket_name))
+        
         return response.status_code
 
-    def create_session(self, user_id, duration=0):
+    def create_session(self, uid, duration=0):
 
         '''
             a method to create a session token for the user
             
-        :param user_id: string with id of user in bucket
+        :param uid: string with id of user in bucket
         :param duration: integer with number of seconds to last (default: 24hrs) 
         :return: dictionary with account fields for user
         '''
@@ -419,7 +497,7 @@ class syncGatewayClient(object):
         
     # validate inputs
         input_fields = {
-            'user_id': user_id,
+            'uid': uid,
             'duration': duration
         }
         for key, value in input_fields.items():
@@ -430,7 +508,7 @@ class syncGatewayClient(object):
     # construct request fields
         url = self.bucket_url + '/_session'
         json_data = {
-            'name': user_id
+            'name': uid
         }
         if duration:
             json_data['ttl'] = duration
@@ -468,12 +546,12 @@ class syncGatewayClient(object):
         
         return response.status_code
 
-    def delete_sessions(self, user_id):
+    def delete_sessions(self, uid):
         
         '''
             a method to delete all session tokens associated with a user
             
-        :param user_id: string with id of user in bucket
+        :param uid: string with id of user in bucket
         :return: integer with status code of delete operation
         '''
     
@@ -481,14 +559,14 @@ class syncGatewayClient(object):
         
     # validate inputs
         input_fields = {
-            'user_id': user_id
+            'uid': uid
         }
         for key, value in input_fields.items():
             object_title = '%s(%s=%s)' % (title, key, str(value))
             self.fields.validate(value, '.%s' % key, object_title)
     
     # construct url
-        url = self.bucket_url + '/_user/%s/_session' % user_id
+        url = self.bucket_url + '/_user/%s/_session' % uid
     
     # send request
         response = requests.delete(url)
@@ -504,9 +582,9 @@ class syncGatewayClient(object):
         :param rev_id: [optional] string with revision id of document in bucket
         :return: boolean indicating existence of document
         '''
-        
+
         title = '%s.exists' % self.__class__.__name__
-        
+
     # validate inputs
         input_fields = {
             'doc_id': doc_id,
@@ -527,7 +605,7 @@ class syncGatewayClient(object):
             return True
         return False
 
-    def list(self, user_id='', query_criteria=None, previous_id=''):
+    def list(self, query_criteria=None, uid='', previous_id=''):
     
         ''' a generator method for retrieving documents from the bucket '''
 
@@ -535,7 +613,7 @@ class syncGatewayClient(object):
     
     # validate inputs
         input_fields = {
-            'user_id': user_id,
+            'uid': uid,
             'previous_id': previous_id
         }
         for key, value in input_fields.items():
@@ -551,16 +629,16 @@ class syncGatewayClient(object):
 
     # determine index to use
         url = self.bucket_url + '/_all_docs'
-        if user_id:
-            validate_url = self.bucket_url + '/_design/%s' % user_id
+        if uid:
+            validate_url = self.bucket_url + '/_design/%s' % uid
             response = requests.get(validate_url)
             response = response.json()
-            error_message = '%s(user_id="%s") requires a bucket index. Try: %s._create_index(%s)' % (title, user_id, self.__class__.__name__, user_id)
+            error_message = '%s(uid="%s") requires a bucket index. Try: %s.create_view(uid="%s")' % (title, uid, self.__class__.__name__, uid)
             if 'error' in response.keys():
                 raise Exception(error_message)
-            elif not 'all' in response['views'].keys():
+            elif not '_all_docs' in response['views'].keys():
                 raise Exception(error_message)
-            url = self.bucket_url + '/_design/%s/_view/all' % user_id
+            url = self.bucket_url + '/_design/%s/_view/_all_docs' % uid
 
     # determine query params
         params = {
@@ -629,16 +707,21 @@ class syncGatewayClient(object):
     # validate input
         doc_details = self.model.validate(doc_details, object_title='%s(doc_details={...}' % title)
 
-    # define url
+    # define request fields
+        from copy import deepcopy
+        new_record = deepcopy(doc_details)
         url = self.bucket_url + '/'
 
     # send request and construct output
-        response = requests.post(url, json=doc_details)
+        response = requests.post(url, json=new_record)
+        if response.status_code not in (200, 201):
+            response = response.json()
+            raise Exception('%s() error: %s' % (title, response))
         response = response.json()
-        doc_details['_id'] = response['id']
-        doc_details['_rev'] = response['rev']
+        new_record['_id'] = response['id']
+        new_record['_rev'] = response['rev']
     
-        return doc_details
+        return new_record
 
     def read(self, doc_id, rev_id=''):
     
@@ -828,11 +911,11 @@ if __name__ == '__main__':
     updated_password = 'newPassW0rd'
     new_user = 'test2'
     new_password = 'password2'
-    test_doc = { 'user_id': 'test1', 'dt': time(), 'place': 'here' }
+    test_doc = { 'uid': 'test1', 'dt': time(), 'place': 'here' }
 
 # test initialization
     test_admin = syncGatewayClient(test_bucket, database_url, verbose=True)
-
+        
 # test user methods
     user_list = test_admin.list_users()
     if not test_user in user_list:
@@ -843,29 +926,28 @@ if __name__ == '__main__':
 
 # test document methods
     doc_list = []
-    for doc in test_admin.list(test_user):
+    for doc in test_admin.list(uid=test_user):
         doc_list.append(doc)
     if not doc_list:
         print('first record created')
         test_admin.create(test_doc)
     doc_list = []
-    for doc in test_admin.list(test_user):
+    for doc in test_admin.list(uid=test_user):
         doc_list.append(doc)
     if len(doc_list) < 2:
         print('second record created')
         test_admin.create(test_doc)
-    for doc in test_admin.list(test_user):
+    for doc in test_admin.list(uid=test_user):
         print(doc)
         doc['place'] = 'there'
         test_admin.update(doc)
-    for doc in test_admin.list(test_user):
+    for doc in test_admin.list(uid=test_user):
         print(doc)
         test_admin.delete(doc['_id'], doc['_rev'])
         test_admin.purge(doc['_id'])
     doc_list = []
-    for doc in test_admin.list(test_user):
+    for doc in test_admin.list(uid=test_user):
         doc_list.append(doc)
-    print(doc_list)
     
 # test second user
     
@@ -873,10 +955,10 @@ if __name__ == '__main__':
 # test bucket removal
     test_admin.remove()
     
-    # test_admin.create({ 'user_id': 'test1', 'test': 'you'})
-    # test_admin.create({ 'user_id': 'test1', 'test': 'me' })
-    # test_admin.create({ 'user_id': 'test1', 'test': 'them' })
-    # for doc in test_admin.list(query_criteria={ '.user_id': { 'equal_to': 'test1' } }):
+    # test_admin.create({ 'uid': 'test1', 'test': 'you'})
+    # test_admin.create({ 'uid': 'test1', 'test': 'me' })
+    # test_admin.create({ 'uid': 'test1', 'test': 'them' })
+    # for doc in test_admin.list(query_criteria={ '.uid': { 'equal_to': 'test1' } }):
     #     if doc:
     #         doc['test'] = 'us'
     #         response = test_admin.update(doc)
