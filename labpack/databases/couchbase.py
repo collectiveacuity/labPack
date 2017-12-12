@@ -30,7 +30,7 @@ class syncGatewayClient(object):
             'doc_ids': [ '' ],
             'user_roles': [ '' ],
             'user_channels': [ '' ],
-            'record_schema': {
+            'document_schema': {
                 'schema': {}
             },
             'configs': {
@@ -80,7 +80,7 @@ class syncGatewayClient(object):
         }
     }
     
-    def __init__(self, bucket_name, database_url, record_schema=None, verbose=False, configs=None):
+    def __init__(self, bucket_name, database_url, document_schema=None, verbose=False, configs=None):
 
         ''' the initialization method for syncGatewayAdmin class '''
         
@@ -95,7 +95,7 @@ class syncGatewayClient(object):
         module_path = find_spec(__module__).submodule_search_locations[0]
         sync_path = path.join(module_path, 'databases/models/sync_function.js')
         sync_text = open(sync_path).read()
-        sync_text = self._update_js(sync_text, record_schema)
+        sync_text = self._update_js(sync_text, document_schema)
 
     # construct fields
         self._class_fields['components']['.configs.sync']['default_value'] = sync_text
@@ -106,7 +106,7 @@ class syncGatewayClient(object):
         input_fields = {
             'bucket_name': bucket_name,
             'database_url': database_url,
-            'record_schema': record_schema,
+            'document_schema': document_schema,
             'configs': configs
         }
         for key, value in input_fields.items():
@@ -142,18 +142,18 @@ class syncGatewayClient(object):
     
     # construct index model
         self.model = None
-        if record_schema:
+        if document_schema:
             from jsonmodel.validators import jsonModel
-            self.model = jsonModel(record_schema)
+            self.model = jsonModel(document_schema)
         else:
             self.model = jsonModel({'schema': { 'uid': 'abc012XYZ789' }, 'components': {'.': { 'extra_fields': True}}})
         if not 'uid' in self.model.schema.keys():
-            record_schema['schema']['uid'] = 'abc012XYZ789'
+            document_schema['schema']['uid'] = 'abc012XYZ789'
         if not '.' in self.model.components.keys():
-            record_schema['components']['.'] = {}
+            document_schema['components']['.'] = {}
         if not 'extra_fields' in self.model.components['.'].keys():
-            record_schema['components']['.']['extra_fields'] = True
-            self.model = jsonModel(record_schema)
+            document_schema['components']['.']['extra_fields'] = True
+            self.model = jsonModel(document_schema)
 
     # construct configs
         if configs:
@@ -171,7 +171,7 @@ class syncGatewayClient(object):
     # create db (update config) if none exists
         self._update_bucket()
     
-    def _update_js(self, js_text, record_schema=None):
+    def _update_js(self, js_text, document_schema=None):
 
         import re
         comment_regex = re.compile('//.*')
@@ -181,7 +181,7 @@ class syncGatewayClient(object):
         js_text = " ".join(js_text.split())
 
      # TODO inject data validation from record schema into js_text
-        if record_schema:
+        if document_schema:
             pass
 
         return js_text
@@ -226,13 +226,54 @@ class syncGatewayClient(object):
 
     def create_view(self, query_criteria=None, uid='_all_users'):
     
-        ''' a method to create a view in the bucket to run a query '''
+        '''
+            a method to add a view to a design document of a uid 
+            
+        :param query_criteria: dictionary with valid jsonmodel query criteria 
+        :param uid: [optional] string with uid of design document to update
+        :return: integer with status of operation
+
+        an example of how to construct the query_criteria argument:
+
+        query_criteria = {
+            '.path.to.number': {
+                'min_value': 4.5
+            },
+            '.path.to.string': {
+                'discrete_values': [ 'pond', 'lake', 'stream', 'brook' ]
+            }
+        }
+        
+        NOTE:   only fields specified in the document schema at class initialization
+                can be used as fields in query_criteria. otherwise, an error will be thrown.
+                uid is automatically added to all document schemas at initialization
+                
+        NOTE:   the full list of all criteria are found in the reference page for the
+                jsonmodel module as well as the query-rules.json file included in the
+                module. 
+                http://collectiveacuity.github.io/jsonModel/reference/#query-criteria
+        '''
         
         # https://developer.couchbase.com/documentation/mobile/1.5/references/sync-gateway/admin-rest-api/index.html#/query/put__db___design__ddoc_
         # https://developer.couchbase.com/documentation/server/3.x/admin/Views/views-writing.html
     
         title = '%s.create_view' % self.__class__.__name__
     
+    # validate inputs
+        input_fields = {
+            'uid': uid
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+
+    # validate inputs
+        if query_criteria:
+            self.model.query(query_criteria)
+        else:
+            query_criteria = {}
+            
     # catch missing args
         if not query_criteria and not uid:
             raise IndexError('%s requires either a uid or query_criteria argument.' % title)
@@ -264,7 +305,7 @@ class syncGatewayClient(object):
                 import hashlib
                 from collections import OrderedDict
                 ordered_criteria = OrderedDict(**query_criteria)
-                hashed_criteria = hashlib.md5(str(ordered_criteria).encode('utf-8')).hexdigest()
+                hashed_criteria = hashlib.md5(str(sorted(ordered_criteria)).encode('utf-8')).hexdigest()
             
             # determine function string for criteria
                 uid_insert = 'emit();'
@@ -281,7 +322,7 @@ class syncGatewayClient(object):
                 function_string.replace('emit();', emit_insert)
             
             # construct updated design details
-                design_details['views'][hashed_criteria] = { 'map': function_string}
+                design_details['views'][hashed_criteria] = { 'map': function_string }
             
         # send update of design document
             response = requests.put(url, json=design_details)
@@ -292,18 +333,54 @@ class syncGatewayClient(object):
     
         '''
             a method to delete a view associated with a user design doc
-            
-        :param query_criteria: [optional] dictionary with query criteria to be used in list method
+        
+        :param query_criteria: [optional] dictionary with valid jsonmodel query criteria
         :param uid: [optional] string with uid of design document to update
         :return: integer with status of operation
+                
+        an example of how to construct the query_criteria argument:
+
+        query_criteria = {
+            '.path.to.number': {
+                'min_value': 4.5
+            },
+            '.path.to.string': {
+                'discrete_values': [ 'pond', 'lake', 'stream', 'brook' ]
+            }
+        }
         
+        NOTE:   only fields specified in the document schema at class initialization
+                can be used as fields in query_criteria. otherwise, an error will be thrown.
+                uid is automatically added to all document schemas at initialization
+                
+        NOTE:   the full list of all criteria are found in the reference page for the
+                jsonmodel module as well as the query-rules.json file included in the
+                module. 
+                http://collectiveacuity.github.io/jsonModel/reference/#query-criteria
+
         NOTE:   if a query_criteria is not specified, then the entire user design doc is removed
                 otherwise, the existing design document is updated. 
         '''
+        
     # https://developer.couchbase.com/documentation/mobile/1.5/references/sync-gateway/admin-rest-api/index.html#/query/delete__db___design__ddoc_
     
         title = '%s.delete_view' % self.__class__.__name__
     
+    # validate inputs
+        input_fields = {
+            'uid': uid
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+
+    # validate inputs
+        if query_criteria:
+            self.model.query(query_criteria)
+        else:
+            query_criteria = {}
+            
     # handle deleting user design doc
         if not query_criteria:
             url = self.bucket_url + '/_design/%s' % uid
@@ -320,7 +397,7 @@ class syncGatewayClient(object):
             import hashlib
             from collections import OrderedDict
             ordered_criteria = OrderedDict(**query_criteria)
-            hashed_criteria = hashlib.md5(str(ordered_criteria).encode('utf-8')).hexdigest()       
+            hashed_criteria = hashlib.md5(str(sorted(ordered_criteria)).encode('utf-8')).hexdigest()       
     
     # determine design document to update
             url = self.bucket_url + '/_design/%s' % uid
@@ -605,9 +682,43 @@ class syncGatewayClient(object):
             return True
         return False
 
-    def list(self, query_criteria=None, uid='', previous_id=''):
+    def list(self, query_criteria=None, uid='', all_versions=False, previous_id=''):
     
-        ''' a generator method for retrieving documents from the bucket '''
+        '''
+            a generator method for retrieving documents from the bucket 
+            
+        :param query_criteria: [optional] dictionary with valid jsonmodel query criteria 
+        :param uid: [optional] string with uid of design document to update
+        :param all_versions: boolean to include previous revisions in query
+        :param previous_id: [optional] string with id of the last doc in a previous query
+        :return: dictionary with document fields
+
+        NOTE:   to efficiently use the query architecture of couchbase, it is important
+                to first create a view for any query criteria you wish to use. if a
+                specific query criteria is not previously created or no query criteria
+                is included, then list will scan all documents based upon the uid field
+                and return the appropriate matching results
+
+        an example of how to construct the query_criteria argument:
+
+        query_criteria = {
+            '.path.to.number': {
+                'min_value': 4.5
+            },
+            '.path.to.string': {
+                'discrete_values': [ 'pond', 'lake', 'stream', 'brook' ]
+            }
+        }
+        
+        NOTE:   only fields specified in the document schema at class initialization
+                can be used as fields in query_criteria. otherwise, an error will be thrown.
+                uid is automatically added to all document schemas at initialization
+                
+        NOTE:   the full list of all criteria are found in the reference page for the
+                jsonmodel module as well as the query-rules.json file included in the
+                module. 
+                http://collectiveacuity.github.io/jsonModel/reference/#query-criteria 
+        '''
 
         title = '%s.list' % self.__class__.__name__
     
@@ -627,23 +738,52 @@ class syncGatewayClient(object):
         else:
             query_criteria = {}
 
-    # determine index to use
-        url = self.bucket_url + '/_all_docs'
-        if uid:
-            validate_url = self.bucket_url + '/_design/%s' % uid
-            response = requests.get(validate_url)
-            response = response.json()
+    # define url for all documents
+        hashed_criteria = ''
+        ordered_criteria = None
+        if not query_criteria and not uid:
+            url = self.bucket_url + '/_all_docs'
+    
+    # define url for sub-set of documents
+        else:
+        
+        # define error message
             error_message = '%s(uid="%s") requires a bucket index. Try: %s.create_view(uid="%s")' % (title, uid, self.__class__.__name__, uid)
+        
+        # retrieve design document
+            design_url = self.bucket_url + '/_design/%s' % uid
+            response = requests.get(design_url)
+            response = response.json()
             if 'error' in response.keys():
                 raise Exception(error_message)
-            elif not '_all_docs' in response['views'].keys():
-                raise Exception(error_message)
-            url = self.bucket_url + '/_design/%s/_view/_all_docs' % uid
+        
+        # validate existence of view
+            if not query_criteria:
+                if not '_all_docs' in response['views'].keys():
+                    raise Exception(error_message)
+                url = self.bucket_url + '/_design/%s/_view/_all_docs' % uid
+            else:
+        
+            # determine hashed key for criteria
+                import hashlib
+                from collections import OrderedDict
+                ordered_criteria = OrderedDict(**query_criteria)
+                hashed_criteria = hashlib.md5(str(sorted(ordered_criteria)).encode('utf-8')).hexdigest()
+    
+            # define url based upon existence of hashed key and uid
+                if hashed_criteria in response['views'].keys():
+                    url = self.bucket_url + '/_design/%s/_view/%s' % (uid, hashed_criteria)
+                elif uid == '_all_users':
+                    hashed_criteria = ''
+                    url = self.bucket_url + '/_all_docs'
+                else:
+                    hashed_criteria = ''
+                    url = self.bucket_url + '/_design/%s/_view/_all_docs' % uid
 
     # determine query params
         params = {
             'limit': 101,
-            'revs': True
+            'revs': all_versions
         }
         if previous_id:
             params['startkey'] = previous_id
@@ -658,30 +798,45 @@ class syncGatewayClient(object):
 
         # break off if reached end of records
             if not 'rows' in response_details.keys():
-            # TODO fix bug associated with couchbase view declaration
-            #     self.printer('BUG: ' + str(response_details))
                 break
-
+            elif not response_details['rows']:
+                break
+        
+        # evaluate each row of view results
             else:
-                if not response_details['rows']:
-                    break
                 for i in range(len(response_details['rows'])):
     
                 # skip previous key
                     if not 'startkey' in params.keys() or i:
                         row = response_details['rows'][i]
-                        doc_details = self.read(row['id'])
-                        params['startkey'] = row['id']
-    
-                    # filter results with query criteria
-                        if not doc_details:
-                            self.purge(row['id']) # eliminate stranded records
-                        else:
-                            if query_criteria:
-                                if self.model.query(query_criteria, doc_details):
+                
+                    # evaluate query criteria in view
+                        if hashed_criteria and row['value']:
+
+                            from labpack.mapping.data import reconstruct_dict
+                            dot_paths = ordered_criteria.keys()
+                            record_dict = reconstruct_dict(dot_paths, row['value'])
+                            if self.model.query(query_criteria, record_dict):
+                                doc_details = self.read(row['id'])
+                                if not doc_details:
+                                    self.purge(row['id']) # eliminate stranded records
+                                else:
                                     yield doc_details
+
+                    # else scan documents
+                        else:
+                            doc_details = self.read(row['id'])
+                            params['startkey'] = row['id']
+        
+                        # filter results with query criteria
+                            if not doc_details:
+                                self.purge(row['id']) # eliminate stranded records
                             else:
-                                yield doc_details
+                                if query_criteria:
+                                    if self.model.query(query_criteria, doc_details):
+                                        yield doc_details
+                                else:
+                                    yield doc_details
 
                 # end if no more results
                     elif len(response_details['rows']) == 1:
@@ -888,6 +1043,14 @@ class syncGatewayClient(object):
             except:
                 print(response.status_code)
     
+    # else (in dev) iterate over files and users and purge 
+        elif self.configs['server'].find('walrus') > -1:
+            for doc in self.list():
+                self.purge(doc['_id'])
+            user_list = self.list_users()
+            for uid in user_list:
+                self.delete_user(uid)
+
     # delete bucket from configs
         delete_url = self.bucket_url + '/'
         requests.delete(delete_url)
@@ -945,9 +1108,6 @@ if __name__ == '__main__':
         print(doc)
         test_admin.delete(doc['_id'], doc['_rev'])
         test_admin.purge(doc['_id'])
-    doc_list = []
-    for doc in test_admin.list(uid=test_user):
-        doc_list.append(doc)
     
 # test second user
     

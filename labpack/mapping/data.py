@@ -127,3 +127,75 @@ def clean_data(input_value):
         input_value = str(input_value)
 
     return input_value
+
+def reconstruct_dict(dot_paths, values):
+    
+    ''' a method for reconstructing a dictionary from the values along dot paths '''
+    
+    output_dict = {}
+    
+    for i in range(len(dot_paths)):
+        if i + 1 <= len(values):
+            path_segments = segment_path(dot_paths[i])
+            current_nest = output_dict
+            for j in range(len(path_segments)):
+                key_name = path_segments[j]
+                try:
+                    key_name = int(key_name)
+                except:
+                    pass
+                if j + 1 == len(path_segments):
+                    if isinstance(key_name, int):
+                        current_nest.append(values[i])
+                    else:
+                        current_nest[key_name] = values[i]
+                else:
+                    next_key = path_segments[j+1]
+                    try:
+                        next_key = int(next_key)
+                    except:
+                        pass
+                    if isinstance(next_key, int):
+                        if not key_name in current_nest.keys():
+                            current_nest[key_name] = []
+                        current_nest = current_nest[key_name]
+                    else:
+                        if isinstance(key_name, int):
+                            current_nest.append({})
+                            current_nest = current_nest[len(current_nest) - 1]
+                        else:
+                            if not key_name in current_nest.keys():
+                                current_nest[key_name] = {}
+                            current_nest = current_nest[key_name]
+    
+    return output_dict
+
+if __name__ == '__main__':
+
+# test walk_data
+    from collections import OrderedDict
+    recursive_paths = []
+    recursive_values = []
+    test_dict = {
+        'you': {
+            'me': {
+                'us': 'them'
+            }
+        },
+        'him': [ { 'her': { 'their': 'our' } } ],
+        'here': [ { 'there': [ 'everywhere' ] } ]
+    }
+    ordered_dict = OrderedDict(test_dict)
+    for dot_path, value in walk_data(ordered_dict):
+        recursive_paths.append(dot_path)
+        recursive_values.append(value)
+
+# test segment_paths and reconstruct_dict
+    dot_paths = []
+    values = []
+    for number in (3,7,11):
+        dot_paths.append(recursive_paths[number])
+        values.append(recursive_values[number])
+    
+    rebuilt_dict = reconstruct_dict(dot_paths, values)
+    assert rebuilt_dict == test_dict
