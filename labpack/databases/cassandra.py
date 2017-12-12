@@ -2,31 +2,52 @@ __author__ = 'rcj1492'
 __created__ = '2016.12'
 __license__ = 'MIT'
 
-# https://datastax.github.io/python-driver/getting_started.html
-# pip install cassandra-driver
+
+'''
+PLEASE NOTE:    cassandra package requires cassandra-driver module
+
+(install)       pip install cassandra-driver
+'''
+
+try:
+    from sys import path as sys_path
+    sys_path.append(sys_path.pop(0))
+    from cassandra.cluster import Cluster
+    sys_path.insert(0, sys_path.pop())
+except:
+    import sys
+    print('cassandra package requires cassandra-driver module. try: pip install cassandra-driver')
+    sys.exit(1)
 
 class cassandraClient(object):
 
+    '''
+        a class of methods for interacting with a cassandra database
+    
+    https://datastax.github.io/python-driver/getting_started.html
+    
+    NOTE:   WIP
+    '''
+    
     _class_fields = {
         'schema': {
-            'cassandra_ip': ''
+            'database_url': ''
         }
     }
 
-    def __init__(self, cassandra_ip):
+    def __init__(self, database_url):
 
-        self.endpoint = cassandra_ip
+    # construct endpoint
+        self.endpoint = database_url
 
-        try:
-            from sys import path as sys_path
-            sys_path.append(sys_path.pop(0))
-            from cassandra.cluster import Cluster
-            self.cluster = Cluster([self.endpoint])
-            sys_path.insert(0, sys_path.pop())
-        except:
-            print('cassandra-driver module required to use cassandraClient. try: pip install cassandra-driver')
-            exit()
+    # construct cluster
+        from sys import path as sys_path
+        sys_path.append(sys_path.pop(0))
+        from cassandra.cluster import Cluster
+        self.cluster = Cluster([self.endpoint])
+        sys_path.insert(0, sys_path.pop())
 
+    # construct session
         self.session = self.cluster.connect()
 
 if __name__ == '__main__':

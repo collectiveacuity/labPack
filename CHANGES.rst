@@ -1,11 +1,16 @@
 ChangeLog
 =========
 
-0.13 (2017.10.??)
+0.13 (2017.12.??)
 -----------------
+* [FEATURE ADDED] syncGatewayClient class for storing records in couchbase sync gateway
 * [FEATURE ADDED] sqlClient class for handling records stored in SQL databases
 * [FEATURE ADDED] ip package added to records to obtain ip address information
 * [FEATURE ADDED] pollyClient class for synthesizing speech with AWS Polly API
+* [FEATURE ADDED] mapping package of recursive methods to handle nested data
+* [FEATURE ADDED] datasets package of tables and methods for accessing the tables
+* [UPDATE] root path argument added to appdataClient to override default root path
+* [UPDATE] rfc2822 string output added to labDT methods
 * [UPDATE] error reporting is improved in validate_request_content method
 * [UPDATE] added relative path option for appdataClient root folder
 

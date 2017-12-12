@@ -1,3 +1,4 @@
+''' a package of methods for compiling information about ISO 3166 country codes '''
 __author__ = 'rcj1492'
 __created__ = '2017.10'
 __license__ = 'MIT'

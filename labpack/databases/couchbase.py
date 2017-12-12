@@ -140,20 +140,22 @@ class syncGatewayClient(object):
                     print(msg)
         self.printer = _printer
     
-    # construct index model
+    # construct document model
+        from jsonmodel.validators import jsonModel
         self.model = None
         if document_schema:
-            from jsonmodel.validators import jsonModel
             self.model = jsonModel(document_schema)
         else:
             self.model = jsonModel({'schema': { 'uid': 'abc012XYZ789' }, 'components': {'.': { 'extra_fields': True}}})
         if not 'uid' in self.model.schema.keys():
             document_schema['schema']['uid'] = 'abc012XYZ789'
-        if not '.' in self.model.components.keys():
-            document_schema['components']['.'] = {}
-        if not 'extra_fields' in self.model.components['.'].keys():
+        if not self.model.components:
+            document_schema['components'] = { '.': { 'extra_fields': True } }
+        elif not '.' in self.model.components.keys():
+            document_schema['components']['.'] = { 'extra_fields': True }
+        elif not 'extra_fields' in self.model.components['.'].keys():
             document_schema['components']['.']['extra_fields'] = True
-            self.model = jsonModel(document_schema)
+        self.model = jsonModel(document_schema)
 
     # construct configs
         if configs:
@@ -860,7 +862,7 @@ class syncGatewayClient(object):
         title = '%s.create' % self.__class__.__name__
 
     # validate input
-        doc_details = self.model.validate(doc_details, object_title='%s(doc_details={...}' % title)
+        doc_details = self.model.validate(doc_details, path_to_root='', object_title='%s(doc_details={...}' % title)
 
     # define request fields
         from copy import deepcopy
@@ -1050,6 +1052,7 @@ class syncGatewayClient(object):
             user_list = self.list_users()
             for uid in user_list:
                 self.delete_user(uid)
+            self.delete_view()
 
     # delete bucket from configs
         delete_url = self.bucket_url + '/'
@@ -1075,9 +1078,10 @@ if __name__ == '__main__':
     new_user = 'test2'
     new_password = 'password2'
     test_doc = { 'uid': 'test1', 'dt': time(), 'place': 'here' }
+    test_schema = { 'schema': { 'dt': 0.0 } }
 
 # test initialization
-    test_admin = syncGatewayClient(test_bucket, database_url, verbose=True)
+    test_admin = syncGatewayClient(test_bucket, database_url, test_schema, verbose=True)
         
 # test user methods
     user_list = test_admin.list_users()
@@ -1114,19 +1118,3 @@ if __name__ == '__main__':
 
 # test bucket removal
     test_admin.remove()
-    
-    # test_admin.create({ 'uid': 'test1', 'test': 'you'})
-    # test_admin.create({ 'uid': 'test1', 'test': 'me' })
-    # test_admin.create({ 'uid': 'test1', 'test': 'them' })
-    # for doc in test_admin.list(query_criteria={ '.uid': { 'equal_to': 'test1' } }):
-    #     if doc:
-    #         doc['test'] = 'us'
-    #         response = test_admin.update(doc)
-    #         print(response)
-    #         doc_id = response['_id']
-    #         rev_id = response['_rev']
-    #         response = test_admin.delete(doc_id, rev_id)
-    #         print(response)
-    #         response = test_admin.purge(doc_id)
-    #         print(response)
-    #     pass

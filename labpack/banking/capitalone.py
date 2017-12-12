@@ -2,6 +2,7 @@ __author__ = 'rcj1492'
 __created__ = '2017.10'
 __license__ = 'MIT'
 
+# TODO: WIP
 # TODO: generalize requests based response handler classes
 class depositsHandler(object):
 
@@ -71,6 +72,8 @@ class depositsClient(object):
         a class to manage the capital one bank account starter api 
     
     https://developer.capitalone.com/products/bank-account-starter/documentation/
+    
+    NOTE:   WIP
     '''
     
     _class_fields = {
