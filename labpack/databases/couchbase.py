@@ -226,6 +226,20 @@ class syncGatewayClient(object):
                         requests.put(config_url, json=self.configs)
                         self.printer('Configuration updated for bucket "%s".' % self.bucket_name)
 
+    def _clean_views(self, views_dict):
+        
+        clean_dict = {}
+        import re
+        view_regex = re.compile('\\t\((function\(doc,\smeta\).*?)\)\s\(doc,\smeta\);')
+        for key, value in views_dict.items():
+            clean_dict[key] = value
+            if 'map' in value.keys():
+                view_search = view_regex.findall(value['map'])
+                if view_search:
+                    clean_dict[key]['map'] = view_search[0]
+
+        return clean_dict
+            
     def create_view(self, query_criteria=None, uid='_all_users'):
     
         '''
@@ -291,11 +305,12 @@ class syncGatewayClient(object):
             response = requests.get(url)
             if response.status_code in (200, 201):
                 design_details = response.json()
+                design_details['views'] = self._clean_views(design_details['views'])
         
         # create a view of all docs for the uid
             if not query_criteria:
                 if uid == '_all_users':
-                    pass
+                    return response.status_code
                 else:
                     function_string = 'function(doc, meta) { if (doc.uid == "%s") { emit(null, null); } }' % uid
                     design_details['views']['_all_docs'] = { 'map': function_string }
@@ -321,11 +336,11 @@ class syncGatewayClient(object):
                         emit_insert += ','
                     emit_insert += 'doc%s' % key
                 emit_insert += ']);'
-                function_string.replace('emit();', emit_insert)
+                function_string = function_string.replace('emit();', emit_insert)
             
             # construct updated design details
                 design_details['views'][hashed_criteria] = { 'map': function_string }
-            
+
         # send update of design document
             response = requests.put(url, json=design_details)
         
@@ -399,8 +414,8 @@ class syncGatewayClient(object):
             import hashlib
             from collections import OrderedDict
             ordered_criteria = OrderedDict(**query_criteria)
-            hashed_criteria = hashlib.md5(str(sorted(ordered_criteria)).encode('utf-8')).hexdigest()       
-    
+            hashed_criteria = hashlib.md5(str(sorted(ordered_criteria)).encode('utf-8')).hexdigest()
+
     # determine design document to update
             url = self.bucket_url + '/_design/%s' % uid
     
@@ -408,13 +423,14 @@ class syncGatewayClient(object):
             response = requests.get(url)
             if response.status_code in (200, 201):
                 design_details = response.json()
+                design_details['views'] = self._clean_views(design_details['views'])
                 if hashed_criteria in design_details['views'].keys():
                     del design_details['views'][hashed_criteria]
-                    if design_details:
-                        response = requests.put(url, json=design_details)
-                    else:
-                        response = requests.delete(url)
-    
+                if design_details['views']:
+                    response = requests.put(url, json=design_details)
+                else:
+                    response = requests.delete(url)
+
         return response.status_code
 
     def list_users(self):
@@ -684,7 +700,7 @@ class syncGatewayClient(object):
             return True
         return False
 
-    def list(self, query_criteria=None, uid='', all_versions=False, previous_id=''):
+    def list(self, query_criteria=None, uid='_all_users', all_versions=False, previous_id=''):
     
         '''
             a generator method for retrieving documents from the bucket 
@@ -743,15 +759,19 @@ class syncGatewayClient(object):
     # define url for all documents
         hashed_criteria = ''
         ordered_criteria = None
-        if not query_criteria and not uid:
+        if not query_criteria and uid == '_all_users':
             url = self.bucket_url + '/_all_docs'
     
     # define url for sub-set of documents
         else:
-        
+                
         # define error message
-            error_message = '%s(uid="%s") requires a bucket index. Try: %s.create_view(uid="%s")' % (title, uid, self.__class__.__name__, uid)
+            error_message = '%s(uid="%s") does  not exist. Try: %s.create_view(uid="%s")' % (title, uid, self.__class__.__name__, uid)
         
+        # establish all users if no uid
+            if not uid:
+                raise Exception('%s(uid="") is a required field.' % title)
+            
         # retrieve design document
             design_url = self.bucket_url + '/_design/%s' % uid
             response = requests.get(design_url)
@@ -811,12 +831,15 @@ class syncGatewayClient(object):
                 # skip previous key
                     if not 'startkey' in params.keys() or i:
                         row = response_details['rows'][i]
-                
+                        params['startkey'] = row['id']
+
                     # evaluate query criteria in view
                         if hashed_criteria and row['value']:
 
                             from labpack.mapping.data import reconstruct_dict
-                            dot_paths = ordered_criteria.keys()
+                            dot_paths = []
+                            for key in ordered_criteria.keys():
+                                dot_paths.append(key)
                             record_dict = reconstruct_dict(dot_paths, row['value'])
                             if self.model.query(query_criteria, record_dict):
                                 doc_details = self.read(row['id'])
@@ -828,8 +851,7 @@ class syncGatewayClient(object):
                     # else scan documents
                         else:
                             doc_details = self.read(row['id'])
-                            params['startkey'] = row['id']
-        
+
                         # filter results with query criteria
                             if not doc_details:
                                 self.purge(row['id']) # eliminate stranded records
@@ -1079,42 +1101,58 @@ if __name__ == '__main__':
     new_password = 'password2'
     test_doc = { 'uid': 'test1', 'dt': time(), 'place': 'here' }
     test_schema = { 'schema': { 'dt': 0.0 } }
+    test_query = { '.dt': { 'greater_than': 100 } }
 
 # test initialization
     test_admin = syncGatewayClient(test_bucket, database_url, test_schema, verbose=True)
-        
+
 # test user methods
     user_list = test_admin.list_users()
     if not test_user in user_list:
-        print('first user created')
-        test_admin.save_user(test_user, test_password)
+        test_admin.save_user(test_user, test_password, user_views=[test_query])
     user_load = test_admin.load_user(test_user)
-    print(user_load)
+    assert user_load['name'] == test_user
+    user_update = test_admin.save_user(test_user, updated_password)
+    assert user_update == 200
+
+# test session methods
+    session_token = test_admin.create_session(test_user)
+    assert session_token['session_id']
+    session_delete = test_admin.delete_session(session_token['session_id'])
+    assert session_delete == 200
+    
+# test view methods
+    view_creation = test_admin.create_view(test_query)
 
 # test document methods
-    doc_list = []
-    for doc in test_admin.list(uid=test_user):
-        doc_list.append(doc)
-    if not doc_list:
-        print('first record created')
-        test_admin.create(test_doc)
-    doc_list = []
-    for doc in test_admin.list(uid=test_user):
-        doc_list.append(doc)
-    if len(doc_list) < 2:
-        print('second record created')
-        test_admin.create(test_doc)
+    test_doc['dt'] = time()
+    create_doc = test_admin.create(test_doc)
+    print('first record created')
+    read_doc = test_admin.read(create_doc['_id'])
+    read_doc['place'] = 'there'
+    test_admin.update(read_doc)
+    print('first record updated')
+    test_doc['dt'] = time()
+    test_admin.create(test_doc)
+    print('second record created')
+    print('first list attempt')
+    for doc in test_admin.list():
+        print(doc)
+    print('second list attempt')
+    for doc in test_admin.list(test_query):
+        print(doc)
+    print('third list attempt')
+    for doc in test_admin.list(test_query, test_user):
+        print(doc)
+    print('fourth list attempt')
     for doc in test_admin.list(uid=test_user):
         print(doc)
-        doc['place'] = 'there'
-        test_admin.update(doc)
+
+# test record deletion
     for doc in test_admin.list(uid=test_user):
-        print(doc)
+        print('%s deleted' % doc['_id'])
         test_admin.delete(doc['_id'], doc['_rev'])
         test_admin.purge(doc['_id'])
-    
-# test second user
-    
 
 # test bucket removal
     test_admin.remove()
