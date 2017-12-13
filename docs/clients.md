@@ -265,6 +265,680 @@ a method to renew an access token from an oauth2 authorizing party
 </tbody>
 </table>
 
+## depositsClient
+### Import:
+labpack.banking.capitalone.depositsClient  
+### Description:
+a class to manage the capital one bank account starter api 
+    
+    https://developer.capitalone.com/products/bank-account-starter/documentation/
+    
+    NOTE:   WIP  
+### \__init__
+##### 
+**Signature:**  
+\__init__(self, client_id, client_secret, retrieve_details=True, sandbox=False, requests_handler=None, usage_client=None)
+##### 
+**Description:**  
+the initialization method for the capital one client  
+<table>
+<thead>
+<tr><th>Argument        </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                                         </th></tr>
+</thead>
+<tbody>
+<tr><td>self            </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                                    </td></tr>
+<tr><td>client_id       </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with client id registered for app with service               </td></tr>
+<tr><td>client_secret   </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with client secret registered for app with service           </td></tr>
+<tr><td>retrieve_details</td><td>bool    </td><td>          </td><td>True     </td><td>boolean to automatically retrieve, store and refresh account details</td></tr>
+<tr><td>sandbox         </td><td>bool    </td><td>          </td><td>False    </td><td>boolean to send requests to test sandbox                            </td></tr>
+<tr><td>requests_handler</td><td>function</td><td>          </td><td>None     </td><td>callable that handles requests errors                               </td></tr>
+<tr><td>usage_client    </td><td>function</td><td>          </td><td>None     </td><td>callable that records usage data                                    </td></tr>
+</tbody>
+</table>
+### access_token
+##### 
+**Signature:**  
+access_token(self)
+##### 
+**Description:**  
+a method to acquire an oauth access token  
+### account_products
+##### 
+**Signature:**  
+account_products(self)
+##### 
+**Description:**  
+a method to retrieve a list of the account products 
+
+            returns:
+            { 
+                "error": "",
+                "code": 200,
+                "method": "GET",
+                "url": "https://...",
+                "headers": { },
+                "json": {
+                  "entries": [
+                    {
+                      "productId": "3000",
+                      "productName": "Capital One 360 Savings Account"
+                    }
+                  ]
+                }
+            }  
+### account_product
+##### 
+**Signature:**  
+account_product(self, product_id)
+##### 
+**Description:**  
+a method to retrieve details about a particular account product 
+        
+        { 
+            "error": "",
+            "code": 200,
+            "method": "GET",
+            "url": "https://...",
+            "headers": { },
+            "json": {
+              "productId": "3300",
+              "productName": "Capital One 360 Money Market Account",
+              "cdTerms": [
+                "12M"
+              ],
+              "annualPercentageYieldDetails": {
+                "annualPercentageYieldType": "simple",
+                "annualPercentageYield": 1.4,
+                "tieredAnnualPercentageYield": [
+                  {
+                    "tierDescription": "$0 - $9,999.99",
+                    "annualPercentageYield": 1.4
+                  }
+                ],
+                "termBasedAnnualPercentageYield": [
+                  {
+                    "term": "6M",
+                    "annualPercentageYield": 1.2
+                  }
+                ]
+              },
+              "disclosures": {
+                "productDisclosureUrl": "https://www.capitalone.com/savings-accounts/online-savings-account/disclosures/#360savingsdisclosure",
+                "termsAndConditionsUrl": "https://www.capitalone.com/online-money-market-account/disclosures/#360moneymarketagreement",
+                "electronicFundTransferDisclosureUrl": "https://www.capitalone.com/cds/online-cds/disclosures/#electronicfundtransferdisclosurestatement",
+                "privacyPolicyUrl": "https://www.capitalone.com/savings-accounts/online-savings-account/disclosures/#privacypolicy",
+                "wireTransferAgreementUrl": "https://www.capitalone.com/savings-accounts/online-savings-account/disclosures/#wirefundstransferdisclosurestatement",
+                "paperlessAgreementUrl": "https://www.capitalone.com/terms_eddn",
+                "fraudProtectionAgreementUrl": "https://www.capitalone.com/terms-personal-data",
+                "tcpaDisclosureContent": "If number(s) provided above is(are) mobile phone number(s), it is (they are) my mobile phone number(s), by clicking on the button below, I consent to receive autodialed and prerecorded/artificial calls , including texts, relating to my relationship with Capital One (which may include handling, servicing, and billing for any of my accounts). Message and Data rates may apply. You can stop these types of messages by replying STOP in response to a text message, or by following any other instructions contained in the time-sensitive call.\n[Radio button] You can call or text me through automated means\n[Radio button] You can only contact me through non-automated mean"
+              }
+            }
+        }  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>product_id</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+### account_application
+##### 
+**Signature:**  
+account_application(self, customer_ip, first_name, last_name, tax_id, date_of_birth, address_line_1, city_name, state_code, postal_code, phone_number, email_address, citizenship_country, employment_status, product_id, funding_amount, account_number, routing_number, backup_withholding=False, phone_type="mobile", accept_tcpa=False, accept_terms=True, address_line_2="", middle_name="", tax_id_type="SSN", secondary_citizenship_country="", job_title="", annual_income=0, cd_term="", funding_type="fundach", account_owner="primary", secondary_application=None)
+##### 
+**Description:**  
+a method to submit application for new account  
+<table>
+<thead>
+<tr><th>Argument                     </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                                     </th></tr>
+</thead>
+<tbody>
+<tr><td>self                         </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                                                </td></tr>
+<tr><td>customer_ip                  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with ip address of applicant                                             </td></tr>
+<tr><td>first_name                   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with first name of applicant                                             </td></tr>
+<tr><td>last_name                    </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with last name of applicant                                              </td></tr>
+<tr><td>tax_id                       </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with tax id number of applicant                                          </td></tr>
+<tr><td>date_of_birth                </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with ISO format of date of birth of applicant                            </td></tr>
+<tr><td>address_line_1               </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with first line of street address of applicant                           </td></tr>
+<tr><td>city_name                    </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of city of address of applicant                                </td></tr>
+<tr><td>state_code                   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with code for the state of address of applicant                          </td></tr>
+<tr><td>postal_code                  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with postal code of address of applicant                                 </td></tr>
+<tr><td>phone_number                 </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with phone number and area code of applicant                             </td></tr>
+<tr><td>email_address                </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with email address of applicant                                          </td></tr>
+<tr><td>citizenship_country          </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with ISO 3166 alpha-3 country code of citizenship of applicant           </td></tr>
+<tr><td>employment_status            </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with employment status of applicant                                      </td></tr>
+<tr><td>product_id                   </td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with id of account product to apply for                                 </td></tr>
+<tr><td>funding_amount               </td><td>float </td><td>Yes       </td><td>0.0      </td><td>float with amount of dollars to initially fund account                          </td></tr>
+<tr><td>account_number               </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with pre-existing bank account number of applicant                       </td></tr>
+<tr><td>routing_number               </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with aba routing number for bank of pre-existing account of applicant    </td></tr>
+<tr><td>backup_withholding           </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to indicate backup withholding on accounts of applicant      </td></tr>
+<tr><td>phone_type                   </td><td>str   </td><td>          </td><td>"mobile" </td><td>[optional] string with type of phone of applicant                               </td></tr>
+<tr><td>accept_tcpa                  </td><td>bool  </td><td>          </td><td>False    </td><td>boolean to accept to be contacted by citizen one marketing on their phone number</td></tr>
+<tr><td>accept_terms                 </td><td>bool  </td><td>          </td><td>True     </td><td>boolean to accept the terms and conditions associated with new account          </td></tr>
+<tr><td>address_line_2               </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with second line of address of applicant                      </td></tr>
+<tr><td>middle_name                  </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with middle name of applicant                                 </td></tr>
+<tr><td>tax_id_type                  </td><td>str   </td><td>          </td><td>"SSN"    </td><td>string with type of tax id of applicant                                         </td></tr>
+<tr><td>secondary_citizenship_country</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with ISO 3166 alpha-3 country code of secondary citizenship   </td></tr>
+<tr><td>job_title                    </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with job title of applicant                                   </td></tr>
+<tr><td>annual_income                </td><td>int   </td><td>          </td><td>0        </td><td>[optional] integer with dollar value of annual income of applicant              </td></tr>
+<tr><td>cd_term                      </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with term for the cd account product to apply for             </td></tr>
+<tr><td>funding_type                 </td><td>str   </td><td>          </td><td>"fundach"</td><td>string with funding method selected by the applicant to fund new account        </td></tr>
+<tr><td>account_owner                </td><td>str   </td><td>          </td><td>"primary"</td><td>string with role of applicant who owns pre-existing bank account                </td></tr>
+<tr><td>secondary_application        </td><td>dict  </td><td>          </td><td>None     </td><td>dictionary with applicant fields of secondary account holder                    </td></tr>
+</tbody>
+</table>
+### wallet_questions
+##### 
+**Signature:**  
+wallet_questions(self, application_id, customer_ip)
+##### 
+**Description:**  
+  
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>application_id</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>customer_ip   </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+### wallet_answers
+##### 
+**Signature:**  
+wallet_answers(self, application_id, customer_ip, answer_dict)
+##### 
+**Description:**  
+  
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>application_id</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>customer_ip   </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>answer_dict   </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+### application_details
+##### 
+**Signature:**  
+application_details(self)
+##### 
+**Description:**  
+  
+
+## syncGatewayClient
+### Import:
+labpack.databases.couchbase.syncGatewayClient  
+### Description:
+the initialization method for syncGatewayAdmin class  
+### \__init__
+##### 
+**Signature:**  
+\__init__(self, bucket_name, database_url, document_schema=None, verbose=False, configs=None)
+##### 
+**Description:**  
+the initialization method for syncGatewayAdmin class  
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>bucket_name    </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>database_url   </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>document_schema</td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>verbose        </td><td>bool    </td><td>          </td><td>False    </td><td>             </td></tr>
+<tr><td>configs        </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+### create_view
+##### 
+**Signature:**  
+create_view(self, query_criteria=None, uid="_all_users")
+##### 
+**Description:**  
+a method to add a view to a design document of a uid  
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default     </th><th>Description                                            </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object</td><td>Yes       </td><td>None        </td><td>                                                       </td></tr>
+<tr><td>query_criteria</td><td>dict  </td><td>          </td><td>None        </td><td>dictionary with valid jsonmodel query criteria         </td></tr>
+<tr><td>uid           </td><td>str   </td><td>          </td><td>"_all_users"</td><td>[optional] string with uid of design document to update</td></tr>
+</tbody>
+</table>
+### delete_view
+##### 
+**Signature:**  
+delete_view(self, query_criteria=None, uid="_all_users")
+##### 
+**Description:**  
+a method to delete a view associated with a user design doc  
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default     </th><th>Description                                              </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object</td><td>Yes       </td><td>None        </td><td>                                                         </td></tr>
+<tr><td>query_criteria</td><td>dict  </td><td>          </td><td>None        </td><td>[optional] dictionary with valid jsonmodel query criteria</td></tr>
+<tr><td>uid           </td><td>str   </td><td>          </td><td>"_all_users"</td><td>[optional] string with uid of design document to update  </td></tr>
+</tbody>
+</table>
+### list_users
+##### 
+**Signature:**  
+list_users(self)
+##### 
+**Description:**  
+a method to list all the user ids of all users in the bucket  
+### save_user
+##### 
+**Signature:**  
+save_user(self, uid, user_password, user_channels=None, user_roles=None, user_views=None, disable_account=False)
+##### 
+**Description:**  
+a method to add or update an authorized user to the bucket  
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                  </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                             </td></tr>
+<tr><td>uid            </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with id to assign to user                             </td></tr>
+<tr><td>user_password  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with password to assign to user                       </td></tr>
+<tr><td>user_channels  </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of strings with channels to subscribe to user</td></tr>
+<tr><td>user_roles     </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of strings with roles to assign to user      </td></tr>
+<tr><td>user_views     </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of query criteria to create as views for user</td></tr>
+<tr><td>disable_account</td><td>bool  </td><td>          </td><td>False    </td><td>boolean to disable access to records by user                 </td></tr>
+</tbody>
+</table>
+### load_user
+##### 
+**Signature:**  
+load_user(self, uid)
+##### 
+**Description:**  
+a method to retrieve the account details of a user in the bucket  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                     </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                </td></tr>
+<tr><td>uid       </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with id of user in bucket</td></tr>
+</tbody>
+</table>
+### delete_user
+##### 
+**Signature:**  
+delete_user(self, uid, delete_views=True)
+##### 
+**Description:**  
+a method to retrieve the account details of a user in the bucket  
+<table>
+<thead>
+<tr><th>Argument    </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                               </th></tr>
+</thead>
+<tbody>
+<tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>                                          </td></tr>
+<tr><td>uid         </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with id of user in bucket          </td></tr>
+<tr><td>delete_views</td><td>bool  </td><td>          </td><td>True     </td><td>boolean to remove indices attached to user</td></tr>
+</tbody>
+</table>
+### create_session
+##### 
+**Signature:**  
+create_session(self, uid, duration=0)
+##### 
+**Description:**  
+a method to create a session token for the user  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                            </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                       </td></tr>
+<tr><td>uid       </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with id of user in bucket                       </td></tr>
+<tr><td>duration  </td><td>int   </td><td>          </td><td>0        </td><td>integer with number of seconds to last (default: 24hrs)</td></tr>
+</tbody>
+</table>
+### delete_session
+##### 
+**Signature:**  
+delete_session(self, session_id)
+##### 
+**Description:**  
+a method to create a session token for the user  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                   </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                              </td></tr>
+<tr><td>session_id</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with id of user session token in bucket</td></tr>
+</tbody>
+</table>
+### delete_sessions
+##### 
+**Signature:**  
+delete_sessions(self, uid)
+##### 
+**Description:**  
+a method to delete all session tokens associated with a user  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                     </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                </td></tr>
+<tr><td>uid       </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with id of user in bucket</td></tr>
+</tbody>
+</table>
+### exists
+##### 
+**Signature:**  
+exists(self, doc_id, rev_id="")
+##### 
+**Description:**  
+a method to determine if document exists  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                             </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                        </td></tr>
+<tr><td>doc_id    </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with id of document in bucket                    </td></tr>
+<tr><td>rev_id    </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with revision id of document in bucket</td></tr>
+</tbody>
+</table>
+### list
+##### 
+**Signature:**  
+list(self, query_criteria=None, uid="_all_users", all_versions=False, previous_id="")
+##### 
+**Description:**  
+a generator method for retrieving documents from the bucket  
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default     </th><th>Description                                                  </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object</td><td>Yes       </td><td>None        </td><td>                                                             </td></tr>
+<tr><td>query_criteria</td><td>dict  </td><td>          </td><td>None        </td><td>[optional] dictionary with valid jsonmodel query criteria    </td></tr>
+<tr><td>uid           </td><td>str   </td><td>          </td><td>"_all_users"</td><td>[optional] string with uid of design document to update      </td></tr>
+<tr><td>all_versions  </td><td>bool  </td><td>          </td><td>False       </td><td>boolean to include previous revisions in query               </td></tr>
+<tr><td>previous_id   </td><td>str   </td><td>          </td><td>""          </td><td>[optional] string with id of the last doc in a previous query</td></tr>
+</tbody>
+</table>
+### create
+##### 
+**Signature:**  
+create(self, doc_details)
+##### 
+**Description:**  
+a method to create a new document in the collection  
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                       </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                  </td></tr>
+<tr><td>doc_details</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with document details and user id value</td></tr>
+</tbody>
+</table>
+### read
+##### 
+**Signature:**  
+read(self, doc_id, rev_id="")
+##### 
+**Description:**  
+  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>doc_id    </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>rev_id    </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+</tbody>
+</table>
+### update
+##### 
+**Signature:**  
+update(self, doc_details)
+##### 
+**Description:**  
+  
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>doc_details</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+### delete
+##### 
+**Signature:**  
+delete(self, doc_id, rev_id)
+##### 
+**Description:**  
+a method to mark a document for deletion  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                             </td></tr>
+<tr><td>doc_id    </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with id of document in bucket         </td></tr>
+<tr><td>rev_id    </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with revision id of document in bucket</td></tr>
+</tbody>
+</table>
+### purge
+##### 
+**Signature:**  
+purge(self, doc_ids)
+##### 
+**Description:**  
+a method to remove docs from the collection  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                         </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                    </td></tr>
+<tr><td>doc_ids   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string or list of strings with document ids to purge</td></tr>
+</tbody>
+</table>
+### remove
+##### 
+**Signature:**  
+remove(self)
+##### 
+**Description:**  
+a method to remove the entire bucket from the database  
+### export
+##### 
+**Signature:**  
+export(self)
+##### 
+**Description:**  
+  
+
+## sqlClient
+### Import:
+labpack.databases.sql.sqlClient  
+### Description:
+a class of methods for storing json valid records in a sql database  
+### \__init__
+##### 
+**Signature:**  
+\__init__(self, table_name, database_url, record_schema, rebuild=True, verbose=False)
+##### 
+**Description:**  
+the initialization method for the sqlClient class  
+<table>
+<thead>
+<tr><th>Argument     </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                            </th></tr>
+</thead>
+<tbody>
+<tr><td>self         </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                       </td></tr>
+<tr><td>table_name   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name for table of records                  </td></tr>
+<tr><td>database_url </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with unique resource identifier to database     </td></tr>
+<tr><td>record_schema</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with jsonmodel valid schema for records     </td></tr>
+<tr><td>rebuild      </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to rebuild table with schema changes</td></tr>
+<tr><td>verbose      </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to enable database logging to stdout</td></tr>
+</tbody>
+</table>
+### exists
+##### 
+**Signature:**  
+exists(self, primary_key)
+##### 
+**Description:**  
+a method to determine if record exists  
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                      </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                 </td></tr>
+<tr><td>primary_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with primary key of record</td></tr>
+</tbody>
+</table>
+### list
+##### 
+**Signature:**  
+list(self, query_criteria=None, order_criteria=None)
+##### 
+**Description:**  
+a generator method to list records in table which match query criteria  
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                     </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                                </td></tr>
+<tr><td>query_criteria</td><td>dict  </td><td>          </td><td>None     </td><td>dictionary with schema dot-path field names and query qualifiers</td></tr>
+<tr><td>order_criteria</td><td>list  </td><td>          </td><td>None     </td><td>list of single keypair dictionaries with field names to order by</td></tr>
+</tbody>
+</table>
+### create
+##### 
+**Signature:**  
+create(self, record_details)
+##### 
+**Description:**  
+a method to create a new record in the table 
+        
+            NOTE:   this class uses the id key as the primary key for all records
+                    if record_details includes an id field that is an integer, float
+                    or string, then it will be used as the primary key. if the id
+                    field is missing, a unique 24 character url safe string will be 
+                    created for the id field and included in the record_details
+            
+            NOTE:   record_details fields which do not exist in the record_model
+                    or whose value do not match the requirements of the record_model
+                    will throw an InputValidationError
+            
+            NOTE:   lists fields are pickled before they are saved to disk and
+                    are not possible to search using sql query statements. it is
+                    recommended that lists be stored instead as separate tables  
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                  </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object</td><td>Yes       </td><td>None     </td><td>                             </td></tr>
+<tr><td>record_details</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with record fields</td></tr>
+</tbody>
+</table>
+### read
+##### 
+**Signature:**  
+read(self, primary_key)
+##### 
+**Description:**  
+a method to retrieve the details for a record in the table  
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                      </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                 </td></tr>
+<tr><td>primary_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with primary key of record</td></tr>
+</tbody>
+</table>
+### update
+##### 
+**Signature:**  
+update(self, new_details, old_details=None)
+##### 
+**Description:**  
+a method to upsert changes to a record in the table  
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                      </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                 </td></tr>
+<tr><td>new_details</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with updated record fields            </td></tr>
+<tr><td>old_details</td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary with original record fields</td></tr>
+</tbody>
+</table>
+### delete
+##### 
+**Signature:**  
+delete(self, primary_key)
+##### 
+**Description:**  
+a method to delete a record in the table  
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                      </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                 </td></tr>
+<tr><td>primary_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with primary key of record</td></tr>
+</tbody>
+</table>
+### remove
+##### 
+**Signature:**  
+remove(self)
+##### 
+**Description:**  
+a method to remove the entire table 
+        
+        :return string with status message  
+### export
+##### 
+**Signature:**  
+export(self, sql_client, merge_rule="skip", coerce=False)
+##### 
+**Description:**  
+a method to export all the records in table to another table  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                             </td></tr>
+<tr><td>sql_client</td><td>type  </td><td>Yes       </td><td>None     </td><td>class object with sql client methods                         </td></tr>
+<tr><td>merge_rule</td><td>str   </td><td>          </td><td>"skip"   </td><td>string with name of rule to adopt for pre-existing records   </td></tr>
+<tr><td>coerce    </td><td>bool  </td><td>          </td><td>False    </td><td>boolean to enable migration even if table schemas don't match</td></tr>
+</tbody>
+</table>
+
 ## mailgunClient
 ### Import:
 labpack.email.mailgun.mailgunClient  
@@ -856,22 +1530,23 @@ a method to retrieve data for a file housed on telegram api
 ### send_message
 ##### 
 **Signature:**  
-send_message(self, user_id, message_text, message_style="", button_list=None, small_buttons=True, persist_buttons=False)
+send_message(self, user_id, message_text, message_style="", button_list=None, small_buttons=True, persist_buttons=False, link_preview=True)
 ##### 
 **Description:**  
 a method to send a message using telegram api  
 <table>
 <thead>
-<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                   </th></tr>
+<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                        </th></tr>
 </thead>
 <tbody>
-<tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                              </td></tr>
-<tr><td>user_id        </td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with id of telegram user                              </td></tr>
-<tr><td>message_text   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with message to user                                   </td></tr>
-<tr><td>message_style  </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with style to apply to text, only 'markdown'</td></tr>
-<tr><td>button_list    </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of string to include as buttons in message    </td></tr>
-<tr><td>small_buttons  </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to resize buttons to single line           </td></tr>
-<tr><td>persist_buttons</td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to keep buttons around after exiting       </td></tr>
+<tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                                   </td></tr>
+<tr><td>user_id        </td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with id of telegram user                                   </td></tr>
+<tr><td>message_text   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with message to user                                        </td></tr>
+<tr><td>message_style  </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with style to apply to text, only 'markdown'     </td></tr>
+<tr><td>button_list    </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of string to include as buttons in message         </td></tr>
+<tr><td>small_buttons  </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to resize buttons to single line                </td></tr>
+<tr><td>persist_buttons</td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to keep buttons around after exiting            </td></tr>
+<tr><td>link_preview   </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to open up a preview window of a link in message</td></tr>
 </tbody>
 </table>
 ### send_photo
@@ -1924,6 +2599,54 @@ a method to list files on localhost from walk of directories
 </tbody>
 </table>
 
+## pollyClient
+### Import:
+labpack.speech.aws.polly.pollyClient  
+### Description:
+a class of methods for interacting with AWS Polly API  
+### \__init__
+##### 
+**Signature:**  
+\__init__(self, access_id, secret_key, region_name, owner_id, user_name, verbose=True, usage_client=None)
+##### 
+**Description:**  
+a method for initializing the connection to AWS Polly  
+<table>
+<thead>
+<tr><th>Argument    </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                          </th></tr>
+</thead>
+<tbody>
+<tr><td>self        </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                     </td></tr>
+<tr><td>access_id   </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with access_key_id from aws IAM user setup    </td></tr>
+<tr><td>secret_key  </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with secret_access_key from aws IAM user setup</td></tr>
+<tr><td>region_name </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with name of aws region                       </td></tr>
+<tr><td>owner_id    </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with aws account id                           </td></tr>
+<tr><td>user_name   </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with name of user access keys are assigned to </td></tr>
+<tr><td>verbose     </td><td>bool    </td><td>          </td><td>True     </td><td>boolean to enable process messages                   </td></tr>
+<tr><td>usage_client</td><td>function</td><td>          </td><td>None     </td><td>callable object to track resource usage              </td></tr>
+</tbody>
+</table>
+### synthesize
+##### 
+**Signature:**  
+synthesize(self, message_text, voice_id="Nicole", output_format="mp3", sample_rate="22050", stream_response=False)
+##### 
+**Description:**  
+a method to synthesize speech from text  
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                     </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                </td></tr>
+<tr><td>message_text   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with text to synthesize                  </td></tr>
+<tr><td>voice_id       </td><td>str   </td><td>          </td><td>"Nicole" </td><td>string with name of voice id in AWS polly to use</td></tr>
+<tr><td>output_format  </td><td>str   </td><td>          </td><td>"mp3"    </td><td>string with file type of audio output           </td></tr>
+<tr><td>sample_rate    </td><td>str   </td><td>          </td><td>"22050"  </td><td>string with the audio frequency specified in Hz </td></tr>
+<tr><td>stream_response</td><td>bool  </td><td>          </td><td>False    </td><td>boolean to return a StreamingBody object        </td></tr>
+</tbody>
+</table>
+
 ## watsonSpeechClient
 ### Import:
 labpack.speech.watson.watsonSpeechClient  
@@ -2054,19 +2777,20 @@ a class of methods for managing file storage on local device in app data
 ### \__init__
 ##### 
 **Signature:**  
-\__init__(self, collection_name="", prod_name="", org_name="")
+\__init__(self, collection_name="", prod_name="", org_name="", root_path="")
 ##### 
 **Description:**  
 initialization method of appdata client class  
 <table>
 <thead>
-<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                               </th></tr>
+<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                               </th></tr>
 </thead>
 <tbody>
-<tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                          </td></tr>
-<tr><td>collection_name</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with name of collection to store records</td></tr>
-<tr><td>prod_name      </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with name of application product        </td></tr>
-<tr><td>org_name       </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with name of organization behind product</td></tr>
+<tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                                          </td></tr>
+<tr><td>collection_name</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with name of collection to store records                </td></tr>
+<tr><td>prod_name      </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with name of application product                        </td></tr>
+<tr><td>org_name       </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with name of organization behind product                </td></tr>
+<tr><td>root_path      </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with path to root of collections (defaults to user home)</td></tr>
 </tbody>
 </table>
 ### exists

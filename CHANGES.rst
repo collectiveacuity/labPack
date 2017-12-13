@@ -1,7 +1,7 @@
 ChangeLog
 =========
 
-0.13 (2017.12.??)
+0.13 (2017.12.12)
 -----------------
 * [FEATURE ADDED] syncGatewayClient class for storing records in couchbase sync gateway
 * [FEATURE ADDED] sqlClient class for handling records stored in SQL databases

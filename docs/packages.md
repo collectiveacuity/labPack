@@ -125,6 +125,78 @@ retrieve_function(function_string, global_scope=None, root_path="./")
 </tbody>
 </table>
 
+## iso_3166.py
+### Import:
+labpack.datasets.iso_3166  
+### Description:
+a package of methods for compiling information about ISO 3166 country codes  
+### compile_list
+##### 
+**Signature:**  
+compile_list(csv_file="datasets/iso_3166.csv")
+##### 
+**Description:**  
+  
+### compile_map
+##### 
+**Signature:**  
+compile_map(key_column="Alpha-3code", csv_list=None)
+##### 
+**Description:**  
+  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default      </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>key_column</td><td>str     </td><td>          </td><td>"Alpha-3code"</td><td>             </td></tr>
+<tr><td>csv_list  </td><td>NoneType</td><td>          </td><td>None         </td><td>             </td></tr>
+</tbody>
+</table>
+### update_csv
+##### 
+**Signature:**  
+update_csv(csv_url="")
+##### 
+**Description:**  
+  
+
+## iso_3166_2_US.py
+### Import:
+labpack.datasets.iso_3166_2_US  
+### Description:
+a package of methods for compiling information about ISO 3166 2 US state codes  
+### compile_list
+##### 
+**Signature:**  
+compile_list(csv_file="datasets/iso_3166_2_US.csv")
+##### 
+**Description:**  
+  
+### compile_map
+##### 
+**Signature:**  
+compile_map(key_column="USPS", csv_list=None)
+##### 
+**Description:**  
+  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>key_column</td><td>str     </td><td>          </td><td>"USPS"   </td><td>             </td></tr>
+<tr><td>csv_list  </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+### update_csv
+##### 
+**Signature:**  
+update_csv(csv_url="")
+##### 
+**Description:**  
+  
+
 ## cryptolab.py
 ### Import:
 labpack.encryption.cryptolab  
@@ -192,6 +264,65 @@ handle_requests(request_object)
 ##### 
 **Description:**  
   
+
+## data.py
+### Import:
+labpack.mapping.data  
+### Description:
+  
+### clean_data
+##### 
+**Signature:**  
+clean_data(input_value)
+##### 
+**Description:**  
+a function to transform a value into a json or yaml valid datatype  
+### reconstruct_dict
+##### 
+**Signature:**  
+reconstruct_dict(dot_paths, values)
+##### 
+**Description:**  
+a method for reconstructing a dictionary from the values along dot paths  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>dot_paths </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>values    </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+### segment_path
+##### 
+**Signature:**  
+segment_path(dot_path)
+##### 
+**Description:**  
+a function to separate the path segments in a dot_path key  
+### transform_data
+##### 
+**Signature:**  
+transform_data(function, input_data)
+##### 
+**Description:**  
+a function to apply a function to each value in a nested dictionary  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                          </th></tr>
+</thead>
+<tbody>
+<tr><td>function  </td><td>function</td><td>Yes       </td><td>None     </td><td>callable function with a single input of any datatype</td></tr>
+<tr><td>input_data</td><td>dict    </td><td>Yes       </td><td>None     </td><td>dictionary or list with nested data to transform     </td></tr>
+</tbody>
+</table>
+### walk_data
+##### 
+**Signature:**  
+walk_data(input_data)
+##### 
+**Description:**  
+a generator function for retrieving data in a nested dictionary  
 
 ## comparison.py
 ### Import:
@@ -298,17 +429,18 @@ a method to extract and validate jwt session token from request headers
 ### validate_request_content
 ##### 
 **Signature:**  
-validate_request_content(request_content, request_model)
+validate_request_content(request_content, request_model, request_component="body")
 ##### 
 **Description:**  
 a method to validate the content fields of a flask request  
 <table>
 <thead>
-<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                               </th></tr>
+<tr><th>Argument         </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                       </th></tr>
 </thead>
 <tbody>
-<tr><td>request_content</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with content fields to validate</td></tr>
-<tr><td>request_model  </td><td>object</td><td>Yes       </td><td>None     </td><td>object with jsonmodel class properties    </td></tr>
+<tr><td>request_content  </td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with content fields to validate        </td></tr>
+<tr><td>request_model    </td><td>object</td><td>Yes       </td><td>None     </td><td>object with jsonmodel class properties            </td></tr>
+<tr><td>request_component</td><td>str   </td><td>          </td><td>"body"   </td><td>string with name of component of request evaluated</td></tr>
 </tbody>
 </table>
 
@@ -451,13 +583,29 @@ random_shuffle(item_list)
 labpack.records.ip  
 ### Description:
   
+### describe_ip
+##### 
+**Signature:**  
+describe_ip(ip_address, source="whatismyip")
+##### 
+**Description:**  
+a method to get the details associated with an ip address  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default     </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>ip_address</td><td>NoneType</td><td>Yes       </td><td>None        </td><td>             </td></tr>
+<tr><td>source    </td><td>str     </td><td>          </td><td>"whatismyip"</td><td>             </td></tr>
+</tbody>
+</table>
 ### get_ip
 ##### 
 **Signature:**  
 get_ip(source="aws")
 ##### 
 **Description:**  
-a method to get current localhost public ip address  
+a method to get current public ip address of machine  
 
 ## settings.py
 ### Import:

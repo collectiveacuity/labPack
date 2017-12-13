@@ -181,17 +181,19 @@ a method to report a javascript string from a labDT object
 ### humanFriendly
 ##### 
 **Signature:**  
-humanFriendly(self, time_zone="")
+humanFriendly(self, time_zone="", include_day=True, include_time=True)
 ##### 
 **Description:**  
 a method to report a human friendly string from a labDT object  
 <table>
 <thead>
-<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                 </th></tr>
+<tr><th>Argument    </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                 </th></tr>
 </thead>
 <tbody>
-<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                            </td></tr>
-<tr><td>time_zone </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with timezone to report in</td></tr>
+<tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>                                            </td></tr>
+<tr><td>time_zone   </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with timezone to report in</td></tr>
+<tr><td>include_day </td><td>bool  </td><td>          </td><td>True     </td><td>                                            </td></tr>
+<tr><td>include_time</td><td>bool  </td><td>          </td><td>True     </td><td>                                            </td></tr>
 </tbody>
 </table>
 ### fromEpoch
