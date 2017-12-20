@@ -22,6 +22,7 @@ class syncGatewayClient(object):
             'database_url': '',
             'uid': '',
             'user_password': '',
+            'user_email': '',
             'duration': 0,
             'session_id': '',
             'previous_id': '',
@@ -158,13 +159,13 @@ class syncGatewayClient(object):
         self.model = jsonModel(document_schema)
 
     # construct configs
+        default_fields = self.fields.ingest(**{})
+        self.configs = default_fields['configs']
+        self.configs['bucket'] = self.bucket_name
+        self.configs['name'] = self.bucket_name
         if configs:
-            self.configs = configs
-        else:
-            default_fields = self.fields.ingest(**{})
-            self.configs = default_fields['configs']
-            self.configs['bucket'] = self.bucket_name
-            self.configs['name'] = self.bucket_name
+            for key, value in configs.items():
+                self.configs[key] = value
         
     # construct lab record generator
         from labpack.records.id import labID
@@ -446,13 +447,14 @@ class syncGatewayClient(object):
 
         return response
 
-    def save_user(self, uid, user_password, user_channels=None, user_roles=None, user_views=None, disable_account=False):
+    def save_user(self, uid, user_password, user_email='', user_channels=None, user_roles=None, user_views=None, disable_account=False):
 
         '''
             a method to add or update an authorized user to the bucket
             
         :param uid: string with id to assign to user
         :param user_password: string with password to assign to user
+        :param user_email: [optional] string with email of user for future lookup
         :param user_channels: [optional] list of strings with channels to subscribe to user
         :param user_roles: [optional] list of strings with roles to assign to user
         :param user_views: [optional] list of query criteria to create as views for user
@@ -469,6 +471,7 @@ class syncGatewayClient(object):
         input_fields = {
             'uid': uid,
             'user_password': user_password,
+            'user_email': user_email,
             'user_channels': user_channels,
             'user_roles': user_roles
         }
@@ -490,6 +493,8 @@ class syncGatewayClient(object):
         }
     
     # add optional additional channels and roles
+        if user_email:
+            json_data['email'] = user_email
         if user_channels:
             json_data['admin_channels'].extend(user_channels)
         if user_roles:
