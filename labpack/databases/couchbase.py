@@ -81,7 +81,7 @@ class syncGatewayClient(object):
         }
     }
     
-    def __init__(self, bucket_name, database_url, document_schema=None, verbose=False, configs=None):
+    def __init__(self, bucket_name, database_url, document_schema=None, verbose=False, public=False, configs=None):
 
         ''' the initialization method for syncGatewayAdmin class '''
         
@@ -143,26 +143,33 @@ class syncGatewayClient(object):
     
     # construct document model
         from jsonmodel.validators import jsonModel
+        self.public = public
         self.model = None
         if document_schema:
             self.model = jsonModel(document_schema)
-        else:
+        elif not self.public:
             self.model = jsonModel({'schema': { 'uid': 'abc012XYZ789' }, 'components': {'.': { 'extra_fields': True}}})
-        if not 'uid' in self.model.schema.keys():
-            document_schema['schema']['uid'] = 'abc012XYZ789'
-        if not self.model.components:
-            document_schema['components'] = { '.': { 'extra_fields': True } }
-        elif not '.' in self.model.components.keys():
-            document_schema['components']['.'] = { 'extra_fields': True }
-        elif not 'extra_fields' in self.model.components['.'].keys():
-            document_schema['components']['.']['extra_fields'] = True
-        self.model = jsonModel(document_schema)
+        if self.model:
+            if not 'uid' in self.model.schema.keys():
+                document_schema['schema']['uid'] = 'abc012XYZ789'
+            if not self.model.components:
+                document_schema['components'] = { '.': { 'extra_fields': True } }
+            elif not '.' in self.model.components.keys():
+                document_schema['components']['.'] = { 'extra_fields': True }
+            elif not 'extra_fields' in self.model.components['.'].keys():
+                document_schema['components']['.']['extra_fields'] = True
+            self.model = jsonModel(document_schema)
 
     # construct configs
         default_fields = self.fields.ingest(**{})
         self.configs = default_fields['configs']
         self.configs['bucket'] = self.bucket_name
         self.configs['name'] = self.bucket_name
+        if self.public:
+            from jsonmodel.loader import jsonLoader
+            read_only_configs = jsonLoader(__module__, 'databases/models/sync-gateway-public.json')
+            for key, value in read_only_configs.items():
+                self.configs[key] = value
         if configs:
             for key, value in configs.items():
                 self.configs[key] = value
@@ -240,7 +247,7 @@ class syncGatewayClient(object):
                     clean_dict[key]['map'] = view_search[0]
 
         return clean_dict
-            
+
     def create_view(self, query_criteria=None, uid='_all_users'):
     
         '''
@@ -287,9 +294,13 @@ class syncGatewayClient(object):
 
     # validate inputs
         if query_criteria:
+            if not self.model:
+                raise ValueError('%s(query_criteria={...} requires a document_schema.' % title)
             self.model.query(query_criteria)
         else:
             query_criteria = {}
+        if uid != '_all_users' and self.public:
+            raise ValueError('%s(uid="%s") user ids are not applicable for a public bucket. % title')
             
     # catch missing args
         if not query_criteria and not uid:
@@ -321,9 +332,10 @@ class syncGatewayClient(object):
                 
             # determine hashed key for criteria
                 import hashlib
+                import json
                 from collections import OrderedDict
                 ordered_criteria = OrderedDict(**query_criteria)
-                hashed_criteria = hashlib.md5(str(sorted(ordered_criteria)).encode('utf-8')).hexdigest()
+                hashed_criteria = hashlib.md5(json.dumps(query_criteria, sort_keys=True).encode('utf-8')).hexdigest()
             
             # determine function string for criteria
                 uid_insert = 'emit();'
@@ -395,9 +407,13 @@ class syncGatewayClient(object):
 
     # validate inputs
         if query_criteria:
+            if not self.model:
+                raise ValueError('%s(query_criteria={...} requires a document_schema.' % title)
             self.model.query(query_criteria)
         else:
             query_criteria = {}
+        if uid != '_all_users' and self.public:
+            raise ValueError('%s(uid="%s") user ids are not applicable for a public bucket. % title')
             
     # handle deleting user design doc
         if not query_criteria:
@@ -413,9 +429,8 @@ class syncGatewayClient(object):
             
     # determine hash of query criteria
             import hashlib
-            from collections import OrderedDict
-            ordered_criteria = OrderedDict(**query_criteria)
-            hashed_criteria = hashlib.md5(str(sorted(ordered_criteria)).encode('utf-8')).hexdigest()
+            import json
+            hashed_criteria = hashlib.md5(json.dumps(query_criteria, sort_key=True).encode('utf-8')).hexdigest()
 
     # determine design document to update
             url = self.bucket_url + '/_design/%s' % uid
@@ -504,7 +519,7 @@ class syncGatewayClient(object):
         response = requests.put(url, json=json_data)
 
     # create indices
-        if response.status_code in (200, 201):
+        if response.status_code in (200, 201) and not self.public:
             self.create_view(uid=uid)
             if user_views:
                 for criteria in user_views:
@@ -705,7 +720,7 @@ class syncGatewayClient(object):
             return True
         return False
 
-    def list(self, query_criteria=None, uid='_all_users', all_versions=False, previous_id=''):
+    def list(self, query_criteria=None, uid='_all_users', all_versions=False, previous_id='', purge_deleted=False):
     
         '''
             a generator method for retrieving documents from the bucket 
@@ -714,6 +729,7 @@ class syncGatewayClient(object):
         :param uid: [optional] string with uid of design document to update
         :param all_versions: boolean to include previous revisions in query
         :param previous_id: [optional] string with id of the last doc in a previous query
+        :param purge_deleted: boolean to purge any files in results which have been deleted
         :return: dictionary with document fields
 
         NOTE:   to efficiently use the query architecture of couchbase, it is important
@@ -757,9 +773,13 @@ class syncGatewayClient(object):
 
     # validate inputs
         if query_criteria:
+            if not self.model:
+                raise ValueError('%s(query_criteria={...} requires a document_schema.' % title)
             self.model.query(query_criteria)
         else:
             query_criteria = {}
+        if uid != '_all_users' and self.public:
+            raise ValueError('%s(uid="%s") user ids are not applicable for a public bucket. % title')
 
     # define url for all documents
         hashed_criteria = ''
@@ -793,9 +813,10 @@ class syncGatewayClient(object):
         
             # determine hashed key for criteria
                 import hashlib
+                import json
                 from collections import OrderedDict
                 ordered_criteria = OrderedDict(**query_criteria)
-                hashed_criteria = hashlib.md5(str(sorted(ordered_criteria)).encode('utf-8')).hexdigest()
+                hashed_criteria = hashlib.md5(json.dumps(query_criteria, sort_keys=True).encode('utf-8')).hexdigest()
     
             # define url based upon existence of hashed key and uid
                 if hashed_criteria in response['views'].keys():
@@ -849,7 +870,8 @@ class syncGatewayClient(object):
                             if self.model.query(query_criteria, record_dict):
                                 doc_details = self.read(row['id'])
                                 if not doc_details:
-                                    self.purge(row['id']) # eliminate stranded records
+                                    if purge_deleted:
+                                        self.purge(row['id']) # eliminate stranded records
                                 else:
                                     yield doc_details
 
@@ -859,7 +881,8 @@ class syncGatewayClient(object):
 
                         # filter results with query criteria
                             if not doc_details:
-                                self.purge(row['id']) # eliminate stranded records
+                                if purge_deleted:
+                                    self.purge(row['id']) # eliminate stranded records
                             else:
                                 if query_criteria:
                                     if self.model.query(query_criteria, doc_details):
@@ -889,7 +912,8 @@ class syncGatewayClient(object):
         title = '%s.create' % self.__class__.__name__
 
     # validate input
-        doc_details = self.model.validate(doc_details, path_to_root='', object_title='%s(doc_details={...}' % title)
+        if self.model:
+            doc_details = self.model.validate(doc_details, path_to_root='', object_title='%s(doc_details={...}' % title)
 
     # define request fields
         from copy import deepcopy
@@ -927,9 +951,13 @@ class syncGatewayClient(object):
         if rev_id:
             params = { 'rev': rev_id }
         response = requests.get(url, params=params)
+        if response.status_code not in (200, 201):
+            response = response.json()
+            if 'reason' in response.keys():
+                if response['reason'] in ('missing', 'deleted'):
+                    return {}
+            raise Exception('%s() error: %s' % (title, response))
         response = response.json()
-        if 'error' in response.keys():
-            response = {}
 
         return response
 
@@ -938,7 +966,8 @@ class syncGatewayClient(object):
         title = '%s.update' % self.__class__.__name__
         
     # validate input
-        doc_details = self.model.validate(doc_details, object_title='%s(doc_details={...}' % title)
+        if self.model:
+            doc_details = self.model.validate(doc_details, object_title='%s(doc_details={...}' % title)
         
     # create json body
         doc_id = ''
@@ -960,12 +989,12 @@ class syncGatewayClient(object):
         url = self.bucket_url + '/%s' % doc_id
         params = { 'rev': rev_id }
         response = requests.put(url, params=params, json=json_body)
+        if response.status_code not in (200, 201):
+            response = response.json()
+            raise Exception('%s() error: %s' % (title, response))
         response = response.json()
-        if 'error' in response.keys():
-            doc_details = {}
-        else:
-            doc_details['_id'] = response['id']
-            doc_details['_rev'] = response['rev']
+        doc_details['_id'] = response['id']
+        doc_details['_rev'] = response['rev']
 
         return doc_details
 
@@ -994,11 +1023,11 @@ class syncGatewayClient(object):
         url = self.bucket_url + '/%s' % doc_id
         params = { 'rev': rev_id }
         response = requests.delete(url, params=params)
+        if response.status_code not in (200, 201):
+            response = response.json()
+            raise Exception('%s() error: %s' % (title, response))
         response = response.json()
-        if 'error' in response.keys():
-            doc_id = ''
-        else:
-            doc_id = response['id']
+        doc_id = response['id']
         
         return doc_id
 
@@ -1074,7 +1103,7 @@ class syncGatewayClient(object):
     
     # else (in dev) iterate over files and users and purge 
         elif self.configs['server'].find('walrus') > -1:
-            for doc in self.list():
+            for doc in self.list(purge_deleted=True):
                 self.purge(doc['_id'])
             user_list = self.list_users()
             for uid in user_list:
@@ -1097,7 +1126,10 @@ class syncGatewayClient(object):
 if __name__ == '__main__':
 
     from time import time
+    public_url = 'http://localhost:4984'
     database_url = 'http://localhost:4985'
+    couchbase_url = 'http://sync:password@localhost:8091'
+    test_bucket_public = 'test_public'
     test_bucket = 'test'
     test_user = 'test1'
     test_password = 'password'
@@ -1107,7 +1139,9 @@ if __name__ == '__main__':
     test_doc = { 'uid': 'test1', 'dt': time(), 'place': 'here' }
     test_schema = { 'schema': { 'dt': 0.0 } }
     test_query = { '.dt': { 'greater_than': 100 } }
-
+    test_configs = { 'server': couchbase_url }
+    test_doc_public = { 'name': 'lab', 'type': 'simple', 'active': True }
+    
 # test initialization
     test_admin = syncGatewayClient(test_bucket, database_url, test_schema, verbose=True)
 
@@ -1125,7 +1159,7 @@ if __name__ == '__main__':
     assert session_token['session_id']
     session_delete = test_admin.delete_session(session_token['session_id'])
     assert session_delete == 200
-    
+
 # test view methods
     view_creation = test_admin.create_view(test_query)
 
@@ -1161,3 +1195,47 @@ if __name__ == '__main__':
 
 # test bucket removal
     test_admin.remove()
+
+# test public initializations
+    test_public_admin = syncGatewayClient(test_bucket_public, database_url, public=True)
+    test_public_client = syncGatewayClient(test_bucket_public, public_url, public=True)
+
+# test public admin create and update
+    test_public_create = test_public_admin.create(test_doc_public)
+    print(test_public_admin.read(test_public_create['_id']))
+    test_public_create['type'] = 'complex'
+    test_public_update = test_public_admin.update(test_public_create)
+
+# test public client permissions to list and read
+    test_public_list = []
+    for doc in test_public_client.list():
+        print(doc)
+        test_public_list.append(doc)
+    for doc in test_public_list:
+        print(test_public_client.read(doc['_id']))
+
+# test public client forbiddens
+    try:
+        test_public_client.create({ 'user': 'public' })
+    except Exception as err:
+        print(err)
+    try:
+        for doc in test_public_list:
+            doc['type'] = 'simple'
+            updated_doc = test_public_client.update(doc)
+            print(updated_doc)
+    except Exception as err:
+        print(err)
+    try:
+        for doc in test_public_list:
+            delete_status = test_public_client.delete(doc['_id'], doc['_rev'])
+            print(delete_status)
+    except Exception as err:
+        print(err)
+
+# confirm no changes have been made
+    for doc in test_public_admin.list():
+        print(doc)
+
+# test public remove
+    test_public_admin.remove()

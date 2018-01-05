@@ -1,0 +1,13 @@
+{
+  "sync": "function(doc, oldDoc) {requireRole('write-access'); channel('read-only'); }",
+  "users": {
+      "GUEST": {
+          "disabled": false,
+          "admin_channels": ["read-only"]
+      }
+  },
+  "allow_empty_password": true,
+  "roles": {
+      "write-access": {}
+  }
+}
