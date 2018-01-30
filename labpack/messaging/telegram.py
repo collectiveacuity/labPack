@@ -655,8 +655,7 @@ class telegramBotClient(object):
             'user_id': user_id,
             'message_text': message_text,
             'message_style': message_style,
-            'button_list': button_list,
-            'keypad_type': keypad_type
+            'button_list': button_list
         }
         for key, value in input_fields.items():
             if value:

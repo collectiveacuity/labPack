@@ -32,7 +32,8 @@ class syncGatewayClient(object):
             'user_roles': [ '' ],
             'user_channels': [ '' ],
             'document_schema': {
-                'schema': {}
+                'schema': {},
+                'components': {}
             },
             'configs': {
                 'name': '',
@@ -53,6 +54,9 @@ class syncGatewayClient(object):
             '.duration': {
                 'integer_data': True,
                 'min_value': 0
+            },
+            '.document_schema': {
+                'extra_fields': True,
             },
             '.configs': {
                 'extra_fields': True
