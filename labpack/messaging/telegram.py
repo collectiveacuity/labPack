@@ -101,6 +101,11 @@ class telegramBotClient(object):
             'file_endpoint': 'https://api.telegram.org/file/bot',
             'bot_id': 0,
             'access_token': '',
+            'max_connections': 0,
+            'webhook_url': 'https://mydomain.com/secret_token_value',
+            'certificate_id': '',
+            'certificate_path': 'path/to/cert.pub',
+            'certificate_url': '',
             'last_update': 0,
             'user_id': 0,
             'user_name': '',
@@ -120,6 +125,9 @@ class telegramBotClient(object):
                 'png': '.+\\.png$',
                 'tif': '.+\\.tif$',
                 'bmp': '.+\\.bmp$'
+            },
+            'certificate_extensions': {
+                'pem': '.+\\.pem$'
             }
         },
         'components': {
@@ -143,6 +151,11 @@ class telegramBotClient(object):
             },
             '.caption_text': {
                 'max_length': 200
+            },
+            '.max_connections': {
+                'integer_data': True,
+                'max_value': 100,
+                'min_value': 1
             }
         }
     }
@@ -369,6 +382,70 @@ class telegramBotClient(object):
 
         return response_details
 
+    def set_webhook(self, webhook_url, certificate_id='', certificate_path='', certificate_url='', max_connections=40):
+
+        # https://core.telegram.org/bots/self-signed
+        
+        title = '%s.set_webhook' % self.__class__.__name__
+
+    # validate inputs
+        input_fields = {
+            'webhook_url': webhook_url,
+            'certificate_id': certificate_id,
+            'certificate_path': certificate_path,
+            'certificate_url': certificate_url,
+            'max_connections': max_connections
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+    
+    # construct request fields
+        request_kwargs = {
+            'url': '%s/setWebhook' % self.api_endpoint,
+            'data': {
+                'url': webhook_url,
+                'max_connections': max_connections
+            }
+        }
+    
+    # construct extension map
+        extension_map = self.fields.schema['certificate_extensions']
+    
+    # add photo to request keywords
+        if certificate_path:
+            import os
+            self._validate_type(certificate_path, extension_map, title, 'certificate_path')
+            if not os.path.exists(certificate_path):
+                raise ValueError('%s is not a valid file path.' % certificate_path)
+            request_kwargs['files'] = { 'certificate': open(certificate_path, 'rb') }
+        elif certificate_id:
+            request_kwargs['data']['certificate'] = certificate_id
+        elif certificate_url:
+            file_extension = self._validate_type(certificate_url, extension_map, title, 'certificate_url')
+            file_buffer = self._get_data(certificate_url, 'certificate%s' % file_extension, title, 'certificate_url')
+            request_kwargs['files'] = { 'certificate': file_buffer }
+
+    # send request
+        response_details = self._post_request(**request_kwargs)
+
+        return response_details
+    
+    def delete_webhook(self):
+        
+        title = '%s.delete_webhook' % self.__class__.__name__
+    
+    # construct request fields
+        request_kwargs = {
+            'url': '%s/setWebhook' % self.api_endpoint
+        }    
+    
+    # send request
+        response_details = self._post_request(**request_kwargs)
+
+        return response_details
+    
     def get_updates(self, last_update=0):
 
         ''' a method to retrieve messages for bot from telegram api
