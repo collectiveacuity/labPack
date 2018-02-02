@@ -359,8 +359,37 @@ class findClient(object):
         else:
             client.loop_start()
  
+    def publish(self, user_id, wifi_fingerprint, type='track', location_id='', port=1883):
+
+    # compose message
+        fingerprint_string = ''
+        for signal in wifi_fingerprint:
+            fingerprint_string += signal['mac'].replace(':','')
+            rssi_string = str(signal['rssi']).replace('-','')
+            if len(rssi_string) > 2:
+                fingerprint_string += ' '
+            fingerprint_string += rssi_string
+
+    # compose channel
+        topic_string = '%s/track/%s' % (self.group_name, user_id)
+        if type == 'learn':
+            topic_string = '%s/learn/%s/%s' % (self.group_name, user_id, location_id)
+
+    # send a single message to server
+        import paho.mqtt.publish as mqtt_publish
+        mqtt_publish.single(
+            topic=topic_string,
+            payload=fingerprint_string,
+            auth={ 'username': self.group_name, 'password': self.password },
+            hostname=self.server_url,
+            port=port
+        )
+
+        return True
+
 if __name__ == '__main__':
     
+    from time import time
     from labpack.records.settings import load_settings
     find_cred = load_settings('../../../cred/find.yaml')
     find_client = findClient(
@@ -390,9 +419,14 @@ if __name__ == '__main__':
     position_map = { user_id: position }
     assert position_map == find_client.positions
 
+# test publish
+    wifi_fingerprint = find_cred['find_wifi_fingerprint']
+    find_client.publish(user_id, wifi_fingerprint)
+
 # test update positions
     find_client.update_positions()
-    print(find_client.positions)
+    assert find_client.positions[user_id]
+    assert find_client.positions[user_id]['time'] + 5 > time()
 
 # test subscribe
     find_client.subscribe(callable=print, block=True)
