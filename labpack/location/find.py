@@ -95,7 +95,7 @@ class findClient(object):
         response_details = response.json()
         
         return response_details['success']
-        
+
     def get_position(self, user_id, track=False, confidence=False):
 
         '''
@@ -142,18 +142,19 @@ class findClient(object):
         response_details = response.json()
         from labpack.records.time import labDT
         for key in response_details['users'].keys():
-            for entry in response_details['users'][key]:
-                if 'time' in entry.keys() and 'location' in entry.keys():
-                    time_string = entry['time'] 
-                    time_string = time_string.replace(' +0000 UTC', 'Z')
-                    time_string = time_string.replace(' ', 'T')
-                    time_dt = labDT.fromISO(time_string).epoch()
-                    if confidence:
-                        for key, value in entry.items():
-                            position_details[key] = value
-                    position_details['time'] = time_dt
-                    position_details['location'] = entry['location']
-                    break
+            if key == user_id:
+                for entry in response_details['users'][key]:
+                    if 'time' in entry.keys() and 'location' in entry.keys():
+                        time_string = entry['time'] 
+                        time_string = time_string.replace(' +0000 UTC', 'Z')
+                        time_string = time_string.replace(' ', 'T')
+                        time_dt = labDT.fromISO(time_string).epoch()
+                        if confidence:
+                            for key, value in entry.items():
+                                position_details[key] = value
+                        position_details['time'] = time_dt
+                        position_details['location'] = entry['location']
+                        break
 
         if track:
             stored_position = {
@@ -203,19 +204,20 @@ class findClient(object):
         response_details = response.json()
         from labpack.records.time import labDT
         for key in response_details['users'].keys():
-            for entry in response_details['users'][key]:
-                position_details = {}
-                if 'time' in entry.keys() and 'location' in entry.keys():
-                    time_string = entry['time'] 
-                    time_string = time_string.replace(' +0000 UTC', 'Z')
-                    time_string = time_string.replace(' ', 'T')
-                    time_dt = labDT.fromISO(time_string).epoch()
-                    if confidence:
-                        for key, value in entry.items():
-                            position_details[key] = value
-                    position_details['time'] = time_dt
-                    position_details['location'] = entry['location']
-                    position_history.append(position_details)
+            if key == user_id:
+                for entry in response_details['users'][key]:
+                    position_details = {}
+                    if 'time' in entry.keys() and 'location' in entry.keys():
+                        time_string = entry['time'] 
+                        time_string = time_string.replace(' +0000 UTC', 'Z')
+                        time_string = time_string.replace(' ', 'T')
+                        time_dt = labDT.fromISO(time_string).epoch()
+                        if confidence:
+                            for key, value in entry.items():
+                                position_details[key] = value
+                        position_details['time'] = time_dt
+                        position_details['location'] = entry['location']
+                        position_history.append(position_details)
 
         return position_history
 
@@ -268,18 +270,19 @@ class findClient(object):
             from labpack.records.time import labDT
             for key in response_details['users'].keys():
                 position_details = {}
-                for entry in response_details['users'][key]:
-                    if 'time' in entry.keys() and 'location' in entry.keys():
-                        time_string = entry['time'] 
-                        time_string = time_string.replace(' +0000 UTC', 'Z')
-                        time_string = time_string.replace(' ', 'T')
-                        time_dt = labDT.fromISO(time_string).epoch()
-                        position_details = {
-                            'time': time_dt,
-                            'location': entry['location']
-                        }
-                        break
-                self.positions[key] = position_details
+                if key in user_batch:
+                    for entry in response_details['users'][key]:
+                        if 'time' in entry.keys() and 'location' in entry.keys():
+                            time_string = entry['time'] 
+                            time_string = time_string.replace(' +0000 UTC', 'Z')
+                            time_string = time_string.replace(' ', 'T')
+                            time_dt = labDT.fromISO(time_string).epoch()
+                            position_details = {
+                                'time': time_dt,
+                                'location': entry['location']
+                            }
+                            break
+                    self.positions[key] = position_details
 
         # slice user list
             if len(user_list) > 50:
