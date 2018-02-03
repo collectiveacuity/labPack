@@ -115,10 +115,9 @@ class appdataClient(object):
             self.app_folder = self.localhost.app_data(org_name=org_name, prod_name=prod_name)
         else:
             root_path = self.fields.validate(root_path, '.root_path')
-            if not os.path.exists(root_path):
-                raise ValueError('%s(root_path="%s") is not a valid path.' % (title, root_path))
-            elif not os.path.isdir(root_path):
-                raise ValueError('%s(root_path="%s") is not a valid directory.' % (title, root_path))
+            if os.path.exists(root_path):
+                if not os.path.isdir(root_path):
+                    raise ValueError('%s(root_path="%s") is an existing file.' % (title, root_path))
             self.app_folder = os.path.abspath(root_path)
 
     # validate existence of file data folder in app data (or create)
