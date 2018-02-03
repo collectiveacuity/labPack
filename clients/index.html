@@ -99,6 +99,7 @@
             <li><a href="#mailgunclient">mailgunClient</a></li>
             <li><a href="#mandrillclient">mandrillClient</a></li>
             <li><a href="#meetupclient">meetupClient</a></li>
+            <li><a href="#findclient">findClient</a></li>
             <li><a href="#telegrambotclient">telegramBotClient</a></li>
             <li><a href="#twilioclient">twilioClient</a></li>
             <li><a href="#apschedulerclient">apschedulerClient</a></li>
@@ -594,7 +595,7 @@ application_details(self)</p>
 <h3 id="95_init___4">__init__</h3>
 <h5 id="_47"></h5>
 <p><strong>Signature:</strong><br />
-__init__(self, bucket_name, database_url, document_schema=None, verbose=False, configs=None)</p>
+__init__(self, bucket_name, database_url, document_schema=None, verbose=False, public=False, configs=None)</p>
 <h5 id="_48"></h5>
 <p><strong>Description:</strong><br />
 the initialization method for syncGatewayAdmin class<br />
@@ -608,6 +609,7 @@ the initialization method for syncGatewayAdmin class<br />
 <tr><td>database_url   </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>document_schema</td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
 <tr><td>verbose        </td><td>bool    </td><td>          </td><td>False    </td><td>             </td></tr>
+<tr><td>public         </td><td>bool    </td><td>          </td><td>False    </td><td>             </td></tr>
 <tr><td>configs        </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
 </tbody>
 </table></p>
@@ -655,7 +657,7 @@ a method to list all the user ids of all users in the bucket  </p>
 <h3 id="save_user">save_user</h3>
 <h5 id="_55"></h5>
 <p><strong>Signature:</strong><br />
-save_user(self, uid, user_password, user_channels=None, user_roles=None, user_views=None, disable_account=False)</p>
+save_user(self, uid, user_password, user_email=&rdquo;&ldquo;, user_channels=None, user_roles=None, user_views=None, disable_account=False)</p>
 <h5 id="_56"></h5>
 <p><strong>Description:</strong><br />
 a method to add or update an authorized user to the bucket<br />
@@ -667,6 +669,7 @@ a method to add or update an authorized user to the bucket<br />
 <tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                             </td></tr>
 <tr><td>uid            </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with id to assign to user                             </td></tr>
 <tr><td>user_password  </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with password to assign to user                       </td></tr>
+<tr><td>user_email     </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with email of user for future lookup       </td></tr>
 <tr><td>user_channels  </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of strings with channels to subscribe to user</td></tr>
 <tr><td>user_roles     </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of strings with roles to assign to user      </td></tr>
 <tr><td>user_views     </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of query criteria to create as views for user</td></tr>
@@ -775,7 +778,7 @@ a method to determine if document exists<br />
 <h3 id="list">list</h3>
 <h5 id="_69"></h5>
 <p><strong>Signature:</strong><br />
-list(self, query_criteria=None, uid=&rdquo;_all_users&rdquo;, all_versions=False, previous_id=&rdquo;&ldquo;)</p>
+list(self, query_criteria=None, uid=&rdquo;_all_users&rdquo;, all_versions=False, previous_id=&rdquo;&ldquo;, purge_deleted=False)</p>
 <h5 id="_70"></h5>
 <p><strong>Description:</strong><br />
 a generator method for retrieving documents from the bucket<br />
@@ -789,6 +792,7 @@ a generator method for retrieving documents from the bucket<br />
 <tr><td>uid           </td><td>str   </td><td>          </td><td>&ldquo;_all_users&rdquo;</td><td>[optional] string with uid of design document to update      </td></tr>
 <tr><td>all_versions  </td><td>bool  </td><td>          </td><td>False       </td><td>boolean to include previous revisions in query               </td></tr>
 <tr><td>previous_id   </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;          </td><td>[optional] string with id of the last doc in a previous query</td></tr>
+<tr><td>purge_deleted </td><td>bool  </td><td>          </td><td>False       </td><td>boolean to purge any files in results which have been deleted</td></tr>
 </tbody>
 </table></p>
 <h3 id="create">create</h3>
@@ -1556,16 +1560,141 @@ a method to rescind an rsvp to a meetup event<br />
 <tr><td>event_id  </td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with meetup id for event    </td></tr>
 </tbody>
 </table></p>
-<h2 id="telegrambotclient">telegramBotClient</h2>
+<h2 id="findclient">findClient</h2>
 <h3 id="import_9">Import:</h3>
-<p>labpack.messaging.telegram.telegramBotClient  </p>
+<p>labpack.location.find.findClient  </p>
 <h3 id="description_9">Description:</h3>
-<p>a class of methods for interacting with telegram bot api  </p>
+<p>a method to initialize a findClient class object  </p>
 <h3 id="95_init___9">__init__</h3>
 <h5 id="_157"></h5>
 <p><strong>Signature:</strong><br />
-__init__(self, bot_id, access_token, requests_handler=None)</p>
+__init__(self, group_name, server_url=&rdquo;ml.internalpositioning.com&rdquo;, password=&rdquo;&ldquo;)</p>
 <h5 id="_158"></h5>
+<p><strong>Description:</strong><br />
+a method to initialize a findClient class object<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default                     </th><th>Description                                        </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None                        </td><td>                                                   </td></tr>
+<tr><td>group_name</td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;                          </td><td>string with name of group                          </td></tr>
+<tr><td>server_url</td><td>str   </td><td>          </td><td>&ldquo;ml.internalpositioning.com&rdquo;</td><td>string with url for FIND server                    </td></tr>
+<tr><td>password  </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;                          </td><td>[optional] string with password to mosquitto server</td></tr>
+</tbody>
+</table></p>
+<h3 id="get_password">get_password</h3>
+<h5 id="_159"></h5>
+<p><strong>Signature:</strong><br />
+get_password(self)</p>
+<h5 id="_160"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve the password for the group mosquitto server  </p>
+<h3 id="get_locations">get_locations</h3>
+<h5 id="_161"></h5>
+<p><strong>Signature:</strong><br />
+get_locations(self)</p>
+<h5 id="_162"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve all the locations tracked by the model  </p>
+<h3 id="update_model">update_model</h3>
+<h5 id="_163"></h5>
+<p><strong>Signature:</strong><br />
+update_model(self)</p>
+<h5 id="_164"></h5>
+<p><strong>Description:</strong><br />
+a method to update model with latest training data  </p>
+<h3 id="get_position">get_position</h3>
+<h5 id="_165"></h5>
+<p><strong>Signature:</strong><br />
+get_position(self, user_id, track=False, confidence=False)</p>
+<h5 id="_166"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve the latest position of a user<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                   </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                              </td></tr>
+<tr><td>user_id   </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with id of user                                        </td></tr>
+<tr><td>track     </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to add user to self.positions              </td></tr>
+<tr><td>confidence</td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to include the data model confidence scores</td></tr>
+</tbody>
+</table></p>
+<h3 id="get_positions">get_positions</h3>
+<h5 id="_167"></h5>
+<p><strong>Signature:</strong><br />
+get_positions(self, user_id, history=1, confidence=False)</p>
+<h5 id="_168"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve the position history of a user<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                     </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                                </td></tr>
+<tr><td>user_id   </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with id of user                                          </td></tr>
+<tr><td>history   </td><td>int   </td><td>          </td><td>1        </td><td>[optional] integer with length of previous positions to retrieve</td></tr>
+<tr><td>confidence</td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to include the data model confidence scores  </td></tr>
+</tbody>
+</table></p>
+<h3 id="update_positions">update_positions</h3>
+<h5 id="_169"></h5>
+<p><strong>Signature:</strong><br />
+update_positions(self)</p>
+<h5 id="_170"></h5>
+<p><strong>Description:</strong><br />
+a method to update the latest position of all users being tracked  </p>
+<h3 id="subscribe">subscribe</h3>
+<h5 id="_171"></h5>
+<p><strong>Signature:</strong><br />
+subscribe(self, callable=None, block=False, port=1883)</p>
+<h5 id="_172"></h5>
+<p><strong>Description:</strong><br />
+a method to establish a mosquitto socket with server to receive position updates<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                                      </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                                 </td></tr>
+<tr><td>callable  </td><td>function</td><td>          </td><td>None     </td><td>[optional] callable to process the received positions            </td></tr>
+<tr><td>block     </td><td>bool    </td><td>          </td><td>False    </td><td>[optional] boolean to block the main thread when method is called</td></tr>
+<tr><td>port      </td><td>int     </td><td>          </td><td>1883     </td><td>[optional] integer with port to connect to                       </td></tr>
+</tbody>
+</table></p>
+<h3 id="publish">publish</h3>
+<h5 id="_173"></h5>
+<p><strong>Signature:</strong><br />
+publish(self, user_id, wifi_fingerprint, type=&rdquo;track&rdquo;, location_id=&rdquo;&ldquo;, port=1883)</p>
+<h5 id="_174"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument        </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self            </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>user_id         </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>wifi_fingerprint</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>type            </td><td>str     </td><td>          </td><td>"track"  </td><td>             </td></tr>
+<tr><td>location_id     </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>port            </td><td>int     </td><td>          </td><td>1883     </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h2 id="telegrambotclient">telegramBotClient</h2>
+<h3 id="import_10">Import:</h3>
+<p>labpack.messaging.telegram.telegramBotClient  </p>
+<h3 id="description_10">Description:</h3>
+<p>a class of methods for interacting with telegram bot api  </p>
+<h3 id="95_init___10">__init__</h3>
+<h5 id="_175"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self, bot_id, access_token, requests_handler=None)</p>
+<h5 id="_176"></h5>
 <p><strong>Description:</strong><br />
 initialization method for moves client class<br />
 <table>
@@ -1580,17 +1709,43 @@ initialization method for moves client class<br />
 </tbody>
 </table></p>
 <h3 id="get_me">get_me</h3>
-<h5 id="_159"></h5>
+<h5 id="_177"></h5>
 <p><strong>Signature:</strong><br />
 get_me(self)</p>
-<h5 id="_160"></h5>
+<h5 id="_178"></h5>
 <p><strong>Description:</strong><br />
 a method to retrieve details about the bot from telegram api  </p>
+<h3 id="set_webhook">set_webhook</h3>
+<h5 id="_179"></h5>
+<p><strong>Signature:</strong><br />
+set_webhook(self, webhook_url, certificate_id=&rdquo;&ldquo;, certificate_path=&rdquo;&ldquo;, certificate_url=&rdquo;&ldquo;, max_connections=40)</p>
+<h5 id="_180"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument        </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self            </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>webhook_url     </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>certificate_id  </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>certificate_path</td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>certificate_url </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>max_connections </td><td>int     </td><td>          </td><td>40       </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h3 id="delete_webhook">delete_webhook</h3>
+<h5 id="_181"></h5>
+<p><strong>Signature:</strong><br />
+delete_webhook(self)</p>
+<h5 id="_182"></h5>
+<p><strong>Description:</strong>  </p>
 <h3 id="get_updates">get_updates</h3>
-<h5 id="_161"></h5>
+<h5 id="_183"></h5>
 <p><strong>Signature:</strong><br />
 get_updates(self, last_update=0)</p>
-<h5 id="_162"></h5>
+<h5 id="_184"></h5>
 <p><strong>Description:</strong><br />
 a method to retrieve messages for bot from telegram api<br />
 <table>
@@ -1603,10 +1758,10 @@ a method to retrieve messages for bot from telegram api<br />
 </tbody>
 </table></p>
 <h3 id="get_route">get_route</h3>
-<h5 id="_163"></h5>
+<h5 id="_185"></h5>
 <p><strong>Signature:</strong><br />
 get_route(self, file_id)</p>
-<h5 id="_164"></h5>
+<h5 id="_186"></h5>
 <p><strong>Description:</strong><br />
 a method to retrieve route information for file on telegram api<br />
 <table>
@@ -1619,10 +1774,10 @@ a method to retrieve route information for file on telegram api<br />
 </tbody>
 </table></p>
 <h3 id="get_file">get_file</h3>
-<h5 id="_165"></h5>
+<h5 id="_187"></h5>
 <p><strong>Signature:</strong><br />
 get_file(self, file_route, file_name=&rdquo;&ldquo;)</p>
-<h5 id="_166"></h5>
+<h5 id="_188"></h5>
 <p><strong>Description:</strong><br />
 a method to retrieve data for a file housed on telegram api<br />
 <table>
@@ -1636,10 +1791,10 @@ a method to retrieve data for a file housed on telegram api<br />
 </tbody>
 </table></p>
 <h3 id="send_message">send_message</h3>
-<h5 id="_167"></h5>
+<h5 id="_189"></h5>
 <p><strong>Signature:</strong><br />
 send_message(self, user_id, message_text, message_style=&rdquo;&ldquo;, button_list=None, small_buttons=True, persist_buttons=False, link_preview=True)</p>
-<h5 id="_168"></h5>
+<h5 id="_190"></h5>
 <p><strong>Description:</strong><br />
 a method to send a message using telegram api<br />
 <table>
@@ -1658,10 +1813,10 @@ a method to send a message using telegram api<br />
 </tbody>
 </table></p>
 <h3 id="send_photo">send_photo</h3>
-<h5 id="_169"></h5>
+<h5 id="_191"></h5>
 <p><strong>Signature:</strong><br />
 send_photo(self, user_id, photo_id=&rdquo;&ldquo;, photo_path=&rdquo;&ldquo;, photo_url=&rdquo;&ldquo;, caption_text=&rdquo;&ldquo;, button_list=None, small_buttons=True, persist_buttons=False)</p>
-<h5 id="_170"></h5>
+<h5 id="_192"></h5>
 <p><strong>Description:</strong><br />
 a method to send a photo using telegram api<br />
 <table>
@@ -1681,10 +1836,10 @@ a method to send a photo using telegram api<br />
 </tbody>
 </table></p>
 <h3 id="send_voice">send_voice</h3>
-<h5 id="_171"></h5>
+<h5 id="_193"></h5>
 <p><strong>Signature:</strong><br />
 send_voice(self, user_id, voice_id=&rdquo;&ldquo;, voice_path=&rdquo;&ldquo;, voice_url=&rdquo;&ldquo;, caption_text=&rdquo;&ldquo;, button_list=None, small_buttons=True, persist_buttons=False)</p>
-<h5 id="_172"></h5>
+<h5 id="_194"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -1704,15 +1859,15 @@ send_voice(self, user_id, voice_id=&rdquo;&ldquo;, voice_path=&rdquo;&ldquo;, vo
 </table>
 
 <h2 id="twilioclient">twilioClient</h2>
-<h3 id="import_10">Import:</h3>
+<h3 id="import_11">Import:</h3>
 <p>labpack.messaging.twilio.twilioClient  </p>
-<h3 id="description_10">Description:</h3>
+<h3 id="description_11">Description:</h3>
 <p>send an SMS from the Twilio account to phone number  </p>
-<h3 id="95_init___10">__init__</h3>
-<h5 id="_173"></h5>
+<h3 id="95_init___11">__init__</h3>
+<h5 id="_195"></h5>
 <p><strong>Signature:</strong><br />
 __init__(self, account_sid, auth_token, twilio_phone)</p>
-<h5 id="_174"></h5>
+<h5 id="_196"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -1727,10 +1882,10 @@ __init__(self, account_sid, auth_token, twilio_phone)</p>
 </table>
 
 <h3 id="send_message_1">send_message</h3>
-<h5 id="_175"></h5>
+<h5 id="_197"></h5>
 <p><strong>Signature:</strong><br />
 send_message(self, phone_number, message_text)</p>
-<h5 id="_176"></h5>
+<h5 id="_198"></h5>
 <p><strong>Description:</strong><br />
 send an SMS from the Twilio account to phone number<br />
 <table>
@@ -1744,15 +1899,15 @@ send an SMS from the Twilio account to phone number<br />
 </tbody>
 </table></p>
 <h2 id="apschedulerclient">apschedulerClient</h2>
-<h3 id="import_11">Import:</h3>
+<h3 id="import_12">Import:</h3>
 <p>labpack.platforms.apscheduler.apschedulerClient  </p>
-<h3 id="description_11">Description:</h3>
+<h3 id="description_12">Description:</h3>
 <p>initialization method for apschedulerClient class  </p>
-<h3 id="95_init___11">__init__</h3>
-<h5 id="_177"></h5>
+<h3 id="95_init___12">__init__</h3>
+<h5 id="_199"></h5>
 <p><strong>Signature:</strong><br />
 __init__(self, scheduler_url, requests_handler=None)</p>
-<h5 id="_178"></h5>
+<h5 id="_200"></h5>
 <p><strong>Description:</strong><br />
 initialization method for apschedulerClient class<br />
 <table>
@@ -1766,16 +1921,16 @@ initialization method for apschedulerClient class<br />
 </tbody>
 </table></p>
 <h3 id="get_info">get_info</h3>
-<h5 id="_179"></h5>
+<h5 id="_201"></h5>
 <p><strong>Signature:</strong><br />
 get_info(self)</p>
-<h5 id="_180"></h5>
+<h5 id="_202"></h5>
 <p><strong>Description:</strong>  </p>
 <h3 id="list_jobs">list_jobs</h3>
-<h5 id="_181"></h5>
+<h5 id="_203"></h5>
 <p><strong>Signature:</strong><br />
 list_jobs(self, argument_filters=None)</p>
-<h5 id="_182"></h5>
+<h5 id="_204"></h5>
 <p><strong>Description:</strong><br />
 a method to list jobs in the scheduler<br />
 <table>
@@ -1788,10 +1943,10 @@ a method to list jobs in the scheduler<br />
 </tbody>
 </table></p>
 <h3 id="add_date_job">add_date_job</h3>
-<h5 id="_183"></h5>
+<h5 id="_205"></h5>
 <p><strong>Signature:</strong><br />
 add_date_job(self, id, function, args=None, kwargs=None, dt=0.0, name=&rdquo;&ldquo;)</p>
-<h5 id="_184"></h5>
+<h5 id="_206"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -1809,10 +1964,10 @@ add_date_job(self, id, function, args=None, kwargs=None, dt=0.0, name=&rdquo;&ld
 </table>
 
 <h3 id="add_interval_job">add_interval_job</h3>
-<h5 id="_185"></h5>
+<h5 id="_207"></h5>
 <p><strong>Signature:</strong><br />
 add_interval_job(self, id, function, interval, args=None, kwargs=None, start=0.0, end=0.0, name=&rdquo;&ldquo;)</p>
-<h5 id="_186"></h5>
+<h5 id="_208"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -1832,10 +1987,10 @@ add_interval_job(self, id, function, interval, args=None, kwargs=None, start=0.0
 </table>
 
 <h3 id="add_cron_job">add_cron_job</h3>
-<h5 id="_187"></h5>
+<h5 id="_209"></h5>
 <p><strong>Signature:</strong><br />
 add_cron_job(self, id, function, month=None, day=None, weekday=None, hour=None, minute=None, second=None, args=None, kwargs=None, start=0.0, end=0.0, name=&rdquo;&ldquo;)</p>
-<h5 id="_188"></h5>
+<h5 id="_210"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -1860,10 +2015,10 @@ add_cron_job(self, id, function, month=None, day=None, weekday=None, hour=None, 
 </table>
 
 <h3 id="delete_job">delete_job</h3>
-<h5 id="_189"></h5>
+<h5 id="_211"></h5>
 <p><strong>Signature:</strong><br />
 delete_job(self, id)</p>
-<h5 id="_190"></h5>
+<h5 id="_212"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -1876,17 +2031,17 @@ delete_job(self, id)</p>
 </table>
 
 <h2 id="ec2client">ec2Client</h2>
-<h3 id="import_12">Import:</h3>
+<h3 id="import_13">Import:</h3>
 <p>labpack.platforms.aws.ec2.ec2Client  </p>
-<h3 id="description_12">Description:</h3>
+<h3 id="description_13">Description:</h3>
 <p>a class of methods for interacting with AWS Elastic Computing Cloud</p>
 <pre><code>    https://boto3.readthedocs.org/en/latest/
 </code></pre>
-<h3 id="95_init___12">__init__</h3>
-<h5 id="_191"></h5>
+<h3 id="95_init___13">__init__</h3>
+<h5 id="_213"></h5>
 <p><strong>Signature:</strong><br />
 __init__(self, access_id, secret_key, region_name, owner_id, user_name, verbose=True)</p>
-<h5 id="_192"></h5>
+<h5 id="_214"></h5>
 <p><strong>Description:</strong><br />
 a method for initializing the connection to EC2<br />
 <table>
@@ -1904,10 +2059,10 @@ a method for initializing the connection to EC2<br />
 </tbody>
 </table></p>
 <h3 id="check_instance_state">check_instance_state</h3>
-<h5 id="_193"></h5>
+<h5 id="_215"></h5>
 <p><strong>Signature:</strong><br />
 check_instance_state(self, instance_id, wait=True)</p>
-<h5 id="_194"></h5>
+<h5 id="_216"></h5>
 <p><strong>Description:</strong><br />
 method for checking the state of an instance on AWS EC2<br />
 <table>
@@ -1921,10 +2076,10 @@ method for checking the state of an instance on AWS EC2<br />
 </tbody>
 </table></p>
 <h3 id="check_instance_status">check_instance_status</h3>
-<h5 id="_195"></h5>
+<h5 id="_217"></h5>
 <p><strong>Signature:</strong><br />
 check_instance_status(self, instance_id, wait=True)</p>
-<h5 id="_196"></h5>
+<h5 id="_218"></h5>
 <p><strong>Description:</strong><br />
 a method to wait until AWS instance reports an OK status<br />
 <table>
@@ -1938,10 +2093,10 @@ a method to wait until AWS instance reports an OK status<br />
 </tbody>
 </table></p>
 <h3 id="list_instances">list_instances</h3>
-<h5 id="_197"></h5>
+<h5 id="_219"></h5>
 <p><strong>Signature:</strong><br />
 list_instances(self, tag_values=None)</p>
-<h5 id="_198"></h5>
+<h5 id="_220"></h5>
 <p><strong>Description:</strong><br />
 a method to retrieve the list of instances on AWS EC2<br />
 <table>
@@ -1954,10 +2109,10 @@ a method to retrieve the list of instances on AWS EC2<br />
 </tbody>
 </table></p>
 <h3 id="read_instance">read_instance</h3>
-<h5 id="_199"></h5>
+<h5 id="_221"></h5>
 <p><strong>Signature:</strong><br />
 read_instance(self, instance_id)</p>
-<h5 id="_200"></h5>
+<h5 id="_222"></h5>
 <p><strong>Description:</strong><br />
 a method to retrieving the details of a single instances on AWS EC2<br />
 <table>
@@ -1970,10 +2125,10 @@ a method to retrieving the details of a single instances on AWS EC2<br />
 </tbody>
 </table></p>
 <h3 id="tag_instance">tag_instance</h3>
-<h5 id="_201"></h5>
+<h5 id="_223"></h5>
 <p><strong>Signature:</strong><br />
 tag_instance(self, instance_id, tag_list)</p>
-<h5 id="_202"></h5>
+<h5 id="_224"></h5>
 <p><strong>Description:</strong><br />
 a method for adding or updating tags on an AWS instance<br />
 <table>
@@ -1987,10 +2142,10 @@ a method for adding or updating tags on an AWS instance<br />
 </tbody>
 </table></p>
 <h3 id="create_instance">create_instance</h3>
-<h5 id="_203"></h5>
+<h5 id="_225"></h5>
 <p><strong>Signature:</strong><br />
 create_instance(self, image_id, pem_file, group_ids, instance_type, volume_type=&rdquo;gp2&rdquo;, ebs_optimized=False, instance_monitoring=False, iam_profile=&rdquo;&ldquo;, tag_list=None, auction_bid=0.0)</p>
-<h5 id="_204"></h5>
+<h5 id="_226"></h5>
 <p><strong>Description:</strong><br />
 a method for starting an instance on AWS EC2<br />
 <table>
@@ -2012,10 +2167,10 @@ a method for starting an instance on AWS EC2<br />
 </tbody>
 </table></p>
 <h3 id="delete_instance">delete_instance</h3>
-<h5 id="_205"></h5>
+<h5 id="_227"></h5>
 <p><strong>Signature:</strong><br />
 delete_instance(self, instance_id)</p>
-<h5 id="_206"></h5>
+<h5 id="_228"></h5>
 <p><strong>Description:</strong><br />
 method for removing an instance from AWS EC2<br />
 <table>
@@ -2028,10 +2183,10 @@ method for removing an instance from AWS EC2<br />
 </tbody>
 </table></p>
 <h3 id="check_image_state">check_image_state</h3>
-<h5 id="_207"></h5>
+<h5 id="_229"></h5>
 <p><strong>Signature:</strong><br />
 check_image_state(self, image_id, wait=True)</p>
-<h5 id="_208"></h5>
+<h5 id="_230"></h5>
 <p><strong>Description:</strong><br />
 method for checking the state of an image on AWS EC2<br />
 <table>
@@ -2045,10 +2200,10 @@ method for checking the state of an image on AWS EC2<br />
 </tbody>
 </table></p>
 <h3 id="list_images">list_images</h3>
-<h5 id="_209"></h5>
+<h5 id="_231"></h5>
 <p><strong>Signature:</strong><br />
 list_images(self, tag_values=None)</p>
-<h5 id="_210"></h5>
+<h5 id="_232"></h5>
 <p><strong>Description:</strong><br />
 a method to retrieve the list of images of account on AWS EC2<br />
 <table>
@@ -2061,10 +2216,10 @@ a method to retrieve the list of images of account on AWS EC2<br />
 </tbody>
 </table></p>
 <h3 id="read_image">read_image</h3>
-<h5 id="_211"></h5>
+<h5 id="_233"></h5>
 <p><strong>Signature:</strong><br />
 read_image(self, image_id)</p>
-<h5 id="_212"></h5>
+<h5 id="_234"></h5>
 <p><strong>Description:</strong><br />
 a method to retrieve the details of a single image on AWS EC2<br />
 <table>
@@ -2077,10 +2232,10 @@ a method to retrieve the details of a single image on AWS EC2<br />
 </tbody>
 </table></p>
 <h3 id="tag_image">tag_image</h3>
-<h5 id="_213"></h5>
+<h5 id="_235"></h5>
 <p><strong>Signature:</strong><br />
 tag_image(self, image_id, tag_list)</p>
-<h5 id="_214"></h5>
+<h5 id="_236"></h5>
 <p><strong>Description:</strong><br />
 a method for adding or updating tags on an AWS instance<br />
 <table>
@@ -2094,10 +2249,10 @@ a method for adding or updating tags on an AWS instance<br />
 </tbody>
 </table></p>
 <h3 id="create_image">create_image</h3>
-<h5 id="_215"></h5>
+<h5 id="_237"></h5>
 <p><strong>Signature:</strong><br />
 create_image(self, instance_id, image_name, tag_list=None)</p>
-<h5 id="_216"></h5>
+<h5 id="_238"></h5>
 <p><strong>Description:</strong><br />
 method for imaging an instance on AWS EC2<br />
 <table>
@@ -2112,10 +2267,10 @@ method for imaging an instance on AWS EC2<br />
 </tbody>
 </table></p>
 <h3 id="delete_image">delete_image</h3>
-<h5 id="_217"></h5>
+<h5 id="_239"></h5>
 <p><strong>Signature:</strong><br />
 delete_image(self, image_id)</p>
-<h5 id="_218"></h5>
+<h5 id="_240"></h5>
 <p><strong>Description:</strong><br />
 method for removing an image from AWS EC2<br />
 <table>
@@ -2128,10 +2283,10 @@ method for removing an image from AWS EC2<br />
 </tbody>
 </table></p>
 <h3 id="import_image">import_image</h3>
-<h5 id="_219"></h5>
+<h5 id="_241"></h5>
 <p><strong>Signature:</strong><br />
 import_image(self, image_id, region_name)</p>
-<h5 id="_220"></h5>
+<h5 id="_242"></h5>
 <p><strong>Description:</strong><br />
 a method to import an image from another AWS region</p>
 <pre><code>        https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/CopyingAMIs.html
@@ -2149,10 +2304,10 @@ a method to import an image from another AWS region</p>
 </tbody>
 </table></p>
 <h3 id="export_image">export_image</h3>
-<h5 id="_221"></h5>
+<h5 id="_243"></h5>
 <p><strong>Signature:</strong><br />
 export_image(self, image_id, region_name)</p>
-<h5 id="_222"></h5>
+<h5 id="_244"></h5>
 <p><strong>Description:</strong><br />
 a method to add a copy of an image to another AWS region</p>
 <pre><code>        https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/CopyingAMIs.html
@@ -2170,17 +2325,17 @@ a method to add a copy of an image to another AWS region</p>
 </tbody>
 </table></p>
 <h3 id="list_keypairs">list_keypairs</h3>
-<h5 id="_223"></h5>
+<h5 id="_245"></h5>
 <p><strong>Signature:</strong><br />
 list_keypairs(self)</p>
-<h5 id="_224"></h5>
+<h5 id="_246"></h5>
 <p><strong>Description:</strong><br />
 a method to discover the list of key pairs on AWS  </p>
 <h3 id="list_subnets">list_subnets</h3>
-<h5 id="_225"></h5>
+<h5 id="_247"></h5>
 <p><strong>Signature:</strong><br />
 list_subnets(self, tag_values=None)</p>
-<h5 id="_226"></h5>
+<h5 id="_248"></h5>
 <p><strong>Description:</strong><br />
 a method to discover the list of subnets on AWS EC2<br />
 <table>
@@ -2193,10 +2348,10 @@ a method to discover the list of subnets on AWS EC2<br />
 </tbody>
 </table></p>
 <h3 id="read_subnet">read_subnet</h3>
-<h5 id="_227"></h5>
+<h5 id="_249"></h5>
 <p><strong>Signature:</strong><br />
 read_subnet(self, subnet_id)</p>
-<h5 id="_228"></h5>
+<h5 id="_250"></h5>
 <p><strong>Description:</strong><br />
 a method to retrieve the details about a subnet<br />
 <table>
@@ -2209,10 +2364,10 @@ a method to retrieve the details about a subnet<br />
 </tbody>
 </table></p>
 <h3 id="list_security_groups">list_security_groups</h3>
-<h5 id="_229"></h5>
+<h5 id="_251"></h5>
 <p><strong>Signature:</strong><br />
 list_security_groups(self, tag_values=None)</p>
-<h5 id="_230"></h5>
+<h5 id="_252"></h5>
 <p><strong>Description:</strong><br />
 a method to discover the list of security groups on AWS EC2<br />
 <table>
@@ -2225,10 +2380,10 @@ a method to discover the list of security groups on AWS EC2<br />
 </tbody>
 </table></p>
 <h3 id="read_security_group">read_security_group</h3>
-<h5 id="_231"></h5>
+<h5 id="_253"></h5>
 <p><strong>Signature:</strong><br />
 read_security_group(self, group_id)</p>
-<h5 id="_232"></h5>
+<h5 id="_254"></h5>
 <p><strong>Description:</strong><br />
 a method to retrieve the details about a security group<br />
 <table>
@@ -2241,25 +2396,25 @@ a method to retrieve the details about a security group<br />
 </tbody>
 </table></p>
 <h3 id="cleanup">cleanup</h3>
-<h5 id="_233"></h5>
+<h5 id="_255"></h5>
 <p><strong>Signature:</strong><br />
 cleanup(self)</p>
-<h5 id="_234"></h5>
+<h5 id="_256"></h5>
 <p><strong>Description:</strong><br />
 a method for removing instances and images in unusual states  </p>
 <h2 id="sshclient">sshClient</h2>
-<h3 id="import_13">Import:</h3>
+<h3 id="import_14">Import:</h3>
 <p>labpack.platforms.aws.ssh.sshClient  </p>
-<h3 id="description_13">Description:</h3>
+<h3 id="description_14">Description:</h3>
 <p>a class of methods to run commands on an active AWS instance</p>
 <pre><code>    NOTE:   Make sure that VPC rules allow SSH access to your local IP
     NOTE:   SCP protocol requires SCP installed on Remote Host
 </code></pre>
-<h3 id="95_init___13">__init__</h3>
-<h5 id="_235"></h5>
+<h3 id="95_init___14">__init__</h3>
+<h5 id="_257"></h5>
 <p><strong>Signature:</strong><br />
 __init__(self, instance_id, pem_file, access_id, secret_key, region_name, owner_id, user_name, login_name=&rdquo;&ldquo;, verbose=True)</p>
-<h5 id="_236"></h5>
+<h5 id="_258"></h5>
 <p><strong>Description:</strong><br />
 a method for initializing the SSH connection parameters to the EC2 instance<br />
 <table>
@@ -2280,10 +2435,10 @@ a method for initializing the SSH connection parameters to the EC2 instance<br /
 </tbody>
 </table></p>
 <h3 id="terminal">terminal</h3>
-<h5 id="_237"></h5>
+<h5 id="_259"></h5>
 <p><strong>Signature:</strong><br />
 terminal(self, confirmation=True)</p>
-<h5 id="_238"></h5>
+<h5 id="_260"></h5>
 <p><strong>Description:</strong><br />
 method to open an SSH terminal inside AWS instance<br />
 <table>
@@ -2296,10 +2451,10 @@ method to open an SSH terminal inside AWS instance<br />
 </tbody>
 </table></p>
 <h3 id="script">script</h3>
-<h5 id="_239"></h5>
+<h5 id="_261"></h5>
 <p><strong>Signature:</strong><br />
 script(self, commands, synopsis=True)</p>
-<h5 id="_240"></h5>
+<h5 id="_262"></h5>
 <p><strong>Description:</strong><br />
 a method to run a list of shell command scripts on AWS instance<br />
 <table>
@@ -2313,10 +2468,10 @@ a method to run a list of shell command scripts on AWS instance<br />
 </tbody>
 </table></p>
 <h3 id="put">put</h3>
-<h5 id="_241"></h5>
+<h5 id="_263"></h5>
 <p><strong>Signature:</strong><br />
 put(self, local_path, remote_path=&rdquo;&ldquo;, overwrite=False, synopsis=True)</p>
-<h5 id="_242"></h5>
+<h5 id="_264"></h5>
 <p><strong>Description:</strong><br />
 a method to copy a folder or file from local device to AWS instance<br />
 <table>
@@ -2332,10 +2487,10 @@ a method to copy a folder or file from local device to AWS instance<br />
 </tbody>
 </table></p>
 <h3 id="get">get</h3>
-<h5 id="_243"></h5>
+<h5 id="_265"></h5>
 <p><strong>Signature:</strong><br />
 get(self, remote_path, local_path=&rdquo;&ldquo;, overwrite=False, synopsis=True)</p>
-<h5 id="_244"></h5>
+<h5 id="_266"></h5>
 <p><strong>Description:</strong><br />
 a method to copy a folder or file from AWS instance to local device<br />
 <table>
@@ -2351,10 +2506,10 @@ a method to copy a folder or file from AWS instance to local device<br />
 </tbody>
 </table></p>
 <h3 id="responsive">responsive</h3>
-<h5 id="_245"></h5>
+<h5 id="_267"></h5>
 <p><strong>Signature:</strong><br />
 responsive(self, port=80, timeout=600)</p>
-<h5 id="_246"></h5>
+<h5 id="_268"></h5>
 <p><strong>Description:</strong><br />
 a method for waiting until web server on AWS instance has restarted<br />
 <table>
@@ -2368,15 +2523,15 @@ a method for waiting until web server on AWS instance has restarted<br />
 </tbody>
 </table></p>
 <h2 id="dockerclient">dockerClient</h2>
-<h3 id="import_14">Import:</h3>
+<h3 id="import_15">Import:</h3>
 <p>labpack.platforms.docker.dockerClient  </p>
-<h3 id="description_14">Description:</h3>
+<h3 id="description_15">Description:</h3>
 <p>a method to initialize the dockerClient class  </p>
-<h3 id="95_init___14">__init__</h3>
-<h5 id="_247"></h5>
+<h3 id="95_init___15">__init__</h3>
+<h5 id="_269"></h5>
 <p><strong>Signature:</strong><br />
 __init__(self, virtualbox_name=&rdquo;&ldquo;, verbose=False)</p>
-<h5 id="_248"></h5>
+<h5 id="_270"></h5>
 <p><strong>Description:</strong><br />
 a method to initialize the dockerClient class<br />
 <table>
@@ -2390,22 +2545,22 @@ a method to initialize the dockerClient class<br />
 </tbody>
 </table></p>
 <h3 id="images">images</h3>
-<h5 id="_249"></h5>
+<h5 id="_271"></h5>
 <p><strong>Signature:</strong><br />
 images(self)</p>
-<h5 id="_250"></h5>
+<h5 id="_272"></h5>
 <p><strong>Description:</strong>  </p>
 <h3 id="ps">ps</h3>
-<h5 id="_251"></h5>
+<h5 id="_273"></h5>
 <p><strong>Signature:</strong><br />
 ps(self)</p>
-<h5 id="_252"></h5>
+<h5 id="_274"></h5>
 <p><strong>Description:</strong>  </p>
 <h3 id="inspect">inspect</h3>
-<h5 id="_253"></h5>
+<h5 id="_275"></h5>
 <p><strong>Signature:</strong><br />
 inspect(self, container_alias=&rdquo;&ldquo;, docker_image=&rdquo;&ldquo;, image_tag=&rdquo;&ldquo;)</p>
-<h5 id="_254"></h5>
+<h5 id="_276"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -2420,10 +2575,10 @@ inspect(self, container_alias=&rdquo;&ldquo;, docker_image=&rdquo;&ldquo;, image
 </table>
 
 <h3 id="run">run</h3>
-<h5 id="_255"></h5>
+<h5 id="_277"></h5>
 <p><strong>Signature:</strong><br />
 run(self, run_script)</p>
-<h5 id="_256"></h5>
+<h5 id="_278"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -2436,10 +2591,10 @@ run(self, run_script)</p>
 </table>
 
 <h3 id="rm">rm</h3>
-<h5 id="_257"></h5>
+<h5 id="_279"></h5>
 <p><strong>Signature:</strong><br />
 rm(self, container_alias)</p>
-<h5 id="_258"></h5>
+<h5 id="_280"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -2452,10 +2607,10 @@ rm(self, container_alias)</p>
 </table>
 
 <h3 id="rmi">rmi</h3>
-<h5 id="_259"></h5>
+<h5 id="_281"></h5>
 <p><strong>Signature:</strong><br />
 rmi(self, image_id)</p>
-<h5 id="_260"></h5>
+<h5 id="_282"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -2468,16 +2623,16 @@ rmi(self, image_id)</p>
 </table>
 
 <h3 id="ip">ip</h3>
-<h5 id="_261"></h5>
+<h5 id="_283"></h5>
 <p><strong>Signature:</strong><br />
 ip(self)</p>
-<h5 id="_262"></h5>
+<h5 id="_284"></h5>
 <p><strong>Description:</strong>  </p>
 <h3 id="command">command</h3>
-<h5 id="_263"></h5>
+<h5 id="_285"></h5>
 <p><strong>Signature:</strong><br />
 command(self, sys_command)</p>
-<h5 id="_264"></h5>
+<h5 id="_286"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -2490,10 +2645,10 @@ command(self, sys_command)</p>
 </table>
 
 <h3 id="synopsis">synopsis</h3>
-<h5 id="_265"></h5>
+<h5 id="_287"></h5>
 <p><strong>Signature:</strong><br />
 synopsis(self, container_settings)</p>
-<h5 id="_266"></h5>
+<h5 id="_288"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -2506,10 +2661,10 @@ synopsis(self, container_settings)</p>
 </table>
 
 <h3 id="enter">enter</h3>
-<h5 id="_267"></h5>
+<h5 id="_289"></h5>
 <p><strong>Signature:</strong><br />
 enter(self, container_alias)</p>
-<h5 id="_268"></h5>
+<h5 id="_290"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -2522,15 +2677,15 @@ enter(self, container_alias)</p>
 </table>
 
 <h2 id="herokuclient">herokuClient</h2>
-<h3 id="import_15">Import:</h3>
+<h3 id="import_16">Import:</h3>
 <p>labpack.platforms.heroku.herokuClient  </p>
-<h3 id="description_15">Description:</h3>
+<h3 id="description_16">Description:</h3>
 <p>a method to initialize the herokuClient class  </p>
-<h3 id="95_init___15">__init__</h3>
-<h5 id="_269"></h5>
+<h3 id="95_init___16">__init__</h3>
+<h5 id="_291"></h5>
 <p><strong>Signature:</strong><br />
 __init__(self, account_email, auth_token, verbose=True)</p>
-<h5 id="_270"></h5>
+<h5 id="_292"></h5>
 <p><strong>Description:</strong><br />
 a method to initialize the herokuClient class<br />
 <table>
@@ -2545,10 +2700,10 @@ a method to initialize the herokuClient class<br />
 </tbody>
 </table></p>
 <h3 id="access">access</h3>
-<h5 id="_271"></h5>
+<h5 id="_293"></h5>
 <p><strong>Signature:</strong><br />
 access(self, app_subdomain)</p>
-<h5 id="_272"></h5>
+<h5 id="_294"></h5>
 <p><strong>Description:</strong><br />
 a method to validate user can access app<br />
 <table>
@@ -2561,10 +2716,10 @@ a method to validate user can access app<br />
 </tbody>
 </table></p>
 <h3 id="deploy_docker">deploy_docker</h3>
-<h5 id="_273"></h5>
+<h5 id="_295"></h5>
 <p><strong>Signature:</strong><br />
 deploy_docker(self, dockerfile_path, virtualbox_name=&rdquo;default&rdquo;)</p>
-<h5 id="_274"></h5>
+<h5 id="_296"></h5>
 <p><strong>Description:</strong><br />
 a method to deploy app to heroku using docker<br />
 <table>
@@ -2578,10 +2733,10 @@ a method to deploy app to heroku using docker<br />
 </tbody>
 </table></p>
 <h3 id="deploy_app">deploy_app</h3>
-<h5 id="_275"></h5>
+<h5 id="_297"></h5>
 <p><strong>Signature:</strong><br />
 deploy_app(self, site_folder, runtime_type=&rdquo;&ldquo;)</p>
-<h5 id="_276"></h5>
+<h5 id="_298"></h5>
 <p><strong>Description:</strong><br />
 a method to deploy a static html page to heroku using php<br />
 <table>
@@ -2595,22 +2750,22 @@ a method to deploy a static html page to heroku using php<br />
 </tbody>
 </table></p>
 <h2 id="localhostclient">localhostClient</h2>
-<h3 id="import_16">Import:</h3>
+<h3 id="import_17">Import:</h3>
 <p>labpack.platforms.localhost.localhostClient  </p>
-<h3 id="description_16">Description:</h3>
+<h3 id="description_17">Description:</h3>
 <p>a class of methods to interact with the localhost  </p>
-<h3 id="95_init___16">__init__</h3>
-<h5 id="_277"></h5>
+<h3 id="95_init___17">__init__</h3>
+<h5 id="_299"></h5>
 <p><strong>Signature:</strong><br />
 __init__(self)</p>
-<h5 id="_278"></h5>
+<h5 id="_300"></h5>
 <p><strong>Description:</strong><br />
 a method to initialize a client class to interact with the localhost  </p>
 <h3 id="app_data">app_data</h3>
-<h5 id="_279"></h5>
+<h5 id="_301"></h5>
 <p><strong>Signature:</strong><br />
 app_data(self, org_name, prod_name)</p>
-<h5 id="_280"></h5>
+<h5 id="_302"></h5>
 <p><strong>Description:</strong><br />
 a method to retrieve the os appropriate path to user app data</p>
 <pre><code>    # https://www.chromium.org/user-experience/user-data-directory
@@ -2626,10 +2781,10 @@ a method to retrieve the os appropriate path to user app data</p>
 </tbody>
 </table></p>
 <h3 id="walk">walk</h3>
-<h5 id="_281"></h5>
+<h5 id="_303"></h5>
 <p><strong>Signature:</strong><br />
 walk(self, walk_root=&rdquo;&ldquo;, reverse_order=False, previous_file=&rdquo;&ldquo;)</p>
-<h5 id="_282"></h5>
+<h5 id="_304"></h5>
 <p><strong>Description:</strong><br />
 a generator method of file paths on localhost from walk of directories<br />
 <table>
@@ -2644,10 +2799,10 @@ a generator method of file paths on localhost from walk of directories<br />
 </tbody>
 </table></p>
 <h3 id="metadata">metadata</h3>
-<h5 id="_283"></h5>
+<h5 id="_305"></h5>
 <p><strong>Signature:</strong><br />
 metadata(self, file_path)</p>
-<h5 id="_284"></h5>
+<h5 id="_306"></h5>
 <p><strong>Description:</strong><br />
 a method to retrieve the metadata of a file on the localhost<br />
 <table>
@@ -2660,10 +2815,10 @@ a method to retrieve the metadata of a file on the localhost<br />
 </tbody>
 </table></p>
 <h3 id="conditional_filter">conditional_filter</h3>
-<h5 id="_285"></h5>
+<h5 id="_307"></h5>
 <p><strong>Signature:</strong><br />
 conditional_filter(self, metadata_filters)</p>
-<h5 id="_286"></h5>
+<h5 id="_308"></h5>
 <p><strong>Description:</strong><br />
 a method to construct a conditional filter function for the list method<br />
 <table>
@@ -2676,10 +2831,10 @@ a method to construct a conditional filter function for the list method<br />
 </tbody>
 </table></p>
 <h3 id="list_2">list</h3>
-<h5 id="_287"></h5>
+<h5 id="_309"></h5>
 <p><strong>Signature:</strong><br />
 list(self, filter_function=None, list_root=&rdquo;&ldquo;, max_results=1, reverse_order=False, previous_file=&rdquo;&ldquo;)</p>
-<h5 id="_288"></h5>
+<h5 id="_310"></h5>
 <p><strong>Description:</strong><br />
 a method to list files on localhost from walk of directories<br />
 <table>
@@ -2696,15 +2851,15 @@ a method to list files on localhost from walk of directories<br />
 </tbody>
 </table></p>
 <h2 id="pollyclient">pollyClient</h2>
-<h3 id="import_17">Import:</h3>
+<h3 id="import_18">Import:</h3>
 <p>labpack.speech.aws.polly.pollyClient  </p>
-<h3 id="description_17">Description:</h3>
+<h3 id="description_18">Description:</h3>
 <p>a class of methods for interacting with AWS Polly API  </p>
-<h3 id="95_init___17">__init__</h3>
-<h5 id="_289"></h5>
+<h3 id="95_init___18">__init__</h3>
+<h5 id="_311"></h5>
 <p><strong>Signature:</strong><br />
 __init__(self, access_id, secret_key, region_name, owner_id, user_name, verbose=True, usage_client=None)</p>
-<h5 id="_290"></h5>
+<h5 id="_312"></h5>
 <p><strong>Description:</strong><br />
 a method for initializing the connection to AWS Polly<br />
 <table>
@@ -2723,10 +2878,10 @@ a method for initializing the connection to AWS Polly<br />
 </tbody>
 </table></p>
 <h3 id="synthesize">synthesize</h3>
-<h5 id="_291"></h5>
+<h5 id="_313"></h5>
 <p><strong>Signature:</strong><br />
 synthesize(self, message_text, voice_id=&rdquo;Nicole&rdquo;, output_format=&rdquo;mp3&rdquo;, sample_rate=&rdquo;22050&rdquo;, stream_response=False)</p>
-<h5 id="_292"></h5>
+<h5 id="_314"></h5>
 <p><strong>Description:</strong><br />
 a method to synthesize speech from text<br />
 <table>
@@ -2743,17 +2898,17 @@ a method to synthesize speech from text<br />
 </tbody>
 </table></p>
 <h2 id="watsonspeechclient">watsonSpeechClient</h2>
-<h3 id="import_18">Import:</h3>
+<h3 id="import_19">Import:</h3>
 <p>labpack.speech.watson.watsonSpeechClient  </p>
-<h3 id="description_18">Description:</h3>
+<h3 id="description_19">Description:</h3>
 <p>a class of methods to convert speech to text using IBM Watson api </p>
 <pre><code>    https://console.ng.bluemix.net/catalog/services/text-to-speech
 </code></pre>
-<h3 id="95_init___18">__init__</h3>
-<h5 id="_293"></h5>
+<h3 id="95_init___19">__init__</h3>
+<h5 id="_315"></h5>
 <p><strong>Signature:</strong><br />
 __init__(self, service_username, service_password, requests_handler=None, magic_file=&rdquo;&ldquo;)</p>
-<h5 id="_294"></h5>
+<h5 id="_316"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -2769,10 +2924,10 @@ __init__(self, service_username, service_password, requests_handler=None, magic_
 </table>
 
 <h3 id="convert_audio">convert_audio</h3>
-<h5 id="_295"></h5>
+<h5 id="_317"></h5>
 <p><strong>Signature:</strong><br />
 convert_audio(self, file_path, new_mimetype, overwrite=False)</p>
-<h5 id="_296"></h5>
+<h5 id="_318"></h5>
 <p><strong>Description:</strong><br />
 a method to convert an audio file into a different codec<br />
 <table>
@@ -2787,10 +2942,10 @@ a method to convert an audio file into a different codec<br />
 </tbody>
 </table></p>
 <h3 id="transcribe_file">transcribe_file</h3>
-<h5 id="_297"></h5>
+<h5 id="_319"></h5>
 <p><strong>Signature:</strong><br />
 transcribe_file(self, file_path, clip_length=10, compress=True)</p>
-<h5 id="_298"></h5>
+<h5 id="_320"></h5>
 <p><strong>Description:</strong><br />
 a method to transcribe the text from an audio file</p>
 <pre><code>    EXAMPLE: https://github.com/dannguyen/watson-word-watcher
@@ -2807,10 +2962,10 @@ a method to transcribe the text from an audio file</p>
 </tbody>
 </table></p>
 <h3 id="transcribe_url">transcribe_url</h3>
-<h5 id="_299"></h5>
+<h5 id="_321"></h5>
 <p><strong>Signature:</strong><br />
 transcribe_url(self, file_url, clip_length=0, compress=True)</p>
-<h5 id="_300"></h5>
+<h5 id="_322"></h5>
 <p><strong>Description:</strong><br />
 a method to transcribe the text from an audio url<br />
 <table>
@@ -2825,10 +2980,10 @@ a method to transcribe the text from an audio url<br />
 </tbody>
 </table></p>
 <h3 id="transcribe_bytes">transcribe_bytes</h3>
-<h5 id="_301"></h5>
+<h5 id="_323"></h5>
 <p><strong>Signature:</strong><br />
 transcribe_bytes(self, byte_data, clip_length=0, audio_mimetype=&rdquo;&ldquo;, compress=True)</p>
-<h5 id="_302"></h5>
+<h5 id="_324"></h5>
 <p><strong>Description:</strong><br />
 a method to transcribe text from audio byte data<br />
 <table>
@@ -2844,10 +2999,10 @@ a method to transcribe text from audio byte data<br />
 </tbody>
 </table></p>
 <h3 id="transcribe_stream">transcribe_stream</h3>
-<h5 id="_303"></h5>
+<h5 id="_325"></h5>
 <p><strong>Signature:</strong><br />
 transcribe_stream(self, data_stream)</p>
-<h5 id="_304"></h5>
+<h5 id="_326"></h5>
 <p><strong>Description:</strong><br />
 a method to perform rolling transcription<br />
 <table>
@@ -2860,19 +3015,19 @@ a method to perform rolling transcription<br />
 </tbody>
 </table></p>
 <h2 id="appdataclient">appdataClient</h2>
-<h3 id="import_19">Import:</h3>
+<h3 id="import_20">Import:</h3>
 <p>labpack.storage.appdata.appdataClient  </p>
-<h3 id="description_19">Description:</h3>
+<h3 id="description_20">Description:</h3>
 <p>a class of methods for managing file storage on local device in app data </p>
 <pre><code>    NOTE:   appdataClient is designed to store byte data, so encoding (or 
             decoding) different types of file types must be handled by the
             application prior (or after) data is saved (or loaded)
 </code></pre>
-<h3 id="95_init___19">__init__</h3>
-<h5 id="_305"></h5>
+<h3 id="95_init___20">__init__</h3>
+<h5 id="_327"></h5>
 <p><strong>Signature:</strong><br />
 __init__(self, collection_name=&rdquo;&ldquo;, prod_name=&rdquo;&ldquo;, org_name=&rdquo;&ldquo;, root_path=&rdquo;&ldquo;)</p>
-<h5 id="_306"></h5>
+<h5 id="_328"></h5>
 <p><strong>Description:</strong><br />
 initialization method of appdata client class<br />
 <table>
@@ -2888,10 +3043,10 @@ initialization method of appdata client class<br />
 </tbody>
 </table></p>
 <h3 id="exists_2">exists</h3>
-<h5 id="_307"></h5>
+<h5 id="_329"></h5>
 <p><strong>Signature:</strong><br />
 exists(self, record_key)</p>
-<h5 id="_308"></h5>
+<h5 id="_330"></h5>
 <p><strong>Description:</strong><br />
 a method to determine if a record exists in collection<br />
 <table>
@@ -2904,10 +3059,10 @@ a method to determine if a record exists in collection<br />
 </tbody>
 </table></p>
 <h3 id="save">save</h3>
-<h5 id="_309"></h5>
+<h5 id="_331"></h5>
 <p><strong>Signature:</strong><br />
 save(self, record_key, record_data, overwrite=True, secret_key=&rdquo;&ldquo;)</p>
-<h5 id="_310"></h5>
+<h5 id="_332"></h5>
 <p><strong>Description:</strong><br />
 a method to create a record in the collection folder<br />
 <table>
@@ -2923,10 +3078,10 @@ a method to create a record in the collection folder<br />
 </tbody>
 </table></p>
 <h3 id="load">load</h3>
-<h5 id="_311"></h5>
+<h5 id="_333"></h5>
 <p><strong>Signature:</strong><br />
 load(self, record_key, secret_key=&rdquo;&ldquo;)</p>
-<h5 id="_312"></h5>
+<h5 id="_334"></h5>
 <p><strong>Description:</strong><br />
 a method to retrieve byte data of appdata record<br />
 <table>
@@ -2940,10 +3095,10 @@ a method to retrieve byte data of appdata record<br />
 </tbody>
 </table></p>
 <h3 id="conditional_filter_1">conditional_filter</h3>
-<h5 id="_313"></h5>
+<h5 id="_335"></h5>
 <p><strong>Signature:</strong><br />
 conditional_filter(self, path_filters)</p>
-<h5 id="_314"></h5>
+<h5 id="_336"></h5>
 <p><strong>Description:</strong><br />
 a method to construct a conditional filter function for class list method<br />
 <table>
@@ -2956,10 +3111,10 @@ a method to construct a conditional filter function for class list method<br />
 </tbody>
 </table></p>
 <h3 id="list_3">list</h3>
-<h5 id="_315"></h5>
+<h5 id="_337"></h5>
 <p><strong>Signature:</strong><br />
 list(self, prefix=&rdquo;&ldquo;, delimiter=&rdquo;&ldquo;, filter_function=None, max_results=1, reverse_search=True, previous_key=&rdquo;&ldquo;)</p>
-<h5 id="_316"></h5>
+<h5 id="_338"></h5>
 <p><strong>Description:</strong><br />
 a method to list keys in the collection<br />
 <table>
@@ -2977,10 +3132,10 @@ a method to list keys in the collection<br />
 </tbody>
 </table></p>
 <h3 id="delete_2">delete</h3>
-<h5 id="_317"></h5>
+<h5 id="_339"></h5>
 <p><strong>Signature:</strong><br />
 delete(self, record_key)</p>
-<h5 id="_318"></h5>
+<h5 id="_340"></h5>
 <p><strong>Description:</strong><br />
 a method to delete a file<br />
 <table>
@@ -2993,17 +3148,17 @@ a method to delete a file<br />
 </tbody>
 </table></p>
 <h3 id="remove_2">remove</h3>
-<h5 id="_319"></h5>
+<h5 id="_341"></h5>
 <p><strong>Signature:</strong><br />
 remove(self)</p>
-<h5 id="_320"></h5>
+<h5 id="_342"></h5>
 <p><strong>Description:</strong><br />
 a method to remove collection and all records in the collection  </p>
 <h3 id="export_2">export</h3>
-<h5 id="_321"></h5>
+<h5 id="_343"></h5>
 <p><strong>Signature:</strong><br />
 export(self, storage_client, overwrite=True)</p>
-<h5 id="_322"></h5>
+<h5 id="_344"></h5>
 <p><strong>Description:</strong><br />
 a method to export all the records in collection to another platform<br />
 <table>
@@ -3017,15 +3172,15 @@ a method to export all the records in collection to another platform<br />
 </tbody>
 </table></p>
 <h2 id="_s3client">_s3Client</h2>
-<h3 id="import_20">Import:</h3>
+<h3 id="import_21">Import:</h3>
 <p>labpack.storage.aws.s3._s3Client  </p>
-<h3 id="description_20">Description:</h3>
+<h3 id="description_21">Description:</h3>
 <p>a class of methods for interacting with AWS Simple Storage Service  </p>
-<h3 id="95_init___20">__init__</h3>
-<h5 id="_323"></h5>
+<h3 id="95_init___21">__init__</h3>
+<h5 id="_345"></h5>
 <p><strong>Signature:</strong><br />
 __init__(self, access_id, secret_key, region_name, owner_id, user_name, verbose=True)</p>
-<h5 id="_324"></h5>
+<h5 id="_346"></h5>
 <p><strong>Description:</strong><br />
 a method for initializing the connection to S3<br />
 <table>
@@ -3043,17 +3198,17 @@ a method for initializing the connection to S3<br />
 </tbody>
 </table></p>
 <h3 id="list_buckets">list_buckets</h3>
-<h5 id="_325"></h5>
+<h5 id="_347"></h5>
 <p><strong>Signature:</strong><br />
 list_buckets(self)</p>
-<h5 id="_326"></h5>
+<h5 id="_348"></h5>
 <p><strong>Description:</strong><br />
 a method to retrieve a list of buckets on s3  </p>
 <h3 id="create_bucket">create_bucket</h3>
-<h5 id="_327"></h5>
+<h5 id="_349"></h5>
 <p><strong>Signature:</strong><br />
 create_bucket(self, bucket_name, access_control=&rdquo;private&rdquo;, version_control=False, log_destination=None, lifecycle_rules=None, tag_list=None, notification_settings=None, region_replication=None, access_policy=None)</p>
-<h5 id="_328"></h5>
+<h5 id="_350"></h5>
 <p><strong>Description:</strong><br />
 a method for creating a bucket on AWS S3<br />
 <table>
@@ -3074,10 +3229,10 @@ a method for creating a bucket on AWS S3<br />
 </tbody>
 </table></p>
 <h3 id="read_bucket">read_bucket</h3>
-<h5 id="_329"></h5>
+<h5 id="_351"></h5>
 <p><strong>Signature:</strong><br />
 read_bucket(self, bucket_name)</p>
-<h5 id="_330"></h5>
+<h5 id="_352"></h5>
 <p><strong>Description:</strong><br />
 a method to retrieve properties of a bucket in s3<br />
 <table>
@@ -3090,10 +3245,10 @@ a method to retrieve properties of a bucket in s3<br />
 </tbody>
 </table></p>
 <h3 id="update_bucket">update_bucket</h3>
-<h5 id="_331"></h5>
+<h5 id="_353"></h5>
 <p><strong>Signature:</strong><br />
 update_bucket(self, bucket_name, access_control=&rdquo;private&rdquo;, version_control=False, log_destination=None, lifecycle_rules=None, tag_list=None, notification_settings=None, region_replication=None, access_policy=None)</p>
-<h5 id="_332"></h5>
+<h5 id="_354"></h5>
 <p><strong>Description:</strong><br />
 a method for updating the properties of a bucket in S3<br />
 <table>
@@ -3114,10 +3269,10 @@ a method for updating the properties of a bucket in S3<br />
 </tbody>
 </table></p>
 <h3 id="delete_bucket">delete_bucket</h3>
-<h5 id="_333"></h5>
+<h5 id="_355"></h5>
 <p><strong>Signature:</strong><br />
 delete_bucket(self, bucket_name)</p>
-<h5 id="_334"></h5>
+<h5 id="_356"></h5>
 <p><strong>Description:</strong><br />
 a method to delete a bucket in s3 and all its contents<br />
 <table>
@@ -3130,10 +3285,10 @@ a method to delete a bucket in s3 and all its contents<br />
 </tbody>
 </table></p>
 <h3 id="list_records">list_records</h3>
-<h5 id="_335"></h5>
+<h5 id="_357"></h5>
 <p><strong>Signature:</strong><br />
 list_records(self, bucket_name, prefix=&rdquo;&ldquo;, delimiter=&rdquo;&ldquo;, max_results=1000, starting_key=&rdquo;&ldquo;)</p>
-<h5 id="_336"></h5>
+<h5 id="_358"></h5>
 <p><strong>Description:</strong><br />
 a method for retrieving a list of the versions of records in a bucket<br />
 <table>
@@ -3150,10 +3305,10 @@ a method for retrieving a list of the versions of records in a bucket<br />
 </tbody>
 </table></p>
 <h3 id="list_versions">list_versions</h3>
-<h5 id="_337"></h5>
+<h5 id="_359"></h5>
 <p><strong>Signature:</strong><br />
 list_versions(self, bucket_name, prefix=&rdquo;&ldquo;, delimiter=&rdquo;&ldquo;, max_results=1000, starting_key=&rdquo;&ldquo;, starting_version=&rdquo;&ldquo;)</p>
-<h5 id="_338"></h5>
+<h5 id="_360"></h5>
 <p><strong>Description:</strong><br />
 a method for retrieving a list of the versions of records in a bucket<br />
 <table>
@@ -3171,10 +3326,10 @@ a method for retrieving a list of the versions of records in a bucket<br />
 </tbody>
 </table></p>
 <h3 id="create_record">create_record</h3>
-<h5 id="_339"></h5>
+<h5 id="_361"></h5>
 <p><strong>Signature:</strong><br />
 create_record(self, bucket_name, record_key, record_data, record_metadata=None, record_mimetype=&rdquo;&ldquo;, record_encoding=&rdquo;&ldquo;, overwrite=True)</p>
-<h5 id="_340"></h5>
+<h5 id="_362"></h5>
 <p><strong>Description:</strong><br />
 a method for adding a record to an S3 bucket<br />
 <table>
@@ -3193,10 +3348,10 @@ a method for adding a record to an S3 bucket<br />
 </tbody>
 </table></p>
 <h3 id="read_headers">read_headers</h3>
-<h5 id="_341"></h5>
+<h5 id="_363"></h5>
 <p><strong>Signature:</strong><br />
 read_headers(self, bucket_name, record_key, record_version=&rdquo;&ldquo;, version_check=False)</p>
-<h5 id="_342"></h5>
+<h5 id="_364"></h5>
 <p><strong>Description:</strong><br />
 a method for retrieving the headers of a record from s3<br />
 <table>
@@ -3212,10 +3367,10 @@ a method for retrieving the headers of a record from s3<br />
 </tbody>
 </table></p>
 <h3 id="read_record">read_record</h3>
-<h5 id="_343"></h5>
+<h5 id="_365"></h5>
 <p><strong>Signature:</strong><br />
 read_record(self, bucket_name, record_key, record_version=&rdquo;&ldquo;, version_check=False)</p>
-<h5 id="_344"></h5>
+<h5 id="_366"></h5>
 <p><strong>Description:</strong><br />
 a method for retrieving data of record from AWS S3<br />
 <table>
@@ -3231,10 +3386,10 @@ a method for retrieving data of record from AWS S3<br />
 </tbody>
 </table></p>
 <h3 id="delete_record">delete_record</h3>
-<h5 id="_345"></h5>
+<h5 id="_367"></h5>
 <p><strong>Signature:</strong><br />
 delete_record(self, bucket_name, record_key, record_version=&rdquo;&ldquo;)</p>
-<h5 id="_346"></h5>
+<h5 id="_368"></h5>
 <p><strong>Description:</strong><br />
 a method for deleting an object record in s3<br />
 <table>
@@ -3249,10 +3404,10 @@ a method for deleting an object record in s3<br />
 </tbody>
 </table></p>
 <h3 id="export_records">export_records</h3>
-<h5 id="_347"></h5>
+<h5 id="_369"></h5>
 <p><strong>Signature:</strong><br />
 export_records(self, bucket_name, export_path=&rdquo;&ldquo;, overwrite=True)</p>
-<h5 id="_348"></h5>
+<h5 id="_370"></h5>
 <p><strong>Description:</strong><br />
 a method to export all the records from a bucket to local files<br />
 <table>
@@ -3267,10 +3422,10 @@ a method to export all the records from a bucket to local files<br />
 </tbody>
 </table></p>
 <h3 id="import_records">import_records</h3>
-<h5 id="_349"></h5>
+<h5 id="_371"></h5>
 <p><strong>Signature:</strong><br />
 import_records(self, bucket_name, import_path=&rdquo;&ldquo;, overwrite=True)</p>
-<h5 id="_350"></h5>
+<h5 id="_372"></h5>
 <p><strong>Description:</strong><br />
 a method to importing records from local files to a bucket<br />
 <table>
@@ -3285,15 +3440,15 @@ a method to importing records from local files to a bucket<br />
 </tbody>
 </table></p>
 <h2 id="s3client">s3Client</h2>
-<h3 id="import_21">Import:</h3>
+<h3 id="import_22">Import:</h3>
 <p>labpack.storage.aws.s3.s3Client  </p>
-<h3 id="description_21">Description:</h3>
+<h3 id="description_22">Description:</h3>
 <p>a class of methods to manage file storage on AWS S3  </p>
-<h3 id="95_init___21">__init__</h3>
-<h5 id="_351"></h5>
+<h3 id="95_init___22">__init__</h3>
+<h5 id="_373"></h5>
 <p><strong>Signature:</strong><br />
 __init__(self, access_id, secret_key, region_name, owner_id, user_name, collection_name=&rdquo;&ldquo;, prod_name=&rdquo;&ldquo;, org_name=&rdquo;&ldquo;, access_control=&rdquo;private&rdquo;, version_control=False, log_destination=None, lifecycle_rules=None, tag_list=None, notification_settings=None, region_replication=None, access_policy=None, verbose=True)</p>
-<h5 id="_352"></h5>
+<h5 id="_374"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -3322,10 +3477,10 @@ __init__(self, access_id, secret_key, region_name, owner_id, user_name, collecti
 </table>
 
 <h3 id="exists_3">exists</h3>
-<h5 id="_353"></h5>
+<h5 id="_375"></h5>
 <p><strong>Signature:</strong><br />
 exists(self, record_key)</p>
-<h5 id="_354"></h5>
+<h5 id="_376"></h5>
 <p><strong>Description:</strong><br />
 a method to determine if a record exists in collection<br />
 <table>
@@ -3338,10 +3493,10 @@ a method to determine if a record exists in collection<br />
 </tbody>
 </table></p>
 <h3 id="save_1">save</h3>
-<h5 id="_355"></h5>
+<h5 id="_377"></h5>
 <p><strong>Signature:</strong><br />
 save(self, record_key, record_data, overwrite=True, secret_key=&rdquo;&ldquo;)</p>
-<h5 id="_356"></h5>
+<h5 id="_378"></h5>
 <p><strong>Description:</strong><br />
 a method to create a file in the collection folder on S3<br />
 <table>
@@ -3357,10 +3512,10 @@ a method to create a file in the collection folder on S3<br />
 </tbody>
 </table></p>
 <h3 id="load_1">load</h3>
-<h5 id="_357"></h5>
+<h5 id="_379"></h5>
 <p><strong>Signature:</strong><br />
 load(self, record_key, secret_key=&rdquo;&ldquo;)</p>
-<h5 id="_358"></h5>
+<h5 id="_380"></h5>
 <p><strong>Description:</strong><br />
 a method to retrieve byte data of an S3 record<br />
 <table>
@@ -3374,10 +3529,10 @@ a method to retrieve byte data of an S3 record<br />
 </tbody>
 </table></p>
 <h3 id="conditional_filter_2">conditional_filter</h3>
-<h5 id="_359"></h5>
+<h5 id="_381"></h5>
 <p><strong>Signature:</strong><br />
 conditional_filter(self, path_filters)</p>
-<h5 id="_360"></h5>
+<h5 id="_382"></h5>
 <p><strong>Description:</strong><br />
 a method to construct a conditional filter function for class list method<br />
 <table>
@@ -3390,10 +3545,10 @@ a method to construct a conditional filter function for class list method<br />
 </tbody>
 </table></p>
 <h3 id="list_4">list</h3>
-<h5 id="_361"></h5>
+<h5 id="_383"></h5>
 <p><strong>Signature:</strong><br />
 list(self, prefix=&rdquo;&ldquo;, delimiter=&rdquo;&ldquo;, filter_function=None, max_results=1, previous_key=&rdquo;&ldquo;)</p>
-<h5 id="_362"></h5>
+<h5 id="_384"></h5>
 <p><strong>Description:</strong><br />
 a method to list keys in the collection<br />
 <table>
@@ -3410,10 +3565,10 @@ a method to list keys in the collection<br />
 </tbody>
 </table></p>
 <h3 id="delete_3">delete</h3>
-<h5 id="_363"></h5>
+<h5 id="_385"></h5>
 <p><strong>Signature:</strong><br />
 delete(self, record_key)</p>
-<h5 id="_364"></h5>
+<h5 id="_386"></h5>
 <p><strong>Description:</strong><br />
 a method to delete a record from S3<br />
 <table>
@@ -3426,17 +3581,17 @@ a method to delete a record from S3<br />
 </tbody>
 </table></p>
 <h3 id="remove_3">remove</h3>
-<h5 id="_365"></h5>
+<h5 id="_387"></h5>
 <p><strong>Signature:</strong><br />
 remove(self)</p>
-<h5 id="_366"></h5>
+<h5 id="_388"></h5>
 <p><strong>Description:</strong><br />
 a method to remove collection and all records in the collection  </p>
 <h3 id="export_3">export</h3>
-<h5 id="_367"></h5>
+<h5 id="_389"></h5>
 <p><strong>Signature:</strong><br />
 export(self, storage_client, overwrite=True)</p>
-<h5 id="_368"></h5>
+<h5 id="_390"></h5>
 <p><strong>Description:</strong><br />
 a method to export all the records in collection to another platform<br />
 <table>
@@ -3450,15 +3605,15 @@ a method to export all the records in collection to another platform<br />
 </tbody>
 </table></p>
 <h2 id="dropboxclient">dropboxClient</h2>
-<h3 id="import_22">Import:</h3>
+<h3 id="import_23">Import:</h3>
 <p>labpack.storage.dropbox.dropboxClient  </p>
-<h3 id="description_22">Description:</h3>
+<h3 id="description_23">Description:</h3>
 <p>a class of methods to manage file storage on Dropbox API  </p>
-<h3 id="95_init___22">__init__</h3>
-<h5 id="_369"></h5>
+<h3 id="95_init___23">__init__</h3>
+<h5 id="_391"></h5>
 <p><strong>Signature:</strong><br />
 __init__(self, access_token, collection_name=&rdquo;&ldquo;)</p>
-<h5 id="_370"></h5>
+<h5 id="_392"></h5>
 <p><strong>Description:</strong><br />
 a method to initialize the dropboxClient class<br />
 <table>
@@ -3472,10 +3627,10 @@ a method to initialize the dropboxClient class<br />
 </tbody>
 </table></p>
 <h3 id="exists_4">exists</h3>
-<h5 id="_371"></h5>
+<h5 id="_393"></h5>
 <p><strong>Signature:</strong><br />
 exists(self, record_key)</p>
-<h5 id="_372"></h5>
+<h5 id="_394"></h5>
 <p><strong>Description:</strong><br />
 a method to determine if a record exists in collection<br />
 <table>
@@ -3488,10 +3643,10 @@ a method to determine if a record exists in collection<br />
 </tbody>
 </table></p>
 <h3 id="save_2">save</h3>
-<h5 id="_373"></h5>
+<h5 id="_395"></h5>
 <p><strong>Signature:</strong><br />
 save(self, record_key, record_data, overwrite=True, secret_key=&rdquo;&ldquo;)</p>
-<h5 id="_374"></h5>
+<h5 id="_396"></h5>
 <p><strong>Description:</strong><br />
 a method to create a record in the collection folder<br />
 <table>
@@ -3507,10 +3662,10 @@ a method to create a record in the collection folder<br />
 </tbody>
 </table></p>
 <h3 id="load_2">load</h3>
-<h5 id="_375"></h5>
+<h5 id="_397"></h5>
 <p><strong>Signature:</strong><br />
 load(self, record_key, secret_key=&rdquo;&ldquo;)</p>
-<h5 id="_376"></h5>
+<h5 id="_398"></h5>
 <p><strong>Description:</strong><br />
 a method to retrieve byte data of appdata record<br />
 <table>
@@ -3524,10 +3679,10 @@ a method to retrieve byte data of appdata record<br />
 </tbody>
 </table></p>
 <h3 id="conditional_filter_3">conditional_filter</h3>
-<h5 id="_377"></h5>
+<h5 id="_399"></h5>
 <p><strong>Signature:</strong><br />
 conditional_filter(self, path_filters)</p>
-<h5 id="_378"></h5>
+<h5 id="_400"></h5>
 <p><strong>Description:</strong><br />
 a method to construct a conditional filter function for list method<br />
 <table>
@@ -3540,10 +3695,10 @@ a method to construct a conditional filter function for list method<br />
 </tbody>
 </table></p>
 <h3 id="list_5">list</h3>
-<h5 id="_379"></h5>
+<h5 id="_401"></h5>
 <p><strong>Signature:</strong><br />
 list(self, prefix=&rdquo;&ldquo;, delimiter=&rdquo;&ldquo;, filter_function=None, max_results=1, previous_key=&rdquo;&ldquo;)</p>
-<h5 id="_380"></h5>
+<h5 id="_402"></h5>
 <p><strong>Description:</strong><br />
 a method to list keys in the dropbox collection<br />
 <table>
@@ -3560,10 +3715,10 @@ a method to list keys in the dropbox collection<br />
 </tbody>
 </table></p>
 <h3 id="delete_4">delete</h3>
-<h5 id="_381"></h5>
+<h5 id="_403"></h5>
 <p><strong>Signature:</strong><br />
 delete(self, record_key)</p>
-<h5 id="_382"></h5>
+<h5 id="_404"></h5>
 <p><strong>Description:</strong><br />
 a method to delete a file<br />
 <table>
@@ -3576,10 +3731,10 @@ a method to delete a file<br />
 </tbody>
 </table></p>
 <h3 id="remove_4">remove</h3>
-<h5 id="_383"></h5>
+<h5 id="_405"></h5>
 <p><strong>Signature:</strong><br />
 remove(self)</p>
-<h5 id="_384"></h5>
+<h5 id="_406"></h5>
 <p><strong>Description:</strong><br />
 a method to remove all records in the collection</p>
 <pre><code>    NOTE:   this method removes all the files in the collection, but the
@@ -3587,10 +3742,10 @@ a method to remove all records in the collection</p>
             only the user can remove the app folder
 </code></pre>
 <h3 id="export_4">export</h3>
-<h5 id="_385"></h5>
+<h5 id="_407"></h5>
 <p><strong>Signature:</strong><br />
 export(self, storage_client, overwrite=True)</p>
-<h5 id="_386"></h5>
+<h5 id="_408"></h5>
 <p><strong>Description:</strong><br />
 a method to export all the records in collection to another platform<br />
 <table>
@@ -3604,15 +3759,15 @@ a method to export all the records in collection to another platform<br />
 </tbody>
 </table></p>
 <h2 id="driveclient">driveClient</h2>
-<h3 id="import_23">Import:</h3>
+<h3 id="import_24">Import:</h3>
 <p>labpack.storage.google.drive.driveClient  </p>
-<h3 id="description_23">Description:</h3>
+<h3 id="description_24">Description:</h3>
 <p>a class of methods to manage file storage on Google Drive API  </p>
-<h3 id="95_init___23">__init__</h3>
-<h5 id="_387"></h5>
+<h3 id="95_init___24">__init__</h3>
+<h5 id="_409"></h5>
 <p><strong>Signature:</strong><br />
 __init__(self, access_token, collection_name=&rdquo;&ldquo;)</p>
-<h5 id="_388"></h5>
+<h5 id="_410"></h5>
 <p><strong>Description:</strong><br />
 a method to initialize the driveClient class<br />
 <table>
@@ -3626,10 +3781,10 @@ a method to initialize the driveClient class<br />
 </tbody>
 </table></p>
 <h3 id="exists_5">exists</h3>
-<h5 id="_389"></h5>
+<h5 id="_411"></h5>
 <p><strong>Signature:</strong><br />
 exists(self, record_key)</p>
-<h5 id="_390"></h5>
+<h5 id="_412"></h5>
 <p><strong>Description:</strong><br />
 a method to determine if a record exists in collection<br />
 <table>
@@ -3642,10 +3797,10 @@ a method to determine if a record exists in collection<br />
 </tbody>
 </table></p>
 <h3 id="save_3">save</h3>
-<h5 id="_391"></h5>
+<h5 id="_413"></h5>
 <p><strong>Signature:</strong><br />
 save(self, record_key, record_data, overwrite=True, secret_key=&rdquo;&ldquo;)</p>
-<h5 id="_392"></h5>
+<h5 id="_414"></h5>
 <p><strong>Description:</strong><br />
 a method to create a record in the collection folder<br />
 <table>
@@ -3661,10 +3816,10 @@ a method to create a record in the collection folder<br />
 </tbody>
 </table></p>
 <h3 id="load_3">load</h3>
-<h5 id="_393"></h5>
+<h5 id="_415"></h5>
 <p><strong>Signature:</strong><br />
 load(self, record_key, secret_key=&rdquo;&ldquo;)</p>
-<h5 id="_394"></h5>
+<h5 id="_416"></h5>
 <p><strong>Description:</strong><br />
 a method to retrieve byte data of appdata record<br />
 <table>
@@ -3678,10 +3833,10 @@ a method to retrieve byte data of appdata record<br />
 </tbody>
 </table></p>
 <h3 id="conditional_filter_4">conditional_filter</h3>
-<h5 id="_395"></h5>
+<h5 id="_417"></h5>
 <p><strong>Signature:</strong><br />
 conditional_filter(self, path_filters)</p>
-<h5 id="_396"></h5>
+<h5 id="_418"></h5>
 <p><strong>Description:</strong><br />
 a method to construct a conditional filter function for list method<br />
 <table>
@@ -3694,10 +3849,10 @@ a method to construct a conditional filter function for list method<br />
 </tbody>
 </table></p>
 <h3 id="list_6">list</h3>
-<h5 id="_397"></h5>
+<h5 id="_419"></h5>
 <p><strong>Signature:</strong><br />
 list(self, prefix=&rdquo;&ldquo;, delimiter=&rdquo;&ldquo;, filter_function=None, max_results=1, previous_key=&rdquo;&ldquo;)</p>
-<h5 id="_398"></h5>
+<h5 id="_420"></h5>
 <p><strong>Description:</strong><br />
 a method to list keys in the google drive collection<br />
 <table>
@@ -3714,10 +3869,10 @@ a method to list keys in the google drive collection<br />
 </tbody>
 </table></p>
 <h3 id="delete_5">delete</h3>
-<h5 id="_399"></h5>
+<h5 id="_421"></h5>
 <p><strong>Signature:</strong><br />
 delete(self, record_key)</p>
-<h5 id="_400"></h5>
+<h5 id="_422"></h5>
 <p><strong>Description:</strong><br />
 a method to delete a file<br />
 <table>
@@ -3730,10 +3885,10 @@ a method to delete a file<br />
 </tbody>
 </table></p>
 <h3 id="remove_5">remove</h3>
-<h5 id="_401"></h5>
+<h5 id="_423"></h5>
 <p><strong>Signature:</strong><br />
 remove(self)</p>
-<h5 id="_402"></h5>
+<h5 id="_424"></h5>
 <p><strong>Description:</strong><br />
 a method to remove all records in the collection</p>
 <pre><code>    NOTE:   this method removes all the files in the collection, but the
@@ -3741,10 +3896,10 @@ a method to remove all records in the collection</p>
             only the user can remove access to the app folder
 </code></pre>
 <h3 id="export_5">export</h3>
-<h5 id="_403"></h5>
+<h5 id="_425"></h5>
 <p><strong>Signature:</strong><br />
 export(self, storage_client, overwrite=True)</p>
-<h5 id="_404"></h5>
+<h5 id="_426"></h5>
 <p><strong>Description:</strong><br />
 a method to export all the records in collection to another platform<br />
 <table>

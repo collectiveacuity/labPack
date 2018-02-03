@@ -92,9 +92,9 @@
         <li class="main active"><a href="#resources">Resources</a></li>
             <li><a href="#entity-recognition">Entity Recognition</a></li>
             <li><a href="#ocr">OCR</a></li>
-            <li><a href="#speech-to-text">Speech to Text</a></li>
+            <li><a href="#speech-recognition">Speech Recognition</a></li>
+            <li><a href="#speech-synthesis">Speech Synthesis</a></li>
             <li><a href="#telephony">Telephony</a></li>
-            <li><a href="#text-to-speech">Text to Speech</a></li>
             <li><a href="#translation">Translation</a></li>
     </ul>
 </div></div>
@@ -125,7 +125,7 @@
 <tr><td><a href="https://github.com/tesseract-ocr/tesseract" title="Tesseract is an open source Optical Character Recognition (OCR) Engine, available under the Apache 2.0 license.">Tesseract</a>                         </td><td>Tesseract    </td><td>C Package</td><td>command line</td><td>Unlimited      </td><td><a href="https://github.com/tesseract-ocr/tesseract/wiki">Installation</a>           </td><td>          </td></tr>
 </tbody>
 </table></p>
-<h2 id="speech-to-text">Speech to Text</h2>
+<h2 id="speech-recognition">Speech Recognition</h2>
 <p><table>
 <thead>
 <tr><th>Resource                                                                                                                                                                                                                                                                                                                                        </th><th>Author      </th><th>Type     </th><th>Protocols          </th><th>Free Usage           </th><th>Documentation                                                                                     </th><th>Coverage  </th></tr>
@@ -136,6 +136,17 @@
 <tr><td><a href="https://console.ng.bluemix.net/catalog/services/speech-to-text" title="The Speech to Text service converts the human voice into the written word.">IBM Watson</a>                                                                                                                                                                      </td><td>IBM         </td><td>Service  </td><td>websocket, REST api</td><td>1k minutes           </td><td><a href="https://www.ibm.com/watson/developercloud/speech-to-text.html">API Reference</a>         </td><td>          </td></tr>
 <tr><td><a href="https://github.com/julius-speech/julius" title="Julius is an open-source, high-performance large vocabulary continuous speech recognition (LVCSR) engine for speech-related researchs and developments. ">Julius</a>                                                                                                                   </td><td>Kawahara Lab</td><td>C Package</td><td>command line       </td><td>Unlimited            </td><td><a href="https://jasperproject.github.io/documentation/configuration/#julius-stt">Installation</a></td><td>          </td></tr>
 <tr><td><a href="https://wit.ai/" title="Natural Language for Developers">Wit.ai</a>                                                                                                                                                                                                                                                                    </td><td>Facebook    </td><td>Service  </td><td>REST api           </td><td>1 request/second     </td><td><a href="https://wit.ai/docs/http/20170307#post%E2%80%94speech-link">API Reference</a>            </td><td>          </td></tr>
+</tbody>
+</table></p>
+<h2 id="speech-synthesis">Speech Synthesis</h2>
+<p><table>
+<thead>
+<tr><th>Resource                                                                                                                                                                                                                                                                                                                                        </th><th>Author   </th><th>Type   </th><th>Protocols          </th><th>Free Usage                                 </th><th>Documentation                                                                                    </th><th>Coverage  </th></tr>
+</thead>
+<tbody>
+<tr><td><a href="https://console.aws.amazon.com/polly/" title="Amazon Polly converts text to lifelike speech in the cloud.">Amazon Polly</a>                                                                                                                                                                                                            </td><td>Amazon   </td><td>Service</td><td>REST api           </td><td>5m character/month&nbsp;<sup>(1 year)</sup></td><td><a href="http://docs.aws.amazon.com/polly/latest/dg/getting-started.html">API Reference</a>      </td><td>          </td></tr>
+<tr><td><a href="https://azure.microsoft.com/en-us/services/cognitive-services/speech/" title="Convert spoken audio to text. The API can be directed to turn on and recognize audio coming from the microphone in real-time, recognize audio coming from a different real-time audio source, or to recognize audio from within a file. ">Bing Speech</a></td><td>Microsoft</td><td>Service</td><td>websocket, REST api</td><td>5k transactions/month                      </td><td><a href="https://docs.microsoft.com/en-us/azure/cognitive-services/speech/home">API Reference</a></td><td>          </td></tr>
+<tr><td><a href="https://console.ng.bluemix.net/catalog/services/speech-to-text" title="The Speech to Text service converts the human voice into the written word.">IBM Watson</a>                                                                                                                                                                      </td><td>IBM      </td><td>Service</td><td>websocket, REST api</td><td>1k minutes                                 </td><td><a href="https://www.ibm.com/watson/developercloud/speech-to-text.html">API Reference</a>        </td><td>          </td></tr>
 </tbody>
 </table></p>
 <h2 id="telephony">Telephony</h2>
@@ -149,17 +160,6 @@
 <tr><td><a href="https://www.plivo.com/" title="Global SMS & Voice calls for businesses of all sizes">Plivo</a>                                                                              </td><td>Plivo       </td><td>Service</td><td>REST api   </td><td>-           </td><td><a href="https://www.plivo.com/voice-api/">API Reference</a>                    </td><td>          </td></tr>
 <tr><td><a href="https://www.twilio.com/" title="Build apps that communicate with everyone in the world. Voice & Video, Messaging, and Authentication APIs for every application.">Twilio</a></td><td>Twilio      </td><td>Service</td><td>REST api   </td><td>$10 credit  </td><td><a href="https://www.twilio.com/docs/">API Reference</a>                        </td><td>          </td></tr>
 <tr><td><a href="https://cloud.zang.io/" title="Cloud communication technology that transforms your conversations — and your business">Zang</a>                                              </td><td>Avaya       </td><td>Service</td><td>REST api   </td><td>$10 credit  </td><td><a href="https://github.com/zang-cloud/zang-python">API Reference</a>           </td><td>          </td></tr>
-</tbody>
-</table></p>
-<h2 id="text-to-speech">Text to Speech</h2>
-<p><table>
-<thead>
-<tr><th>Resource                                                                                                                                                                                                                                                                                                                                        </th><th>Author   </th><th>Type   </th><th>Protocols          </th><th>Free Usage                                 </th><th>Documentation                                                                                    </th><th>Coverage  </th></tr>
-</thead>
-<tbody>
-<tr><td><a href="https://console.aws.amazon.com/polly/" title="Amazon Polly converts text to lifelike speech in the cloud.">Amazon Polly</a>                                                                                                                                                                                                            </td><td>Amazon   </td><td>Service</td><td>REST api           </td><td>5m character/month&nbsp;<sup>(1 year)</sup></td><td><a href="http://docs.aws.amazon.com/polly/latest/dg/getting-started.html">API Reference</a>      </td><td>          </td></tr>
-<tr><td><a href="https://azure.microsoft.com/en-us/services/cognitive-services/speech/" title="Convert spoken audio to text. The API can be directed to turn on and recognize audio coming from the microphone in real-time, recognize audio coming from a different real-time audio source, or to recognize audio from within a file. ">Bing Speech</a></td><td>Microsoft</td><td>Service</td><td>websocket, REST api</td><td>5k transactions/month                      </td><td><a href="https://docs.microsoft.com/en-us/azure/cognitive-services/speech/home">API Reference</a></td><td>          </td></tr>
-<tr><td><a href="https://console.ng.bluemix.net/catalog/services/speech-to-text" title="The Speech to Text service converts the human voice into the written word.">IBM Watson</a>                                                                                                                                                                      </td><td>IBM      </td><td>Service</td><td>websocket, REST api</td><td>1k minutes                                 </td><td><a href="https://www.ibm.com/watson/developercloud/speech-to-text.html">API Reference</a>        </td><td>          </td></tr>
 </tbody>
 </table></p>
 <h2 id="translation">Translation</h2>
