@@ -1,6 +1,13 @@
 ChangeLog
 =========
 
+0.15 (2018.02.03)
+-----------------
+* [FEATURE ADDED] findClient class for sending/receiving data from a FIND server
+* [FEATURE ADDED] section_text function added to grammar package to partition text strings
+* [UPDATE] syncGatewayClient with a public read-only document bucket option
+* [BUG FIX] removed lurking keypad_type argument in telegramBotClient
+
 0.14 (2017.12.20)
 -----------------
 * [BUG FIX] fixed missing init in speech package folder

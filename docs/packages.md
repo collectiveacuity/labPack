@@ -456,6 +456,23 @@ join_words(word_list)
 ##### 
 **Description:**  
   
+### section_text
+##### 
+**Signature:**  
+section_text(text_string, max_characters=500, continue_text="...")
+##### 
+**Description:**  
+  
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>text_string   </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>max_characters</td><td>int     </td><td>          </td><td>500      </td><td>             </td></tr>
+<tr><td>continue_text </td><td>str     </td><td>          </td><td>"..."    </td><td>             </td></tr>
+</tbody>
+</table>
 
 ## performlab.py
 ### Import:

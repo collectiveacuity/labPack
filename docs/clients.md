@@ -480,7 +480,7 @@ the initialization method for syncGatewayAdmin class
 ### \__init__
 ##### 
 **Signature:**  
-\__init__(self, bucket_name, database_url, document_schema=None, verbose=False, configs=None)
+\__init__(self, bucket_name, database_url, document_schema=None, verbose=False, public=False, configs=None)
 ##### 
 **Description:**  
 the initialization method for syncGatewayAdmin class  
@@ -494,6 +494,7 @@ the initialization method for syncGatewayAdmin class
 <tr><td>database_url   </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>document_schema</td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
 <tr><td>verbose        </td><td>bool    </td><td>          </td><td>False    </td><td>             </td></tr>
+<tr><td>public         </td><td>bool    </td><td>          </td><td>False    </td><td>             </td></tr>
 <tr><td>configs        </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
 </tbody>
 </table>
@@ -541,7 +542,7 @@ a method to list all the user ids of all users in the bucket
 ### save_user
 ##### 
 **Signature:**  
-save_user(self, uid, user_password, user_channels=None, user_roles=None, user_views=None, disable_account=False)
+save_user(self, uid, user_password, user_email="", user_channels=None, user_roles=None, user_views=None, disable_account=False)
 ##### 
 **Description:**  
 a method to add or update an authorized user to the bucket  
@@ -553,6 +554,7 @@ a method to add or update an authorized user to the bucket
 <tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                             </td></tr>
 <tr><td>uid            </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with id to assign to user                             </td></tr>
 <tr><td>user_password  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with password to assign to user                       </td></tr>
+<tr><td>user_email     </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with email of user for future lookup       </td></tr>
 <tr><td>user_channels  </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of strings with channels to subscribe to user</td></tr>
 <tr><td>user_roles     </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of strings with roles to assign to user      </td></tr>
 <tr><td>user_views     </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of query criteria to create as views for user</td></tr>
@@ -661,7 +663,7 @@ a method to determine if document exists
 ### list
 ##### 
 **Signature:**  
-list(self, query_criteria=None, uid="_all_users", all_versions=False, previous_id="")
+list(self, query_criteria=None, uid="_all_users", all_versions=False, previous_id="", purge_deleted=False)
 ##### 
 **Description:**  
 a generator method for retrieving documents from the bucket  
@@ -675,6 +677,7 @@ a generator method for retrieving documents from the bucket
 <tr><td>uid           </td><td>str   </td><td>          </td><td>"_all_users"</td><td>[optional] string with uid of design document to update      </td></tr>
 <tr><td>all_versions  </td><td>bool  </td><td>          </td><td>False       </td><td>boolean to include previous revisions in query               </td></tr>
 <tr><td>previous_id   </td><td>str   </td><td>          </td><td>""          </td><td>[optional] string with id of the last doc in a previous query</td></tr>
+<tr><td>purge_deleted </td><td>bool  </td><td>          </td><td>False       </td><td>boolean to purge any files in results which have been deleted</td></tr>
 </tbody>
 </table>
 ### create
@@ -1448,6 +1451,132 @@ a method to rescind an rsvp to a meetup event
 </tbody>
 </table>
 
+## findClient
+### Import:
+labpack.location.find.findClient  
+### Description:
+a method to initialize a findClient class object  
+### \__init__
+##### 
+**Signature:**  
+\__init__(self, group_name, server_url="ml.internalpositioning.com", password="")
+##### 
+**Description:**  
+a method to initialize a findClient class object  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default                     </th><th>Description                                        </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None                        </td><td>                                                   </td></tr>
+<tr><td>group_name</td><td>str   </td><td>Yes       </td><td>""                          </td><td>string with name of group                          </td></tr>
+<tr><td>server_url</td><td>str   </td><td>          </td><td>"ml.internalpositioning.com"</td><td>string with url for FIND server                    </td></tr>
+<tr><td>password  </td><td>str   </td><td>          </td><td>""                          </td><td>[optional] string with password to mosquitto server</td></tr>
+</tbody>
+</table>
+### get_password
+##### 
+**Signature:**  
+get_password(self)
+##### 
+**Description:**  
+a method to retrieve the password for the group mosquitto server  
+### get_locations
+##### 
+**Signature:**  
+get_locations(self)
+##### 
+**Description:**  
+a method to retrieve all the locations tracked by the model  
+### update_model
+##### 
+**Signature:**  
+update_model(self)
+##### 
+**Description:**  
+a method to update model with latest training data  
+### get_position
+##### 
+**Signature:**  
+get_position(self, user_id, track=False, confidence=False)
+##### 
+**Description:**  
+a method to retrieve the latest position of a user  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                   </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                              </td></tr>
+<tr><td>user_id   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with id of user                                        </td></tr>
+<tr><td>track     </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to add user to self.positions              </td></tr>
+<tr><td>confidence</td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to include the data model confidence scores</td></tr>
+</tbody>
+</table>
+### get_positions
+##### 
+**Signature:**  
+get_positions(self, user_id, history=1, confidence=False)
+##### 
+**Description:**  
+a method to retrieve the position history of a user  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                     </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                                </td></tr>
+<tr><td>user_id   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with id of user                                          </td></tr>
+<tr><td>history   </td><td>int   </td><td>          </td><td>1        </td><td>[optional] integer with length of previous positions to retrieve</td></tr>
+<tr><td>confidence</td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to include the data model confidence scores  </td></tr>
+</tbody>
+</table>
+### update_positions
+##### 
+**Signature:**  
+update_positions(self)
+##### 
+**Description:**  
+a method to update the latest position of all users being tracked  
+### subscribe
+##### 
+**Signature:**  
+subscribe(self, callable=None, block=False, port=1883)
+##### 
+**Description:**  
+a method to establish a mosquitto socket with server to receive position updates  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                                      </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                                 </td></tr>
+<tr><td>callable  </td><td>function</td><td>          </td><td>None     </td><td>[optional] callable to process the received positions            </td></tr>
+<tr><td>block     </td><td>bool    </td><td>          </td><td>False    </td><td>[optional] boolean to block the main thread when method is called</td></tr>
+<tr><td>port      </td><td>int     </td><td>          </td><td>1883     </td><td>[optional] integer with port to connect to                       </td></tr>
+</tbody>
+</table>
+### publish
+##### 
+**Signature:**  
+publish(self, user_id, wifi_fingerprint, type="track", location_id="", port=1883)
+##### 
+**Description:**  
+  
+<table>
+<thead>
+<tr><th>Argument        </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self            </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>user_id         </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>wifi_fingerprint</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>type            </td><td>str     </td><td>          </td><td>"track"  </td><td>             </td></tr>
+<tr><td>location_id     </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>port            </td><td>int     </td><td>          </td><td>1883     </td><td>             </td></tr>
+</tbody>
+</table>
+
 ## telegramBotClient
 ### Import:
 labpack.messaging.telegram.telegramBotClient  
@@ -1478,6 +1607,33 @@ get_me(self)
 ##### 
 **Description:**  
 a method to retrieve details about the bot from telegram api  
+### set_webhook
+##### 
+**Signature:**  
+set_webhook(self, webhook_url, certificate_id="", certificate_path="", certificate_url="", max_connections=40)
+##### 
+**Description:**  
+  
+<table>
+<thead>
+<tr><th>Argument        </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self            </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>webhook_url     </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>certificate_id  </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>certificate_path</td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>certificate_url </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>max_connections </td><td>int     </td><td>          </td><td>40       </td><td>             </td></tr>
+</tbody>
+</table>
+### delete_webhook
+##### 
+**Signature:**  
+delete_webhook(self)
+##### 
+**Description:**  
+  
 ### get_updates
 ##### 
 **Signature:**  
