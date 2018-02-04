@@ -2,7 +2,9 @@ __author__ = 'rcj1492'
 __created__ = '2017.06'
 __license__ = 'MIT'
 
-class herokuClient(object):
+from labpack.handlers.requests import requestsHandler
+
+class herokuClient(requestsHandler):
     
     _class_fields = {
         'schema': {
@@ -27,6 +29,9 @@ class herokuClient(object):
         ''' a method to initialize the herokuClient class '''
 
         title = '%s.__init__' % self.__class__.__name__
+    
+    # initialize super
+        super(herokuClient, self).__init__(verbose=verbose)
         
     # construct fields model
         from jsonmodel.validators import jsonModel
@@ -44,18 +49,6 @@ class herokuClient(object):
         self.token = auth_token
         self.subdomain = ''
         self.apps = []
-
-    # construct class properties
-        self.verbose = verbose
-        self.printer_on = True
-        def _printer(msg, flush=False):
-            if self.verbose:
-                if self.printer_on:
-                    if flush:
-                        print(msg, end='', flush=True)
-                    else:
-                        print(msg)
-        self.printer = _printer
         
     # construct localhost
         from labpack.platforms.localhost import localhostClient
@@ -89,60 +82,6 @@ class herokuClient(object):
         self.printer('done.')
         
         return True
-        
-    def _handle_command(self, sys_command, pipe=False, handle_error=False):
-
-        ''' a method to handle system commands which require connectivity '''
-
-        import sys
-        from subprocess import Popen, PIPE, check_output, STDOUT, CalledProcessError
-
-        try:
-            if pipe:
-                response = Popen(sys_command, shell=True, stdout=PIPE, stderr=STDOUT)
-                for line in response.stdout:
-                    self.printer(line.decode('utf-8').rstrip('\n'))
-                    sys.stdout.flush()
-                response.wait()
-                return response
-            else:
-                response = check_output(sys_command, shell=True, stderr=STDOUT).decode('utf-8')
-                return response
-        except CalledProcessError as err:
-            try:
-                import requests
-                requests.get('https://www.google.com')
-                if handle_error:
-                    return err.output.decode('ascii', 'ignore')
-            except:
-                from requests import Request
-                from labpack.handlers.requests import handle_requests
-                request_object = Request(method='GET', url='https://www.google.com')
-                request_details = handle_requests(request_object)
-                self.printer('ERROR')
-                raise ConnectionError(request_details['error'])
-            self.printer('ERROR')
-            raise
-        except:
-            self.printer('ERROR')
-            raise
-        
-    def _check_connectivity(self, err):
-
-        ''' a method to check connectivity as source of error '''
-        
-        try:
-            import requests
-            requests.get('https://www.google.com')
-        except:
-            from requests import Request
-            from labpack.handlers.requests import handle_requests
-            request_object = Request(method='GET', url='https://www.google.com')
-            request_details = handle_requests(request_object)
-            self.printer('ERROR')
-            raise ConnectionError(request_details['error'])
-        self.printer('ERROR')
-        raise err
 
     def _update_netrc(self, netrc_path, auth_token, account_email):
         
@@ -184,7 +123,7 @@ class herokuClient(object):
         netrc_path = path.join(self.localhost.home, '.netrc')
     # TODO verify path exists on Windows
         if not path.exists(netrc_path):
-            error_msg = '.netrc file is missing. Try: heroku login, then update auth token.'
+            error_msg = '.netrc file is missing. Try: heroku login, then heroku auth:token'
             if self.localhost.os.sysname in ('Windows'):
                 error_msg += windows_insert
             self.printer('ERROR.')
@@ -296,30 +235,38 @@ class herokuClient(object):
         from os import devnull
         from subprocess import check_output
         self.printer('Checking heroku plugin requirements ... ', flush=True)
-        sys_command = 'heroku plugins'
+        sys_command = 'heroku plugins --core'
         heroku_plugins = check_output(sys_command, shell=True, stderr=open(devnull, 'wb')).decode('utf-8')
         if heroku_plugins.find('heroku-container-registry') == -1:
-            self.printer('ERROR')
-            raise Exception(
-                'heroku container plugin required. Try: heroku plugins:install heroku-container-registry')
+            sys_command = 'heroku plugins'
+            heroku_plugins = check_output(sys_command, shell=True, stderr=open(devnull, 'wb')).decode('utf-8')
+            if heroku_plugins.find('heroku-container-registry') == -1:
+                self.printer('ERROR')
+                raise Exception(
+                    'heroku container registry required. Upgrade heroku-cli or use: heroku plugins:install heroku-container-registry')
         self.printer('done.')
-            
+
     # verify container login
         self.printer('Checking heroku container login ... ', flush=True)
-        import pexpect
-        try:
-            child = pexpect.spawn('heroku container:login', timeout=2)
-            child.expect('Email:\s?')
-            child.sendline(self.email)
-            i = child.expect([pexpect.EOF, pexpect.TIMEOUT])
-            if i == 0:
-                child.terminate()
-            elif i == 1:
-                child.terminate()
-                raise Exception('Some unknown issue prevents Heroku from accepting credentials.\nTry first: heroku login')
-        except Exception as err:
-            self._check_connectivity(err)
+        sys_command = 'heroku container:login'
+        self._handle_command(sys_command)
         self.printer('done.')
+    
+    # Old Login Process (pre 2018.02.03)
+        # import pexpect
+        # try:
+        #     child = pexpect.spawn('heroku container:login', timeout=5)
+        #     child.expect('Email:\s?')
+        #     child.sendline(self.email)
+        #     i = child.expect([pexpect.EOF, pexpect.TIMEOUT])
+        #     if i == 0:
+        #         child.terminate()
+        #     elif i == 1:
+        #         child.terminate()
+        #         raise Exception('Some unknown issue prevents Heroku from accepting credentials.\nTry first: heroku login')
+        # except Exception as err:
+        #     self._check_connectivity(err)
+        # self.printer('done.')
         
     # verbosity
         self.printer('Building docker image ...')

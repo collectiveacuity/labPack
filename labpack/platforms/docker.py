@@ -49,10 +49,11 @@ class dockerClient(object):
         ''' a method to validate docker is installed '''
     
         from os import devnull
-        from subprocess import call
+        from subprocess import call, check_output, STDOUT
         sys_command = 'docker --help'
         try:
-            call(sys_command, stdout=open(devnull, 'wb'))
+            check_output(sys_command, shell=True, stderr=STDOUT).decode('utf-8')
+            # call(sys_command, stdout=open(devnull, 'wb'))
         except Exception as err:
             raise Exception('"docker" not installed. GoTo: https://www.docker.com')
     
@@ -75,17 +76,17 @@ class dockerClient(object):
 
     # validate docker-machine installation
         from os import devnull
-        from subprocess import call, check_output
+        from subprocess import call, check_output, STDOUT
         sys_command = 'docker-machine --help'
         try:
-            call(sys_command, stdout=open(devnull, 'wb'))
+            check_output(sys_command, shell=True, stderr=STDOUT).decode('utf-8')
         except Exception as err:
             raise Exception('Docker requires docker-machine to run on Win7/8. GoTo: https://www.docker.com')
 
     # validate virtualbox is running
         sys_command = 'docker-machine status %s' % self.vbox
         try:
-            vbox_status = check_output(sys_command, stderr=open(devnull, 'wb')).decode('utf-8').replace('\n', '')
+            vbox_status = check_output(sys_command, shell=True, stderr=open(devnull, 'wb')).decode('utf-8').replace('\n', '')
         except Exception as err:
             if not self.vbox:
                 raise Exception('Docker requires VirtualBox to run on Win7/8. GoTo: https://www.virtualbox.org')
@@ -109,9 +110,8 @@ class dockerClient(object):
         from os import environ
         if not environ.get('DOCKER_CERT_PATH'):
             import re
-            from subprocess import check_output
             sys_command = 'docker-machine env %s' % self.vbox
-            cmd_output = check_output(sys_command).decode('utf-8')
+            cmd_output = self.command(sys_command)
             variable_list = ['DOCKER_TLS_VERIFY', 'DOCKER_HOST', 'DOCKER_CERT_PATH', 'DOCKER_MACHINE_NAME']
             for variable in variable_list:
                 env_start = '%s="' % variable
@@ -140,11 +140,10 @@ class dockerClient(object):
         '''
 
         import re
-        from subprocess import check_output
         gap_pattern = re.compile('\t|\s{2,}')
         image_list = []
         sys_command = 'docker images'
-        output_lines = check_output(sys_command).decode('utf-8').split('\n')
+        output_lines = self.command(sys_command).split('\n')
         column_headers = gap_pattern.split(output_lines[0])
         for i in range(1,len(output_lines)):
             columns = gap_pattern.split(output_lines[i])
@@ -174,11 +173,10 @@ class dockerClient(object):
         '''
 
         import re
-        from subprocess import check_output
         gap_pattern = re.compile('\t|\s{2,}')
         container_list = []
         sys_command = 'docker ps -a'
-        output_lines = check_output(sys_command).decode('utf-8').split('\n')
+        output_lines = self.command(sys_command).split('\n')
         column_headers = gap_pattern.split(output_lines[0])
         for i in range(1,len(output_lines)):
             columns = gap_pattern.split(output_lines[i])
@@ -207,7 +205,6 @@ class dockerClient(object):
         { TOO MANY TO LIST }
         '''
 
-        from subprocess import check_output
         sys_arg = container_alias
         if docker_image:
             sys_arg = docker_image
@@ -215,7 +212,7 @@ class dockerClient(object):
                 sys_arg += ':%s' % image_tag
         import json
         sys_command = 'docker inspect %s' % sys_arg
-        output_dict = json.loads(check_output(sys_command).decode('utf-8'))
+        output_dict = json.loads(self.command(sys_command))
         container_settings = output_dict[0]
 
         return container_settings
@@ -254,7 +251,7 @@ class dockerClient(object):
         if self.vbox:
             from subprocess import check_output
             sys_command = 'docker-machine ip %s' % self.vbox
-            system_ip = check_output(sys_command).decode('utf-8').replace('\n','')
+            system_ip = check_output(sys_command, shell=True).decode('utf-8').replace('\n','')
         else:
             system_ip = self.localhost.ip
 
@@ -269,7 +266,7 @@ class dockerClient(object):
         '''
 
         from subprocess import check_output
-        return check_output(sys_command).decode('utf-8')
+        return check_output(sys_command, shell=True).decode('utf-8')
 
     def synopsis(self, container_settings):
 
@@ -313,3 +310,9 @@ class dockerClient(object):
             sys_cmd = 'winpty %s' % sys_cmd
 
         system(sys_cmd)
+
+if __name__ == '__main__':
+    
+    docker_client = dockerClient()
+    image_list = docker_client.images()
+    print(image_list)
