@@ -217,27 +217,20 @@ class dockerClient(object):
 
         return container_settings
 
-    def run(self, run_script):
-
-        from subprocess import check_output
-        output_lines = check_output(run_script).decode('utf-8').split('\n')
-        container_id = output_lines[0]
-
-        return container_id
-
     def rm(self, container_alias):
 
-        from subprocess import check_output
         sys_cmd = 'docker rm -f %s' % container_alias
-        output_lines = check_output(sys_cmd).decode('utf-8').split('\n')
+        output_lines = self.command(sys_cmd).split('\n')
 
         return output_lines[0]
 
-    def rmi(self, image_id):
+    def rmi(self, image_id, override=False):
 
-        from subprocess import check_output
-        sys_cmd = 'docker rmi %s' % image_id
-        output_lines = check_output(sys_cmd).decode('utf-8').split('\n')
+        force = ''
+        if override:
+            force = '-f '
+        sys_cmd = 'docker rmi %s%s' % (force, image_id)
+        output_lines = self.command(sys_cmd).split('\n')
 
         return output_lines
 
@@ -249,9 +242,8 @@ class dockerClient(object):
         '''
 
         if self.vbox:
-            from subprocess import check_output
-            sys_command = 'docker-machine ip %s' % self.vbox
-            system_ip = check_output(sys_command, shell=True).decode('utf-8').replace('\n','')
+            sys_cmd = 'docker-machine ip %s' % self.vbox
+            system_ip = self.command(sys_cmd).replace('\n','')
         else:
             system_ip = self.localhost.ip
 
@@ -271,13 +263,15 @@ class dockerClient(object):
     def synopsis(self, container_settings):
 
         '''
-
+            a method to synthesize configuration settings required for docker compose
+             
         :param container_settings: dictionary returned from dockerConfig.inspect
         :return: dictionary with values required for module configurations
         '''
 
         settings = {
             'container_status': container_settings['State']['Status'],
+            'container_exit': container_settings['State']['ExitCode'],
             'container_ip': container_settings['NetworkSettings']['IPAddress'],
             'docker_image': container_settings['Config']['Image'],
             'container_alias': container_settings['Name'].replace('/',''),
@@ -289,6 +283,10 @@ class dockerClient(object):
         num_pattern = re.compile('\d+')
         if container_settings['NetworkSettings']['Ports']:
             for key, value in container_settings['NetworkSettings']['Ports'].items():
+                port = num_pattern.findall(value[0]['HostPort'])[0]
+                settings['mapped_ports'][port] = num_pattern.findall(key)[0]
+        elif container_settings['HostConfig']['PortBindings']:
+            for key, value in container_settings['HostConfig']['PortBindings'].items():
                 port = num_pattern.findall(value[0]['HostPort'])[0]
                 settings['mapped_ports'][port] = num_pattern.findall(key)[0]
         if container_settings['Config']['Env']:
@@ -311,8 +309,22 @@ class dockerClient(object):
 
         system(sys_cmd)
 
+    def run(self, docker_image, container_alias, environmental_variables=None, mapped_ports=None, mounted_volumes=None):
+        
+        ''' TODO a method to start a container '''
+        
+        pass
+    
 if __name__ == '__main__':
     
+    from pprint import pprint
     docker_client = dockerClient()
-    image_list = docker_client.images()
-    print(image_list)
+    images = docker_client.images()
+    print(images)
+    containers = docker_client.ps()
+    print(containers)
+    if containers:
+        settings = docker_client.inspect(containers[0]['NAMES'])
+        pprint(settings)        
+        synopsis = docker_client.synopsis(settings)
+        print(synopsis)

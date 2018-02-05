@@ -70,7 +70,7 @@ class herokuClient(requestsHandler):
         from os import devnull
         from subprocess import call, check_output
         
-    # validate cli installation        
+    # validate cli installation
         sys_command = 'heroku --version'
         try:
             call(sys_command, shell=True, stdout=open(devnull, 'wb'))
