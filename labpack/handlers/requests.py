@@ -2,7 +2,7 @@ __author__ = 'rcj1492'
 __created__ = '2016.11'
 __license__ = 'MIT'
 
-def handle_requests(request_object):
+def handle_requests(request_object, uptime_url='www.google.com'):
 
     import requests
 
@@ -38,7 +38,7 @@ def handle_requests(request_object):
     except:
         import socket
         try:
-            socket.getaddrinfo('www.google.com', '80', 0, 0, socket.SOCK_STREAM)
+            socket.getaddrinfo(uptime_url, '80', 0, 0, socket.SOCK_STREAM)
             request_details['error'] = '%s is not available.' % request_details['url']
         except socket.gaierror:
             request_details['error'] = 'Cannot connect to the internet. Check connectivity.'
@@ -49,10 +49,19 @@ def handle_requests(request_object):
 
 class requestsHandler(object):
     
-    def __init__(self, uptime_url='https://www.google.com', verbose=False):
+    def __init__(self, uptime_url='www.google.com', requests_handler=handle_requests, verbose=False):
     
+        '''
+            the initialization method for the requestsHandler class object
+            
+        :param uptime_url: [optional] string with url to test availability of internet 
+        :param requests_handler: [optional] callable object which accepts a Request object
+        :param verbose: boolean to enable print out of status
+        '''
+        
     # construct object properties
         self.uptime_url = uptime_url
+        self.uptime_ssl = 'https://%s' % self.uptime_url
     
     # construct class properties
         self.verbose = verbose
@@ -65,6 +74,9 @@ class requestsHandler(object):
                     else:
                         print(msg)
         self.printer = _printer
+    
+    # construct requests handler
+        self.handle_requests = requests_handler
         
     def _handle_command(self, sys_command, pipe=False, handle_error=False):
 
@@ -87,13 +99,13 @@ class requestsHandler(object):
         except CalledProcessError as err:
             try:
                 import requests
-                requests.get('https://www.google.com')
+                requests.get(self.uptime_ssl)
                 if handle_error:
                     return err.output.decode('ascii', 'ignore')
             except:
                 from requests import Request
-                request_object = Request(method='GET', url=self.uptime_url)
-                request_details = handle_requests(request_object)
+                request_object = Request(method='GET', url=self.uptime_ssl)
+                request_details = self.handle_requests(request_object)
                 self.printer('ERROR')
                 raise ConnectionError(request_details['error'])
             self.printer('ERROR')
@@ -108,27 +120,229 @@ class requestsHandler(object):
         
         try:
             import requests
-            requests.get(self.uptime_url)
+            requests.get(self.uptime_ssl)
         except:
             from requests import Request
-            request_object = Request(method='GET', url=self.uptime_url)
-            request_details = handle_requests(request_object)
+            request_object = Request(method='GET', url=self.uptime_ssl)
+            request_details = self.handle_requests(request_object)
             self.printer('ERROR')
             raise ConnectionError(request_details['error'])
         self.printer('ERROR')
         raise err
     
-    def _get_request(self, url, params=None):
-        pass
+    def _get_request(self, url, params=None, **kwargs):
+        
+        ''' a method to catch and report http get request connectivity errors '''
+        
+        response = None
+        error = ''
+        
+    # construct request kwargs
+        request_kwargs = {
+            'method': 'GET',
+            'url': url,
+            'params': params
+        }
+        for key, value in kwargs.items():
+            request_kwargs[key] = value
+
+    # send request
+        from requests import request
+        try:
+            response = request(**request_kwargs)
+        except Exception as err:
+            from requests import Request
+            request_object = Request(**request_kwargs)
+            try:
+                request_details = self.handle_requests(request_object)
+                error = request_details['error']
+            except:
+                error = str(err)
+                
+        return response, error
     
-    def _post_request(self, url, params=None, json=None):
-        pass
+    def _post_request(self, url, data=None, json=None, **kwargs):
+        
+        ''' a method to catch and report http post request connectivity errors '''
+        
+        response = None
+        error = ''
+        
+    # construct request kwargs
+        request_kwargs = {
+            'method': 'POST',
+            'url': url,
+            'data': data,
+            'json': json
+        }
+        for key, value in kwargs.items():
+            request_kwargs[key] = value
+
+    # send request
+        from requests import request
+        try:
+            response = request(**request_kwargs)
+        except Exception as err:
+            from requests import Request
+            request_object = Request(**request_kwargs)
+            try:
+                request_details = self.handle_requests(request_object)
+                error = request_details['error']
+            except:
+                error = str(err)
+                
+        return response, error
     
-    def _put_request(self, url, params=None, json=None):
-        pass
+    def _put_request(self, url, data=None, json=None, **kwargs):
+        
+        ''' a method to catch and report http put request connectivity errors '''
+        
+        response = None
+        error = ''
+        
+    # construct request kwargs
+        request_kwargs = {
+            'method': 'PUT',
+            'url': url,
+            'data': data,
+            'json': json
+        }
+        for key, value in kwargs.items():
+            request_kwargs[key] = value
+
+    # send request
+        from requests import request
+        try:
+            response = request(**request_kwargs)
+        except Exception as err:
+            from requests import Request
+            request_object = Request(**request_kwargs)
+            try:
+                request_details = self.handle_requests(request_object)
+                error = request_details['error']
+            except:
+                error = str(err)
+                
+        return response, error
     
-    def _patch_request(self, url, params=None, json=None):
-        pass
+    def _patch_request(self, url, data=None, json=None, **kwargs):
+        
+        ''' a method to catch and report http patch request connectivity errors '''
+        
+        response = None
+        error = ''
+        
+    # construct request kwargs
+        request_kwargs = {
+            'method': 'PATCH',
+            'url': url,
+            'data': data,
+            'json': json
+        }
+        for key, value in kwargs.items():
+            request_kwargs[key] = value
+
+    # send request
+        from requests import request
+        try:
+            response = request(**request_kwargs)
+        except Exception as err:
+            from requests import Request
+            request_object = Request(**request_kwargs)
+            try:
+                request_details = self.handle_requests(request_object)
+                error = request_details['error']
+            except:
+                error = str(err)
+                
+        return response, error
     
-    def _delete_request(self, url, params=None):
-        pass
+    def _head_request(self, url, **kwargs):
+        
+        ''' a method to catch and report http head request connectivity errors '''
+        
+        response = None
+        error = ''
+        
+    # construct request kwargs
+        request_kwargs = {
+            'method': 'HEAD',
+            'url': url
+        }
+        for key, value in kwargs.items():
+            request_kwargs[key] = value
+
+    # send request
+        from requests import request
+        try:
+            response = request(**request_kwargs)
+        except Exception as err:
+            from requests import Request
+            request_object = Request(**request_kwargs)
+            try:
+                request_details = self.handle_requests(request_object)
+                error = request_details['error']
+            except:
+                error = str(err)
+                
+        return response, error
+    
+    def _options_request(self, url, **kwargs):
+        
+        ''' a method to catch and report http options request connectivity errors '''
+        
+        response = None
+        error = ''
+        
+    # construct request kwargs
+        request_kwargs = {
+            'method': 'OPTIONS',
+            'url': url
+        }
+        for key, value in kwargs.items():
+            request_kwargs[key] = value
+
+    # send request
+        from requests import request
+        try:
+            response = request(**request_kwargs)
+        except Exception as err:
+            from requests import Request
+            request_object = Request(**request_kwargs)
+            try:
+                request_details = self.handle_requests(request_object)
+                error = request_details['error']
+            except:
+                error = str(err)
+                
+        return response, error
+    
+    def _delete_request(self, url, **kwargs):
+        
+        ''' a method to catch and report http delete request connectivity errors '''
+        
+        response = None
+        error = ''
+        
+    # construct request kwargs
+        request_kwargs = {
+            'method': 'DELETE',
+            'url': url
+        }
+        for key, value in kwargs.items():
+            request_kwargs[key] = value
+
+    # send request
+        from requests import request
+        try:
+            response = request(**request_kwargs)
+        except Exception as err:
+            from requests import Request
+            request_object = Request(**request_kwargs)
+            try:
+                request_details = self.handle_requests(request_object)
+                error = request_details['error']
+            except:
+                error = str(err)
+                
+        return response, error

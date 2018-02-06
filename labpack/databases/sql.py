@@ -42,7 +42,7 @@ class sqlClient(object):
         'components': {
             '.table_name': {
                 'max_length': 255,
-                'must_not_contain': ['/', '^\\.', '-']
+                'must_not_contain': ['/', '\\.', '-', '^\d']
             },
             '.merge_rule': {
                 'discrete_values': [ 'overwrite', 'skip', 'upsert' ]
@@ -75,6 +75,11 @@ class sqlClient(object):
                 without losing the data associated with the old name, add the old key 
                 name to the field's metadata in the schema declaration:
                 components['.new_field']['field_metadata']['replace_key'] = '.old_field'
+        
+        NOTE:   to create a new database, use a tool SQL Workbench
+                https://data36.com/install-sql-workbench-postgresql/
+                SET AUTOCOMMIT = ON
+                create database medium
         '''
         
         title = '%s.__init__' % self.__class__.__name__
@@ -130,6 +135,9 @@ class sqlClient(object):
     # define item key pattern
         import re
         self.item_key = re.compile('\[0\]')
+
+    # TODO add method to create database if not there
+    # https://stackoverflow.com/questions/6506578/how-to-create-a-new-database-using-sqlalchemy
         
     # construct database session
         self.engine = create_engine(database_url, echo=verbose)

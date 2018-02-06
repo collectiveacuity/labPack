@@ -4,6 +4,41 @@ __license__ = 'MIT'
 
 class findClient(object):
 
+    _class_fields = {
+        'schema': {
+            'group_name': '',
+            'server_url': '',
+            'password': '',
+            'user_id': '',
+            'history': 0,
+            'port': 0,
+            'wifi_fingerprint': [ {
+                'mac': '0A:1B:3C:4D:5E:6F',
+                'rssi': -2
+            }],
+            'action': 'track',
+            'location_id': ''
+        },
+        'components': {
+            '.history': {
+                'integer_data': True,
+                'min_value': 1
+            },
+            '.port': {
+                'integer_data': True
+            },
+            '.wifi_fingerprint[0].rssi': {
+                'integer_data': True
+            },
+            '.action': {
+                'discrete_values': [ 'track', 'learn' ]
+            },
+            '.location_id': {
+                'must_not_contain': [ '\s' ]
+            }
+        }
+    }
+    
     def __init__(self, group_name, server_url='ml.internalpositioning.com', password=''):
 
         '''
@@ -16,6 +51,22 @@ class findClient(object):
         # https://www.internalpositioning.com/api
         '''
 
+        title = '%s.__init__' % self.__class__.__name__
+        
+    # construct fields
+        from jsonmodel.validators import jsonModel
+        self.fields = jsonModel(self._class_fields)
+    
+    # validate inputs
+        input_fields = {
+            'group_name': group_name,
+            'server_url': server_url,
+            'password': password
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+        
     # construct class properties
         self.server_url = server_url
         self.endpoint = 'https://%s' % server_url
@@ -117,7 +168,17 @@ class findClient(object):
             rf: {} # if confidence = True 
         }
         '''
-        
+
+        title = '%s.get_position' % self.__class__.__name__
+    
+    # validate inputs
+        input_fields = {
+            'user_id': user_id
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+            
     # construct empty response
         position_details = {
             'location': '',
@@ -186,7 +247,18 @@ class findClient(object):
             rf: {} # if confidence = True 
         }]
         '''
-        
+    
+        title = '%s.get_positions' % self.__class__.__name__
+    
+    # validate inputs
+        input_fields = {
+            'user_id': user_id,
+            'history': history
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+    
     # construct empty position history
         position_history = []
         
@@ -317,6 +389,17 @@ class findClient(object):
         # https://www.internalpositioning.com/server/
         '''
 
+        title = '%s.subscribe' % self.__class__.__name__
+    
+    # validate inputs
+        input_fields = {
+            'port': port
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+    
+    # import dependencies
         import paho.mqtt.client as mqtt
 
     # define callback on connection event
@@ -362,8 +445,33 @@ class findClient(object):
         else:
             client.loop_start()
  
-    def publish(self, user_id, wifi_fingerprint, type='track', location_id='', port=1883):
+    def publish(self, user_id, wifi_fingerprint, action='track', location_id='', port=1883):
 
+        '''
+            a method to publish wifi fingerprint data to a mosquitto server
+            
+        :param user_id: string with id of user
+        :param wifi_fingerprint: list of dictionaries with wifi fields mac and rssi 
+        :param action: string with type of action to perform with data (track or learn)
+        :param location_id: [optional] string with classifier to add to learning data
+        :param port: [optional] integer with port to connect to
+        :return: True
+        '''
+        
+        title = '%s.publish' % self.__class__.__name__
+    
+    # validate inputs
+        input_fields = {
+            'user_id': user_id,
+            'wifi_fingerprint': wifi_fingerprint,
+            'action': action,
+            'location_id': location_id,
+            'port': port
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+            
     # compose message
         fingerprint_string = ''
         for signal in wifi_fingerprint:
@@ -375,7 +483,7 @@ class findClient(object):
 
     # compose channel
         topic_string = '%s/track/%s' % (self.group_name, user_id)
-        if type == 'learn':
+        if action == 'learn':
             topic_string = '%s/learn/%s/%s' % (self.group_name, user_id, location_id)
 
     # send a single message to server
