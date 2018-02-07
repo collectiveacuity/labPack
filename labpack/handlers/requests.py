@@ -49,13 +49,14 @@ def handle_requests(request_object, uptime_url='www.google.com'):
 
 class requestsHandler(object):
     
-    def __init__(self, uptime_url='www.google.com', requests_handler=handle_requests, verbose=False):
+    def __init__(self, uptime_url='www.google.com', requests_handler=handle_requests, response_handler=None, verbose=False):
     
         '''
             the initialization method for the requestsHandler class object
             
         :param uptime_url: [optional] string with url to test availability of internet 
-        :param requests_handler: [optional] callable object which accepts a Request object
+        :param requests_handler: [optional] callable method which accepts a Request object
+        :param response_handler: [optional] callable method which accepts a Response object 
         :param verbose: boolean to enable print out of status
         '''
         
@@ -75,8 +76,9 @@ class requestsHandler(object):
                         print(msg)
         self.printer = _printer
     
-    # construct requests handler
+    # construct handler methods
         self.handle_requests = requests_handler
+        self.handle_response = response_handler
         
     def _handle_command(self, sys_command, pipe=False, handle_error=False):
 
@@ -130,12 +132,38 @@ class requestsHandler(object):
         self.printer('ERROR')
         raise err
     
-    def _get_request(self, url, params=None, **kwargs):
+    def _request(self, **kwargs):
         
-        ''' a method to catch and report http get request connectivity errors '''
+        ''' a helper method for processing all request types '''
         
         response = None
         error = ''
+        code = 0
+        
+    # send request
+        from requests import request
+        try:
+            response = request(**kwargs)
+        # handle response
+            if self.handle_response:
+                response, error, code = self.handle_response(response)
+            else:
+                code = response.status_code
+    # handle errors
+        except Exception as err:
+            from requests import Request
+            request_object = Request(**kwargs)
+            try:
+                request_details = self.handle_requests(request_object)
+                error = request_details['error']
+            except:
+                error = str(err)
+                
+        return response, error, code
+    
+    def _get_request(self, url, params=None, **kwargs):
+        
+        ''' a method to catch and report http get request connectivity errors '''
         
     # construct request kwargs
         request_kwargs = {
@@ -146,27 +174,12 @@ class requestsHandler(object):
         for key, value in kwargs.items():
             request_kwargs[key] = value
 
-    # send request
-        from requests import request
-        try:
-            response = request(**request_kwargs)
-        except Exception as err:
-            from requests import Request
-            request_object = Request(**request_kwargs)
-            try:
-                request_details = self.handle_requests(request_object)
-                error = request_details['error']
-            except:
-                error = str(err)
-                
-        return response, error
+    # send request and handle response
+        return self._request(**request_kwargs)
     
     def _post_request(self, url, data=None, json=None, **kwargs):
         
         ''' a method to catch and report http post request connectivity errors '''
-        
-        response = None
-        error = ''
         
     # construct request kwargs
         request_kwargs = {
@@ -178,27 +191,12 @@ class requestsHandler(object):
         for key, value in kwargs.items():
             request_kwargs[key] = value
 
-    # send request
-        from requests import request
-        try:
-            response = request(**request_kwargs)
-        except Exception as err:
-            from requests import Request
-            request_object = Request(**request_kwargs)
-            try:
-                request_details = self.handle_requests(request_object)
-                error = request_details['error']
-            except:
-                error = str(err)
-                
-        return response, error
+    # send request and handle response
+        return self._request(**request_kwargs)
     
     def _put_request(self, url, data=None, json=None, **kwargs):
         
         ''' a method to catch and report http put request connectivity errors '''
-        
-        response = None
-        error = ''
         
     # construct request kwargs
         request_kwargs = {
@@ -210,27 +208,12 @@ class requestsHandler(object):
         for key, value in kwargs.items():
             request_kwargs[key] = value
 
-    # send request
-        from requests import request
-        try:
-            response = request(**request_kwargs)
-        except Exception as err:
-            from requests import Request
-            request_object = Request(**request_kwargs)
-            try:
-                request_details = self.handle_requests(request_object)
-                error = request_details['error']
-            except:
-                error = str(err)
-                
-        return response, error
+    # send request and handle response
+        return self._request(**request_kwargs)
     
     def _patch_request(self, url, data=None, json=None, **kwargs):
         
         ''' a method to catch and report http patch request connectivity errors '''
-        
-        response = None
-        error = ''
         
     # construct request kwargs
         request_kwargs = {
@@ -242,27 +225,12 @@ class requestsHandler(object):
         for key, value in kwargs.items():
             request_kwargs[key] = value
 
-    # send request
-        from requests import request
-        try:
-            response = request(**request_kwargs)
-        except Exception as err:
-            from requests import Request
-            request_object = Request(**request_kwargs)
-            try:
-                request_details = self.handle_requests(request_object)
-                error = request_details['error']
-            except:
-                error = str(err)
-                
-        return response, error
+    # send request and handle response
+        return self._request(**request_kwargs)
     
     def _head_request(self, url, **kwargs):
         
         ''' a method to catch and report http head request connectivity errors '''
-        
-        response = None
-        error = ''
         
     # construct request kwargs
         request_kwargs = {
@@ -272,27 +240,12 @@ class requestsHandler(object):
         for key, value in kwargs.items():
             request_kwargs[key] = value
 
-    # send request
-        from requests import request
-        try:
-            response = request(**request_kwargs)
-        except Exception as err:
-            from requests import Request
-            request_object = Request(**request_kwargs)
-            try:
-                request_details = self.handle_requests(request_object)
-                error = request_details['error']
-            except:
-                error = str(err)
-                
-        return response, error
+    # send request and handle response
+        return self._request(**request_kwargs)
     
     def _options_request(self, url, **kwargs):
         
         ''' a method to catch and report http options request connectivity errors '''
-        
-        response = None
-        error = ''
         
     # construct request kwargs
         request_kwargs = {
@@ -302,27 +255,12 @@ class requestsHandler(object):
         for key, value in kwargs.items():
             request_kwargs[key] = value
 
-    # send request
-        from requests import request
-        try:
-            response = request(**request_kwargs)
-        except Exception as err:
-            from requests import Request
-            request_object = Request(**request_kwargs)
-            try:
-                request_details = self.handle_requests(request_object)
-                error = request_details['error']
-            except:
-                error = str(err)
-                
-        return response, error
+    # send request and handle response
+        return self._request(**request_kwargs)
     
     def _delete_request(self, url, **kwargs):
         
         ''' a method to catch and report http delete request connectivity errors '''
-        
-        response = None
-        error = ''
         
     # construct request kwargs
         request_kwargs = {
@@ -332,17 +270,5 @@ class requestsHandler(object):
         for key, value in kwargs.items():
             request_kwargs[key] = value
 
-    # send request
-        from requests import request
-        try:
-            response = request(**request_kwargs)
-        except Exception as err:
-            from requests import Request
-            request_object = Request(**request_kwargs)
-            try:
-                request_details = self.handle_requests(request_object)
-                error = request_details['error']
-            except:
-                error = str(err)
-                
-        return response, error
+    # send request and handle response
+        return self._request(**request_kwargs)
