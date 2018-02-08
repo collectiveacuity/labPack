@@ -110,7 +110,7 @@ def clean_data(input_value):
     '''
 
 # pass normal json/yaml datatypes
-    if input_value.__class__.__name__ in ['bool', 'str', 'float', 'list', 'dict', 'int', 'NoneType']:
+    if input_value.__class__.__name__ in ['bool', 'str', 'float', 'int', 'NoneType']:
         pass
 
 # transform byte data to base64 encoded string
@@ -123,6 +123,12 @@ def clean_data(input_value):
         new_list = []
         new_list.extend(input_value)
         input_value = transform_data(clean_data, new_list)
+
+# recurse through dictionaries and lists
+    elif isinstance(input_value, dict) or isinstance(input_value, list):
+        input_value = transform_data(clean_data, input_value)
+
+# convert to string all python objects and callables
     else:
         input_value = str(input_value)
 
