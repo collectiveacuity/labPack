@@ -358,25 +358,54 @@ uses cryptography module to encrypt byte data
 <h3 id="handle_requests">handle_requests</h3>
 <h5 id="_29"></h5>
 <p><strong>Signature:</strong><br />
-handle_requests(request_object)</p>
+handle_requests(request_object, uptime_url=&rdquo;www.google.com&rdquo;)</p>
 <h5 id="_30"></h5>
 <p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type    </th><th>Required  </th><th>Default         </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>request_object</td><td>NoneType</td><td>Yes       </td><td>None            </td><td>             </td></tr>
+<tr><td>uptime_url    </td><td>str     </td><td>          </td><td>"www.google.com"</td><td>             </td></tr>
+</tbody>
+</table>
+
+<h3 id="requestshandler">requestsHandler</h3>
+<h5 id="_31"></h5>
+<p><strong>Signature:</strong><br />
+requestsHandler(self, uptime_url=&rdquo;www.google.com&rdquo;, requests_handler=&rdquo;handle_requests&rdquo;, response_handler=None, verbose=False)</p>
+<h5 id="_32"></h5>
+<p><strong>Description:</strong><br />
+the initialization method for the requestsHandler class object<br />
+<table>
+<thead>
+<tr><th>Argument        </th><th>Type    </th><th>Required  </th><th>Default          </th><th>Description                                                </th></tr>
+</thead>
+<tbody>
+<tr><td>self            </td><td>object  </td><td>Yes       </td><td>None             </td><td>                                                           </td></tr>
+<tr><td>uptime_url      </td><td>str     </td><td>          </td><td>&ldquo;www.google.com&rdquo; </td><td>[optional] string with url to test availability of internet</td></tr>
+<tr><td>requests_handler</td><td>function</td><td>          </td><td>&ldquo;handle_requests&rdquo;</td><td>[optional] callable method which accepts a Request object  </td></tr>
+<tr><td>response_handler</td><td>function</td><td>          </td><td>None             </td><td>[optional] callable method which accepts a Response object </td></tr>
+<tr><td>verbose         </td><td>bool    </td><td>          </td><td>False            </td><td>boolean to enable print out of status                      </td></tr>
+</tbody>
+</table></p>
 <h2 id="datapy">data.py</h2>
 <h3 id="import_8">Import:</h3>
 <p>labpack.mapping.data  </p>
 <h3 id="description_8">Description:</h3>
 <h3 id="clean_data">clean_data</h3>
-<h5 id="_31"></h5>
+<h5 id="_33"></h5>
 <p><strong>Signature:</strong><br />
 clean_data(input_value)</p>
-<h5 id="_32"></h5>
+<h5 id="_34"></h5>
 <p><strong>Description:</strong><br />
 a function to transform a value into a json or yaml valid datatype  </p>
 <h3 id="reconstruct_dict">reconstruct_dict</h3>
-<h5 id="_33"></h5>
+<h5 id="_35"></h5>
 <p><strong>Signature:</strong><br />
 reconstruct_dict(dot_paths, values)</p>
-<h5 id="_34"></h5>
+<h5 id="_36"></h5>
 <p><strong>Description:</strong><br />
 a method for reconstructing a dictionary from the values along dot paths<br />
 <table>
@@ -389,17 +418,17 @@ a method for reconstructing a dictionary from the values along dot paths<br />
 </tbody>
 </table></p>
 <h3 id="segment_path">segment_path</h3>
-<h5 id="_35"></h5>
+<h5 id="_37"></h5>
 <p><strong>Signature:</strong><br />
 segment_path(dot_path)</p>
-<h5 id="_36"></h5>
+<h5 id="_38"></h5>
 <p><strong>Description:</strong><br />
 a function to separate the path segments in a dot_path key  </p>
 <h3 id="transform_data">transform_data</h3>
-<h5 id="_37"></h5>
+<h5 id="_39"></h5>
 <p><strong>Signature:</strong><br />
 transform_data(function, input_data)</p>
-<h5 id="_38"></h5>
+<h5 id="_40"></h5>
 <p><strong>Description:</strong><br />
 a function to apply a function to each value in a nested dictionary<br />
 <table>
@@ -412,10 +441,10 @@ a function to apply a function to each value in a nested dictionary<br />
 </tbody>
 </table></p>
 <h3 id="walk_data">walk_data</h3>
-<h5 id="_39"></h5>
+<h5 id="_41"></h5>
 <p><strong>Signature:</strong><br />
 walk_data(input_data)</p>
-<h5 id="_40"></h5>
+<h5 id="_42"></h5>
 <p><strong>Description:</strong><br />
 a generator function for retrieving data in a nested dictionary  </p>
 <h2 id="comparisonpy">comparison.py</h2>
@@ -424,10 +453,10 @@ a generator function for retrieving data in a nested dictionary  </p>
 <h3 id="description_9">Description:</h3>
 <p>a package of methods to generate the differences between two data architectures  </p>
 <h3 id="compare_records">compare_records</h3>
-<h5 id="_41"></h5>
+<h5 id="_43"></h5>
 <p><strong>Signature:</strong><br />
 compare_records(new_record, old_record)</p>
-<h5 id="_42"></h5>
+<h5 id="_44"></h5>
 <p><strong>Description:</strong><br />
 a method to generate the differences between two data architectures<br />
 <table>
@@ -445,10 +474,10 @@ a method to generate the differences between two data architectures<br />
 <h3 id="description_10">Description:</h3>
 <p>a package of functions to convert data architecture formats  </p>
 <h3 id="camelcase_to_lowercase">camelcase_to_lowercase</h3>
-<h5 id="_43"></h5>
+<h5 id="_45"></h5>
 <p><strong>Signature:</strong><br />
 camelcase_to_lowercase(camelcase_input, python_input=None)</p>
-<h5 id="_44"></h5>
+<h5 id="_46"></h5>
 <p><strong>Description:</strong><br />
 a function to recursively convert data with camelcase key names into lowercase keys<br />
 <table>
@@ -461,10 +490,10 @@ a function to recursively convert data with camelcase key names into lowercase k
 </tbody>
 </table></p>
 <h3 id="lowercase_to_camelcase">lowercase_to_camelcase</h3>
-<h5 id="_45"></h5>
+<h5 id="_47"></h5>
 <p><strong>Signature:</strong><br />
 lowercase_to_camelcase(python_input, camelcase_input=None)</p>
-<h5 id="_46"></h5>
+<h5 id="_48"></h5>
 <p><strong>Description:</strong><br />
 a function to recursively convert data with lowercase key names into camelcase keys<br />
 <table>
@@ -481,10 +510,10 @@ a function to recursively convert data with lowercase key names into camelcase k
 <p>labpack.parsing.flask  </p>
 <h3 id="description_11">Description:</h3>
 <h3 id="extract_request_details">extract_request_details</h3>
-<h5 id="_47"></h5>
+<h5 id="_49"></h5>
 <p><strong>Signature:</strong><br />
 extract_request_details(request_object, session_object=None)</p>
-<h5 id="_48"></h5>
+<h5 id="_50"></h5>
 <p><strong>Description:</strong><br />
 a method for extracting request details from request and session objects</p>
 <pre><code>    NOTE:   method is also a placeholder funnel for future validation
@@ -501,10 +530,10 @@ a method for extracting request details from request and session objects</p>
 </tbody>
 </table></p>
 <h3 id="extract_session_details">extract_session_details</h3>
-<h5 id="_49"></h5>
+<h5 id="_51"></h5>
 <p><strong>Signature:</strong><br />
 extract_session_details(request_headers, session_header, secret_key)</p>
-<h5 id="_50"></h5>
+<h5 id="_52"></h5>
 <p><strong>Description:</strong><br />
 a method to extract and validate jwt session token from request headers<br />
 <table>
@@ -518,10 +547,10 @@ a method to extract and validate jwt session token from request headers<br />
 </tbody>
 </table></p>
 <h3 id="validate_request_content">validate_request_content</h3>
-<h5 id="_51"></h5>
+<h5 id="_53"></h5>
 <p><strong>Signature:</strong><br />
 validate_request_content(request_content, request_model, request_component=&rdquo;body&rdquo;)</p>
-<h5 id="_52"></h5>
+<h5 id="_54"></h5>
 <p><strong>Description:</strong><br />
 a method to validate the content fields of a flask request<br />
 <table>
@@ -539,16 +568,16 @@ a method to validate the content fields of a flask request<br />
 <p>labpack.parsing.grammar  </p>
 <h3 id="description_12">Description:</h3>
 <h3 id="join_words">join_words</h3>
-<h5 id="_53"></h5>
-<p><strong>Signature:</strong><br />
-join_words(word_list)</p>
-<h5 id="_54"></h5>
-<p><strong>Description:</strong>  </p>
-<h3 id="section_text">section_text</h3>
 <h5 id="_55"></h5>
 <p><strong>Signature:</strong><br />
-section_text(text_string, max_characters=500, continue_text=&rdquo;&hellip;&rdquo;)</p>
+join_words(word_list)</p>
 <h5 id="_56"></h5>
+<p><strong>Description:</strong>  </p>
+<h3 id="section_text">section_text</h3>
+<h5 id="_57"></h5>
+<p><strong>Signature:</strong><br />
+section_text(text_string, max_characters=500, continue_text=&rdquo;&hellip;&rdquo;)</p>
+<h5 id="_58"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -566,10 +595,10 @@ section_text(text_string, max_characters=500, continue_text=&rdquo;&hellip;&rdqu
 <p>labpack.performance.performlab  </p>
 <h3 id="description_13">Description:</h3>
 <h3 id="repeat">repeat</h3>
-<h5 id="_57"></h5>
+<h5 id="_59"></h5>
 <p><strong>Signature:</strong><br />
 repeat(function, kwargs, title, count, verbose=True)</p>
-<h5 id="_58"></h5>
+<h5 id="_60"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -589,22 +618,22 @@ repeat(function, kwargs, title, count, verbose=True)</p>
 <p>labpack.randomization.randomlab  </p>
 <h3 id="description_14">Description:</h3>
 <h3 id="random_binary">random_binary</h3>
-<h5 id="_59"></h5>
-<p><strong>Signature:</strong><br />
-random_binary(length)</p>
-<h5 id="_60"></h5>
-<p><strong>Description:</strong>  </p>
-<h3 id="random_bytes">random_bytes</h3>
 <h5 id="_61"></h5>
 <p><strong>Signature:</strong><br />
-random_bytes(length)</p>
+random_binary(length)</p>
 <h5 id="_62"></h5>
 <p><strong>Description:</strong>  </p>
-<h3 id="random_characters">random_characters</h3>
+<h3 id="random_bytes">random_bytes</h3>
 <h5 id="_63"></h5>
 <p><strong>Signature:</strong><br />
-random_characters(character_set, length)</p>
+random_bytes(length)</p>
 <h5 id="_64"></h5>
+<p><strong>Description:</strong>  </p>
+<h3 id="random_characters">random_characters</h3>
+<h5 id="_65"></h5>
+<p><strong>Signature:</strong><br />
+random_characters(character_set, length)</p>
+<h5 id="_66"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -617,10 +646,10 @@ random_characters(character_set, length)</p>
 </table>
 
 <h3 id="random_double">random_double</h3>
-<h5 id="_65"></h5>
+<h5 id="_67"></h5>
 <p><strong>Signature:</strong><br />
 random_double(low, high)</p>
-<h5 id="_66"></h5>
+<h5 id="_68"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -633,16 +662,16 @@ random_double(low, high)</p>
 </table>
 
 <h3 id="random_fraction">random_fraction</h3>
-<h5 id="_67"></h5>
-<p><strong>Signature:</strong><br />
-random_fraction()</p>
-<h5 id="_68"></h5>
-<p><strong>Description:</strong>  </p>
-<h3 id="random_integer">random_integer</h3>
 <h5 id="_69"></h5>
 <p><strong>Signature:</strong><br />
-random_integer(low, high)</p>
+random_fraction()</p>
 <h5 id="_70"></h5>
+<p><strong>Description:</strong>  </p>
+<h3 id="random_integer">random_integer</h3>
+<h5 id="_71"></h5>
+<p><strong>Signature:</strong><br />
+random_integer(low, high)</p>
+<h5 id="_72"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -655,32 +684,32 @@ random_integer(low, high)</p>
 </table>
 
 <h3 id="random_number">random_number</h3>
-<h5 id="_71"></h5>
-<p><strong>Signature:</strong><br />
-random_number(length)</p>
-<h5 id="_72"></h5>
-<p><strong>Description:</strong>  </p>
-<h3 id="random_object">random_object</h3>
 <h5 id="_73"></h5>
 <p><strong>Signature:</strong><br />
-random_object()</p>
+random_number(length)</p>
 <h5 id="_74"></h5>
 <p><strong>Description:</strong>  </p>
-<h3 id="random_shuffle">random_shuffle</h3>
+<h3 id="random_object">random_object</h3>
 <h5 id="_75"></h5>
 <p><strong>Signature:</strong><br />
-random_shuffle(item_list)</p>
+random_object()</p>
 <h5 id="_76"></h5>
+<p><strong>Description:</strong>  </p>
+<h3 id="random_shuffle">random_shuffle</h3>
+<h5 id="_77"></h5>
+<p><strong>Signature:</strong><br />
+random_shuffle(item_list)</p>
+<h5 id="_78"></h5>
 <p><strong>Description:</strong>  </p>
 <h2 id="ippy">ip.py</h2>
 <h3 id="import_15">Import:</h3>
 <p>labpack.records.ip  </p>
 <h3 id="description_15">Description:</h3>
 <h3 id="describe_ip">describe_ip</h3>
-<h5 id="_77"></h5>
+<h5 id="_79"></h5>
 <p><strong>Signature:</strong><br />
 describe_ip(ip_address, source=&rdquo;whatismyip&rdquo;)</p>
-<h5 id="_78"></h5>
+<h5 id="_80"></h5>
 <p><strong>Description:</strong><br />
 a method to get the details associated with an ip address<br />
 <table>
@@ -693,10 +722,10 @@ a method to get the details associated with an ip address<br />
 </tbody>
 </table></p>
 <h3 id="get_ip">get_ip</h3>
-<h5 id="_79"></h5>
+<h5 id="_81"></h5>
 <p><strong>Signature:</strong><br />
 get_ip(source=&rdquo;aws&rdquo;)</p>
-<h5 id="_80"></h5>
+<h5 id="_82"></h5>
 <p><strong>Description:</strong><br />
 a method to get current public ip address of machine  </p>
 <h2 id="settingspy">settings.py</h2>
@@ -704,10 +733,10 @@ a method to get current public ip address of machine  </p>
 <p>labpack.records.settings  </p>
 <h3 id="description_16">Description:</h3>
 <h3 id="compile_settings">compile_settings</h3>
-<h5 id="_81"></h5>
+<h5 id="_83"></h5>
 <p><strong>Signature:</strong><br />
 compile_settings(model_path, file_path, ignore_errors=False)</p>
-<h5 id="_82"></h5>
+<h5 id="_84"></h5>
 <p><strong>Description:</strong><br />
 a method to compile configuration values from different sources</p>
 <pre><code>    NOTE:   method searches the environment variables, a local
@@ -737,17 +766,17 @@ a method to compile configuration values from different sources</p>
 </tbody>
 </table></p>
 <h3 id="ingest_environ">ingest_environ</h3>
-<h5 id="_83"></h5>
+<h5 id="_85"></h5>
 <p><strong>Signature:</strong><br />
 ingest_environ(model_path=&rdquo;&ldquo;)</p>
-<h5 id="_84"></h5>
+<h5 id="_86"></h5>
 <p><strong>Description:</strong><br />
 a method to convert environment variables to a python dictionary  </p>
 <h3 id="load_settings">load_settings</h3>
-<h5 id="_85"></h5>
+<h5 id="_87"></h5>
 <p><strong>Signature:</strong><br />
 load_settings(file_path, module_name=&rdquo;&ldquo;, secret_key=&rdquo;&ldquo;)</p>
-<h5 id="_86"></h5>
+<h5 id="_88"></h5>
 <p><strong>Description:</strong><br />
 a method to load data from json valid files<br />
 <table>
@@ -761,10 +790,10 @@ a method to load data from json valid files<br />
 </tbody>
 </table></p>
 <h3 id="remove_settings">remove_settings</h3>
-<h5 id="_87"></h5>
+<h5 id="_89"></h5>
 <p><strong>Signature:</strong><br />
 remove_settings(file_path, retry_count=10, remove_dir=False)</p>
-<h5 id="_88"></h5>
+<h5 id="_90"></h5>
 <p><strong>Description:</strong><br />
 a method to remove a file using a child process</p>
 <pre><code>    http://www.petercollingridge.co.uk/blog/running-multiple-processes-python
@@ -781,10 +810,10 @@ a method to remove a file using a child process</p>
 </tbody>
 </table></p>
 <h3 id="save_settings">save_settings</h3>
-<h5 id="_89"></h5>
+<h5 id="_91"></h5>
 <p><strong>Signature:</strong><br />
 save_settings(file_path, record_details, overwrite=False, secret_key=&rdquo;&ldquo;)</p>
-<h5 id="_90"></h5>
+<h5 id="_92"></h5>
 <p><strong>Description:</strong><br />
 a method to save dictionary typed data to a local file<br />
 <table>
@@ -803,22 +832,22 @@ a method to save dictionary typed data to a local file<br />
 <p>labpack.storage.barrel  </p>
 <h3 id="description_17">Description:</h3>
 <h3 id="main">main</h3>
-<h5 id="_91"></h5>
-<p><strong>Signature:</strong><br />
-main(args)</p>
-<h5 id="_92"></h5>
-<p><strong>Description:</strong>  </p>
-<h3 id="retrieve_values">retrieve_values</h3>
 <h5 id="_93"></h5>
 <p><strong>Signature:</strong><br />
-retrieve_values(file_path)</p>
+main(args)</p>
 <h5 id="_94"></h5>
 <p><strong>Description:</strong>  </p>
-<h3 id="store_values">store_values</h3>
+<h3 id="retrieve_values">retrieve_values</h3>
 <h5 id="_95"></h5>
 <p><strong>Signature:</strong><br />
-store_values(file_path, data)</p>
+retrieve_values(file_path)</p>
 <h5 id="_96"></h5>
+<p><strong>Description:</strong>  </p>
+<h3 id="store_values">store_values</h3>
+<h5 id="_97"></h5>
+<p><strong>Signature:</strong><br />
+store_values(file_path, data)</p>
+<h5 id="_98"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>

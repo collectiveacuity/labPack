@@ -1668,23 +1668,23 @@ a method to establish a mosquitto socket with server to receive position updates
 <h3 id="publish">publish</h3>
 <h5 id="_173"></h5>
 <p><strong>Signature:</strong><br />
-publish(self, user_id, wifi_fingerprint, type=&rdquo;track&rdquo;, location_id=&rdquo;&ldquo;, port=1883)</p>
+publish(self, user_id, wifi_fingerprint, action=&rdquo;track&rdquo;, location_id=&rdquo;&ldquo;, port=1883)</p>
 <h5 id="_174"></h5>
-<p><strong>Description:</strong>  </p>
+<p><strong>Description:</strong><br />
+a method to publish wifi fingerprint data to a mosquitto server<br />
 <table>
 <thead>
-<tr><th>Argument        </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+<tr><th>Argument        </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                     </th></tr>
 </thead>
 <tbody>
-<tr><td>self            </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>user_id         </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>wifi_fingerprint</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>type            </td><td>str     </td><td>          </td><td>"track"  </td><td>             </td></tr>
-<tr><td>location_id     </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
-<tr><td>port            </td><td>int     </td><td>          </td><td>1883     </td><td>             </td></tr>
+<tr><td>self            </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                                </td></tr>
+<tr><td>user_id         </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with id of user                                          </td></tr>
+<tr><td>wifi_fingerprint</td><td>list  </td><td>Yes       </td><td>None     </td><td>list of dictionaries with wifi fields mac and rssi              </td></tr>
+<tr><td>action          </td><td>str   </td><td>          </td><td>&ldquo;track&rdquo;  </td><td>string with type of action to perform with data (track or learn)</td></tr>
+<tr><td>location_id     </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with classifier to add to learning data       </td></tr>
+<tr><td>port            </td><td>int   </td><td>          </td><td>1883     </td><td>[optional] integer with port to connect to                      </td></tr>
 </tbody>
-</table>
-
+</table></p>
 <h2 id="telegrambotclient">telegramBotClient</h2>
 <h3 id="import_10">Import:</h3>
 <p>labpack.messaging.telegram.telegramBotClient  </p>
@@ -2574,27 +2574,11 @@ inspect(self, container_alias=&rdquo;&ldquo;, docker_image=&rdquo;&ldquo;, image
 </tbody>
 </table>
 
-<h3 id="run">run</h3>
+<h3 id="rm">rm</h3>
 <h5 id="_277"></h5>
 <p><strong>Signature:</strong><br />
-run(self, run_script)</p>
-<h5 id="_278"></h5>
-<p><strong>Description:</strong>  </p>
-<table>
-<thead>
-<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
-</thead>
-<tbody>
-<tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>run_script</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
-</tbody>
-</table>
-
-<h3 id="rm">rm</h3>
-<h5 id="_279"></h5>
-<p><strong>Signature:</strong><br />
 rm(self, container_alias)</p>
-<h5 id="_280"></h5>
+<h5 id="_278"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -2607,10 +2591,10 @@ rm(self, container_alias)</p>
 </table>
 
 <h3 id="rmi">rmi</h3>
-<h5 id="_281"></h5>
+<h5 id="_279"></h5>
 <p><strong>Signature:</strong><br />
-rmi(self, image_id)</p>
-<h5 id="_282"></h5>
+rmi(self, image_id, override=False)</p>
+<h5 id="_280"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -2619,20 +2603,21 @@ rmi(self, image_id)</p>
 <tbody>
 <tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>image_id  </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>override  </td><td>bool    </td><td>          </td><td>False    </td><td>             </td></tr>
 </tbody>
 </table>
 
 <h3 id="ip">ip</h3>
-<h5 id="_283"></h5>
+<h5 id="_281"></h5>
 <p><strong>Signature:</strong><br />
 ip(self)</p>
-<h5 id="_284"></h5>
+<h5 id="_282"></h5>
 <p><strong>Description:</strong>  </p>
 <h3 id="command">command</h3>
-<h5 id="_285"></h5>
+<h5 id="_283"></h5>
 <p><strong>Signature:</strong><br />
 command(self, sys_command)</p>
-<h5 id="_286"></h5>
+<h5 id="_284"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -2645,11 +2630,12 @@ command(self, sys_command)</p>
 </table>
 
 <h3 id="synopsis">synopsis</h3>
-<h5 id="_287"></h5>
+<h5 id="_285"></h5>
 <p><strong>Signature:</strong><br />
 synopsis(self, container_settings)</p>
-<h5 id="_288"></h5>
-<p><strong>Description:</strong>  </p>
+<h5 id="_286"></h5>
+<p><strong>Description:</strong><br />
+a method to synthesize configuration settings required for docker compose<br />
 <table>
 <thead>
 <tr><th>Argument          </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                  </th></tr>
@@ -2658,13 +2644,12 @@ synopsis(self, container_settings)</p>
 <tr><td>self              </td><td>object</td><td>Yes       </td><td>None     </td><td>                                             </td></tr>
 <tr><td>container_settings</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary returned from dockerConfig.inspect</td></tr>
 </tbody>
-</table>
-
+</table></p>
 <h3 id="enter">enter</h3>
-<h5 id="_289"></h5>
+<h5 id="_287"></h5>
 <p><strong>Signature:</strong><br />
 enter(self, container_alias)</p>
-<h5 id="_290"></h5>
+<h5 id="_288"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -2676,6 +2661,26 @@ enter(self, container_alias)</p>
 </tbody>
 </table>
 
+<h3 id="run">run</h3>
+<h5 id="_289"></h5>
+<p><strong>Signature:</strong><br />
+run(self, docker_image, container_alias, environmental_variables=None, mapped_ports=None, mounted_volumes=None)</p>
+<h5 id="_290"></h5>
+<p><strong>Description:</strong><br />
+TODO a method to start a container<br />
+<table>
+<thead>
+<tr><th>Argument               </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self                   </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>docker_image           </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>container_alias        </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>environmental_variables</td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>mapped_ports           </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>mounted_volumes        </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table></p>
 <h2 id="herokuclient">herokuClient</h2>
 <h3 id="import_16">Import:</h3>
 <p>labpack.platforms.heroku.herokuClient  </p>
