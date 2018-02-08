@@ -1,6 +1,15 @@
 ChangeLog
 =========
 
+0.16 (2018.02.07)
+-----------------
+* [FEATURE ADDED] requestsHandler class as parent class to handle requests connectivity
+* [UPDATE] herokuClient to reflect latest heroku-cli updates to core plugins
+* [UPDATE] appdataClient to make absent directories in root_path argument
+* [UPDATE] dockerClient synopsis method retrieves port mapping on inactive containers
+* [BUG FIX] added recursion through dicts and lists in clean_data method of data package
+* [BUG FIX] added shell=True to check_output in dockerClient
+
 0.15 (2018.02.03)
 -----------------
 * [FEATURE ADDED] findClient class for sending/receiving data from a FIND server
