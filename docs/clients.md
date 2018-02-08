@@ -1559,21 +1559,21 @@ a method to establish a mosquitto socket with server to receive position updates
 ### publish
 ##### 
 **Signature:**  
-publish(self, user_id, wifi_fingerprint, type="track", location_id="", port=1883)
+publish(self, user_id, wifi_fingerprint, action="track", location_id="", port=1883)
 ##### 
 **Description:**  
-  
+a method to publish wifi fingerprint data to a mosquitto server  
 <table>
 <thead>
-<tr><th>Argument        </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+<tr><th>Argument        </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                     </th></tr>
 </thead>
 <tbody>
-<tr><td>self            </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>user_id         </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>wifi_fingerprint</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>type            </td><td>str     </td><td>          </td><td>"track"  </td><td>             </td></tr>
-<tr><td>location_id     </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
-<tr><td>port            </td><td>int     </td><td>          </td><td>1883     </td><td>             </td></tr>
+<tr><td>self            </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                                </td></tr>
+<tr><td>user_id         </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with id of user                                          </td></tr>
+<tr><td>wifi_fingerprint</td><td>list  </td><td>Yes       </td><td>None     </td><td>list of dictionaries with wifi fields mac and rssi              </td></tr>
+<tr><td>action          </td><td>str   </td><td>          </td><td>"track"  </td><td>string with type of action to perform with data (track or learn)</td></tr>
+<tr><td>location_id     </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with classifier to add to learning data       </td></tr>
+<tr><td>port            </td><td>int   </td><td>          </td><td>1883     </td><td>[optional] integer with port to connect to                      </td></tr>
 </tbody>
 </table>
 
@@ -2475,22 +2475,6 @@ inspect(self, container_alias="", docker_image="", image_tag="")
 <tr><td>image_tag      </td><td>str   </td><td>          </td><td>""       </td><td>                             </td></tr>
 </tbody>
 </table>
-### run
-##### 
-**Signature:**  
-run(self, run_script)
-##### 
-**Description:**  
-  
-<table>
-<thead>
-<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
-</thead>
-<tbody>
-<tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>run_script</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
-</tbody>
-</table>
 ### rm
 ##### 
 **Signature:**  
@@ -2510,7 +2494,7 @@ rm(self, container_alias)
 ### rmi
 ##### 
 **Signature:**  
-rmi(self, image_id)
+rmi(self, image_id, override=False)
 ##### 
 **Description:**  
   
@@ -2521,6 +2505,7 @@ rmi(self, image_id)
 <tbody>
 <tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>image_id  </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>override  </td><td>bool    </td><td>          </td><td>False    </td><td>             </td></tr>
 </tbody>
 </table>
 ### ip
@@ -2552,7 +2537,7 @@ command(self, sys_command)
 synopsis(self, container_settings)
 ##### 
 **Description:**  
-  
+a method to synthesize configuration settings required for docker compose  
 <table>
 <thead>
 <tr><th>Argument          </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                  </th></tr>
@@ -2576,6 +2561,26 @@ enter(self, container_alias)
 <tbody>
 <tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>container_alias</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+### run
+##### 
+**Signature:**  
+run(self, docker_image, container_alias, environmental_variables=None, mapped_ports=None, mounted_volumes=None)
+##### 
+**Description:**  
+TODO a method to start a container  
+<table>
+<thead>
+<tr><th>Argument               </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self                   </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>docker_image           </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>container_alias        </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>environmental_variables</td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>mapped_ports           </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>mounted_volumes        </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
 </tbody>
 </table>
 

@@ -260,10 +260,38 @@ labpack.handlers.requests
 ### handle_requests
 ##### 
 **Signature:**  
-handle_requests(request_object)
+handle_requests(request_object, uptime_url="www.google.com")
 ##### 
 **Description:**  
   
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type    </th><th>Required  </th><th>Default         </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>request_object</td><td>NoneType</td><td>Yes       </td><td>None            </td><td>             </td></tr>
+<tr><td>uptime_url    </td><td>str     </td><td>          </td><td>"www.google.com"</td><td>             </td></tr>
+</tbody>
+</table>
+### requestsHandler
+##### 
+**Signature:**  
+requestsHandler(self, uptime_url="www.google.com", requests_handler="handle_requests", response_handler=None, verbose=False)
+##### 
+**Description:**  
+the initialization method for the requestsHandler class object  
+<table>
+<thead>
+<tr><th>Argument        </th><th>Type    </th><th>Required  </th><th>Default          </th><th>Description                                                </th></tr>
+</thead>
+<tbody>
+<tr><td>self            </td><td>object  </td><td>Yes       </td><td>None             </td><td>                                                           </td></tr>
+<tr><td>uptime_url      </td><td>str     </td><td>          </td><td>"www.google.com" </td><td>[optional] string with url to test availability of internet</td></tr>
+<tr><td>requests_handler</td><td>function</td><td>          </td><td>"handle_requests"</td><td>[optional] callable method which accepts a Request object  </td></tr>
+<tr><td>response_handler</td><td>function</td><td>          </td><td>None             </td><td>[optional] callable method which accepts a Response object </td></tr>
+<tr><td>verbose         </td><td>bool    </td><td>          </td><td>False            </td><td>boolean to enable print out of status                      </td></tr>
+</tbody>
+</table>
 
 ## data.py
 ### Import:
