@@ -41,12 +41,12 @@ https://github.com/jgehrcke/python-cmdline-bootstrap
 http://www.pyinstaller.org/
 
 Installation Packages:
-pip3 install wheel
-pip3 install twine
+pip install wheel
+pip install twine
 
 Build Distributions:
-python3 setup.py sdist --format=gztar,zip
-pip3 wheel --no-index --no-deps --wheel-dir dist dist/labpack-0.16.tar.gz
+python setup.py sdist --format=gztar,zip
+pip wheel --no-index --no-deps --wheel-dir dist dist/labpack-0.16.tar.gz
 
 Upload (or Register) Distributions to PyPi:
 twine upload dist/labpack-0.16*
@@ -56,14 +56,14 @@ mkdocs gh-deploy
 .gitconfig [credential] helper = wincred
 
 Installation:
-pip3 install [module]
+pip install [module]
 python setup.py develop  # for local on-the-fly file updates
 python setup.py install  # when possessing distribution files
-pip3 install dist/labpack-0.16-py3-none-any.whl # when possessing wheel file
+pip install dist/labpack-0.16-py3-none-any.whl # when possessing wheel file
 
 Uninstall:
-pip3 uninstall [module]
-python3 setup.py develop --uninstall # for removing symbolic link
+pip uninstall [module]
+python setup.py develop --uninstall # for removing symbolic link
 # remove command line tool in ../Python/Python35-32/Scripts/
 
 CLI Installation:

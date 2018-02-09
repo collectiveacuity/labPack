@@ -45,6 +45,8 @@ class herokuClient(requestsHandler):
         for key, value in input_fields.items():
             object_title = '%s(%s=%s)' % (title, key, str(value))
             self.fields.validate(value, '.%s' % key, object_title)
+    
+    # construct properties
         self.email = account_email
         self.token = auth_token
         self.subdomain = ''
