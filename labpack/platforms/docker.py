@@ -414,7 +414,7 @@ class dockerClient(requestsHandler):
         :return: string with ip address of system
         '''
 
-        if self.vbox:
+        if self.localhost.os.sysname == 'Windows' and float(self.localhost.os.release) < 10:
             sys_cmd = 'docker-machine ip %s' % self.vbox
             system_ip = self.command(sys_cmd).replace('\n','')
         else:
