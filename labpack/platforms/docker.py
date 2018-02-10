@@ -2,7 +2,9 @@ __author__ = 'rcj1492'
 __created__ = '2016.03'
 __license__ = 'MIT'
 
-class dockerClient(object):
+from labpack.handlers.requests import requestsHandler
+
+class dockerClient(requestsHandler):
 
     _class_fields = {
         'schema': {
@@ -51,7 +53,10 @@ class dockerClient(object):
         '''
 
         title = '%s.__init__' % self.__class__.__name__
-        
+    
+    # construct super
+        super(dockerClient, self).__init__()
+
     # construct fields model
         from jsonmodel.validators import jsonModel
         self.fields = jsonModel(self._class_fields)
@@ -417,6 +422,18 @@ class dockerClient(object):
 
         return system_ip
 
+    def search(self, image_name):
+
+    # run docker search
+        sys_command = 'docker search %s' % image_name
+        shell_output = self._handle_command(sys_command)
+    
+    # parse table
+        from labpack.parsing.shell import convert_table
+        image_list = convert_table(shell_output)
+
+        return image_list
+
     def command(self, sys_command):
 
         '''
@@ -676,6 +693,8 @@ if __name__ == '__main__':
     print(containers)
     networks = docker_client.network_ls()
     print(networks)
+    remote_images = docker_client.search('alpine')
+    print(remote_images)
 
 # test docker run
     from labpack.records.settings import load_settings
