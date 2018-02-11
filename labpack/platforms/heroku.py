@@ -95,19 +95,22 @@ class herokuClient(requestsHandler):
         git_regex = re.compile('machine\sgit\.heroku\.com.*?\s\slogin\s.*?\n', re.S)
         
     # retrieve netrc text
-        netrc_text = open(netrc_path).read()
-    
+        netrc_text = open(netrc_path).read().strip()
+
     # replace text with new password and login
         new_api = 'machine api.heroku.com\n  password %s\n  login %s\n' % (auth_token, account_email)
         new_git = 'machine git.heroku.com\n  password %s\n  login %s\n' % (auth_token, account_email)
-        netrc_text = api_regex.sub(new_api, netrc_text)
-        netrc_text = git_regex.sub(new_git, netrc_text)
-        
+        if api_regex.findall(netrc_text):
+            netrc_text = api_regex.sub(new_api, netrc_text)
+            netrc_text = git_regex.sub(new_git, netrc_text)
+        else:
+            netrc_text += '\n\n' + new_api + new_git
+
     # save netrc
         with open(netrc_path, 'wt') as f:
             f.write(netrc_text)
             f.close()
-            
+
         return netrc_text
     
     def _validate_login(self):
@@ -130,20 +133,33 @@ class herokuClient(requestsHandler):
                 error_msg += windows_insert
             self.printer('ERROR.')
             raise Exception(error_msg)
-    
+
     # replace value in netrc
-        self._update_netrc(netrc_path, self.token, self.email)
-    
+        netrc_text = self._update_netrc(netrc_path, self.token, self.email)
+
     # verify remote access
+        def handle_invalid(line, proc):
+            if line.find('Invalid credentials') > -1:
+            # close process
+                import psutil
+                process = psutil.Process(proc.pid)
+                for proc in process.children(recursive=True):
+                    proc.kill()
+                process.kill()
+            # restore values to netrc
+                with open(netrc_path, 'wt') as f:
+                    f.write(netrc_text)
+                    f.close()
+            # report error
+                self.printer('ERROR.')
+                raise Exception('Permission denied. Heroku auth token is not valid.\nTry: "heroku login", then "heroku auth:token"')
         sys_command = 'heroku apps --json'
-        response = self._handle_command(sys_command, handle_error=True)
-        if response.find('Invalid credentials') > -1:
-            raise Exception('Permission denied. Heroku login credentials are not valid.')
-    
+        response = self._handle_command(sys_command, interactive=handle_invalid, handle_error=True)
+
     # add list to object
         import json
         self.apps = json.loads(response)
-        
+
         self.printer('done.')
 
         return self
@@ -275,10 +291,10 @@ class herokuClient(requestsHandler):
     
     # build docker image
         sys_command = 'cd %s; heroku container:push web --app %s' % (dockerfile_root, self.subdomain)
-        heroku_response = self._handle_command(sys_command, pipe=True)
+        self._handle_command(sys_command, print_pipe=True)
         self.printer('Deployment complete.')
 
-        return heroku_response
+        return True
 
     def deploy_app(self, site_folder, runtime_type=''):
 
@@ -383,7 +399,7 @@ class herokuClient(requestsHandler):
         self.printer('Deploying %s to heroku ... ' % site_folder, flush=True)
         try:
             sys_command = 'cd %s; heroku builds:create -a %s' % (temp_folder, self.subdomain)
-            self._handle_command(sys_command, pipe=True)
+            self._handle_command(sys_command, print_pipe=True)
         except:
             self.printer('ERROR')
             _cleanup_temp()

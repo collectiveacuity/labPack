@@ -80,21 +80,42 @@ class requestsHandler(object):
         self.handle_requests = requests_handler
         self.handle_response = response_handler
         
-    def _handle_command(self, sys_command, pipe=False, handle_error=False):
+    def _handle_command(self, sys_command, pipe=False, interactive=None, print_pipe=False, handle_error=False):
 
-        ''' a method to handle system commands which require connectivity '''
+        '''
+            a method to handle system commands which require connectivity
+            
+        :param sys_command: string with shell command to run in subprocess 
+        :param pipe: boolean to return a Popen object
+        :param interactive: [optional] callable object that accepts (string, Popen)
+        :param print_pipe: [optional] boolean to send all pipe results to print
+        :param handle_error: boolean to return error messages due to connectivity to stdout
+        :return: Popen object or string or None
+        '''
 
         import sys
         from subprocess import Popen, PIPE, check_output, STDOUT, CalledProcessError
 
         try:
             if pipe:
-                response = Popen(sys_command, shell=True, stdout=PIPE, stderr=STDOUT)
-                for line in response.stdout:
+                p = Popen(sys_command, shell=True, stdout=PIPE, stderr=STDOUT)
+                return p
+            elif interactive:
+                p = Popen(sys_command, shell=True, stdout=PIPE, stderr=STDOUT)
+                response = ''
+                for line in p.stdout:
+                    interactive(line.decode('utf-8').rstrip('\n'), p)
+                    response += line.decode('utf-8')
+                    sys.stdout.flush()
+                p.wait()
+                return response
+            elif print_pipe:
+                p = Popen(sys_command, shell=True, stdout=PIPE, stderr=STDOUT)
+                for line in p.stdout:
                     self.printer(line.decode('utf-8').rstrip('\n'))
                     sys.stdout.flush()
-                response.wait()
-                return response
+                p.wait()
+                return None
             else:
                 response = check_output(sys_command, shell=True, stderr=STDOUT).decode('utf-8')
                 return response
