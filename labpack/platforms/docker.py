@@ -487,7 +487,8 @@ class dockerClient(requestsHandler):
             'container_alias': container_settings['Name'].replace('/',''),
             'container_variables': {},
             'mapped_ports': {},
-            'mounted_volumes': {}
+            'mounted_volumes': {},
+            'container_networks': []
         }
     
     # parse fields nested in container settings
@@ -509,6 +510,9 @@ class dockerClient(requestsHandler):
             system_path = volume['Source']
             container_path = volume['Destination']
             settings['mounted_volumes'][system_path] = container_path
+        if container_settings['NetworkSettings']['Networks']:
+            for key in container_settings['NetworkSettings']['Networks'].keys():
+                settings['container_networks'].append(key)
 
     # determine stopped status
         if settings['container_status'] == 'exited':
@@ -696,22 +700,22 @@ if __name__ == '__main__':
     remote_images = docker_client.search('alpine')
     print(remote_images)
 
-# test docker run
-    from labpack.records.settings import load_settings
-    docker_config = load_settings('../../data/test_docker.yaml')
-    container_id = docker_client.run(
-        image_name=docker_config['image_name'],
-        container_alias=docker_config['container_alias'],
-        environmental_variables=docker_config['envvar'],
-        mounted_volumes=docker_config['mounts'],
-        mapped_ports=docker_config['ports'],
-        start_command=docker_config['command']
-    )
-    print(container_id)
-
-# wait for container to start
-    from time import sleep
-    sleep(1)
+# # test docker run
+#     from labpack.records.settings import load_settings
+#     docker_config = load_settings('../../data/test_docker.yaml')
+#     container_id = docker_client.run(
+#         image_name=docker_config['image_name'],
+#         container_alias=docker_config['container_alias'],
+#         environmental_variables=docker_config['envvar'],
+#         mounted_volumes=docker_config['mounts'],
+#         mapped_ports=docker_config['ports'],
+#         start_command=docker_config['command']
+#     )
+#     print(container_id)
+# 
+# # wait for container to start
+#     from time import sleep
+#     sleep(1)
 
 # test docker synopsis
     for container in containers:

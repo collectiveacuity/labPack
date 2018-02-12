@@ -79,7 +79,7 @@ class sqlClient(object):
         NOTE:   to create a new database, use a tool SQL Workbench
                 https://data36.com/install-sql-workbench-postgresql/
                 SET AUTOCOMMIT = ON
-                create database medium
+                create database mydb
         '''
         
         title = '%s.__init__' % self.__class__.__name__
