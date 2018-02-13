@@ -23,9 +23,15 @@ class cassandraClient(object):
 
     '''
         a class of methods for interacting with a cassandra database
-    
+
+    CQL Connector
     https://datastax.github.io/python-driver/getting_started.html
-    
+    https://flask-cqlalchemy.readthedocs.io/en/latest/
+
+    Authentication
+    https://datastax.github.io/python-driver/api/cassandra/auth.html#
+    https://cassandra.apache.org/doc/latest/operating/security.html#enabling-password-authentication
+
     NOTE:   WIP
     '''
     

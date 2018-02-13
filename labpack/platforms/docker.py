@@ -351,7 +351,7 @@ class dockerClient(requestsHandler):
         image_settings = output_dict[0]
 
         return image_settings
-    
+
     def rm(self, container_alias):
 
         '''
@@ -377,13 +377,12 @@ class dockerClient(requestsHandler):
 
         return output_lines[0]
 
-    def rmi(self, image_id, override=False):
+    def rmi(self, image_id):
 
         '''
             a method to remove an image
 
         :param image_name: string with id of image
-        :param image_tag: boolean to override linked active container error
         :return: list of strings with image layers removed
         '''
 
@@ -398,10 +397,7 @@ class dockerClient(requestsHandler):
             self.fields.validate(value, '.%s' % key, object_title)
     
     # send remove command 
-        force = ''
-        if override:
-            force = '-f '
-        sys_cmd = 'docker rmi %s%s' % (force, image_id)
+        sys_cmd = 'docker rmi %s' % image_id
         output_lines = self.command(sys_cmd).split('\n')
 
         return output_lines
@@ -438,13 +434,13 @@ class dockerClient(requestsHandler):
 
         '''
             a method to run a system command in a separate shell
-            
+
         :param sys_command: string with docker command
         :return: string output from docker
         '''
 
         title = '%s.command' % self.__class__.__name__
-        
+
     # validate inputs
         input_fields = {
             'sys_command': sys_command
@@ -452,9 +448,14 @@ class dockerClient(requestsHandler):
         for key, value in input_fields.items():
             object_title = '%s(%s=%s)' % (title, key, str(value))
             self.fields.validate(value, '.%s' % key, object_title)
-    
-        from subprocess import check_output
-        return check_output(sys_command, shell=True).decode('utf-8')
+
+        from subprocess import check_output, STDOUT, CalledProcessError
+        try:
+            output = check_output(sys_command, shell=True, stderr=STDOUT).decode('utf-8')
+        except CalledProcessError as err:
+            raise Exception(err.output.decode('ascii', 'ignore'))
+
+        return output
 
     def synopsis(self, container_alias):
 
@@ -477,7 +478,7 @@ class dockerClient(requestsHandler):
             
     # retrieve container settings
         container_settings = self.inspect_container(container_alias)
-    
+        
     # compose default response
         settings = {
             'container_status': container_settings['State']['Status'],
@@ -496,8 +497,9 @@ class dockerClient(requestsHandler):
         num_pattern = re.compile('\d+')
         if container_settings['NetworkSettings']['Ports']:
             for key, value in container_settings['NetworkSettings']['Ports'].items():
-                port = num_pattern.findall(value[0]['HostPort'])[0]
-                settings['mapped_ports'][port] = num_pattern.findall(key)[0]
+                if value:
+                    port = num_pattern.findall(value[0]['HostPort'])[0]
+                    settings['mapped_ports'][port] = num_pattern.findall(key)[0]
         elif container_settings['HostConfig']['PortBindings']:
             for key, value in container_settings['HostConfig']['PortBindings'].items():
                 port = num_pattern.findall(value[0]['HostPort'])[0]
@@ -510,9 +512,10 @@ class dockerClient(requestsHandler):
             system_path = volume['Source']
             container_path = volume['Destination']
             settings['mounted_volumes'][system_path] = container_path
-        if container_settings['NetworkSettings']['Networks']:
-            for key in container_settings['NetworkSettings']['Networks'].keys():
-                settings['container_networks'].append(key)
+        if container_settings['NetworkSettings']:
+            if container_settings['NetworkSettings']['Networks']:
+                for key in container_settings['NetworkSettings']['Networks'].keys():
+                    settings['container_networks'].append(key)
 
     # determine stopped status
         if settings['container_status'] == 'exited':

@@ -89,7 +89,7 @@ class requestsHandler(object):
         :param pipe: boolean to return a Popen object
         :param interactive: [optional] callable object that accepts (string, Popen)
         :param print_pipe: [optional] boolean to send all pipe results to print
-        :param handle_error: boolean to return error messages due to connectivity to stdout
+        :param handle_error: boolean to return error message (default: errors are raised)
         :return: Popen object or string or None
         '''
 
@@ -123,8 +123,9 @@ class requestsHandler(object):
             try:
                 import requests
                 requests.get(self.uptime_ssl)
+                std_err = err.output.decode('ascii', 'ignore')
                 if handle_error:
-                    return err.output.decode('ascii', 'ignore')
+                    return std_err
             except:
                 from requests import Request
                 request_object = Request(method='GET', url=self.uptime_ssl)
@@ -132,10 +133,7 @@ class requestsHandler(object):
                 self.printer('ERROR')
                 raise ConnectionError(request_details['error'])
             self.printer('ERROR')
-            raise
-        except:
-            self.printer('ERROR')
-            raise
+            raise Exception(std_err)
         
     def _check_connectivity(self, err):
 
