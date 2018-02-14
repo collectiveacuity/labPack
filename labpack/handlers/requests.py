@@ -103,20 +103,21 @@ class requestsHandler(object):
             elif interactive:
                 p = Popen(sys_command, shell=True, stdout=PIPE, stderr=STDOUT)
                 exchange = ''
-            ## alternative communication ??
-            ## https://stackoverflow.com/a/17109481/4941585
-            #   stdout = p.stdout.readline()
-            #   while stdout:
-            #       response += stdout
-            #       stdin = interactive(stdout, p)
-            #       if stdin:
-            #           stdout, stderr = p.communicate(stdin.encode())
-            #       stdout = p.stdout.readline()
-                for line in p.stdout:
-                    interactive(line.decode('utf-8').rstrip('\n'), p)
-                    exchange += line.decode('utf-8')
-                    sys.stdout.flush()
-                p.wait()
+            # read/write to subprocess
+            # https://stackoverflow.com/a/17109481/4941585
+                output = p.stdout.readline()
+                while output:
+                    output_string = output.decode('utf-8')
+                    exchange += output_string
+                    input = interactive(output_string.rstrip('\n'), p)
+                    if input:
+                        p.stdin.write(str(input + '\n').encode())
+                    output = p.stdout.readline()
+                # for line in p.stdout:
+                #     interactive(line.decode('utf-8').rstrip('\n'), p)
+                #     exchange += line.decode('utf-8')
+                #     sys.stdout.flush()
+                # p.wait()
                 return exchange
             elif print_pipe:
                 p = Popen(sys_command, shell=True, stdout=PIPE, stderr=STDOUT)
