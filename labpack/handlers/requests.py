@@ -87,7 +87,7 @@ class requestsHandler(object):
             
         :param sys_command: string with shell command to run in subprocess 
         :param pipe: boolean to return a Popen object
-        :param interactive: [optional] callable object that accepts (string, Popen)
+        :param interactive: [optional] callable object that accepts (string, Popen object)
         :param print_pipe: [optional] boolean to send all pipe results to print
         :param handle_error: boolean to return error message (default: errors are raised)
         :return: Popen object or string or None
@@ -98,17 +98,26 @@ class requestsHandler(object):
 
         try:
             if pipe:
-                p = Popen(sys_command, shell=True, stdout=PIPE, stderr=STDOUT)
+                p = Popen(sys_command, shell=True, stdout=PIPE, stderr=PIPE)
                 return p
             elif interactive:
                 p = Popen(sys_command, shell=True, stdout=PIPE, stderr=STDOUT)
-                response = ''
+                exchange = ''
+            ## alternative communication ??
+            ## https://stackoverflow.com/a/17109481/4941585
+            #   stdout = p.stdout.readline()
+            #   while stdout:
+            #       response += stdout
+            #       stdin = interactive(stdout, p)
+            #       if stdin:
+            #           stdout, stderr = p.communicate(stdin.encode())
+            #       stdout = p.stdout.readline()
                 for line in p.stdout:
                     interactive(line.decode('utf-8').rstrip('\n'), p)
-                    response += line.decode('utf-8')
+                    exchange += line.decode('utf-8')
                     sys.stdout.flush()
                 p.wait()
-                return response
+                return exchange
             elif print_pipe:
                 p = Popen(sys_command, shell=True, stdout=PIPE, stderr=STDOUT)
                 for line in p.stdout:
@@ -130,9 +139,9 @@ class requestsHandler(object):
                 from requests import Request
                 request_object = Request(method='GET', url=self.uptime_ssl)
                 request_details = self.handle_requests(request_object)
-                self.printer('ERROR')
+                self.printer('ERROR.')
                 raise ConnectionError(request_details['error'])
-            self.printer('ERROR')
+            self.printer('ERROR.')
             raise Exception(std_err)
         
     def _check_connectivity(self, err):
@@ -146,9 +155,9 @@ class requestsHandler(object):
             from requests import Request
             request_object = Request(method='GET', url=self.uptime_ssl)
             request_details = self.handle_requests(request_object)
-            self.printer('ERROR')
+            self.printer('ERROR.')
             raise ConnectionError(request_details['error'])
-        self.printer('ERROR')
+        self.printer('ERROR.')
         raise err
     
     def _request(self, **kwargs):

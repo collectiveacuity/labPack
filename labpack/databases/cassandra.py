@@ -37,11 +37,13 @@ class cassandraClient(object):
     
     _class_fields = {
         'schema': {
-            'database_url': ''
+            'database_url': '',
+            'username': '',
+            'password': ''
         }
     }
 
-    def __init__(self, database_url):
+    def __init__(self, database_url, username='', password=''):
 
     # construct endpoint
         self.endpoint = database_url
@@ -50,7 +52,14 @@ class cassandraClient(object):
         from sys import path as sys_path
         sys_path.append(sys_path.pop(0))
         from cassandra.cluster import Cluster
-        self.cluster = Cluster([self.endpoint])
+        from cassandra.auth import PlainTextAuthProvider
+        auth_provider = None
+        if username and password:
+            auth_provider = PlainTextAuthProvider(
+                username=username, 
+                password=password
+            )
+        self.cluster = Cluster([self.endpoint], auth_provider=auth_provider)
         sys_path.insert(0, sys_path.pop())
 
     # construct session

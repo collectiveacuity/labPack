@@ -274,15 +274,15 @@ class sshClient(object):
 
     # run command through ssh on other platforms
         else:
-            from subprocess import Popen, PIPE
+            from subprocess import Popen, PIPE, STDOUT
             for i in range(len(commands)):
                 self.ec2.iam.printer('[%s@%s]: %s ... ' % (self.login_name, self.instance_ip, commands[i]), flush=True)
                 sys_command = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentityFile="%s" %s@%s %s' % (self.pem_file, self.login_name, self.instance_ip, commands[i])
-                pipes = Popen(sys_command.split(), stdout=PIPE, stderr=PIPE)
+                pipes = Popen(sys_command.split(), stdout=PIPE, stderr=STDOUT)
                 std_out, std_err = pipes.communicate()
                 if pipes.returncode != 0:
                     self.ec2.iam.printer('ERROR.')
-                    raise Exception('Failure running [%s@%s]: %s\n%s' % (self.login_name, self.instance_ip, commands[i], std_err.decode('utf-8').strip()))
+                    raise Exception('Failure running [%s@%s]: %s\n%s' % (self.login_name, self.instance_ip, commands[i], std_out.decode('utf-8').strip()))
 
         # report response to individual commands
                 else:

@@ -138,8 +138,8 @@ class herokuClient(requestsHandler):
         netrc_text = self._update_netrc(netrc_path, self.token, self.email)
 
     # verify remote access
-        def handle_invalid(line, proc):
-            if line.find('Invalid credentials') > -1:
+        def handle_invalid(stdout, proc):
+            if stdout.find('Invalid credentials') > -1:
             # close process
                 import psutil
                 process = psutil.Process(proc.pid)
