@@ -105,14 +105,14 @@ class requestsHandler(object):
                 exchange = ''
             # read/write to subprocess
             # https://stackoverflow.com/a/17109481/4941585
-                output = p.stdout.readline()
-                while output:
-                    output_string = output.decode('utf-8')
+                p_output = p.stdout.readline()
+                while p_output:
+                    output_string = p_output.decode('utf-8')
                     exchange += output_string
-                    input = interactive(output_string.rstrip('\n'), p)
-                    if input:
-                        p.stdin.write(str(input + '\n').encode())
-                    output = p.stdout.readline()
+                    p_input = interactive(output_string.rstrip('\n'), p)
+                    if p_input:
+                        p.stdin.write(str(p_input + '\n').encode())
+                    p_output = p.stdout.readline()
                 # for line in p.stdout:
                 #     interactive(line.decode('utf-8').rstrip('\n'), p)
                 #     exchange += line.decode('utf-8')

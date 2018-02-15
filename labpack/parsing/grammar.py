@@ -3,13 +3,16 @@ __created__ = '2017.06'
 __license__ = 'MIT'
 
 
-def join_words(word_list):
+def join_words(word_list, operator='conjuctive'):
 
     text = ''
     for i in range(len(word_list)):
         if text:
             if i + 1 == len(word_list):
-                text += ' and '
+                if operator == 'disjunctive':
+                    text += ' or '
+                else:
+                    text += ' and '
             else:
                 text += ', '
         text += word_list[i]
