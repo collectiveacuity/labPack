@@ -2449,30 +2449,52 @@ a method to initialize the dockerClient class
 images(self)
 ##### 
 **Description:**  
-  
+a method to list the local docker images  
 ### ps
 ##### 
 **Signature:**  
 ps(self)
 ##### 
 **Description:**  
-  
-### inspect
+a method to list the local active docker containers  
+### network_ls
 ##### 
 **Signature:**  
-inspect(self, container_alias="", docker_image="", image_tag="")
+network_ls(self)
 ##### 
 **Description:**  
-  
+a method to list the available networks  
+### inspect_container
+##### 
+**Signature:**  
+inspect_container(self, container_alias)
+##### 
+**Description:**  
+a method to retrieve the settings of a container  
 <table>
 <thead>
-<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                  </th></tr>
+<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                        </th></tr>
 </thead>
 <tbody>
-<tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                             </td></tr>
-<tr><td>container_alias</td><td>str   </td><td>          </td><td>""       </td><td>string with name of container</td></tr>
-<tr><td>docker_image   </td><td>str   </td><td>          </td><td>""       </td><td>                             </td></tr>
-<tr><td>image_tag      </td><td>str   </td><td>          </td><td>""       </td><td>                             </td></tr>
+<tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                   </td></tr>
+<tr><td>container_alias</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name or id of container</td></tr>
+</tbody>
+</table>
+### inspect_image
+##### 
+**Signature:**  
+inspect_image(self, image_name, image_tag="")
+##### 
+**Description:**  
+a method to retrieve the settings of an image  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                     </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                </td></tr>
+<tr><td>image_name</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name or id of image                 </td></tr>
+<tr><td>image_tag </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with tag associated with image</td></tr>
 </tbody>
 </table>
 ### rm
@@ -2481,20 +2503,43 @@ inspect(self, container_alias="", docker_image="", image_tag="")
 rm(self, container_alias)
 ##### 
 **Description:**  
-  
+a method to remove an active container  
 <table>
 <thead>
-<tr><th>Argument       </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                        </th></tr>
 </thead>
 <tbody>
-<tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>container_alias</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                   </td></tr>
+<tr><td>container_alias</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name or id of container</td></tr>
 </tbody>
 </table>
 ### rmi
 ##### 
 **Signature:**  
-rmi(self, image_id, override=False)
+rmi(self, image_id)
+##### 
+**Description:**  
+a method to remove an image  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>image_id  </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+### ip
+##### 
+**Signature:**  
+ip(self)
+##### 
+**Description:**  
+a method to retrieve the ip of system running docker  
+### search
+##### 
+**Signature:**  
+search(self, image_name)
 ##### 
 **Description:**  
   
@@ -2504,24 +2549,16 @@ rmi(self, image_id, override=False)
 </thead>
 <tbody>
 <tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>image_id  </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>override  </td><td>bool    </td><td>          </td><td>False    </td><td>             </td></tr>
+<tr><td>image_name</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 </tbody>
 </table>
-### ip
-##### 
-**Signature:**  
-ip(self)
-##### 
-**Description:**  
-  
 ### command
 ##### 
 **Signature:**  
 command(self, sys_command)
 ##### 
 **Description:**  
-  
+a method to run a system command in a separate shell  
 <table>
 <thead>
 <tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description               </th></tr>
@@ -2534,17 +2571,17 @@ command(self, sys_command)
 ### synopsis
 ##### 
 **Signature:**  
-synopsis(self, container_settings)
+synopsis(self, container_alias)
 ##### 
 **Description:**  
-a method to synthesize configuration settings required for docker compose  
+a method to summarize key configuration settings required for docker compose  
 <table>
 <thead>
-<tr><th>Argument          </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                  </th></tr>
+<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                        </th></tr>
 </thead>
 <tbody>
-<tr><td>self              </td><td>object</td><td>Yes       </td><td>None     </td><td>                                             </td></tr>
-<tr><td>container_settings</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary returned from dockerConfig.inspect</td></tr>
+<tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                   </td></tr>
+<tr><td>container_alias</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name or id of container</td></tr>
 </tbody>
 </table>
 ### enter
@@ -2553,34 +2590,38 @@ a method to synthesize configuration settings required for docker compose
 enter(self, container_alias)
 ##### 
 **Description:**  
-  
+a method to open up a terminal inside a running container  
 <table>
 <thead>
-<tr><th>Argument       </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+<tr><th>Argument       </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                        </th></tr>
 </thead>
 <tbody>
-<tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>container_alias</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                   </td></tr>
+<tr><td>container_alias</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name or id of container</td></tr>
 </tbody>
 </table>
 ### run
 ##### 
 **Signature:**  
-run(self, docker_image, container_alias, environmental_variables=None, mapped_ports=None, mounted_volumes=None)
+run(self, image_name, container_alias, image_tag="", environmental_variables=None, mapped_ports=None, mounted_volumes=None, start_command="", network_name="host", run_flags="")
 ##### 
 **Description:**  
-TODO a method to start a container  
+a method to start a local container  
 <table>
 <thead>
-<tr><th>Argument               </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+<tr><th>Argument               </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                             </th></tr>
 </thead>
 <tbody>
-<tr><td>self                   </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>docker_image           </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>container_alias        </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>environmental_variables</td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
-<tr><td>mapped_ports           </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
-<tr><td>mounted_volumes        </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+<tr><td>self                   </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                                        </td></tr>
+<tr><td>image_name             </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name or id of image                                         </td></tr>
+<tr><td>container_alias        </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name to assign to container                                 </td></tr>
+<tr><td>image_tag              </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with tag assigned to image                            </td></tr>
+<tr><td>environmental_variables</td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary of envvar fields to add to container              </td></tr>
+<tr><td>mapped_ports           </td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary of port fields to map to container                </td></tr>
+<tr><td>mounted_volumes        </td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary of path fields to map to container                </td></tr>
+<tr><td>start_command          </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string of command (and any arguments) to run inside container</td></tr>
+<tr><td>network_name           </td><td>str   </td><td>          </td><td>"host"   </td><td>[optional] string with name of docker network to link container to      </td></tr>
+<tr><td>run_flags              </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with additional docker options to add to container    </td></tr>
 </tbody>
 </table>
 

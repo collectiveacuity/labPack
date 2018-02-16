@@ -1,6 +1,14 @@
 ChangeLog
 =========
 
+0.17 (2018.02.15)
+-----------------
+* [FEATURE ADDED] convert_table method added to parse STDOUT into python dicts/lists
+* [UPDATE] requestsHandler handle_command with both pipe and interactive options
+* [UPDATE] dockerClient with search method and requestsHandler inheritance
+* [UPDATE] join_words function with disjunction operator option
+* [BUG FIX] added rollback of netrc file on heroku login error in herokuClient
+
 0.16 (2018.02.07)
 -----------------
 * [FEATURE ADDED] requestsHandler class as parent class to handle requests connectivity

@@ -480,10 +480,19 @@ labpack.parsing.grammar
 ### join_words
 ##### 
 **Signature:**  
-join_words(word_list)
+join_words(word_list, operator="conjuction")
 ##### 
 **Description:**  
   
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default     </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>word_list </td><td>NoneType</td><td>Yes       </td><td>None        </td><td>             </td></tr>
+<tr><td>operator  </td><td>str     </td><td>          </td><td>"conjuction"</td><td>             </td></tr>
+</tbody>
+</table>
 ### section_text
 ##### 
 **Signature:**  
@@ -499,6 +508,30 @@ section_text(text_string, max_characters=500, continue_text="...")
 <tr><td>text_string   </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>max_characters</td><td>int     </td><td>          </td><td>500      </td><td>             </td></tr>
 <tr><td>continue_text </td><td>str     </td><td>          </td><td>"..."    </td><td>             </td></tr>
+</tbody>
+</table>
+
+## shell.py
+### Import:
+labpack.parsing.shell  
+### Description:
+a package of functions for parsing STDOUT and STDERR  
+### convert_table
+##### 
+**Signature:**  
+convert_table(shell_output, delimiter="\t|\s{", }', output="dict")
+##### 
+**Description:**  
+a method to convert a STDOUT shell table into a python data structure  
+<table>
+<thead>
+<tr><th>Argument    </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                                </th></tr>
+</thead>
+<tbody>
+<tr><td>shell_output</td><td>str     </td><td>Yes       </td><td>""       </td><td>string from STDOUT with headers                            </td></tr>
+<tr><td>delimiter   </td><td>str     </td><td>          </td><td>"\t|\s{" </td><td>string with regex pattern delimiting headers               </td></tr>
+<tr><td>}'          </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>                                                           </td></tr>
+<tr><td>output      </td><td>str     </td><td>          </td><td>"dict"   </td><td>string with type of structure to output (dict, list or csv)</td></tr>
 </tbody>
 </table>
 
