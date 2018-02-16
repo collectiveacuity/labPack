@@ -103,6 +103,7 @@
             <li><a href="#conversionpy">conversion.py</a></li>
             <li><a href="#flaskpy">flask.py</a></li>
             <li><a href="#grammarpy">grammar.py</a></li>
+            <li><a href="#shellpy">shell.py</a></li>
             <li><a href="#performlabpy">performlab.py</a></li>
             <li><a href="#randomlabpy">randomlab.py</a></li>
             <li><a href="#ippy">ip.py</a></li>
@@ -570,9 +571,19 @@ a method to validate the content fields of a flask request<br />
 <h3 id="join_words">join_words</h3>
 <h5 id="_55"></h5>
 <p><strong>Signature:</strong><br />
-join_words(word_list)</p>
+join_words(word_list, operator=&rdquo;conjuction&rdquo;)</p>
 <h5 id="_56"></h5>
 <p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default     </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>word_list </td><td>NoneType</td><td>Yes       </td><td>None        </td><td>             </td></tr>
+<tr><td>operator  </td><td>str     </td><td>          </td><td>"conjuction"</td><td>             </td></tr>
+</tbody>
+</table>
+
 <h3 id="section_text">section_text</h3>
 <h5 id="_57"></h5>
 <p><strong>Signature:</strong><br />
@@ -590,15 +601,38 @@ section_text(text_string, max_characters=500, continue_text=&rdquo;&hellip;&rdqu
 </tbody>
 </table>
 
-<h2 id="performlabpy">performlab.py</h2>
+<h2 id="shellpy">shell.py</h2>
 <h3 id="import_13">Import:</h3>
-<p>labpack.performance.performlab  </p>
+<p>labpack.parsing.shell  </p>
 <h3 id="description_13">Description:</h3>
-<h3 id="repeat">repeat</h3>
+<p>a package of functions for parsing STDOUT and STDERR  </p>
+<h3 id="convert_table">convert_table</h3>
 <h5 id="_59"></h5>
 <p><strong>Signature:</strong><br />
-repeat(function, kwargs, title, count, verbose=True)</p>
+convert_table(shell_output, delimiter=&rdquo;\t|\s{&ldquo;, }&rsquo;, output=&rdquo;dict&rdquo;)</p>
 <h5 id="_60"></h5>
+<p><strong>Description:</strong><br />
+a method to convert a STDOUT shell table into a python data structure<br />
+<table>
+<thead>
+<tr><th>Argument    </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                                </th></tr>
+</thead>
+<tbody>
+<tr><td>shell_output</td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string from STDOUT with headers                            </td></tr>
+<tr><td>delimiter   </td><td>str     </td><td>          </td><td>&ldquo;\t|\s{&rdquo; </td><td>string with regex pattern delimiting headers               </td></tr>
+<tr><td>}&rsquo;          </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>                                                           </td></tr>
+<tr><td>output      </td><td>str     </td><td>          </td><td>&ldquo;dict&rdquo;   </td><td>string with type of structure to output (dict, list or csv)</td></tr>
+</tbody>
+</table></p>
+<h2 id="performlabpy">performlab.py</h2>
+<h3 id="import_14">Import:</h3>
+<p>labpack.performance.performlab  </p>
+<h3 id="description_14">Description:</h3>
+<h3 id="repeat">repeat</h3>
+<h5 id="_61"></h5>
+<p><strong>Signature:</strong><br />
+repeat(function, kwargs, title, count, verbose=True)</p>
+<h5 id="_62"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -614,26 +648,26 @@ repeat(function, kwargs, title, count, verbose=True)</p>
 </table>
 
 <h2 id="randomlabpy">randomlab.py</h2>
-<h3 id="import_14">Import:</h3>
+<h3 id="import_15">Import:</h3>
 <p>labpack.randomization.randomlab  </p>
-<h3 id="description_14">Description:</h3>
+<h3 id="description_15">Description:</h3>
 <h3 id="random_binary">random_binary</h3>
-<h5 id="_61"></h5>
-<p><strong>Signature:</strong><br />
-random_binary(length)</p>
-<h5 id="_62"></h5>
-<p><strong>Description:</strong>  </p>
-<h3 id="random_bytes">random_bytes</h3>
 <h5 id="_63"></h5>
 <p><strong>Signature:</strong><br />
-random_bytes(length)</p>
+random_binary(length)</p>
 <h5 id="_64"></h5>
 <p><strong>Description:</strong>  </p>
-<h3 id="random_characters">random_characters</h3>
+<h3 id="random_bytes">random_bytes</h3>
 <h5 id="_65"></h5>
 <p><strong>Signature:</strong><br />
-random_characters(character_set, length)</p>
+random_bytes(length)</p>
 <h5 id="_66"></h5>
+<p><strong>Description:</strong>  </p>
+<h3 id="random_characters">random_characters</h3>
+<h5 id="_67"></h5>
+<p><strong>Signature:</strong><br />
+random_characters(character_set, length)</p>
+<h5 id="_68"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -646,10 +680,10 @@ random_characters(character_set, length)</p>
 </table>
 
 <h3 id="random_double">random_double</h3>
-<h5 id="_67"></h5>
+<h5 id="_69"></h5>
 <p><strong>Signature:</strong><br />
 random_double(low, high)</p>
-<h5 id="_68"></h5>
+<h5 id="_70"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -662,16 +696,16 @@ random_double(low, high)</p>
 </table>
 
 <h3 id="random_fraction">random_fraction</h3>
-<h5 id="_69"></h5>
-<p><strong>Signature:</strong><br />
-random_fraction()</p>
-<h5 id="_70"></h5>
-<p><strong>Description:</strong>  </p>
-<h3 id="random_integer">random_integer</h3>
 <h5 id="_71"></h5>
 <p><strong>Signature:</strong><br />
-random_integer(low, high)</p>
+random_fraction()</p>
 <h5 id="_72"></h5>
+<p><strong>Description:</strong>  </p>
+<h3 id="random_integer">random_integer</h3>
+<h5 id="_73"></h5>
+<p><strong>Signature:</strong><br />
+random_integer(low, high)</p>
+<h5 id="_74"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -684,32 +718,32 @@ random_integer(low, high)</p>
 </table>
 
 <h3 id="random_number">random_number</h3>
-<h5 id="_73"></h5>
-<p><strong>Signature:</strong><br />
-random_number(length)</p>
-<h5 id="_74"></h5>
-<p><strong>Description:</strong>  </p>
-<h3 id="random_object">random_object</h3>
 <h5 id="_75"></h5>
 <p><strong>Signature:</strong><br />
-random_object()</p>
+random_number(length)</p>
 <h5 id="_76"></h5>
 <p><strong>Description:</strong>  </p>
-<h3 id="random_shuffle">random_shuffle</h3>
+<h3 id="random_object">random_object</h3>
 <h5 id="_77"></h5>
 <p><strong>Signature:</strong><br />
-random_shuffle(item_list)</p>
+random_object()</p>
 <h5 id="_78"></h5>
 <p><strong>Description:</strong>  </p>
-<h2 id="ippy">ip.py</h2>
-<h3 id="import_15">Import:</h3>
-<p>labpack.records.ip  </p>
-<h3 id="description_15">Description:</h3>
-<h3 id="describe_ip">describe_ip</h3>
+<h3 id="random_shuffle">random_shuffle</h3>
 <h5 id="_79"></h5>
 <p><strong>Signature:</strong><br />
-describe_ip(ip_address, source=&rdquo;whatismyip&rdquo;)</p>
+random_shuffle(item_list)</p>
 <h5 id="_80"></h5>
+<p><strong>Description:</strong>  </p>
+<h2 id="ippy">ip.py</h2>
+<h3 id="import_16">Import:</h3>
+<p>labpack.records.ip  </p>
+<h3 id="description_16">Description:</h3>
+<h3 id="describe_ip">describe_ip</h3>
+<h5 id="_81"></h5>
+<p><strong>Signature:</strong><br />
+describe_ip(ip_address, source=&rdquo;whatismyip&rdquo;)</p>
+<h5 id="_82"></h5>
 <p><strong>Description:</strong><br />
 a method to get the details associated with an ip address<br />
 <table>
@@ -722,21 +756,21 @@ a method to get the details associated with an ip address<br />
 </tbody>
 </table></p>
 <h3 id="get_ip">get_ip</h3>
-<h5 id="_81"></h5>
+<h5 id="_83"></h5>
 <p><strong>Signature:</strong><br />
 get_ip(source=&rdquo;aws&rdquo;)</p>
-<h5 id="_82"></h5>
+<h5 id="_84"></h5>
 <p><strong>Description:</strong><br />
 a method to get current public ip address of machine  </p>
 <h2 id="settingspy">settings.py</h2>
-<h3 id="import_16">Import:</h3>
+<h3 id="import_17">Import:</h3>
 <p>labpack.records.settings  </p>
-<h3 id="description_16">Description:</h3>
+<h3 id="description_17">Description:</h3>
 <h3 id="compile_settings">compile_settings</h3>
-<h5 id="_83"></h5>
+<h5 id="_85"></h5>
 <p><strong>Signature:</strong><br />
 compile_settings(model_path, file_path, ignore_errors=False)</p>
-<h5 id="_84"></h5>
+<h5 id="_86"></h5>
 <p><strong>Description:</strong><br />
 a method to compile configuration values from different sources</p>
 <pre><code>    NOTE:   method searches the environment variables, a local
@@ -766,17 +800,17 @@ a method to compile configuration values from different sources</p>
 </tbody>
 </table></p>
 <h3 id="ingest_environ">ingest_environ</h3>
-<h5 id="_85"></h5>
+<h5 id="_87"></h5>
 <p><strong>Signature:</strong><br />
 ingest_environ(model_path=&rdquo;&ldquo;)</p>
-<h5 id="_86"></h5>
+<h5 id="_88"></h5>
 <p><strong>Description:</strong><br />
 a method to convert environment variables to a python dictionary  </p>
 <h3 id="load_settings">load_settings</h3>
-<h5 id="_87"></h5>
+<h5 id="_89"></h5>
 <p><strong>Signature:</strong><br />
 load_settings(file_path, module_name=&rdquo;&ldquo;, secret_key=&rdquo;&ldquo;)</p>
-<h5 id="_88"></h5>
+<h5 id="_90"></h5>
 <p><strong>Description:</strong><br />
 a method to load data from json valid files<br />
 <table>
@@ -790,10 +824,10 @@ a method to load data from json valid files<br />
 </tbody>
 </table></p>
 <h3 id="remove_settings">remove_settings</h3>
-<h5 id="_89"></h5>
+<h5 id="_91"></h5>
 <p><strong>Signature:</strong><br />
 remove_settings(file_path, retry_count=10, remove_dir=False)</p>
-<h5 id="_90"></h5>
+<h5 id="_92"></h5>
 <p><strong>Description:</strong><br />
 a method to remove a file using a child process</p>
 <pre><code>    http://www.petercollingridge.co.uk/blog/running-multiple-processes-python
@@ -810,10 +844,10 @@ a method to remove a file using a child process</p>
 </tbody>
 </table></p>
 <h3 id="save_settings">save_settings</h3>
-<h5 id="_91"></h5>
+<h5 id="_93"></h5>
 <p><strong>Signature:</strong><br />
 save_settings(file_path, record_details, overwrite=False, secret_key=&rdquo;&ldquo;)</p>
-<h5 id="_92"></h5>
+<h5 id="_94"></h5>
 <p><strong>Description:</strong><br />
 a method to save dictionary typed data to a local file<br />
 <table>
@@ -828,26 +862,26 @@ a method to save dictionary typed data to a local file<br />
 </tbody>
 </table></p>
 <h2 id="barrelpy">barrel.py</h2>
-<h3 id="import_17">Import:</h3>
+<h3 id="import_18">Import:</h3>
 <p>labpack.storage.barrel  </p>
-<h3 id="description_17">Description:</h3>
+<h3 id="description_18">Description:</h3>
 <h3 id="main">main</h3>
-<h5 id="_93"></h5>
-<p><strong>Signature:</strong><br />
-main(args)</p>
-<h5 id="_94"></h5>
-<p><strong>Description:</strong>  </p>
-<h3 id="retrieve_values">retrieve_values</h3>
 <h5 id="_95"></h5>
 <p><strong>Signature:</strong><br />
-retrieve_values(file_path)</p>
+main(args)</p>
 <h5 id="_96"></h5>
 <p><strong>Description:</strong>  </p>
-<h3 id="store_values">store_values</h3>
+<h3 id="retrieve_values">retrieve_values</h3>
 <h5 id="_97"></h5>
 <p><strong>Signature:</strong><br />
-store_values(file_path, data)</p>
+retrieve_values(file_path)</p>
 <h5 id="_98"></h5>
+<p><strong>Description:</strong>  </p>
+<h3 id="store_values">store_values</h3>
+<h5 id="_99"></h5>
+<p><strong>Signature:</strong><br />
+store_values(file_path, data)</p>
+<h5 id="_100"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
