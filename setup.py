@@ -46,10 +46,10 @@ pip install twine
 
 Build Distributions:
 python setup.py sdist --format=gztar,zip
-pip wheel --no-index --no-deps --wheel-dir dist dist/pocketlab-0.1.tar.gz
+pip wheel --no-index --no-deps --wheel-dir dist dist/labpack-0.17.tar.gz
 
 Upload (or Register) Distributions to PyPi:
-twine upload dist/pocketlab-0.1*
+twine upload dist/labpack-0.17*
 
 Upload Documentation to Github:
 mkdocs gh-deploy
@@ -78,12 +78,12 @@ System Installation:
 
 Mercurial Dev Setup:
 .hgignore (add dist/, *.egg-info/, '.git/')
-hgrc [paths] default = ssh://hg@bitbucket.org/collectiveacuity/pocketlab
+hgrc [paths] default = ssh://hg@bitbucket.org/collectiveacuity/labpack
 
 Git Public Setup:
 .gitignore (add dist/, *.egg-info/, dev/, tests_dev/, docs/, docs_dev/, .hg/, .hgignore)
 git init
-git remote add origin https://github.com/collectiveacuity/pocketLab.git
+git remote add origin https://github.com/collectiveacuity/labPack.git
 
 Git Public Updates:
 git add -A
