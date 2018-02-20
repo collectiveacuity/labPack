@@ -74,19 +74,21 @@ def generate_keystore(key_alias, key_folder='./', root_cert='', truststore='', p
         raise ValueError('%s.crt already exists in %s. to overwrite, set overwrite=true' % (key_alias, key_folder))
 
 # validate root path
-    if root_cert:
-        if not path.exists(root_cert):
-            root_cert = path.join(key_folder, root_cert)
-            if not path.exists(root_cert):
-                raise ValueError('%s(root_cert="%s") is not a valid path.' % (title, root_cert))
-        root_node, root_ext = path.splitext(root_cert)
+    from copy import deepcopy
+    root_cert_copy = deepcopy(root_cert)
+    if root_cert_copy:
+        if not path.exists(root_cert_copy):
+            root_cert_copy = path.join(key_folder, root_cert_copy)
+            if not path.exists(root_cert_copy):
+                raise ValueError('%s(root_cert="%s") is not a valid path.' % (title, root_cert_copy))
+        root_node, root_ext = path.splitext(root_cert_copy)
         root_key = root_node + '.key'
         if not root_ext in ('.crt', '.pem'):
-            raise ValueError('%s(root_cert="%s") must be a .crt or .pem file type.' % (title, root_cert))
+            raise ValueError('%s(root_cert="%s") must be a .crt or .pem file type.' % (title, root_cert_copy))
         elif not path.exists(root_key):
             key_path, key_name = path.split(root_key)
-            raise ValueError('%s(root_cert="%s") requires a matching private key %s' % (title, root_cert, key_name))
-        root_path = root_cert
+            raise ValueError('%s(root_cert="%s") requires a matching private key %s' % (title, root_cert_copy, key_name))
+        root_path = root_cert_copy
         key_path = root_path.replace('.crt', '.key')
     else:
         key_path = path.join(key_folder, 'root.key')
@@ -95,15 +97,16 @@ def generate_keystore(key_alias, key_folder='./', root_cert='', truststore='', p
             raise ValueError('root.crt already exists in %s. to overwrite, set overwrite=true' % key_folder)
 
 # validate truststore path
-    if truststore:
-        if not path.exists(truststore):
-            truststore = path.join(key_folder, truststore)
-            if not path.exists(truststore):
-                raise ValueError('%s(truststore="%s") is not a valid path.' % (title, truststore))
-        trust_node, trust_ext = path.splitext(truststore)
+    truststore_copy = deepcopy(truststore)
+    if truststore_copy:
+        if not path.exists(truststore_copy):
+            truststore_copy = path.join(key_folder, truststore_copy)
+            if not path.exists(truststore_copy):
+                raise ValueError('%s(truststore="%s") is not a valid path.' % (title, truststore_copy))
+        trust_node, trust_ext = path.splitext(truststore_copy)
         if not trust_ext in ('.jks'):
-            raise ValueError('%s(truststore="%s") must be a .jks file type.' % (title, truststore))
-        truststore_path = truststore
+            raise ValueError('%s(truststore="%s") must be a .jks file type.' % (title, truststore_copy))
+        truststore_path = truststore_copy
         trust_root, trust_node = path.split(truststore_path)
         trust_alias, trust_ext = path.splitext(trust_node)
     else:
@@ -123,7 +126,7 @@ def generate_keystore(key_alias, key_folder='./', root_cert='', truststore='', p
         country = 'None'
 
 # create root certificate
-    if not root_cert:
+    if not root_cert_copy:
         subject_args = '/CN=root/OU=%s/O=%s/L=%s/C=%s' % (
             organization_unit,
             organization,
@@ -175,7 +178,7 @@ def generate_keystore(key_alias, key_folder='./', root_cert='', truststore='', p
     _call(sys_command, ignore='Certificate reply was installed in keystore', title='Adding certificate for %s to keystore for %s' % (key_alias, key_alias))
 
 # add root certificate to truststore
-    if not truststore:
+    if not truststore_copy:
         if path.exists(truststore_path):
             remove(truststore_path)
         sys_command = 'keytool -importcert -keystore %s -alias %s -file %s -noprompt -keypass %s -storepass %s' % (truststore_path, root_alias, root_path, password, password)
@@ -185,11 +188,15 @@ def generate_keystore(key_alias, key_folder='./', root_cert='', truststore='', p
     sys_command = 'keytool -importcert -keystore %s -alias %s -file %s -noprompt -keypass %s -storepass %s' % (truststore_path, key_alias, cert_path, password, password)
     _call(sys_command, ignore='Certificate was added to keystore', title='Adding certificate for %s to truststore' % key_alias)
 
-# remove .srl file
+# remove .srl files
     from os import listdir
     for file_name in listdir('./'):
         if file_name == '.srl':
             remove(file_name)
+    for file_name in listdir(key_folder):
+        file_alias, file_ext = path.splitext(file_name)
+        if file_ext == '.srl':
+            remove(path.join(key_folder, file_name))
 
     return True
 

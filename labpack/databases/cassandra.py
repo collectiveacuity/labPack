@@ -98,7 +98,7 @@ if __name__ == '__main__':
     test_public = False
     from labpack.records.settings import load_settings
     cass_cred = load_settings('../../../cred/cassandra-account.yaml')
-    cert_path = '../../keys/cassandra_root20180217.crt'
+    cert_path = '../../keys/root.cass.20180220.crt'
     cass_hostname = '127.0.0.1'
     cass_port = 9042
     if test_public:
