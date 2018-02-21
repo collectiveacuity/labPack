@@ -88,12 +88,12 @@ class dockerClient(requestsHandler):
             print('.', end='', flush=True)
 
     # validate virtualbox installation
-        box_running = self._validate_virtualbox()
+        self.vbox_running = self._validate_virtualbox()
         if self.verbose:
             print('.', end='', flush=True)
     
     # set virtualbox variables
-        if box_running:
+        if self.vbox_running:
             self._set_virtualbox()
             if self.verbose:
                 print('.', end='', flush=True)
@@ -180,6 +180,25 @@ class dockerClient(requestsHandler):
 
         return True
 
+    def _images(self, sys_output):
+    
+        ''' a helper method for parsing docker image output '''
+
+        import re
+        gap_pattern = re.compile('\t|\s{2,}')
+        image_list = []
+        output_lines = sys_output.split('\n')
+        column_headers = gap_pattern.split(output_lines[0])
+        for i in range(1,len(output_lines)):
+            columns = gap_pattern.split(output_lines[i])
+            if len(columns) == len(column_headers):
+                image_details = {}
+                for j in range(len(columns)):
+                    image_details[column_headers[j]] = columns[j]
+                image_list.append(image_details)
+
+        return image_list
+
     def images(self):
 
         '''
@@ -196,19 +215,9 @@ class dockerClient(requestsHandler):
         } ]
         '''
 
-        import re
-        gap_pattern = re.compile('\t|\s{2,}')
-        image_list = []
         sys_command = 'docker images'
-        output_lines = self.command(sys_command).split('\n')
-        column_headers = gap_pattern.split(output_lines[0])
-        for i in range(1,len(output_lines)):
-            columns = gap_pattern.split(output_lines[i])
-            if len(columns) == len(column_headers):
-                image_details = {}
-                for j in range(len(columns)):
-                    image_details[column_headers[j]] = columns[j]
-                image_list.append(image_details)
+        sys_output = self.command(sys_command)
+        image_list = self._images(sys_output)
 
         return image_list
 

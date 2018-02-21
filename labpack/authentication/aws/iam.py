@@ -93,6 +93,7 @@ class iamClient(object):
         self.region_name = region_name
         self.owner_id = owner_id
         self.user_name = user_name
+        self.verbose = verbose
 
     # construct iam client connection
         client_kwargs = {
@@ -110,7 +111,7 @@ class iamClient(object):
     # construct verbose method
         self.printer_on = True
         def _printer(msg, flush=False):
-            if verbose and self.printer_on:
+            if self.verbose and self.printer_on:
                 if flush:
                     print(msg, end='', flush=True)
                 else:
