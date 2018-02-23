@@ -199,6 +199,89 @@ class dockerClient(requestsHandler):
 
         return image_list
 
+    def _ps(self, sys_output):
+        
+        ''' a helper method for parsing docker ps output '''
+        
+        import re
+        gap_pattern = re.compile('\t|\s{2,}')
+        container_list = []
+        output_lines = sys_output.split('\n')
+        column_headers = gap_pattern.split(output_lines[0])
+        for i in range(1,len(output_lines)):
+            columns = gap_pattern.split(output_lines[i])
+            container_details = {}
+            if len(columns) > 1:
+                for j in range(len(column_headers)):
+                    container_details[column_headers[j]] = ''
+                    if j <= len(columns) - 1:
+                        container_details[column_headers[j]] = columns[j]
+        # stupid hack for possible empty port column
+                if container_details['PORTS'] and not container_details['NAMES']:
+                    from copy import deepcopy
+                    container_details['NAMES'] = deepcopy(container_details['PORTS'])
+                    container_details['PORTS'] = ''
+                container_list.append(container_details)
+    
+        return container_list
+    
+    def _synopsis(self, container_settings, container_status=''):
+
+        ''' a helper method for summarizing container settings '''
+    
+    # compose default response
+        settings = {
+            'container_status': container_settings['State']['Status'],
+            'container_exit': container_settings['State']['ExitCode'],
+            'container_ip': container_settings['NetworkSettings']['IPAddress'],
+            'image_name': container_settings['Config']['Image'],
+            'container_alias': container_settings['Name'].replace('/',''),
+            'container_variables': {},
+            'mapped_ports': {},
+            'mounted_volumes': {},
+            'container_networks': []
+        }
+    
+    # parse fields nested in container settings
+        import re
+        num_pattern = re.compile('\d+')
+        if container_settings['NetworkSettings']['Ports']:
+            for key, value in container_settings['NetworkSettings']['Ports'].items():
+                if value:
+                    port = num_pattern.findall(value[0]['HostPort'])[0]
+                    settings['mapped_ports'][port] = num_pattern.findall(key)[0]
+        elif container_settings['HostConfig']['PortBindings']:
+            for key, value in container_settings['HostConfig']['PortBindings'].items():
+                port = num_pattern.findall(value[0]['HostPort'])[0]
+                settings['mapped_ports'][port] = num_pattern.findall(key)[0]
+        if container_settings['Config']['Env']:
+            for variable in container_settings['Config']['Env']:
+                k, v = variable.split('=')
+                settings['container_variables'][k] = v
+        for volume in container_settings['Mounts']:
+            system_path = volume['Source']
+            container_path = volume['Destination']
+            settings['mounted_volumes'][system_path] = container_path
+        if container_settings['NetworkSettings']:
+            if container_settings['NetworkSettings']['Networks']:
+                for key in container_settings['NetworkSettings']['Networks'].keys():
+                    settings['container_networks'].append(key)
+
+    # determine stopped status
+        if settings['container_status'] == 'exited':
+            if not container_status:
+                try:
+                    from subprocess import check_output, STDOUT
+                    sys_command = 'docker logs --tail 1 %s' % settings['container_alias']
+                    check_output(sys_command, shell=True, stderr=STDOUT).decode('utf-8')
+                    settings['container_status'] = 'stopped'
+                except:
+                    pass
+            else:
+                settings['container_status'] = container_status
+
+        return settings
+    
     def images(self):
 
         '''
@@ -239,26 +322,9 @@ class dockerClient(requestsHandler):
         }]
         '''
 
-        import re
-        gap_pattern = re.compile('\t|\s{2,}')
-        container_list = []
         sys_command = 'docker ps -a'
-        output_lines = self.command(sys_command).split('\n')
-        column_headers = gap_pattern.split(output_lines[0])
-        for i in range(1,len(output_lines)):
-            columns = gap_pattern.split(output_lines[i])
-            container_details = {}
-            if len(columns) > 1:
-                for j in range(len(column_headers)):
-                    container_details[column_headers[j]] = ''
-                    if j <= len(columns) - 1:
-                        container_details[column_headers[j]] = columns[j]
-        # stupid hack for possible empty port column
-                if container_details['PORTS'] and not container_details['NAMES']:
-                    from copy import deepcopy
-                    container_details['NAMES'] = deepcopy(container_details['PORTS'])
-                    container_details['PORTS'] = ''
-                container_list.append(container_details)
+        sys_output = self.command(sys_command)
+        container_list = self._ps(sys_output)
 
         return container_list
 
@@ -439,6 +505,33 @@ class dockerClient(requestsHandler):
 
         return image_list
 
+    def build(self, image_name, image_tag='', dockerfile_path='./Dockerfile'):
+    
+    # construct sys command arguments
+        tag_insert = ''
+        if image_tag:
+            tag_insert = ':%s' % image_tag
+        sys_command = 'docker build -t %s%s -f %s' % (image_name, tag_insert, dockerfile_path)
+    
+    # determine verbosity
+        print_pipe = False
+        if self.verbose:
+            print_pipe = True
+        else:
+            sys_command += ' -q'
+
+    # run command
+        shell_output = self._handle_command(sys_command, print_pipe=print_pipe)
+
+        return shell_output
+    
+    def save(self, image_name, file_name, image_tag=''):
+
+        sys_command = 'docker save -o %s %s' % (file_name, image_name)
+        if image_tag:
+            sys_command += ':%s' % image_tag
+        return self.command(sys_command)
+
     def command(self, sys_command):
 
         '''
@@ -487,55 +580,10 @@ class dockerClient(requestsHandler):
             
     # retrieve container settings
         container_settings = self.inspect_container(container_alias)
-        
-    # compose default response
-        settings = {
-            'container_status': container_settings['State']['Status'],
-            'container_exit': container_settings['State']['ExitCode'],
-            'container_ip': container_settings['NetworkSettings']['IPAddress'],
-            'image_name': container_settings['Config']['Image'],
-            'container_alias': container_settings['Name'].replace('/',''),
-            'container_variables': {},
-            'mapped_ports': {},
-            'mounted_volumes': {},
-            'container_networks': []
-        }
     
-    # parse fields nested in container settings
-        import re
-        num_pattern = re.compile('\d+')
-        if container_settings['NetworkSettings']['Ports']:
-            for key, value in container_settings['NetworkSettings']['Ports'].items():
-                if value:
-                    port = num_pattern.findall(value[0]['HostPort'])[0]
-                    settings['mapped_ports'][port] = num_pattern.findall(key)[0]
-        elif container_settings['HostConfig']['PortBindings']:
-            for key, value in container_settings['HostConfig']['PortBindings'].items():
-                port = num_pattern.findall(value[0]['HostPort'])[0]
-                settings['mapped_ports'][port] = num_pattern.findall(key)[0]
-        if container_settings['Config']['Env']:
-            for variable in container_settings['Config']['Env']:
-                k, v = variable.split('=')
-                settings['container_variables'][k] = v
-        for volume in container_settings['Mounts']:
-            system_path = volume['Source']
-            container_path = volume['Destination']
-            settings['mounted_volumes'][system_path] = container_path
-        if container_settings['NetworkSettings']:
-            if container_settings['NetworkSettings']['Networks']:
-                for key in container_settings['NetworkSettings']['Networks'].keys():
-                    settings['container_networks'].append(key)
-
-    # determine stopped status
-        if settings['container_status'] == 'exited':
-            try:
-                from subprocess import check_output, STDOUT
-                sys_command = 'docker logs --tail 1 %s' % settings['container_alias']
-                check_output(sys_command, shell=True, stderr=STDOUT).decode('utf-8')
-                settings['container_status'] = 'stopped'
-            except:
-                pass
-
+    # summarize settings
+        settings = self._synopsis(container_settings)
+        
         return settings
 
     def enter(self, container_alias):

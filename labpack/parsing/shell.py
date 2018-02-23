@@ -19,6 +19,9 @@ def convert_table(shell_output, delimiter='\t|\s{2,}', output='dict'):
     gap_pattern = re.compile(delimiter)
     output_lines = shell_output.splitlines()
     column_headers = gap_pattern.split(output_lines[0])
+    blank_index = column_headers.index('')
+    if blank_index > -1:
+        column_headers.pop(blank_index)
 
 # generate indices tuples
     indices = []

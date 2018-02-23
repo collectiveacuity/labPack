@@ -277,9 +277,10 @@ class sshClient(object):
             from subprocess import Popen, PIPE, STDOUT
             for i in range(len(commands)):
                 self.ec2.iam.printer('[%s@%s]: %s ... ' % (self.login_name, self.instance_ip, commands[i]), flush=True)
-                sys_command = 'ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o IdentityFile="%s" %s@%s %s' % (self.pem_file, self.login_name, self.instance_ip, commands[i])
+                sys_command = 'ssh -i %s %s@%s %s' % (self.pem_file, self.login_name, self.instance_ip, commands[i])
                 pipes = Popen(sys_command.split(), stdout=PIPE, stderr=STDOUT)
-                std_out, std_err = pipes.communicate()
+            # automatically accept keys
+                std_out, std_err = pipes.communicate('yes\n'.encode('utf-8'))
                 if pipes.returncode != 0:
                     self.ec2.iam.printer('ERROR.')
                     raise Exception('Failure running [%s@%s]: %s\n%s' % (self.login_name, self.instance_ip, commands[i], std_out.decode('utf-8').strip()))
