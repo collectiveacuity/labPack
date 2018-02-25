@@ -306,7 +306,7 @@ class oauth2Client(object):
         if details:
             details['expires_at'] = 0
             if 'expires_in' in details.keys():
-                details['expires_at'] = int(current_time) + details['expires_in']
+                details['expires_at'] = int(current_time) + int(details['expires_in'])
                 del details['expires_in']
 
         return token_details
@@ -364,7 +364,7 @@ class oauth2Client(object):
         details['expires_at'] = 0
         if details:
             if 'expires_in' in details.keys():
-                details['expires_at'] = int(current_time) + details['expires_in']
+                details['expires_at'] = int(current_time) + int(details['expires_in'])
                 del details['expires_in']
 
         return token_details

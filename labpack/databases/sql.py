@@ -148,13 +148,17 @@ class sqlClient(object):
         self.verbose = verbose
         self.database_dialect = sql_dialect
     
-    # verify max length criteria for string fields for certain sql dialects
-        if not self.database_dialect in ('sqlite', 'postgres'):
-            for key, value in self.model.keyMap.items():
+    # verify schema criteria 
+        for key, value in self.model.keyMap.items():
+            if not self.database_dialect in ('sqlite', 'postgres'):
+        # verify max length for string fields for certain sql dialects
                 if value['value_datatype'] == 'string':
                     if not 'max_length' in value.keys():
                         raise ValueError('%s database requires a "max_length" be declared for string field %s in record_schema.' % (self.database_dialect, key))
-                        
+        # verify no null datatype declarations
+            if value['value_datatype'] == 'null':
+                raise ValueError('%s(record_schema={...}) field %s cannot have the null datatype.' % (title, key))
+    
     # # ORM construct
     #     from sqlalchemy.orm import sessionmaker
     #     from sqlalchemy.ext.declarative import declarative_base
