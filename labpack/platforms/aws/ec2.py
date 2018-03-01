@@ -475,7 +475,7 @@ class ec2Client(object):
         input_fields = {
             'image_id': image_id,
             'pem_file': pem_file,
-            'group_id': group_id,
+            'group_ids': group_ids,
             'instance_type': instance_type,
             'volume_type': volume_type,
             'iam_profile': iam_profile,
@@ -490,7 +490,7 @@ class ec2Client(object):
     # print warning about auction
         if auction_bid:
             self.iam.printer('[WARNING]: auction bidding is not yet available.')
-            
+
     # turn off verbosity
         self.iam.printer_on = False
         
@@ -510,7 +510,7 @@ class ec2Client(object):
         if iam_profile:    
             if not iam_profile in self.iam.list_roles():
                 raise ValueError('Iam instance profile %s does not exist in IAM account.' % iam_profile)
-                
+
     # validate path to pem file
         from os import path
         if not path.exists(pem_file):
