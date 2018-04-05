@@ -238,7 +238,7 @@ class ec2Client(object):
             a method to retrieve the list of instances on AWS EC2
 
         :param tag_values: [optional] list of tag values
-        :return: list of instance AWS ids
+        :return: list of strings with instance AWS ids
         '''
 
         title = '%s.list_instances' % self.__class__.__name__
@@ -683,6 +683,138 @@ class ec2Client(object):
         self.iam.printer('Instance %s was %s.' % (instance_id, old_state))
         self.iam.printer('Instance %s is %s.' % (instance_id, new_state))
         return new_state
+
+    def list_addresses(self, tag_values=None):
+        
+        '''
+            a method to list elastic ip addresses associated with account on AWS
+            
+        :param tag_values: [optional] list of tag values
+        :return: list of strings with ip addresses
+        '''
+        
+        title = '%s.list_addresses' % self.__class__.__name__
+
+    # validate inputs
+        input_fields = {
+            'tag_values': tag_values
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+            
+    # add tags to method arguments
+        kw_args = {}
+        tag_text = ''
+        if tag_values:
+            kw_args = {
+                'Filters': [ { 'Name': 'tag-value', 'Values': tag_values } ]
+            }
+            from labpack.parsing.grammar import join_words
+            plural_value = ''
+            if len(tag_values) > 1:
+                plural_value = 's'
+            tag_text = ' with tag value%s %s' % (plural_value, join_words(tag_values))
+    
+    # report query
+        self.iam.printer('Querying AWS region %s for elastic ip addresses%s.' % (self.iam.region_name, tag_text))
+        address_list = []
+        
+    # discover details associated with instance id
+        try:
+            response = self.connection.describe_addresses(**kw_args)
+        except:
+            raise AWSConnectionError(title)
+
+    # populate address list with response
+        response_list = response['Addresses']
+        for address in response_list:
+            address_list.append(address['PublicIp'])
+
+        return address_list
+    
+    def read_address(self, ip_address):
+        
+        '''
+            a method to retrieve details about an elastic ip address associated with account on AWS
+            
+        :param ip_address: string with elastic ipv4 address on ec2 
+        :return: dictionary with ip address details
+        '''
+        
+        title = '%s.read_address' % self.__class__.__name__
+
+    # validate inputs
+        input_fields = {
+            'ip_address': ip_address
+        }
+        for key, value in input_fields.items():
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
+    
+    # report query
+        self.iam.printer('Querying AWS region %s for properties of elastic ip %s.' % (self.iam.region_name, ip_address))
+        
+    # discover details associated with instance id
+        try:
+            response = self.connection.describe_addresses(PublicIps=[ ip_address ])
+            address_info = response['Addresses'][0]
+        except:
+            raise AWSConnectionError(title)
+
+    # create dictionary of instance details
+        address_details = {
+            'instance_id': '',
+            'public_ip': '',
+            'allocation_id': '',
+            'association_id': '',
+            'domain': '',
+            'network_interface_id': '',
+            'network_interface_owner_id': '',
+            'private_ip_address': '',
+            'tags': [],
+            'region': self.iam.region_name
+        }
+        address_details = self.iam.ingest(address_info, address_details)
+
+        return address_details
+
+    def assign_address(self, ip_address, instance_id):
+        
+        '''
+            a method to assign (or reassign) an elastic ip to an instance on AWS
+            
+        :param ip_address: string with elastic ipv4 address on ec2  
+        :param instance_id: string with aws id for running instance
+        :return: dictioanry with response metadata fields
+        '''
+        
+        title = '%s.assign_address' % self.__class__.__name__
+
+    # validate inputs
+        input_fields = {
+            'ip_address': ip_address,
+            'instance_id': instance_id
+        }
+        for key, value in input_fields.items():
+            object_title = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, object_title)
+
+    # report query
+        self.iam.printer('Assigning elastic ip address %s to instance %s.' % (ip_address, instance_id))
+
+    # discover details associated with instance id
+        try:
+            response = self.connection.associate_address(
+                InstanceId=instance_id,
+                PublicIp=ip_address
+            )
+        except:
+            raise AWSConnectionError(title)
+
+        return response
 
     def check_image_state(self, image_id, wait=True):
 

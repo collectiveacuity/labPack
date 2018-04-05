@@ -875,15 +875,18 @@ class sqlClient(object):
             else:
                 current_details = old_details
                 save_path = ''
-                for segment in update['path']:
+                for i in range(len(update['path'])):
+                    segment = update['path'][i]
                     if save_path:
                         save_path += '.'
                     save_path += segment
-                    if isinstance(current_details[segment], dict):
+                    if update['action'] == 'DELETE' and i + 1 == len(update['path']):
+                        update_kwargs[save_path] = None
+                    elif isinstance(current_details[segment], dict):
                         current_details = current_details[segment]
                         continue
                     elif isinstance(current_details[segment], list):
-                        update_kwargs[save_path] = pickle.dumps(current_details[segment])
+                        update_kwargs[save_path] = pickle.dumps(new_details[segment])
                         break
                     else:
                         update_kwargs[save_path] = None

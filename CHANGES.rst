@@ -1,6 +1,10 @@
 ChangeLog
 =========
 
+0.18 (2018.03.??)
+-----------------
+* [BUG FIX] removal of lists and items in list fields in sqlClient
+
 0.17 (2018.02.15)
 -----------------
 * [FEATURE ADDED] convert_table method added to parse STDOUT into python dicts/lists

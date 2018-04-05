@@ -41,6 +41,7 @@
     "iam_profile": "dbAccessRole",
     "instance_type": "t2.micro",
     "volume_type": "gp2",
+    "ip_address": "123.456.789.0",
     "image_id": "ami-abcd1234",
     "image_name": "lab-image-useast2-20170628",
     "snapshot_id": "snap-0123456789abcdef0",
@@ -62,6 +63,12 @@
     },
     ".volume_type": {
       "discrete_values": [ "gp2", "io1", "standard", "sc1", "st1" ]
+    },
+    ".ip_address": {
+      "contains_either": [
+        "\\d+\\.\\d+\\.\\d+\\.\\d+",
+        "[0-9a-fA-F]+:[0-9a-fA-F]+:[0-9a-fA-F]+:[0-9a-fA-F:]*:[0-9a-fA-F]+$"
+      ]
     },
     ".pem_file": {
       "must_contain": [ "\\w\\.pem$" ]
