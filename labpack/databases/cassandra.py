@@ -130,7 +130,10 @@ class cassandraTable(object):
         'schema': {
             'keyspace_name': '',
             'table_name': '',
-            'record_schema': {}
+            'record_schema': {},
+            'replication_strategy': {
+                'class': 'SimpleStrategy'
+            }
         },
         'components': {
             'keyspace_name': {
@@ -138,11 +141,17 @@ class cassandraTable(object):
             },
             'table_name': {
                 'max_length': 48
+            },
+            'replication_strategy': {
+                'extra_fields': True
+            },
+            'replication_strategy.class': {
+                'discrete_values': [ 'SimpleStrategy', 'NetworkTopologyStrategy' ]
             }
         }
     }
 
-    def __init__(self, keyspace_name, table_name, record_schema, cassandra_session):
+    def __init__(self, keyspace_name, table_name, record_schema, cassandra_session, replication_strategy=None):
 
         title = '%s.__init__' % self.__class__.__name__
     
@@ -154,11 +163,13 @@ class cassandraTable(object):
         input_fields = {
             'keyspace_name': keyspace_name,
             'table_name': table_name,
-            'record_schema': record_schema
+            'record_schema': record_schema,
+            'replication_strategy': replication_strategy
         }
         for key, value in input_fields.items():
-            object_title = '%s(%s=%s)' % (title, key, str(value))
-            self.fields.validate(value, '.%s' % key, object_title)
+            if value:
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, object_title)
 
     # validate cassandra session
         from sys import path as sys_path
@@ -169,6 +180,11 @@ class cassandraTable(object):
             raise ValueError('%s(cassandra_session) must be a cassandra.cluster.Session datatype.' % title)
         self.session = cassandra_session
 
+    # test, create or update keyspace
+    
+    # test, create or update table
+    
+    
     
 if __name__ == '__main__':
 

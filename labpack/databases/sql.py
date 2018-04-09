@@ -653,30 +653,41 @@ class sqlClient(object):
             self.fields.validate(order_criteria, '.order_criteria', object_title)
             for criterion in order_criteria:
                 for key, value in criterion.items():
-                    if key not in self.model.keyMap.keys():
+                    criteria_key = key
+                    if key.find('.') != 0:
+                        criteria_key = '.%s' % key
+                    if criteria_key not in self.model.keyMap.keys():
                         raise ValueError('%s(order_criteria=[...]) item %s key %s does not exist in record_schema.' % (title, str(criterion), key))
         else:
             order_criteria = []
-    
+
     # construct select statement with sql supported conditions
     # http://docs.sqlalchemy.org/en/latest/orm/tutorial.html#common-filter-operators
         select_object = self.table.select()
         for key, value in query_criteria.items():
-            record_key = key[1:]
+            record_key = key
+            map_key = key
+            if key.find('.') == 0:
+                record_key = key[1:]
+            else:
+                map_key = '.%s' % key
             if record_key:
                 if self.item_key.findall(record_key):
                     pass
                 else:
+                    test_value = value
+                    if not isinstance(value, dict):
+                        test_value = { 'equal_to': value }
                     column_object = getattr(self.table.c, record_key)
-                    for k, v in value.items():
+                    for k, v in test_value.items():
                         if k == 'value_exists':
-                            if self.model.keyMap[key]['value_datatype'] in ('string', 'number', 'boolean', 'list'):
+                            if self.model.keyMap[map_key]['value_datatype'] in ('string', 'number', 'boolean', 'list'):
                                 if v:
                                     select_object = select_object.where(column_object!=None)
                                 else:
                                     select_object = select_object.where(column_object==None)
                         else:
-                            if self.model.keyMap[key]['value_datatype'] in ('string', 'number', 'boolean'):
+                            if self.model.keyMap[map_key]['value_datatype'] in ('string', 'number', 'boolean'):
                                 if k == 'equal_to':
                                     select_object = select_object.where(column_object==v)
                                 elif k == 'discrete_values':
@@ -691,11 +702,13 @@ class sqlClient(object):
                                     select_object = select_object.where(column_object.__le__(v))
                                 elif k == 'min_value':
                                     select_object = select_object.where(column_object.__ge__(v))
-    
+
     # add order criteria
         for criterion in order_criteria:
             key, value = next(iter(criterion.items()))
-            record_key = key[1:]
+            record_key = key
+            if key.find('.') == 0:
+                record_key = key[1:]
             if record_key:
                 if self.item_key.findall(record_key):
                     pass
@@ -705,12 +718,12 @@ class sqlClient(object):
                         select_object = select_object.order_by(order_desc(column_object))
                     else:
                         select_object = select_object.order_by(column_object)
-                        
+
     # execute query on database
         # print(select_object)
         for record in self.session.execute(select_object).fetchall():
             record_details = self._reconstruct_record(record)
-        
+
         # filter results with non-sql supported conditions
             if query_criteria:
                 if self.model.query(query_criteria, record_details):

@@ -67,10 +67,10 @@ if __name__ == '__main__':
 
 # test list
     query_criteria = {
-        '.id':{ 'equal_to': 'zZyl9ipT25Id0SfMyvcUUbQts9Br8ONlSjjw' }, 
+        'id': 'zZyl9ipT25Id0SfMyvcUUbQts9Br8ONlSjjw', 
         '.places': { 'value_exists': True }, 
         '.address.city': { 'greater_than': 'mot' },
-        '.address.number': { 'value_exists': False },
+        'address.number': { 'value_exists': False },
         '.address.street': { 'less_than': 'cont' },
         '.token_id': { 'discrete_values': [ 'unittest', 'lab', 'unittests']},
         '.places[0]': { 'contains_either': [ 'there'] }
@@ -80,7 +80,7 @@ if __name__ == '__main__':
 
 # test descending order by
     order_criteria = [
-        { '.id': 'descend' }
+        { 'id': 'descend' }
     ]
     for record in sql_client.list(order_criteria=order_criteria):
         print(record)
