@@ -5,6 +5,17 @@ __license__ = 'MIT'
 '''
 APScheduler Documentation
 https://apscheduler.readthedocs.io/en/latest/index.html
+
+APScheduler Trigger Methods
+https://apscheduler.readthedocs.io/en/latest/modules/triggers/date.html
+https://apscheduler.readthedocs.io/en/latest/modules/triggers/cron.html
+https://apscheduler.readthedocs.io/en/latest/modules/triggers/interval.html
+
+Flask_APScheduler Documentation
+https://github.com/viniciuschiele/flask-apscheduler
+
+Flask Documentation
+http://flask.pocoo.org/docs/0.11/deploying/wsgi-standalone/#gevent
 '''
 
 import requests

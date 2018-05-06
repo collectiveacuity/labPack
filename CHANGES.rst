@@ -1,7 +1,7 @@
 ChangeLog
 =========
 
-0.18 (2018.03.??)
+0.18 (2018.05.05)
 -----------------
 * [BUG FIX] removal of lists and items in list fields in sqlClient
 
