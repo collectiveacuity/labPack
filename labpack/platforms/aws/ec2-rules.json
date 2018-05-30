@@ -103,13 +103,13 @@
       "must_not_contain": [ "aws:", "[^\\w\\s\\-\\._:/]+" ]
     },
     ".group_id": {
-      "must_contain": [ "^sg\\-[a-f\\d]{8}$" ]
+      "contains_either": [ "^sg\\-[a-f\\d]{8}$", "^sg\\-[a-f\\d]{17}$" ]
     },
     ".group_ids[0]": {
-      "must_contain": [ "^sg\\-[a-f\\d]{8}$" ]
+      "contains_either": [ "^sg\\-[a-f\\d]{8}$", "^sg\\-[a-f\\d]{17}$" ]
     },
     ".subnet_id": {
-      "must_contain": [ "^subnet\\-[a-f\\d]{8}$"]
+      "contains_either": [ "^subnet\\-[a-f\\d]{8}$", "^subnet\\-[a-f\\d]{17}$"]
     },
     ".image_id": {
       "contains_either": [ "^ami\\-[a-f\\d]{8}$", "^ami\\-[a-f\\d]{17}$"]

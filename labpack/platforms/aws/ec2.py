@@ -1653,7 +1653,7 @@ class ec2Client(object):
     # report results and return list
         if subnet_list:
             print_out = 'Found subnet'
-            if len(instance_list) > 1:
+            if len(subnet_list) > 1:
                 print_out += 's'
             from labpack.parsing.grammar import join_words
             print_out += ' %s.' % join_words(subnet_list)
@@ -1769,7 +1769,7 @@ class ec2Client(object):
     # report results and return list
         if group_list:
             print_out = 'Found security group'
-            if len(instance_list) > 1:
+            if len(group_list) > 1:
                 print_out += 's'
             from labpack.parsing.grammar import join_words
             print_out += ' %s.' % join_words(group_list)

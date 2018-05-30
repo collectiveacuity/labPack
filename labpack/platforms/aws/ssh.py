@@ -142,10 +142,10 @@ class sshClient(object):
                 self.login_name = login_name
         if not self.login_name:
             for tag in instance_details['tags']:
-                if tag['key'] == 'LoginName':
+                if tag['key'] == 'UserName':
                     self.login_name = tag['value']
         if not self.login_name:
-            raise Exception('SSH access to %s requires a login_name argument or LoginName tag' % instance_id)
+            raise Exception('SSH access to %s requires a login_name argument or UserName tag' % instance_id)
 
     # verify local and remote pem file names match
         from os import path

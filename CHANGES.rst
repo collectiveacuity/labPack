@@ -1,8 +1,11 @@
 ChangeLog
 =========
 
-0.18 (2018.05.05)
+0.18 (2018.05.30)
 -----------------
+* [UPDATE] changed instance tag name LoginName to UserName in sshClient 
+* [BUG FIX] corrected list declarations in ec2Client.list_subnets & list_security_groups
+* [BUG FIX] added 17 character long id validation to ec2-rules.json
 * [BUG FIX] removal of lists and items in list fields in sqlClient
 
 0.17 (2018.02.15)
