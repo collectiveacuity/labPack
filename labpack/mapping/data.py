@@ -202,6 +202,6 @@ if __name__ == '__main__':
     for number in (3,7,11):
         dot_paths.append(recursive_paths[number])
         values.append(recursive_values[number])
-    
+
     rebuilt_dict = reconstruct_dict(dot_paths, values)
     assert rebuilt_dict == test_dict

@@ -508,10 +508,12 @@ class dockerClient(requestsHandler):
     def build(self, image_name, image_tag='', dockerfile_path='./Dockerfile'):
     
     # construct sys command arguments
+        from os import path
         tag_insert = ''
         if image_tag:
             tag_insert = ':%s' % image_tag
-        sys_command = 'docker build -t %s%s -f %s' % (image_name, tag_insert, dockerfile_path)
+        path_root, path_node = path.split(dockerfile_path)
+        sys_command = 'docker build -t %s%s -f %s %s' % (image_name, tag_insert, path_node, path_root)
     
     # determine verbosity
         print_pipe = False
