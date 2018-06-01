@@ -207,7 +207,7 @@ class herokuClient(requestsHandler):
                 raise Exception('%s does not exist. Try: heroku create -a %s' % (app_subdomain, app_subdomain))
             elif heroku_response.find('have access to the app') > -1:
                 self.printer('ERROR')
-                raise Exception('%s belongs to another account.')
+                raise Exception('%s belongs to another account.' % app_subdomain)
             else:
                 self.printer('ERROR')
                 raise Exception('Some unknown issue prevents you from accessing %s' % app_subdomain)

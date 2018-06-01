@@ -616,7 +616,7 @@ class dockerClient(requestsHandler):
     # open up terminal
         system(sys_cmd)
 
-    def run(self, image_name, container_alias, image_tag='', environmental_variables=None, mapped_ports=None, mounted_volumes=None, start_command='', network_name='host', run_flags=''):
+    def run(self, image_name, container_alias, image_tag='', environmental_variables=None, mapped_ports=None, mounted_volumes=None, start_command='', network_name='', run_flags=''):
 
         '''
              a method to start a local container
@@ -707,7 +707,7 @@ class dockerClient(requestsHandler):
         for network in self.network_ls():
             if network['NAME'] == network_name:
                 network_exists = True
-        if not network_exists:
+        if network_name and not network_exists:
             raise ValueError('%s(network_name="%s") does not exist. Try first: docker network create %s' % (title, network_name, network_name))
 
     # verify system paths and compose absolute path mount map
