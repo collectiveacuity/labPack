@@ -1,11 +1,16 @@
 ChangeLog
 =========
 
-0.18 (2018.05.30)
+0.19 (2018.06.01)
 -----------------
-* [UPDATE] changed instance tag name LoginName to UserName in sshClient 
+* [UPDATE] changed instance tag name LoginName to UserName in sshClient
+* [UPDATE] dockerClient and herokuClient defaults and documentation
+* [BUG FIX] handled no users in response from find API in findClient
 * [BUG FIX] corrected list declarations in ec2Client.list_subnets & list_security_groups
 * [BUG FIX] added 17 character long id validation to ec2-rules.json
+
+0.18 (2018.05.05)
+-----------------
 * [BUG FIX] removal of lists and items in list fields in sqlClient
 
 0.17 (2018.02.15)
