@@ -19,7 +19,7 @@ class herokuClient(requestsHandler):
         },
         'components': {
             '.runtime_type': {
-                'discrete_values': [ 'html', 'php', 'node', 'python', 'java', 'ruby' ]
+                'discrete_values': [ 'html', 'php', 'node', 'python', 'java', 'ruby', 'jingo' ]
             }
         }
     }
@@ -331,7 +331,7 @@ class herokuClient(requestsHandler):
         static_build = False
         if runtime_type == 'php':
             runtime_file = 'index.php'
-        elif runtime_type in ('ruby', 'java', 'python'):
+        elif runtime_type in ('ruby', 'java', 'python', 'jingo'):
             runtime_file = 'Procfile'
         elif runtime_type == 'node':
             runtime_file = 'package.json'
@@ -345,6 +345,10 @@ class herokuClient(requestsHandler):
             req_file = path.join(site_folder, 'requirements.txt')
             if not path.exists(req_file):
                 raise Exception('%s must contain a requirements.txt file to build a python app.' % site_folder)
+        if runtime_type == 'jingo':
+            req_file = path.join(site_folder, 'package.json')
+            if not path.exists(req_file):
+                raise Exception('%s must contain a package.json file to build a jingo app.' % site_folder)
 
     # validate container plugin
         from os import devnull
@@ -358,24 +362,33 @@ class herokuClient(requestsHandler):
                 'heroku builds plugin required. Try: heroku plugins:install heroku-builds')
         self.printer('done.')
     
-    # construct temporary file folder
+    # construct temporary folder
         self.printer('Creating temporary files ... ', flush=True)
+        from shutil import copytree, move, ignore_patterns
+        from os import makedirs
+        from time import time
+        from labpack import __module__
+        from labpack.storage.appdata import appdataClient
+        client_kwargs = {
+            'collection_name': 'TempFiles',
+            'prod_name': __module__
+        }
+        tempfiles_client = appdataClient(**client_kwargs)
+        temp_folder = path.join(tempfiles_client.collection_folder, 'heroku%s' % time())
+    
+    # define cleanup function
+        def _cleanup_temp():
+            self.printer('Cleaning up temporary files ... ', flush=True)
+            from shutil import rmtree
+            rmtree(temp_folder, ignore_errors=True)
+            self.printer('done.')
+
+    # copy site to temporary folder
         try:
-            from shutil import copytree, move
-            from os import makedirs
-            from time import time
-            from labpack import __module__
-            from labpack.storage.appdata import appdataClient
-            client_kwargs = {
-                'collection_name': 'TempFiles',
-                'prod_name': __module__
-            }
-            tempfiles_client = appdataClient(**client_kwargs)
-            temp_folder = path.join(tempfiles_client.collection_folder, 'heroku%s' % time())
             makedirs(temp_folder)
             site_root, site_name = path.split(path.abspath(site_folder))
             build_path = path.join(temp_folder, site_name)
-            copytree(site_folder, build_path)
+            copytree(site_folder, build_path, ignore=ignore_patterns('*node_modules/*','*.lab/*'))
             if static_build:
                 index_path = path.join(build_path, 'index.html')
                 home_path = path.join(build_path, 'home.html')
@@ -390,16 +403,10 @@ class herokuClient(requestsHandler):
                 move(index_path, home_path)
         except:
             self.printer('ERROR')
+            _cleanup_temp()
             raise
         self.printer('done.')
-    
-    # define cleanup function
-        def _cleanup_temp():
-            self.printer('Cleaning up temporary files ... ', flush=True)
-            from shutil import rmtree
-            rmtree(temp_folder, ignore_errors=True)
-            self.printer('done.')
-            
+
     # deploy site to heroku
         self.printer('Deploying %s to heroku ... ' % site_folder, flush=True)
         try:
@@ -407,12 +414,11 @@ class herokuClient(requestsHandler):
             self._handle_command(sys_command, print_pipe=True)
         except:
             self.printer('ERROR')
-            _cleanup_temp()
             raise
+        finally:
+            _cleanup_temp()
+
         self.printer('Deployment complete.')
-        
-    # remove temporary files
-        _cleanup_temp()
         
         return True
     
