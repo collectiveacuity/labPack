@@ -1,6 +1,10 @@
 ChangeLog
 =========
 
+0.20 (2018.06.??)
+-----------------
+* [BUG FIX] added container release operation to herokuClient.deploy_docker
+
 0.19 (2018.06.01)
 -----------------
 * [UPDATE] changed instance tag name LoginName to UserName in sshClient

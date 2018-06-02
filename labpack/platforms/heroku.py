@@ -91,21 +91,24 @@ class herokuClient(requestsHandler):
     
     # define patterns
         import re
-        api_regex = re.compile('machine\sapi\.heroku\.com.*?\s\slogin\s.*?\n', re.S)
-        git_regex = re.compile('machine\sgit\.heroku\.com.*?\s\slogin\s.*?\n', re.S)
+        record_end = '(\n\n|\n\w|$)'
+        heroku_regex = re.compile('(machine\sapi\.heroku\.com.*?\nmachine\sgit\.heroku\.com.*?)%s' % record_end, re.S)
         
     # retrieve netrc text
         netrc_text = open(netrc_path).read().strip()
-
+        
     # replace text with new password and login
-        new_api = 'machine api.heroku.com\n  password %s\n  login %s\n' % (auth_token, account_email)
-        new_git = 'machine git.heroku.com\n  password %s\n  login %s\n' % (auth_token, account_email)
-        if api_regex.findall(netrc_text):
-            netrc_text = api_regex.sub(new_api, netrc_text)
-            netrc_text = git_regex.sub(new_git, netrc_text)
+        new_heroku = 'machine api.heroku.com\n  password %s\n  login %s\n' % (auth_token, account_email)
+        new_heroku += 'machine git.heroku.com\n  password %s\n  login %s\n\n' % (auth_token, account_email)
+        heroku_search = heroku_regex.findall(netrc_text)
+        if heroku_search:
+            if re.match('\n\w', heroku_search[0][1]):
+                new_heroku = new_heroku[:-1]
+                new_heroku += heroku_search[0][1]
+            netrc_text = heroku_regex.sub(new_heroku, netrc_text)
         else:
-            netrc_text += '\n\n' + new_api + new_git
-
+            netrc_text += '\n\n' + new_heroku
+        
     # save netrc
         with open(netrc_path, 'wt') as f:
             f.write(netrc_text)
@@ -291,6 +294,8 @@ class herokuClient(requestsHandler):
     
     # build docker image
         sys_command = 'cd %s; heroku container:push web --app %s' % (dockerfile_root, self.subdomain)
+        self._handle_command(sys_command, print_pipe=True)
+        sys_command = 'cd %s; heroku container:release web --app %s' % (dockerfile_root, self.subdomain)
         self._handle_command(sys_command, print_pipe=True)
         self.printer('Deployment complete.')
 
