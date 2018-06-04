@@ -44,7 +44,7 @@ class testlabDT(object):
 
     def performanceTests(self):
 
-        performlab.repeat(labDT.new(), 'labDT.new()', 10000)
+        performlab.repeat(labDT.new, {}, 'labDT.new()', 10000)
 
         return self
 

@@ -216,7 +216,7 @@ class labDT(datetime):
 
     # validate input
         title = 'ISO time input for labDT.fromISO'
-        isopattern = re.compile('\d{4}-?\d{2}-?\d{2}T.*')
+        isopattern = re.compile('\d{4}-?\d{2}-?\d{2}[\s|T].*')
         if not isopattern.search(iso_string):
             raise ValueError('\n%s is not a valid ISO string.' % title)
         python_datetime = dTparser.parse(iso_string)
