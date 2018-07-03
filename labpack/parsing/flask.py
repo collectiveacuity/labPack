@@ -159,7 +159,18 @@ def validate_request_content(request_content, request_model, request_component='
             if err.error['input_criteria']['value_datatype'] == 'map':
                 if isinstance(err.error['error_value'], list):
                     required_field = err.error['error_value'][0]
-            error_message = 'request %s is missing required field %s' % (request_component, required_field) 
+            error_message = 'request %s is missing required field %s' % (request_component, required_field)
+        elif err.error['input_criteria']['required_field'] and err.error['failed_test'] == 'extra_fields':
+            path_insert = ''
+            path_prefix = ''
+            if len(err.error['input_path']) > 1:
+                path_prefix = 'value for '
+                path_insert = ' path %s' % err.error['input_path']
+            from labpack.parsing.grammar import join_words
+            path_plural = ''
+            if len(err.error['error_value']) > 1:
+                path_plural = 's'
+            error_message = '%srequest %s%s may not contain field%s %s.' % (path_prefix, request_component, path_insert, path_plural, join_words(err.error['error_value'], operator='disjunction', quotes=True)) 
         else:
             failed_key = err.error['failed_test']
             error_value = ''

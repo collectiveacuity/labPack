@@ -3,7 +3,7 @@ __created__ = '2017.06'
 __license__ = 'MIT'
 
 
-def join_words(word_list, operator='conjuction'):
+def join_words(word_list, operator='conjuction', quotes=False):
 
     text = ''
     for i in range(len(word_list)):
@@ -15,8 +15,12 @@ def join_words(word_list, operator='conjuction'):
                     text += ' and '
             else:
                 text += ', '
+        if quotes:
+            text += '"'
         text += word_list[i]
-
+        if quotes:
+            text += '"'
+            
     return text
 
 def section_text(text_string, max_characters=500, continue_text='...'):

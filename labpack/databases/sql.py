@@ -651,13 +651,14 @@ class sqlClient(object):
         if order_criteria:
             object_title = '%s(%s=%s)' % (title, 'order_criteria', str(order_criteria))
             self.fields.validate(order_criteria, '.order_criteria', object_title)
-            for criterion in order_criteria:
+            for i in range(len(order_criteria)):
+                criterion = order_criteria[i]
                 for key, value in criterion.items():
                     criteria_key = key
                     if key.find('.') != 0:
                         criteria_key = '.%s' % key
                     if criteria_key not in self.model.keyMap.keys():
-                        raise ValueError('%s(order_criteria=[...]) item %s key %s does not exist in record_schema.' % (title, str(criterion), key))
+                        raise ValueError('%s(order_criteria=[...]) item %s key %s does not exist in record_schema.' % (title, i, key))
         else:
             order_criteria = []
 
