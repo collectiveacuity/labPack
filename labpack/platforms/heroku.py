@@ -258,13 +258,13 @@ class herokuClient(requestsHandler):
         self.printer('Checking heroku plugin requirements ... ', flush=True)
         sys_command = 'heroku plugins --core'
         heroku_plugins = check_output(sys_command, shell=True, stderr=open(devnull, 'wb')).decode('utf-8')
-        if heroku_plugins.find('heroku-container-registry') == -1:
+        if heroku_plugins.find('heroku-container-registry') == -1 and heroku_plugins.find('container-registry') == -1:
             sys_command = 'heroku plugins'
             heroku_plugins = check_output(sys_command, shell=True, stderr=open(devnull, 'wb')).decode('utf-8')
-            if heroku_plugins.find('heroku-container-registry') == -1:
+            if heroku_plugins.find('heroku-container-registry') == -1 and heroku_plugins.find('container-registry') == -1:
                 self.printer('ERROR')
                 raise Exception(
-                    'heroku container registry required. Upgrade heroku-cli or use: heroku plugins:install heroku-container-registry')
+                    'heroku container registry required. Upgrade heroku-cli.')
         self.printer('done.')
 
     # verify container login
