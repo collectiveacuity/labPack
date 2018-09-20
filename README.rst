@@ -2,6 +2,8 @@
     :target: https://pypi.python.org/pypi/labpack
 .. image:: https://img.shields.io/pypi/l/labpack.svg
     :target: https://pypi.python.org/pypi/labpack
+.. image:: https://img.shields.io/coveralls/github/collectiveacuity/labpack.svg
+    :target: https://pypi.python.org/pypi/labpack
 
 =======
 labPack

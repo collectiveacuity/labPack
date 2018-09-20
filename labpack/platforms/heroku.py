@@ -142,10 +142,12 @@ class herokuClient(requestsHandler):
 
     # verify remote access
         def handle_invalid(stdout, proc):
-            if stdout.find('Invalid credentials') > -1:
+
+        # define process closing helper
+            def _close_process(_proc):
             # close process
                 import psutil
-                process = psutil.Process(proc.pid)
+                process = psutil.Process(_proc.pid)
                 for proc in process.children(recursive=True):
                     proc.kill()
                 process.kill()
@@ -153,15 +155,30 @@ class herokuClient(requestsHandler):
                 with open(netrc_path, 'wt') as f:
                     f.write(netrc_text)
                     f.close()
-            # report error
+
+        # invalid credentials
+            if stdout.find('Invalid credentials') > -1:
+                _close_process(proc)
                 self.printer('ERROR.')
                 raise Exception('Permission denied. Heroku auth token is not valid.\nTry: "heroku login", then "heroku auth:token"')
+
         sys_command = 'heroku apps --json'
         response = self._handle_command(sys_command, interactive=handle_invalid, handle_error=True)
 
+        if response.find('Warning: heroku update') > -1:
+            self.printer('WARNING: heroku update available.')
+            self.printer('Try: npm install -g -U heroku\nor see https://devcenter.heroku.com/articles/heroku-cli#staying-up-to-date')
+            self.printer('Checking heroku credentials ... ')
+            response_lines = response.splitlines()
+            response = '\n'.join(response_lines[1:])
+
     # add list to object
         import json
-        self.apps = json.loads(response)
+        try:
+            self.apps = json.loads(response)
+        except:
+            self.printer('ERROR.')
+            raise Exception(response)
 
         self.printer('done.')
 

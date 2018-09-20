@@ -278,6 +278,7 @@ class sshClient(object):
             for i in range(len(commands)):
                 self.ec2.iam.printer('[%s@%s]: %s ... ' % (self.login_name, self.instance_ip, commands[i]), flush=True)
                 sys_command = 'ssh -i %s %s@%s %s' % (self.pem_file, self.login_name, self.instance_ip, commands[i])
+                # DEBUG print(sys_command)
                 pipes = Popen(sys_command.split(), stdout=PIPE, stderr=STDOUT)
             # automatically accept keys
                 std_out, std_err = pipes.communicate('yes\n'.encode('utf-8'))
@@ -522,7 +523,7 @@ class sshClient(object):
             remote_path_root = '~/'
         remote_path = remote_path.replace(' ', '\ ')
         remote_path_root = remote_path_root.replace(' ','\ ')
-        
+
     # verify local root exists
         if local_path:
             local_path_root, local_path_node = path.split(local_path)
