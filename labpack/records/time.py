@@ -304,7 +304,7 @@ class labDT(datetime):
         return labDT(**dt_kwargs)
 
     @classmethod
-    def fromPattern(cls, datetime_string, datetime_pattern, time_zone):
+    def fromPattern(cls, datetime_string, datetime_pattern, time_zone, require_hour=True):
 
         '''
             a method for constructing labDT from a strptime pattern in a string
@@ -314,6 +314,7 @@ class labDT(datetime):
         :param datetime_string: string with date and time info
         :param datetime_pattern: string with python formatted pattern
         :param time_zone: string with timezone info
+        :param require_hour: [optional] boolean to disable hour requirement
         :return: labDT object with datetime
         '''
 
@@ -325,7 +326,7 @@ class labDT(datetime):
             for j in i:
                 if j in datetime_pattern:
                     req_counter += 1
-        if not req_counter == 4:
+        if not req_counter == 4 and require_hour:
             raise Exception('Datetime pattern %s must contain at least year, month, day and hour.' % title)
         try:
             get_tz = tz.gettz(time_zone)
