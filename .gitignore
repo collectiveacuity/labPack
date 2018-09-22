@@ -56,6 +56,7 @@ notes/
 appdata/
 
 #################  dependencies   #################
+package-lock.json
 node_modules/
 
 #################   backup sync   #################
@@ -63,6 +64,8 @@ node_modules/
 Thumbs.db
 
 #################  unit testing   #################
+.coveralls.*
+.nyc_output/
 htmlcov/
 .tox/
 .coverage
@@ -77,3 +80,5 @@ coverage.xml
 dev/
 tests_dev/
 docs_dev/
+
+#################    dev files    #################

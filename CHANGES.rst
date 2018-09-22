@@ -1,8 +1,11 @@
 ChangeLog
 =========
 
-0.20 (2018.06.??)
+0.20 (2018.09.22)
 -----------------
+* [UPDATE] added optional argument to disable validation in labDT.fromPattern
+* [BUG FIX] updated heroku docker deployment plugin verification 
+* [BUG FIX] order_criteria validation in sqlClient.list
 * [BUG FIX] added container release operation to herokuClient.deploy_docker
 
 0.19 (2018.06.01)

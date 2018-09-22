@@ -1,5 +1,72 @@
 # Classes
 
+## cassandraSession
+### Import:
+labpack.databases.cassandra.cassandraSession  
+### Description:
+a class of methods for creating a session to a cassandra database
+
+    CQL Connector
+    https://datastax.github.io/python-driver/getting_started.html
+    https://flask-cqlalchemy.readthedocs.io/en/latest/
+    https://datastax.github.io/python-driver/cqlengine/third_party.html
+
+    Authentication
+    https://datastax.github.io/python-driver/api/cassandra/auth.html#
+    https://cassandra.apache.org/doc/latest/operating/security.html#enabling-password-authentication  
+### \__init__
+##### 
+**Signature:**  
+\__init__(self, hostname, port=9042, username="", password="", cert_path="")
+##### 
+**Description:**  
+  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>hostname  </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>port      </td><td>int     </td><td>          </td><td>9042     </td><td>             </td></tr>
+<tr><td>username  </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>password  </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>cert_path </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+</tbody>
+</table>
+
+## cassandraTable
+### Import:
+labpack.databases.cassandra.cassandraTable  
+### Description:
+a class of methods for interacting with a table on cassandra
+
+    CQL Connector
+    https://datastax.github.io/python-driver/getting_started.html
+    https://cassandra.apache.org/doc/latest/cql/dml.html
+
+    NOTE:   WIP  
+### \__init__
+##### 
+**Signature:**  
+\__init__(self, keyspace_name, table_name, record_schema, cassandra_session, replication_strategy=None)
+##### 
+**Description:**  
+  
+<table>
+<thead>
+<tr><th>Argument            </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self                </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>keyspace_name       </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>table_name          </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>record_schema       </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>cassandra_session   </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>replication_strategy</td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+
 ## labMagic
 ### Import:
 labpack.parsing.magic.labMagic  
@@ -263,7 +330,7 @@ a method to construct labDT from a javascript datetime string
 ### fromPattern
 ##### 
 **Signature:**  
-fromPattern(cls, datetime_string, datetime_pattern, time_zone)
+fromPattern(cls, datetime_string, datetime_pattern, time_zone, require_hour=True)
 ##### 
 **Description:**  
 a method for constructing labDT from a strptime pattern in a string
@@ -272,12 +339,13 @@ a method for constructing labDT from a strptime pattern in a string
             human_friendly_pattern: '%A, %B %d, %Y %I:%M:%S.%f%p'  
 <table>
 <thead>
-<tr><th>Argument        </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                         </th></tr>
+<tr><th>Argument        </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                   </th></tr>
 </thead>
 <tbody>
-<tr><td>cls             </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>                                    </td></tr>
-<tr><td>datetime_string </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with date and time info      </td></tr>
-<tr><td>datetime_pattern</td><td>str     </td><td>Yes       </td><td>""       </td><td>string with python formatted pattern</td></tr>
-<tr><td>time_zone       </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with timezone info           </td></tr>
+<tr><td>cls             </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>                                              </td></tr>
+<tr><td>datetime_string </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with date and time info                </td></tr>
+<tr><td>datetime_pattern</td><td>str     </td><td>Yes       </td><td>""       </td><td>string with python formatted pattern          </td></tr>
+<tr><td>time_zone       </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with timezone info                     </td></tr>
+<tr><td>require_hour    </td><td>bool    </td><td>          </td><td>True     </td><td>[optional] boolean to disable hour requirement</td></tr>
 </tbody>
 </table>

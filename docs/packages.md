@@ -1,5 +1,37 @@
 # Packages
 
+## ssl.py
+### Import:
+labpack.authentication.ssl  
+### Description:
+a package of methods for managing ssl authentication  
+### generate_keystore
+##### 
+**Signature:**  
+generate_keystore(key_alias, key_folder="./", root_cert="", truststore="", password="", organization="", organization_unit="", locality="", country="", key_size=2048, verbose=True, overwrite=False)
+##### 
+**Description:**  
+a function to generate a keystore and cert files for self-signed ssl authentication  
+<table>
+<thead>
+<tr><th>Argument         </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>key_alias        </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>key_folder       </td><td>str     </td><td>          </td><td>"./"     </td><td>             </td></tr>
+<tr><td>root_cert        </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>truststore       </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>password         </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>organization     </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>organization_unit</td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>locality         </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>country          </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>key_size         </td><td>int     </td><td>          </td><td>2048     </td><td>             </td></tr>
+<tr><td>verbose          </td><td>bool    </td><td>          </td><td>True     </td><td>             </td></tr>
+<tr><td>overwrite        </td><td>bool    </td><td>          </td><td>False    </td><td>             </td></tr>
+</tbody>
+</table>
+
 ## drep.py
 ### Import:
 labpack.compilers.drep  
@@ -480,7 +512,7 @@ labpack.parsing.grammar
 ### join_words
 ##### 
 **Signature:**  
-join_words(word_list, operator="conjuction")
+join_words(word_list, operator="conjuction", quotes=False)
 ##### 
 **Description:**  
   
@@ -491,6 +523,7 @@ join_words(word_list, operator="conjuction")
 <tbody>
 <tr><td>word_list </td><td>NoneType</td><td>Yes       </td><td>None        </td><td>             </td></tr>
 <tr><td>operator  </td><td>str     </td><td>          </td><td>"conjuction"</td><td>             </td></tr>
+<tr><td>quotes    </td><td>bool    </td><td>          </td><td>False       </td><td>             </td></tr>
 </tbody>
 </table>
 ### section_text

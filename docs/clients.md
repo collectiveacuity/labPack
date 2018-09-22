@@ -2079,6 +2079,55 @@ method for removing an instance from AWS EC2
 <tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>""       </td><td>string of instance id on AWS</td></tr>
 </tbody>
 </table>
+### list_addresses
+##### 
+**Signature:**  
+list_addresses(self, tag_values=None)
+##### 
+**Description:**  
+a method to list elastic ip addresses associated with account on AWS  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                             </td></tr>
+<tr><td>tag_values</td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of tag values</td></tr>
+</tbody>
+</table>
+### read_address
+##### 
+**Signature:**  
+read_address(self, ip_address)
+##### 
+**Description:**  
+a method to retrieve details about an elastic ip address associated with account on AWS  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                            </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                       </td></tr>
+<tr><td>ip_address</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with elastic ipv4 address on ec2</td></tr>
+</tbody>
+</table>
+### assign_address
+##### 
+**Signature:**  
+assign_address(self, ip_address, instance_id)
+##### 
+**Description:**  
+a method to assign (or reassign) an elastic ip to an instance on AWS  
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                            </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                       </td></tr>
+<tr><td>ip_address </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with elastic ipv4 address on ec2</td></tr>
+<tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with aws id for running instance</td></tr>
+</tbody>
+</table>
 ### check_image_state
 ##### 
 **Signature:**  
@@ -2552,6 +2601,42 @@ search(self, image_name)
 <tr><td>image_name</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 </tbody>
 </table>
+### build
+##### 
+**Signature:**  
+build(self, image_name, image_tag="", dockerfile_path="./Dockerfile")
+##### 
+**Description:**  
+  
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type    </th><th>Required  </th><th>Default       </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object  </td><td>Yes       </td><td>None          </td><td>             </td></tr>
+<tr><td>image_name     </td><td>NoneType</td><td>Yes       </td><td>None          </td><td>             </td></tr>
+<tr><td>image_tag      </td><td>str     </td><td>          </td><td>""            </td><td>             </td></tr>
+<tr><td>dockerfile_path</td><td>str     </td><td>          </td><td>"./Dockerfile"</td><td>             </td></tr>
+</tbody>
+</table>
+### save
+##### 
+**Signature:**  
+save(self, image_name, file_name, image_tag="")
+##### 
+**Description:**  
+  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>image_name</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>file_name </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>image_tag </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+</tbody>
+</table>
 ### command
 ##### 
 **Signature:**  
@@ -2603,7 +2688,7 @@ a method to open up a terminal inside a running container
 ### run
 ##### 
 **Signature:**  
-run(self, image_name, container_alias, image_tag="", environmental_variables=None, mapped_ports=None, mounted_volumes=None, start_command="", network_name="host", run_flags="")
+run(self, image_name, container_alias, image_tag="", environmental_variables=None, mapped_ports=None, mounted_volumes=None, start_command="", network_name="", run_flags="")
 ##### 
 **Description:**  
 a method to start a local container  
@@ -2620,7 +2705,7 @@ a method to start a local container
 <tr><td>mapped_ports           </td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary of port fields to map to container                </td></tr>
 <tr><td>mounted_volumes        </td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary of path fields to map to container                </td></tr>
 <tr><td>start_command          </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string of command (and any arguments) to run inside container</td></tr>
-<tr><td>network_name           </td><td>str   </td><td>          </td><td>"host"   </td><td>[optional] string with name of docker network to link container to      </td></tr>
+<tr><td>network_name           </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with name of docker network to link container to      </td></tr>
 <tr><td>run_flags              </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with additional docker options to add to container    </td></tr>
 </tbody>
 </table>
