@@ -90,6 +90,8 @@
                 <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
         <li class="main active"><a href="#classes">Classes</a></li>
+            <li><a href="#cassandrasession">cassandraSession</a></li>
+            <li><a href="#cassandratable">cassandraTable</a></li>
             <li><a href="#labmagic">labMagic</a></li>
             <li><a href="#labregex">labRegex</a></li>
             <li><a href="#labid">labID</a></li>
@@ -99,16 +101,81 @@
                 <div class="col-md-9" role="main">
 
 <h1 id="classes">Classes</h1>
-<h2 id="labmagic">labMagic</h2>
+<h2 id="cassandrasession">cassandraSession</h2>
 <h3 id="import">Import:</h3>
-<p>labpack.parsing.magic.labMagic  </p>
+<p>labpack.databases.cassandra.cassandraSession  </p>
 <h3 id="description">Description:</h3>
-<p>initialization method for labMagic class  </p>
+<p>a class of methods for creating a session to a cassandra database</p>
+<pre><code>CQL Connector
+https://datastax.github.io/python-driver/getting_started.html
+https://flask-cqlalchemy.readthedocs.io/en/latest/
+https://datastax.github.io/python-driver/cqlengine/third_party.html
+
+Authentication
+https://datastax.github.io/python-driver/api/cassandra/auth.html#
+https://cassandra.apache.org/doc/latest/operating/security.html#enabling-password-authentication
+</code></pre>
 <h3 id="95_init__">__init__</h3>
 <h5 id="_1"></h5>
 <p><strong>Signature:</strong><br />
-__init__(self, magic_file=&rdquo;&ldquo;)</p>
+__init__(self, hostname, port=9042, username=&rdquo;&ldquo;, password=&rdquo;&ldquo;, cert_path=&rdquo;&ldquo;)</p>
 <h5 id="_2"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>hostname  </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>port      </td><td>int     </td><td>          </td><td>9042     </td><td>             </td></tr>
+<tr><td>username  </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>password  </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>cert_path </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h2 id="cassandratable">cassandraTable</h2>
+<h3 id="import_1">Import:</h3>
+<p>labpack.databases.cassandra.cassandraTable  </p>
+<h3 id="description_1">Description:</h3>
+<p>a class of methods for interacting with a table on cassandra</p>
+<pre><code>CQL Connector
+https://datastax.github.io/python-driver/getting_started.html
+https://cassandra.apache.org/doc/latest/cql/dml.html
+
+NOTE:   WIP
+</code></pre>
+<h3 id="95_init___1">__init__</h3>
+<h5 id="_3"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self, keyspace_name, table_name, record_schema, cassandra_session, replication_strategy=None)</p>
+<h5 id="_4"></h5>
+<p><strong>Description:</strong>  </p>
+<table>
+<thead>
+<tr><th>Argument            </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self                </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>keyspace_name       </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>table_name          </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>record_schema       </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>cassandra_session   </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>replication_strategy</td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+
+<h2 id="labmagic">labMagic</h2>
+<h3 id="import_2">Import:</h3>
+<p>labpack.parsing.magic.labMagic  </p>
+<h3 id="description_2">Description:</h3>
+<p>initialization method for labMagic class  </p>
+<h3 id="95_init___2">__init__</h3>
+<h5 id="_5"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self, magic_file=&rdquo;&ldquo;)</p>
+<h5 id="_6"></h5>
 <p><strong>Description:</strong><br />
 initialization method for labMagic class<br />
 <table>
@@ -121,10 +188,10 @@ initialization method for labMagic class<br />
 </tbody>
 </table></p>
 <h3 id="analyze">analyze</h3>
-<h5 id="_3"></h5>
+<h5 id="_7"></h5>
 <p><strong>Signature:</strong><br />
 analyze(self, file_path=&rdquo;&ldquo;, file_url=&rdquo;&ldquo;, byte_data=None)</p>
-<h5 id="_4"></h5>
+<h5 id="_8"></h5>
 <p><strong>Description:</strong><br />
 a method to determine the mimetype and extension of a file from its byte data<br />
 <table>
@@ -139,15 +206,15 @@ a method to determine the mimetype and extension of a file from its byte data<br
 </tbody>
 </table></p>
 <h2 id="labregex">labRegex</h2>
-<h3 id="import_1">Import:</h3>
+<h3 id="import_3">Import:</h3>
 <p>labpack.parsing.regex.labRegex  </p>
-<h3 id="description_1">Description:</h3>
+<h3 id="description_3">Description:</h3>
 <p>instantiates class with a regular expression dictionary  </p>
-<h3 id="95_init___1">__init__</h3>
-<h5 id="_5"></h5>
+<h3 id="95_init___3">__init__</h3>
+<h5 id="_9"></h5>
 <p><strong>Signature:</strong><br />
 __init__(self, regex_schema, override=False)</p>
-<h5 id="_6"></h5>
+<h5 id="_10"></h5>
 <p><strong>Description:</strong><br />
 instantiates class with a regular expression dictionary<br />
 <table>
@@ -161,10 +228,10 @@ instantiates class with a regular expression dictionary<br />
 </tbody>
 </table></p>
 <h3 id="map">map</h3>
-<h5 id="_7"></h5>
+<h5 id="_11"></h5>
 <p><strong>Signature:</strong><br />
 map(self, string_input, n_grams=1)</p>
-<h5 id="_8"></h5>
+<h5 id="_12"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -178,9 +245,9 @@ map(self, string_input, n_grams=1)</p>
 </table>
 
 <h2 id="labid">labID</h2>
-<h3 id="import_2">Import:</h3>
+<h3 id="import_4">Import:</h3>
 <p>labpack.records.id.labID  </p>
-<h3 id="description_2">Description:</h3>
+<h3 id="description_4">Description:</h3>
 <p>a class of methods for uniquely identifying objects</p>
 <pre><code>    build-in methods:
         self.uuid: uuid1 uuid object
@@ -193,17 +260,17 @@ map(self, string_input, n_grams=1)</p>
         self.iso: current iso utc datetime string
         self.datetime: current python datetime
 </code></pre>
-<h3 id="95_init___2">__init__</h3>
-<h5 id="_9"></h5>
+<h3 id="95_init___4">__init__</h3>
+<h5 id="_13"></h5>
 <p><strong>Signature:</strong><br />
 __init__(self)</p>
-<h5 id="_10"></h5>
+<h5 id="_14"></h5>
 <p><strong>Description:</strong><br />
 a method to initialize a unique ID based upon the UUID1 method  </p>
 <h2 id="labdt">labDT</h2>
-<h3 id="import_3">Import:</h3>
+<h3 id="import_5">Import:</h3>
 <p>labpack.records.time.labDT  </p>
-<h3 id="description_3">Description:</h3>
+<h3 id="description_5">Description:</h3>
 <p>a class of methods for datetime conversion</p>
 <pre><code>for list of timezones:
     https://stackoverflow.com/questions/13866926/python-pytz-list-of-timezones
@@ -211,42 +278,42 @@ for list of datetime directives:
     https://docs.python.org/2/library/datetime.html#strftime-and-strptime-behavior
 </code></pre>
 <h3 id="new">new</h3>
-<h5 id="_11"></h5>
+<h5 id="_15"></h5>
 <p><strong>Signature:</strong><br />
 new(cls)</p>
-<h5 id="_12"></h5>
+<h5 id="_16"></h5>
 <p><strong>Description:</strong><br />
 a method to generate the current datetime as a labDT object  </p>
 <h3 id="zulu">zulu</h3>
-<h5 id="_13"></h5>
+<h5 id="_17"></h5>
 <p><strong>Signature:</strong><br />
 zulu(self)</p>
-<h5 id="_14"></h5>
+<h5 id="_18"></h5>
 <p><strong>Description:</strong><br />
 a method to report ISO UTC datetime string from a labDT object</p>
 <pre><code>    NOTE: for timezone offset string use .isoformat() instead
 </code></pre>
 <h3 id="epoch">epoch</h3>
-<h5 id="_15"></h5>
+<h5 id="_19"></h5>
 <p><strong>Signature:</strong><br />
 epoch(self)</p>
-<h5 id="_16"></h5>
+<h5 id="_20"></h5>
 <p><strong>Description:</strong><br />
 a method to report posix epoch timestamp from a labDT object  </p>
 <h3 id="rfc2822">rfc2822</h3>
-<h5 id="_17"></h5>
+<h5 id="_21"></h5>
 <p><strong>Signature:</strong><br />
 rfc2822(self)</p>
-<h5 id="_18"></h5>
+<h5 id="_22"></h5>
 <p><strong>Description:</strong><br />
 a method to report a RFC-2822 Compliant Date from a labDT object</p>
 <pre><code>        https://tools.ietf.org/html/rfc2822.html#page-14
 </code></pre>
 <h3 id="pylocal">pyLocal</h3>
-<h5 id="_19"></h5>
+<h5 id="_23"></h5>
 <p><strong>Signature:</strong><br />
 pyLocal(self, time_zone=&rdquo;&ldquo;)</p>
-<h5 id="_20"></h5>
+<h5 id="_24"></h5>
 <p><strong>Description:</strong><br />
 a method to report a python datetime from a labDT object<br />
 <table>
@@ -259,10 +326,10 @@ a method to report a python datetime from a labDT object<br />
 </tbody>
 </table></p>
 <h3 id="jslocal">jsLocal</h3>
-<h5 id="_21"></h5>
+<h5 id="_25"></h5>
 <p><strong>Signature:</strong><br />
 jsLocal(self, time_zone=&rdquo;&ldquo;)</p>
-<h5 id="_22"></h5>
+<h5 id="_26"></h5>
 <p><strong>Description:</strong><br />
 a method to report a javascript string from a labDT object<br />
 <table>
@@ -275,10 +342,10 @@ a method to report a javascript string from a labDT object<br />
 </tbody>
 </table></p>
 <h3 id="humanfriendly">humanFriendly</h3>
-<h5 id="_23"></h5>
+<h5 id="_27"></h5>
 <p><strong>Signature:</strong><br />
 humanFriendly(self, time_zone=&rdquo;&ldquo;, include_day=True, include_time=True)</p>
-<h5 id="_24"></h5>
+<h5 id="_28"></h5>
 <p><strong>Description:</strong><br />
 a method to report a human friendly string from a labDT object<br />
 <table>
@@ -293,10 +360,10 @@ a method to report a human friendly string from a labDT object<br />
 </tbody>
 </table></p>
 <h3 id="fromepoch">fromEpoch</h3>
-<h5 id="_25"></h5>
+<h5 id="_29"></h5>
 <p><strong>Signature:</strong><br />
 fromEpoch(cls, epoch_time)</p>
-<h5 id="_26"></h5>
+<h5 id="_30"></h5>
 <p><strong>Description:</strong><br />
 a method for constructing a labDT object from epoch timestamp<br />
 <table>
@@ -309,10 +376,10 @@ a method for constructing a labDT object from epoch timestamp<br />
 </tbody>
 </table></p>
 <h3 id="fromiso">fromISO</h3>
-<h5 id="_27"></h5>
+<h5 id="_31"></h5>
 <p><strong>Signature:</strong><br />
 fromISO(cls, iso_string)</p>
-<h5 id="_28"></h5>
+<h5 id="_32"></h5>
 <p><strong>Description:</strong><br />
 a method for constructing a labDT object from a timezone aware ISO string<br />
 <table>
@@ -325,10 +392,10 @@ a method for constructing a labDT object from a timezone aware ISO string<br />
 </tbody>
 </table></p>
 <h3 id="frompython">fromPython</h3>
-<h5 id="_29"></h5>
+<h5 id="_33"></h5>
 <p><strong>Signature:</strong><br />
 fromPython(cls, python_datetime)</p>
-<h5 id="_30"></h5>
+<h5 id="_34"></h5>
 <p><strong>Description:</strong><br />
 a method for constructing a labDT from a python datetime with timezone info<br />
 <table>
@@ -341,10 +408,10 @@ a method for constructing a labDT from a python datetime with timezone info<br /
 </tbody>
 </table></p>
 <h3 id="fromjavascript">fromJavascript</h3>
-<h5 id="_31"></h5>
+<h5 id="_35"></h5>
 <p><strong>Signature:</strong><br />
 fromJavascript(cls, javascript_datetime)</p>
-<h5 id="_32"></h5>
+<h5 id="_36"></h5>
 <p><strong>Description:</strong><br />
 a method to construct labDT from a javascript datetime string<br />
 <table>
@@ -357,10 +424,10 @@ a method to construct labDT from a javascript datetime string<br />
 </tbody>
 </table></p>
 <h3 id="frompattern">fromPattern</h3>
-<h5 id="_33"></h5>
+<h5 id="_37"></h5>
 <p><strong>Signature:</strong><br />
-fromPattern(cls, datetime_string, datetime_pattern, time_zone)</p>
-<h5 id="_34"></h5>
+fromPattern(cls, datetime_string, datetime_pattern, time_zone, require_hour=True)</p>
+<h5 id="_38"></h5>
 <p><strong>Description:</strong><br />
 a method for constructing labDT from a strptime pattern in a string
             https://docs.python.org/2/library/datetime.html#strftime-and-strptime-behavior
@@ -368,13 +435,14 @@ a method for constructing labDT from a strptime pattern in a string
             human_friendly_pattern: &lsquo;%A, %B %d, %Y %I:%M:%S.%f%p&rsquo;<br />
 <table>
 <thead>
-<tr><th>Argument        </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                         </th></tr>
+<tr><th>Argument        </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                   </th></tr>
 </thead>
 <tbody>
-<tr><td>cls             </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>                                    </td></tr>
-<tr><td>datetime_string </td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with date and time info      </td></tr>
-<tr><td>datetime_pattern</td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with python formatted pattern</td></tr>
-<tr><td>time_zone       </td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with timezone info           </td></tr>
+<tr><td>cls             </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>                                              </td></tr>
+<tr><td>datetime_string </td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with date and time info                </td></tr>
+<tr><td>datetime_pattern</td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with python formatted pattern          </td></tr>
+<tr><td>time_zone       </td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with timezone info                     </td></tr>
+<tr><td>require_hour    </td><td>bool    </td><td>          </td><td>True     </td><td>[optional] boolean to disable hour requirement</td></tr>
 </tbody>
 </table></p></div>
         </div>
