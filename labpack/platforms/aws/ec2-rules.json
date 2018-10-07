@@ -33,7 +33,7 @@
     "pem_file": "./lab-keypair-useast2-test-20170601.pem",
     "pem_name": "lab-keypair-useast2-test-20170601",
     "tag_key": "Env",
-    "tag_values": [ "test" ],
+    "tag_values": {},
     "tag_list": [{ "key": "Env", "value": "test" }],
     "group_id": "sg-abcd1234",
     "group_ids": [ "sg-abcd1234" ],
@@ -79,14 +79,6 @@
       "must_not_contain": [ "[^\\w\\-]+", "^\\-", "\\-$" ]
     },
     ".tag_key": {
-      "min_length": 1,
-      "max_length": 255,
-      "must_not_contain": [ "aws:", "[^\\w\\s\\-\\._:/]+" ]
-    },
-    ".tag_values": {
-      "max_size": 10
-    },
-    ".tag_values[0]": {
       "min_length": 1,
       "max_length": 255,
       "must_not_contain": [ "aws:", "[^\\w\\s\\-\\._:/]+" ]

@@ -61,8 +61,20 @@ class ec2Client(object):
         self.connection = boto3.client(**client_kwargs)
         self.verbose = verbose
 
-    def check_instance_state(self, instance_id, wait=True):
+    def _validate_tags(self, tag_values, title):
+
+        ''' a helper method to validate tag key and value pairs '''
         
+        if tag_values:
+            if len(tag_values.keys()) > 10:
+                raise Exception("%s(tag_values={...}) is invalid.\n Value %s for field .tag_values failed test 'max_keys': 10" % (title, len(tag_values.keys())))
+            for key, value in tag_values.items():
+                object_title = '%s(%s)' % (title, key)
+                self.fields.validate(value, '.tag_key', object_title)
+                object_title = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.tag_key', object_title)
+    
+    def check_instance_state(self, instance_id, wait=True):
         '''
             method for checking the state of an instance on AWS EC2
             
@@ -237,7 +249,7 @@ class ec2Client(object):
         '''
             a method to retrieve the list of instances on AWS EC2
 
-        :param tag_values: [optional] list of tag values
+        :param tag_values: [optional] dictionary of tag key-values pairs
         :return: list of strings with instance AWS ids
         '''
 
@@ -251,20 +263,24 @@ class ec2Client(object):
             if value:
                 object_title = '%s(%s=%s)' % (title, key, str(value))
                 self.fields.validate(value, '.%s' % key, object_title)
-            
+        self._validate_tags(tag_values, title)
+
     # add tags to method arguments
         kw_args = {}
         tag_text = ''
         if tag_values:
             kw_args = {
-                'Filters': [ { 'Name': 'tag-value', 'Values': tag_values } ]
+                'Filters': []
             }
+            tag_words = []
+            for key, value in tag_values.items():
+                kw_args['Filters'].append({ 'Name': 'tag:%s' % key, 'Values': [value] })
             from labpack.parsing.grammar import join_words
             plural_value = ''
             if len(tag_values) > 1:
                 plural_value = 's'
-            tag_text = ' with tag value%s %s' % (plural_value, join_words(tag_values))
-            
+            tag_text = ' with tag value%s %s' % (plural_value, join_words(tag_words))
+
     # request instance details from AWS
         self.iam.printer('Querying AWS region %s for instances%s.' % (self.iam.region_name, tag_text))
         instance_list = []
@@ -689,7 +705,7 @@ class ec2Client(object):
         '''
             a method to list elastic ip addresses associated with account on AWS
             
-        :param tag_values: [optional] list of tag values
+        :param tag_values: [optional] dictionary of tag key values
         :return: list of strings with ip addresses
         '''
         
@@ -703,20 +719,24 @@ class ec2Client(object):
             if value:
                 object_title = '%s(%s=%s)' % (title, key, str(value))
                 self.fields.validate(value, '.%s' % key, object_title)
-            
+        self._validate_tags(tag_values, title)
+
     # add tags to method arguments
         kw_args = {}
         tag_text = ''
         if tag_values:
             kw_args = {
-                'Filters': [ { 'Name': 'tag-value', 'Values': tag_values } ]
+                'Filters': []
             }
+            tag_words = []
+            for key, value in tag_values.items():
+                kw_args['Filters'].append({ 'Name': 'tag:%s' % key, 'Values': [value] })
             from labpack.parsing.grammar import join_words
             plural_value = ''
             if len(tag_values) > 1:
                 plural_value = 's'
-            tag_text = ' with tag value%s %s' % (plural_value, join_words(tag_values))
-    
+            tag_text = ' with tag value%s %s' % (plural_value, join_words(tag_words))
+
     # report query
         self.iam.printer('Querying AWS region %s for elastic ip addresses%s.' % (self.iam.region_name, tag_text))
         address_list = []
@@ -934,19 +954,23 @@ class ec2Client(object):
             if value:
                 object_title = '%s(%s=%s)' % (title, key, str(value))
                 self.fields.validate(value, '.%s' % key, object_title)
+        self._validate_tags(tag_values, title)
             
     # add tags to method arguments
         kw_args = { 'Owners': [ self.iam.owner_id ] }
         tag_text = ''
         if tag_values:
             kw_args = {
-                'Filters': [ { 'Name': 'tag-value', 'Values': tag_values } ]
+                'Filters': []
             }
+            tag_words = []
+            for key, value in tag_values.items():
+                kw_args['Filters'].append({ 'Name': 'tag:%s' % key, 'Values': [value] })
             from labpack.parsing.grammar import join_words
             plural_value = ''
             if len(tag_values) > 1:
                 plural_value = 's'
-            tag_text = ' with tag value%s %s' % (plural_value, join_words(tag_values))
+            tag_text = ' with tag value%s %s' % (plural_value, join_words(tag_words))
             
     # request image details from AWS
         self.iam.printer('Querying AWS region %s for images%s.' % (self.iam.region_name, tag_text))
@@ -1618,19 +1642,23 @@ class ec2Client(object):
             if value:
                 object_title = '%s(%s=%s)' % (title, key, str(value))
                 self.fields.validate(value, '.%s' % key, object_title)
+        self._validate_tags(tag_values, title)
             
     # add tags to method arguments
         kw_args = {}
         tag_text = ''
         if tag_values:
             kw_args = {
-                'Filters': [ { 'Name': 'tag-value', 'Values': tag_values } ]
+                'Filters': []
             }
+            tag_words = []
+            for key, value in tag_values.items():
+                kw_args['Filters'].append({ 'Name': 'tag:%s' % key, 'Values': [value] })
             from labpack.parsing.grammar import join_words
             plural_value = ''
             if len(tag_values) > 1:
                 plural_value = 's'
-            tag_text = ' with tag value%s %s' % (plural_value, join_words(tag_values))
+            tag_text = ' with tag value%s %s' % (plural_value, join_words(tag_words))
             
     # request instance details from AWS
         self.iam.printer('Querying AWS region %s for subnets%s.' % (self.iam.region_name, tag_text))
@@ -1734,19 +1762,23 @@ class ec2Client(object):
             if value:
                 object_title = '%s(%s=%s)' % (title, key, str(value))
                 self.fields.validate(value, '.%s' % key, object_title)
+        self._validate_tags(tag_values, title)
             
     # add tags to method arguments
         kw_args = {}
         tag_text = ''
         if tag_values:
             kw_args = {
-                'Filters': [ { 'Name': 'tag-value', 'Values': tag_values } ]
+                'Filters': []
             }
+            tag_words = []
+            for key, value in tag_values.items():
+                kw_args['Filters'].append({ 'Name': 'tag:%s' % key, 'Values': [value] })
             from labpack.parsing.grammar import join_words
             plural_value = ''
             if len(tag_values) > 1:
                 plural_value = 's'
-            tag_text = ' with tag value%s %s' % (plural_value, join_words(tag_values))
+            tag_text = ' with tag value%s %s' % (plural_value, join_words(tag_words))
             
     # request instance details from AWS
         self.iam.printer('Querying AWS region %s for security groups%s.' % (self.iam.region_name, tag_text))
@@ -1975,7 +2007,7 @@ if __name__ == '__main__':
 
 # test instantiation
     from labpack.records.settings import load_settings
-    aws_cred = load_settings('../../../../cred/awsLab.yaml')
+    aws_cred = load_settings('../../../../cred/aws.yaml')
     client_kwargs = {
         'access_id': aws_cred['aws_access_key_id'],
         'secret_key': aws_cred['aws_secret_access_key'],
@@ -2016,7 +2048,7 @@ if __name__ == '__main__':
     assert group_details['group_id'] == group_id
     
 # test subnet
-    subnet_list = ec2_client.list_subnets(tag_values=['test'])
+    subnet_list = ec2_client.list_subnets(tag_values={'Env': 'test'})
     assert subnet_id in subnet_list
     subnet_details = ec2_client.read_subnet(subnet_id)
     assert subnet_details['subnet_id'] == subnet_id
