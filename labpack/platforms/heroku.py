@@ -69,13 +69,18 @@ class herokuClient(requestsHandler):
         self.printer('Checking heroku installation ... ', flush=True)
     
     # import dependencies
+        import re
         from os import devnull
         from subprocess import call, check_output
         
     # validate cli installation
         sys_command = 'heroku --version'
         try:
-            call(sys_command, shell=True, stdout=open(devnull, 'wb'))
+            response = check_output(sys_command, shell=True, stderr=open(devnull, 'wb')).decode('utf-8')
+            search = re.findall('heroku/(\d+\.\d+\.\d+)', response)
+            if search:
+                if search[0] > '7.22.2':
+                    self.printer('WARNING\nWARNING: Heroku version %s may break deployment. Only versions <= 7.22.2 tested. ' % search[0], flush=True)
         except Exception as err:
             self.printer('ERROR')
             raise Exception('"heroku cli" not installed. GoTo: https://devcenter.heroku.com/articles/heroku-cli')
@@ -286,7 +291,8 @@ class herokuClient(requestsHandler):
 
     # verify container login
         self.printer('Checking heroku container login ... ', flush=True)
-        sys_command = 'heroku container:login'
+        # sys_command = 'heroku container:login' # raises unauthorized: authentication required error
+        sys_command = 'docker login --username=_ --password=$(heroku auth:token) registry.heroku.com'
         self._handle_command(sys_command)
         self.printer('done.')
     
