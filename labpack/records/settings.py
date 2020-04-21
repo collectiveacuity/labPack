@@ -63,7 +63,7 @@ def load_settings(file_path, module_name='', secret_key=''):
         import yaml
         try:
             file_data = open(file_path, 'rt')
-            file_details = yaml.load(file_data.read())
+            file_details = yaml.full_load(file_data.read())
         except:
             raise ValueError('%s is not valid yaml data.' % _path_arg)
     elif ext_map['json.gz']:
@@ -85,7 +85,7 @@ def load_settings(file_path, module_name='', secret_key=''):
         except:
             raise ValueError('%s is not valid gzip compressed data.' % _path_arg)
         try:
-            file_details = yaml.load(file_data.read().decode())
+            file_details = yaml.full_load(file_data.read().decode())
         except:
             raise ValueError('%s is not valid yaml data.' % _path_arg)
     elif ext_map['drep']:

@@ -12,7 +12,7 @@ setup_kwargs = {
         'pytz>=2015.7',
         'tzlocal>=1.2',
         'python-dateutil>=2.4.2',
-        'pyyaml>=3.12',
+        'pyyaml>=5.1',
         'jsonmodel',
         'requests',
         'PyJWT>=1.4.2'

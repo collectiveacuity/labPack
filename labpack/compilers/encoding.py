@@ -92,7 +92,7 @@ def decode_data(file_name, byte_data, mimetype='', secret_key=''):
     elif file_type == 'yaml':
         import yaml
         try:
-            python_object = yaml.load(byte_data)
+            python_object = yaml.full_load(byte_data)
         except:
             raise ValueError('%s is not valid yaml data.' % file_name)
     elif file_type == 'json.gz':
@@ -114,7 +114,7 @@ def decode_data(file_name, byte_data, mimetype='', secret_key=''):
         except:
             raise ValueError('%s is not valid gzip compressed data.' % file_name)
         try:
-            python_object = yaml.load(byte_data.decode())
+            python_object = yaml.full_load(byte_data.decode())
         except:
             raise ValueError('%s is not valid yaml data.' % file_name)
     elif file_type == 'drep':

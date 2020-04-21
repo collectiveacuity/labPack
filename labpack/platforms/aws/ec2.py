@@ -73,11 +73,11 @@ class ec2Client(object):
                 self.fields.validate(value, '.tag_key', object_title)
                 object_title = '%s(%s=%s)' % (title, key, str(value))
                 self.fields.validate(value, '.tag_key', object_title)
-    
+
     def check_instance_state(self, instance_id, wait=True):
-        '''
-            method for checking the state of an instance on AWS EC2
-            
+
+        ''' method for checking the state of an instance on AWS EC2
+
         :param instance_id: string with AWS id of instance
         :param wait: [optional] boolean to wait for instance while pending
         :return: string reporting state of instance
@@ -101,7 +101,7 @@ class ec2Client(object):
             self.connection.describe_instances()
         except:
             raise AWSConnectionError(title)
-                
+
     # check existence of instance
         try:
             response = self.connection.describe_instances(
@@ -117,7 +117,7 @@ class ec2Client(object):
             raise ValueError('\nInstance %s does not exist.' % instance_id)
         elif not response['Reservations'][0]['Instances'][0]:
             raise ValueError('\nInstance %s does not exist.' % instance_id)
-                
+
     # check into state of instance
         elif not 'State' in response['Reservations'][0]['Instances'][0].keys():
             from time import sleep
@@ -134,13 +134,13 @@ class ec2Client(object):
                 if state_timeout > 3:
                     raise Exception('\nFailure to determine status of instance %s.' % instance_id)
             self.iam.printer('done.')
-            
+
     # return None if instance has already been terminated
         instance_state = response['Reservations'][0]['Instances'][0]['State']['Name']
         if instance_state == 'shutting-down' or instance_state == 'terminated':
             self.iam.printer('Instance %s has already been terminated.' % instance_id)
             return None
-            
+
     # wait while instance is pending
         elif instance_state == 'pending':
             self.iam.printer('Instance %s is %s.' % (instance_id, instance_state), flush=True)
@@ -753,7 +753,7 @@ class ec2Client(object):
             address_list.append(address['PublicIp'])
 
         return address_list
-    
+
     def read_address(self, ip_address):
         
         '''
