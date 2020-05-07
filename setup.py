@@ -46,10 +46,10 @@ pip install twine
 
 Build Distributions:
 python setup.py sdist --format=gztar,zip
-pip wheel --no-index --no-deps --wheel-dir dist dist/labpack-0.20.tar.gz
+pip wheel --no-index --no-deps --wheel-dir dist dist/labpack-0.21.tar.gz
 
 Upload (or Register) Distributions to PyPi:
-twine upload dist/labpack-0.20*
+twine upload dist/labpack-0.21*
 
 Upload Documentation to Github:
 mkdocs gh-deploy
@@ -59,7 +59,7 @@ Installation:
 pip install [module]
 python setup.py develop  # for local on-the-fly file updates
 python setup.py install  # when possessing distribution files
-pip install dist/labpack-0.20-py3-none-any.whl # when possessing wheel file
+pip install dist/labpack-0.21-py3-none-any.whl # when possessing wheel file
 
 Uninstall:
 pip uninstall [module]

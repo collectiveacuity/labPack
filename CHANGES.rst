@@ -1,6 +1,12 @@
 ChangeLog
 =========
 
+0.21 (2020.04.28)
+-----------------
+* [BUG FIX] changed yaml.load to yaml.full_load
+* [BUG FIX] added check for heroku version in herokuClient
+* [BUG FIX] updated container registry check method in herokuClient
+
 0.20 (2018.09.22)
 -----------------
 * [UPDATE] added optional argument to disable validation in labDT.fromPattern
