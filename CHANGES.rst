@@ -1,6 +1,10 @@
 ChangeLog
 =========
 
+0.22 (TBD)
+----------
+* [FEATURE ADDED] r53Client class added to manage domains on AWS
+
 0.21 (2020.04.28)
 -----------------
 * [BUG FIX] changed yaml.load to yaml.full_load
