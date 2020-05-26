@@ -3,7 +3,7 @@ __created__ = '2017.06'
 __license__ = 'MIT'
 
 
-def join_words(word_list, operator='conjuction', quotes=False):
+def join_words(word_list, operator='and', quotes=False):
 
     text = ''
     for i in range(len(word_list)):
@@ -12,7 +12,7 @@ def join_words(word_list, operator='conjuction', quotes=False):
                 if operator == 'disjunction':
                     text += ' or '
                 else:
-                    text += ' and '
+                    text += ' %s ' % operator
             else:
                 text += ', '
         if quotes:

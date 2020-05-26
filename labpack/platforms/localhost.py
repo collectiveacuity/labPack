@@ -462,7 +462,3 @@ class localhostClient(object):
                 return results_list
 
         return results_list
-
-if __name__ == '__main__':
-    os_client = osClient()
-    localhost_client = localhostClient()
