@@ -1,7 +1,6 @@
 ###############  .gitignore   ##################
 
 ################ credentials  ##################
-.lab/
 cred/
 keys/
 
@@ -56,14 +55,13 @@ notes/
 appdata/
 
 #################  dependencies   #################
-package-lock.json
-node_modules/
 
 #################   backup sync   #################
 .dropbox
 Thumbs.db
 
 #################  unit testing   #################
+.pytest_cache/
 .coveralls.*
 .nyc_output/
 htmlcov/
