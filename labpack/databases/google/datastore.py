@@ -46,6 +46,7 @@ class DatastoreTable(object):
 
         the most space efficient setup will not have any indices and
         will use the value of the record id as the main query method
+        or will allow datastore to generate an id automatically
         
         LIMITS:
         https://cloud.google.com/datastore/docs/concepts/limits
@@ -133,8 +134,6 @@ class DatastoreTable(object):
                 dot_index = '.%s' % index
                 if not dot_index in self.model.keyMap.keys():
                     raise ValueError('%s must be a key path in record_schema.' % msg)
-                elif self.model.keyMap[dot_index]['value_datatype'] == 'list':
-                    raise ValueError('%s cannot be a list datatype.' % msg)
                 self.indices.add(indices[i])
 
         # validate id is a number or string
@@ -163,6 +162,27 @@ class DatastoreTable(object):
         self.labID = labID
         self.item_key = re.compile('\[0\]')
 
+        # enable json dumps if lists contain more than strings or numbers
+        self.enable_json = set()
+        self.json_lists = set()
+        for key, value in self.model.keyMap.items():
+            if self.item_key.findall(key):
+                if value['value_datatype'] not in ('string', 'number'):
+                    self.enable_json.add(key)
+                    end = key.find('[0]')
+                    self.json_lists.add(key[0:end])
+
+        # validate there are no lists in indices if json dumps enabled
+        if self.enable_json:
+            if self.indices:
+                dot_indices = set()
+                for index in self.indices:
+                    dot_indices.add('.%s' % index)
+                unindexable = self.enable_json.intersection(dot_indices)
+                if unindexable:
+                    from labpack.parsing.grammar import join_words
+                    raise ValueError('%s(indices) cannot contain %s. Indices can only contain item key paths for lists of strings or numbers.' % (title, join_words(list(unindexable), operator='or')))
+
     def _update_indices(self):
         # TODO method to retroactively index fields
         pass
@@ -190,10 +210,18 @@ class DatastoreTable(object):
                             if self.default_values:
                                 results = self.model._walk(key, self.default)
                                 fields[record_key] = results[0]
-                    elif value['value_datatype'] == 'list':
+                    elif value['value_datatype'] == 'list' and record_key in self.json_lists:
                         try:
                             results = self.model._walk(key, record)
                             fields[record_key] = json.dumps(results[0])
+                        except:
+                            if self.default_values:
+                                results = self.model._walk(key, self.default)
+                                fields[record_key] = results[0]
+                    elif value['value_datatype'] == 'list':
+                        try:
+                            results = self.model._walk(key, record)
+                            fields[record_key] = results[0]
                         except:
                             if self.default_values:
                                 results = self.model._walk(key, self.default)
@@ -239,7 +267,7 @@ class DatastoreTable(object):
                                 current[segment] = {}
                             current = current[segment]
                         else:
-                            if value['value_datatype'] == 'list':
+                            if value['value_datatype'] == 'list' and record_key in self.json_lists:
                                 current[segment] = json.loads(record_value)
                             else:
                                 current[segment] = record_value
@@ -299,7 +327,7 @@ class DatastoreTable(object):
                     separate tables
 
         :param record: dictionary with record fields 
-        :return: string with primary key for record
+        :return: string with id for record
         '''
 
         title = '%s.create' % self.__class__.__name__
@@ -313,15 +341,15 @@ class DatastoreTable(object):
         # prepare key for datastore
         # https://cloud.google.com/datastore/docs/concepts/entities#assigning_identifiers
         key = None
-        uid = None
+        record_id = None
         generated = False
         if isinstance(fields['id'], int) or isinstance(fields['id'], float):
             if not fields['id']:
                 key = self.client.key(self.kind)
                 generated = True
         if not generated:
-            uid = fields['id']
-            key = self.client.key(self.kind, uid)
+            record_id = fields['id']
+            key = self.client.key(self.kind, record_id)
         del fields['id']
 
         # prepare record for insertion
@@ -338,18 +366,17 @@ class DatastoreTable(object):
 
         # return primary key
         if generated:
-            uid = entity.key._flat_path[-1]
-        self.printer('Record %s created.' % uid)
+            record_id = entity.key._flat_path[-1]
+        self.printer('Record %s created.' % record_id)
 
-        return uid
+        return record_id
 
-    def read(self, record_id, throw=True):
+    def read(self, record_id):
 
         ''' 
             a method to retrieve the details for a record in the table 
 
         :param record_id: string or number with unique identifier of record
-        :param throw: boolean to enable error raise if record does not exist
         :return: dictionary with record fields 
         '''
 
@@ -359,8 +386,6 @@ class DatastoreTable(object):
         key = self.client.key(self.kind, record_id)
         entity = self.client.get(key)
         if not entity:
-            if throw:
-                raise ValueError('%s(record_id=%s) does not exist.' % (title, record_id))
             return {}
 
         # reconstruct record from entity values
@@ -389,7 +414,7 @@ class DatastoreTable(object):
         # prepare entity
         # https://cloud.google.com/datastore/docs/concepts/entities#updating_an_entity
         key = self.client.key(self.kind, uid)
-        exclusions = set(fields.keys()).intersection(self.excluded_indices)
+        exclusions = set(fields.keys()) - self.indices
         kwargs = {'key': key}
         if exclusions:
             kwargs['exclude_from_indexes'] = list(exclusions)
@@ -408,7 +433,9 @@ class DatastoreTable(object):
         key = self.client.key(self.kind, record_id)
         self.client.delete(key)
 
-        msg = '%s has been deleted.' % record_id
+        msg = 'Record %s deleted.' % record_id
+        self.printer(msg)
+
         return msg
 
     def exists(self, record_id):
@@ -416,7 +443,7 @@ class DatastoreTable(object):
         ''' a method to determine if record exists '''
 
         query = self.client.query(kind=self.kind)
-        eval_key = accounts.client.key(self.kind, record_id)
+        eval_key = self.client.key(self.kind, record_id)
         query.add_filter('__key__', '=', eval_key)
         query.keys_only()
         result = list(query.fetch())
@@ -424,20 +451,31 @@ class DatastoreTable(object):
             return True
         return False
 
-    def list(self, query_criteria=None, order_criteria=None):
+    def list(self, filter=None, sort=None, results=100, cursor=None, ids_only=False):
 
         '''
+            a method to retrieve records using criteria evaluated on table indexes
 
         https://cloud.google.com/datastore/docs/concepts/queries
         https://cloud.google.com/datastore/docs/concepts/queries#inequality_filters_are_limited_to_at_most_one_property
 
         NOTE:   composite indices allow for more complex queries in-memory
-                but must be registered with Datastore. 
+                but must be registered with Datastore using gcloud client
+                and specified as index.yaml in app root
                 https://cloud.google.com/datastore/docs/concepts/indexes
 
-        :param query_criteria: 
-        :param order_criteria: 
-        :return: 
+        :param filter: dictionary of dot path field name and jsonmodel query criteria
+        :param sort: list of single key-pair dictionaries with dot path field names
+        :param results: integer with number of results to return
+        :param cursor: object with place of search sequence for last results for pagination
+        :param ids_only: boolean to enable return of only ids (reduces 'read' use to 1)
+        :return: list of results
+        
+        output:
+        [ { 'id': '...', 'email': '...', ... }, { ... } ]
+        
+        output (if ids_only):
+        [ 'abc', 'xyz', 'ijk', ... ]
         '''
 
         pass
