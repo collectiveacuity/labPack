@@ -18,6 +18,7 @@ except:
 
 import re
 import json
+import base64
 from labpack.records.id import labID
 from jsonmodel.validators import jsonModel
 
@@ -65,6 +66,7 @@ class DatastoreTable(object):
             'indices': [''],
             'results': 1,
             'batch': 1,
+            'cursor': 'aGFwcHk=',
             'old_details': {
                 'id': None
             },
@@ -77,7 +79,7 @@ class DatastoreTable(object):
         'components': {
             '.table_name': {
                 'max_length': 255,
-                'must_not_contain': ['/', '\\.', '-', '^\d']
+                'must_not_contain': ['/', '\\.', '-', '^\d', '^__']
             },
             '.results': {
                 'greater_than': 0,
@@ -87,7 +89,10 @@ class DatastoreTable(object):
             '.batch': {
                 'greater_than': 0,
                 'integer_data': True,
-                'max_value': 1000
+                'max_value': 500
+            },
+            '.cursor': {
+                'byte_data': True
             },
             '.merge_rule': {
                 'discrete_values': ['overwrite', 'skip', 'update']
@@ -127,8 +132,13 @@ class DatastoreTable(object):
         self.model = jsonModel(record_schema)
         self.kind = table_name
         self.indices = set()
+        self.store_indices = set()
         self.default_values = default_values
         self.default = self.model.ingest(**{})
+
+        # construct helper methods
+        self.labID = labID
+        self.item_key = re.compile('\[0\]')
 
         # validate indices
         if indices:
@@ -140,7 +150,13 @@ class DatastoreTable(object):
                 dot_index = '.%s' % index
                 if not dot_index in self.model.keyMap.keys():
                     raise ValueError('%s must be a key path in record_schema.' % msg)
-                self.indices.add(indices[i])
+                self.indices.add(index)
+                # correct item path to list path for datastore
+                store_key = index
+                if self.item_key.findall(index):
+                    end = index.find('[0]')
+                    store_key = index[0:end]
+                self.store_indices.add(store_key)
 
         # validate id is a number or string
         if '.id' in self.model.keyMap.keys():
@@ -154,21 +170,7 @@ class DatastoreTable(object):
                 raise ValueError(
                     '%s(record_schema={...}) must either contain an id field or allow extra fields.' % title)
 
-        # construct verbose method
-        self.printer_on = True
-        def _printer(msg, flush=False):
-            if verbose and self.printer_on:
-                if flush:
-                    print(msg, end='', flush=True)
-                else:
-                    print(msg)
-        self.printer = _printer
-
-        # construct helper methods
-        self.labID = labID
-        self.item_key = re.compile('\[0\]')
-
-        # enable json dumps if lists contain more than strings or numbers
+        # enable json dumps if lists contain datatype other than strings or numbers
         self.enable_json = set()
         self.json_lists = set()
         for key, value in self.model.keyMap.items():
@@ -192,6 +194,16 @@ class DatastoreTable(object):
                 if unindexable:
                     from labpack.parsing.grammar import join_words
                     raise ValueError('%s(indices) cannot contain %s. Indices can only contain item key paths for lists of strings or numbers.' % (title, join_words(list(unindexable), operator='or')))
+
+        # construct verbose method
+        self.printer_on = True
+        def _printer(msg, flush=False):
+            if verbose and self.printer_on:
+                if flush:
+                    print(msg, end='', flush=True)
+                else:
+                    print(msg)
+        self.printer = _printer
 
     def _rebuild_table(self):
         # TODO method to reformat existing records to conform to new schema
@@ -302,7 +314,7 @@ class DatastoreTable(object):
 
         return end_func(count)
 
-    def update_indexing(self, batch=10):
+    def _update_indices(self, batch=10):
 
         ''' a method to update indexing of fields in all records 
 
@@ -311,7 +323,7 @@ class DatastoreTable(object):
                 not indexed. RUN THIS METHOD CAUTIOUSLY
         '''
 
-        title = '%s.update_indexing' % self.__class__.__name__
+        title = '%s._update_indices' % self.__class__.__name__
 
         # validate inputs
         args = {
@@ -324,12 +336,12 @@ class DatastoreTable(object):
         # define empty key sets
         ids = set()
         indices = {}
-        for index in self.indices:
+        for index in self.store_indices:
             indices[index] = set()
 
         # retrieve all keys
         self.printer('Retrieving ids for table %s' % self.table_name, flush=True)
-        query = self.client.query()
+        query = self.client.query(kind=self.kind)
         query.keys_only()
         next_cursor = True
         kwargs = {
@@ -347,9 +359,9 @@ class DatastoreTable(object):
         self.printer(' done.')
 
         # for all indices, retrieve index keys
-        for index in self.indices:
+        for index in indices.keys():
             self.printer('Retrieving ids for index %s' % index, flush=True)
-            index_query = self.client.query()
+            index_query = self.client.query(kind=self.kind)
             index_query.keys_only()
             index_query.order = [index]
             next_cursor = True
@@ -357,7 +369,7 @@ class DatastoreTable(object):
                 'limit': 100
             }
             while next_cursor:
-                query_iter = query.fetch(**kwargs)
+                query_iter = index_query.fetch(**kwargs)
                 page = next(query_iter.pages)
                 for entity in page:
                     indices[index].add(entity.key._flat_path[-1])
@@ -388,11 +400,15 @@ class DatastoreTable(object):
             # add indexes to fields
             entities = []
             for entity in records:
-                exclusions = set(entity.keys()) - self.indices
+                exclusions = set(entity.keys()) - self.store_indices
                 kwargs = {'key': entity.key}
                 if exclusions:
                     kwargs['exclude_from_indexes'] = list(exclusions)
                 updated = datastore.Entity(**kwargs)
+                fields = {}
+                for key, value in entity.items():
+                    fields[key] = value
+                updated.update(fields)
                 entities.append(updated)
                 self.printer('Updating indices for %s.' % entity.key._flat_path[-1])
 
@@ -408,20 +424,18 @@ class DatastoreTable(object):
         self.printer('Table %s indices updated.' % self.table_name)
         return count
 
-    def list(self, filter=None, sort=None, results=100, cursor=None, ids_only=False):
+    def list(self, filter=None, sort=None, results=100, cursor='', ids_only=False):
 
         '''
             a method to retrieve records using criteria evaluated on table indexes
 
-        https://cloud.google.com/datastore/docs/concepts/queries
-        https://cloud.google.com/datastore/docs/concepts/queries#inequality_filters_are_limited_to_at_most_one_property
-
         NOTE:   only fields which have been added to the indices argument at object
-                construction can be queried by datastore and if an index is added
-                after records are in the database, records previously added to the
-                datastore are not automatically added to the index. to make sure 
-                that all records are properly indexed, you must run .update_indexing
-                WARNING - .updating_indexing is an optimized SCAN of datastore
+                construction can be queried in-memory by Datastore and if an index
+                is added after records are in the database, records previously added
+                to the datastore are not automatically added to the index. to make
+                sure that all records are properly indexed, you must run
+                _update_indices
+                WARNING - _update_indices is an optimized SCAN of Datastore
                 and could be very costly
 
         NOTE:   composite indices allow for more complex queries in-memory
@@ -461,77 +475,252 @@ class DatastoreTable(object):
                 it is advised to select only filters supported by datastore,
                 especially if enabling ids_only option.
 
-                native datastore supported conditions
+                native datastore supported conditions:
 
-                float, integer & strings:
-                    value_exists
+                float, integer & strings (including those found in lists):
                     equal_to
-                    discrete_values
-                    excluded_values
                     greater_than
                     less_than
                     max_value
                     min_value
 
                 booleans:
-                    value_exists
                     equal_to
 
-                lists:
-                    value_exists
-
-        NOTE:   the full list of all criteria are found in the reference page for the
-                jsonmodel module as well as the query-rules.json file included in the
-                module. 
+        NOTE:   the full list of all filter criteria supported by post-processing
+                are found in the reference page for the jsonmodel module as well 
+                as the query-rules.json file included in the module. 
                 http://collectiveacuity.github.io/jsonModel/reference/#query-criteria
 
-        an example of how to construct the order_criteria argument:
+        an example of how to construct the sort argument:
 
-        order_criteria = [
-            { '.path.to.number': 'descend' }, 
-            { '.path.to.string': '' }
+        sort = [
+            { 'path.to.number': 'descend' }
         ]
 
         NOTE:   results can be ordered either by ascending or descending values. to
-                order in ascending order, leave the value for the field empty. any value
-                for the field key automatically is interpreted as descending order
+                order in ascending order, leave the value for the field empty. a
+                declared value automatically is interpreted as descending order.
 
+        NOTE:   sorts on more than one field require a composite index
 
         output:
-        [ { 'id': '...', 'email': '...', ... }, { ... } ]
+        [ { 'id': '...', 'email': '...', ... }, { ... } ], cursor_string
 
         output (if ids_only):
-        [ 'abc', 'xyz', 'ijk', ... ]
+        [ 'abc', 'xyz', 'ijk', ... ], cursor_string
+
+        REFERENCES:
+            https://cloud.google.com/datastore/docs/concepts/queries
+            https://googleapis.dev/python/datastore/latest/queries.html
+            https://cloud.google.com/datastore/docs/concepts/queries#inequality_filters_are_limited_to_at_most_one_property
+        
+        SUB-OPTIMAL SEARCHES (requiring post-process):
+            400 Cannot have inequality filters on multiple properties
+            400 inequality filter property and first sort order must be the same
+
+        SEARCHES REQUIRING COMPOSITE INDEX:
+            400 no matching index found (for = and > on separate properties)
+            400 no matching index found (for multiple sort properties)
+            400 no matching index found (for = filter and different sort property)
         '''
 
-        pass
+        title = '%s.list' % self.__class__.__name__
 
-    def query(self, filters, limit=0, cursor=None):
-
-        # eg. [ 'FirstName', '=', 'Ruth'] or [ [ 'DateTime' '>', 150000000 ] ]
-        # https://googleapis.dev/python/datastore/latest/queries.html
-        # https://cloud.google.com/datastore/docs/concepts/queries
-        # NOTE: queries require indices
-        # uid = record.key._flat_path[-1]
-        query = self.client.query(kind=self.kind)
-        if isinstance(filters[0], str):
-            filters = [filters]
-        for filter in filters:
-            query.add_filter(filter[0], filter[1], filter[2])
-        kwargs = {
+        # validate inputs
+        args = {
+            'sort': sort,
+            'results': results,
+            'cursor': cursor
         }
-        if limit:
-            kwargs['limit'] = limit
-        if cursor:
-            kwargs['start_cursor'] = cursor
-        if kwargs:
-            query_iter = query.fetch(**kwargs)
-            page = next(query_iter.pages)
-            records = list(page)
-            next_cursor = query_iter.next_page_token
-            return records, next_cursor
+        for key, value in args.items():
+            if value:
+                titlex = '%s(%s=%s)' % (title, key, str(value))
+                self.fields.validate(value, '.%s' % key, titlex)
+
+        # validate filter
+        if filter:
+            self.model.query(filter)
         else:
-            return list(query.fetch())
+            filter = {}
+
+        # validate sort
+        if sort:
+            for i in range(len(sort)):
+                criterion = sort[i]
+                msg = '%s(sort=[...]) item %s' % (title, i)
+                for key, value in criterion.items():
+                    if key.find('.') == 0:
+                        raise ValueError('%s key %s must not begin with "."' % (msg, key))
+                    elif not key in self.indices:
+                        raise ValueError('%s key %s must be indexed in indices.' % (msg, key))
+        else:
+            sort = []
+
+        # construct default query
+        query = self.client.query(kind=self.kind)
+
+        # add filters
+        post_process = False
+        inequality = ''
+        equalities = []
+        for key, value in filter.items():
+
+            # handle key filters
+            if key == 'id':
+                if isinstance(value, dict):
+                    for k, v in value.items():
+                        eval_key = self.client.key(self.kind, v)
+                        if k == 'equal_to':
+                            query.key_filter(eval_key, '=')
+                            equalities.append(eval_key)
+                        elif k == 'greater_than':
+                            if not inequality or inequality == eval_key:
+                                query.key_filter(eval_key, '>')
+                                inequality = 'id'
+                            else:
+                                post_process = True
+                        elif k == 'less_than':
+                            if not inequality or inequality == eval_key:
+                                query.key_filter(eval_key, '<')
+                                inequality = 'id'
+                            else:
+                                post_process = True
+                        elif k == 'max_value':
+                            if not inequality or inequality == eval_key:
+                                query.key_filter(eval_key, '<=')
+                                inequality = 'id'
+                            else:
+                                post_process = True
+                        elif k == 'min_value':
+                            if not inequality or inequality == eval_key:
+                                query.key_filter(eval_key, '>=')
+                                inequality = 'id'
+                            else:
+                                post_process = True
+                        else:
+                            post_process = True
+                else:
+                    eval_key = self.client.key(self.kind, value)
+                    query.key_filter(eval_key, '=')
+                    equalities.append(eval_key)
+
+            # activate post processing if any filter key not in indices
+            elif key not in self.indices:
+                post_process = True
+
+            # add filter for each eligible criterion in filter criteria
+            elif isinstance(value, dict):
+                # correct item path to list path
+                store_key = key
+                if self.item_key.findall(key):
+                    end = key.find('[0]')
+                    store_key = key[0:end]
+                for k, v in value.items():
+                    if k == 'equal_to':
+                        query.add_filter(store_key, '=', v)
+                        equalities.append(self.client.key(self.kind, store_key))
+                    elif k == 'greater_than':
+                        if not inequality or inequality == store_key:
+                            query.add_filter(store_key, '>', v)
+                            inequality = store_key
+                        else:
+                            post_process = True
+                    elif k == 'less_than':
+                        if not inequality or inequality == store_key:
+                            query.add_filter(store_key, '<', v)
+                            inequality = store_key
+                        else:
+                            post_process = True
+                    elif k == 'max_value':
+                        if not inequality or inequality == store_key:
+                            query.add_filter(store_key, '<=', v)
+                            inequality = store_key
+                        else:
+                            post_process = True
+                    elif k == 'min_value':
+                        if not inequality or inequality == store_key:
+                            query.add_filter(store_key, '>=', v)
+                            inequality = store_key
+                        else:
+                            post_process = True
+                    else:
+                        post_process = True
+            else:
+                # correct item path to list path
+                store_key = key
+                if self.item_key.findall(key):
+                    end = key.find('[0]')
+                    store_key = key[0:end]
+                query.add_filter(store_key, '=', value)
+                equalities.append(self.client.key(self.kind, store_key))
+
+        # add sort orders
+        order = []
+        ordered = []
+        for criterion in sort:
+            key, value = next(iter(criterion.items()))
+            if self.item_key.findall(key) or key in ordered:
+                # prevent weird sorting outcomes or double sorting
+                pass
+            elif value:
+                order.append('-%s' % key)
+                ordered.append(key)
+                # reset query to sort only and post process
+                if len(ordered) == 1:
+                    if inequality and inequality != key:
+                        query = self.client.query(kind=self.kind)
+                        post_process = True
+            else:
+                order.append(key)
+                ordered.append(key)
+                # reset query to sort only and post process
+                if len(ordered) == 1:
+                    if inequality and inequality != key:
+                        query = self.client.query(kind=self.kind)
+                        post_process = True
+        if order:
+            query.order = order
+
+        # reduce query to ids
+        if ids_only and not post_process:
+            query.keys_only()
+
+        # construct fetch kwargs
+        kwargs = {
+            'limit': results
+        }
+        # convert cursor arg into byte data
+        if cursor:
+            kwargs['start_cursor'] = base64.urlsafe_b64decode(cursor.encode('utf-8'))
+
+        # fetch results
+        results = query.fetch(**kwargs)
+
+        # reconstruct (and further evaluate) records
+        records = []
+        page = next(results.pages)
+        entities = list(page)
+        for entity in entities:
+            if ids_only and not post_process:
+                records.append(entity.key._flat_path[-1])
+            elif not post_process:
+                records.append(self._reconstruct_record(entity))
+            else:
+                record = self._reconstruct_record(entity)
+                if self.model.query(filter, record):
+                    if ids_only:
+                        records.append(record['id'])
+                    else:
+                        records.append(record)
+
+        # determine end cursor
+        end_cursor = ''
+        next_token = results.next_page_token
+        if next_token:
+            end_cursor = base64.urlsafe_b64encode(next_token).decode('utf-8')
+
+        return records, end_cursor
 
     def exists(self, record_id):
 
@@ -604,7 +793,7 @@ class DatastoreTable(object):
 
         # prepare record for insertion
         # https://cloud.google.com/datastore/docs/concepts/entities
-        exclusions = set(fields.keys()) - self.indices
+        exclusions = set(fields.keys()) - self.store_indices
         kwargs = {'key': key}
         if exclusions:
             kwargs['exclude_from_indexes'] = list(exclusions)
@@ -664,7 +853,7 @@ class DatastoreTable(object):
         # prepare entity
         # https://cloud.google.com/datastore/docs/concepts/entities#updating_an_entity
         key = self.client.key(self.kind, uid)
-        exclusions = set(fields.keys()) - self.indices
+        exclusions = set(fields.keys()) - self.store_indices
         kwargs = {'key': key}
         if exclusions:
             kwargs['exclude_from_indexes'] = list(exclusions)
@@ -705,7 +894,7 @@ class DatastoreTable(object):
 
         return self._paginate(query, iter_func, end_func)
 
-    def export(self, sql_table, merge_rule='skip', coerce=False):
+    def export(self, dest_table, merge_rule='skip', coerce=False):
 
         ''' TODO a method to export all the records to another table '''
 
