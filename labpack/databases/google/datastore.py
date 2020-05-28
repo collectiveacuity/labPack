@@ -46,7 +46,7 @@ class DatastoreTable(object):
 
         the most space efficient setup will not have any indices and
         will use the value of the record id as the main query method
-        or will allow datastore to generate an id automatically
+        and/or will allow datastore to generate an id automatically
         
         LIMITS:
         https://cloud.google.com/datastore/docs/concepts/limits
@@ -63,7 +63,8 @@ class DatastoreTable(object):
                 'schema': {}
             },
             'indices': [''],
-            'page_size': 1,
+            'results': 1,
+            'batch': 1,
             'old_details': {
                 'id': None
             },
@@ -71,20 +72,25 @@ class DatastoreTable(object):
                 'id': None
             },
             'merge_rule': 'overwrite',
-            'order_criteria': [{}]
+            'sort': [{}]
         },
         'components': {
             '.table_name': {
                 'max_length': 255,
                 'must_not_contain': ['/', '\\.', '-', '^\d']
             },
-            '.page_size': {
+            '.results': {
+                'greater_than': 0,
+                'integer_data': True,
+                'max_value': 1000
+            },
+            '.batch': {
                 'greater_than': 0,
                 'integer_data': True,
                 'max_value': 1000
             },
             '.merge_rule': {
-                'discrete_values': ['overwrite', 'skip', 'upsert']
+                'discrete_values': ['overwrite', 'skip', 'update']
             },
             '.record_schema': {
                 'extra_fields': True
@@ -166,6 +172,10 @@ class DatastoreTable(object):
         self.enable_json = set()
         self.json_lists = set()
         for key, value in self.model.keyMap.items():
+            # check for __key__ name
+            if key == '.__key__':
+                raise ValueError('%(record_schema) cannot contain field "__key__". Name is a keyword in datastore.')
+            # check if field is a list
             if self.item_key.findall(key):
                 if value['value_datatype'] not in ('string', 'number'):
                     self.enable_json.add(key)
@@ -182,10 +192,6 @@ class DatastoreTable(object):
                 if unindexable:
                     from labpack.parsing.grammar import join_words
                     raise ValueError('%s(indices) cannot contain %s. Indices can only contain item key paths for lists of strings or numbers.' % (title, join_words(list(unindexable), operator='or')))
-
-    def _update_indices(self):
-        # TODO method to retroactively index fields
-        pass
 
     def _rebuild_table(self):
         # TODO method to reformat existing records to conform to new schema
@@ -295,6 +301,250 @@ class DatastoreTable(object):
                 kwargs['start_cursor'] = next_cursor
 
         return end_func(count)
+
+    def update_indexing(self, batch=10):
+
+        ''' a method to update indexing of fields in all records 
+
+        NOTE:   datastore does not automatically index old records, this method
+                scans each index and updates the indexing of fields which are
+                not indexed. RUN THIS METHOD CAUTIOUSLY
+        '''
+
+        title = '%s.update_indexing' % self.__class__.__name__
+
+        # validate inputs
+        args = {
+            'batch': batch
+        }
+        for key, value in args.items():
+            titlex = '%s(%s=%s)' % (title, key, str(value))
+            self.fields.validate(value, '.%s' % key, titlex)
+
+        # define empty key sets
+        ids = set()
+        indices = {}
+        for index in self.indices:
+            indices[index] = set()
+
+        # retrieve all keys
+        self.printer('Retrieving ids for table %s' % self.table_name, flush=True)
+        query = self.client.query()
+        query.keys_only()
+        next_cursor = True
+        kwargs = {
+            'limit': 100
+        }
+        while next_cursor:
+            query_iter = query.fetch(**kwargs)
+            page = next(query_iter.pages)
+            for entity in page:
+                ids.add(entity.key._flat_path[-1])
+                self.printer('.', flush=True)
+            next_cursor = query_iter.next_page_token
+            if next_cursor:
+                kwargs['start_cursor'] = next_cursor
+        self.printer(' done.')
+
+        # for all indices, retrieve index keys
+        for index in self.indices:
+            self.printer('Retrieving ids for index %s' % index, flush=True)
+            index_query = self.client.query()
+            index_query.keys_only()
+            index_query.order = [index]
+            next_cursor = True
+            kwargs = {
+                'limit': 100
+            }
+            while next_cursor:
+                query_iter = query.fetch(**kwargs)
+                page = next(query_iter.pages)
+                for entity in page:
+                    indices[index].add(entity.key._flat_path[-1])
+                    self.printer('.', flush=True)
+                next_cursor = query_iter.next_page_token
+                if next_cursor:
+                    kwargs['start_cursor'] = next_cursor
+            self.printer(' done.')
+
+        # determine records with all indices
+        complete = ids
+        for key in indices.keys():
+            complete = complete.intersection(indices[key])
+        incomplete = list(ids - complete)
+        count = len(incomplete)
+
+        # conduct multi get and update
+        while True:
+            i = batch * -1
+            subset = incomplete[i or None:]
+
+            # retrieve a batch of records
+            keys = []
+            for record_id in subset:
+                keys.append(self.client.key(self.kind, record_id))
+            records = self.client.get_multi(keys)
+
+            # add indexes to fields
+            entities = []
+            for entity in records:
+                exclusions = set(entity.keys()) - self.indices
+                kwargs = {'key': entity.key}
+                if exclusions:
+                    kwargs['exclude_from_indexes'] = list(exclusions)
+                updated = datastore.Entity(**kwargs)
+                entities.append(updated)
+                self.printer('Updating indices for %s.' % entity.key._flat_path[-1])
+
+            # send update request
+            self.client.put_multi(entities)
+
+            # pop processed records and break off loop
+            incomplete = incomplete[:i or None]
+            if len(subset) < batch or not incomplete:
+                break
+
+        # report completion and return count
+        self.printer('Table %s indices updated.' % self.table_name)
+        return count
+
+    def list(self, filter=None, sort=None, results=100, cursor=None, ids_only=False):
+
+        '''
+            a method to retrieve records using criteria evaluated on table indexes
+
+        https://cloud.google.com/datastore/docs/concepts/queries
+        https://cloud.google.com/datastore/docs/concepts/queries#inequality_filters_are_limited_to_at_most_one_property
+
+        NOTE:   only fields which have been added to the indices argument at object
+                construction can be queried by datastore and if an index is added
+                after records are in the database, records previously added to the
+                datastore are not automatically added to the index. to make sure 
+                that all records are properly indexed, you must run .update_indexing
+                WARNING - .updating_indexing is an optimized SCAN of datastore
+                and could be very costly
+
+        NOTE:   composite indices allow for more complex queries in-memory
+                but must be registered with Datastore using gcloud client
+                and specified as index.yaml in app root and built before 
+                https://cloud.google.com/datastore/docs/concepts/indexes
+
+        :param filter: dictionary of dot path field name and jsonmodel query criteria
+        :param sort: list of single key-pair dictionaries with dot path field names
+        :param results: integer with number of results to return
+        :param cursor: object with place of search sequence for last results for pagination
+        :param ids_only: boolean to enable return of only ids (reduces 'read' use to 1)
+        :return: list of results
+
+        filter:
+        {
+            'path.to.field': 'equal to value',
+            'path.to.number': {
+                'min_value': 4.5
+            },
+            'path.to.string': {
+                'discrete_values': [ 'pond', 'lake', 'stream', 'brook' ]
+            }
+        }
+
+        NOTE:   datastore only supports a limited number of query conditions and
+                only lists of numbers and strings can be queried. this method
+                constructs a query which contains clauses wherever the query 
+                conditions can be translated one-to-one into datastore filters
+                and returns the entire record of each qualifying record. once
+                datastore returns its results, the remaining query conditions are
+                applied to the records and only those results which match all
+                conditions are produced. as such, depending upon the filter criteria
+                chosen, this method acts more or less like a SCAN of the entire
+                database. if no datastore supported conditions are provided, the
+                method will look through all records and impose a large usage cost.
+                it is advised to select only filters supported by datastore,
+                especially if enabling ids_only option.
+
+                native datastore supported conditions
+
+                float, integer & strings:
+                    value_exists
+                    equal_to
+                    discrete_values
+                    excluded_values
+                    greater_than
+                    less_than
+                    max_value
+                    min_value
+
+                booleans:
+                    value_exists
+                    equal_to
+
+                lists:
+                    value_exists
+
+        NOTE:   the full list of all criteria are found in the reference page for the
+                jsonmodel module as well as the query-rules.json file included in the
+                module. 
+                http://collectiveacuity.github.io/jsonModel/reference/#query-criteria
+
+        an example of how to construct the order_criteria argument:
+
+        order_criteria = [
+            { '.path.to.number': 'descend' }, 
+            { '.path.to.string': '' }
+        ]
+
+        NOTE:   results can be ordered either by ascending or descending values. to
+                order in ascending order, leave the value for the field empty. any value
+                for the field key automatically is interpreted as descending order
+
+
+        output:
+        [ { 'id': '...', 'email': '...', ... }, { ... } ]
+
+        output (if ids_only):
+        [ 'abc', 'xyz', 'ijk', ... ]
+        '''
+
+        pass
+
+    def query(self, filters, limit=0, cursor=None):
+
+        # eg. [ 'FirstName', '=', 'Ruth'] or [ [ 'DateTime' '>', 150000000 ] ]
+        # https://googleapis.dev/python/datastore/latest/queries.html
+        # https://cloud.google.com/datastore/docs/concepts/queries
+        # NOTE: queries require indices
+        # uid = record.key._flat_path[-1]
+        query = self.client.query(kind=self.kind)
+        if isinstance(filters[0], str):
+            filters = [filters]
+        for filter in filters:
+            query.add_filter(filter[0], filter[1], filter[2])
+        kwargs = {
+        }
+        if limit:
+            kwargs['limit'] = limit
+        if cursor:
+            kwargs['start_cursor'] = cursor
+        if kwargs:
+            query_iter = query.fetch(**kwargs)
+            page = next(query_iter.pages)
+            records = list(page)
+            next_cursor = query_iter.next_page_token
+            return records, next_cursor
+        else:
+            return list(query.fetch())
+
+    def exists(self, record_id):
+
+        ''' a method to determine if record exists '''
+
+        query = self.client.query(kind=self.kind)
+        eval_key = self.client.key(self.kind, record_id)
+        query.add_filter('__key__', '=', eval_key)
+        query.keys_only()
+        result = list(query.fetch())
+        if result:
+            return True
+        return False
 
     def create(self, record):
 
@@ -437,74 +687,6 @@ class DatastoreTable(object):
         self.printer(msg)
 
         return msg
-
-    def exists(self, record_id):
-
-        ''' a method to determine if record exists '''
-
-        query = self.client.query(kind=self.kind)
-        eval_key = self.client.key(self.kind, record_id)
-        query.add_filter('__key__', '=', eval_key)
-        query.keys_only()
-        result = list(query.fetch())
-        if result:
-            return True
-        return False
-
-    def list(self, filter=None, sort=None, results=100, cursor=None, ids_only=False):
-
-        '''
-            a method to retrieve records using criteria evaluated on table indexes
-
-        https://cloud.google.com/datastore/docs/concepts/queries
-        https://cloud.google.com/datastore/docs/concepts/queries#inequality_filters_are_limited_to_at_most_one_property
-
-        NOTE:   composite indices allow for more complex queries in-memory
-                but must be registered with Datastore using gcloud client
-                and specified as index.yaml in app root
-                https://cloud.google.com/datastore/docs/concepts/indexes
-
-        :param filter: dictionary of dot path field name and jsonmodel query criteria
-        :param sort: list of single key-pair dictionaries with dot path field names
-        :param results: integer with number of results to return
-        :param cursor: object with place of search sequence for last results for pagination
-        :param ids_only: boolean to enable return of only ids (reduces 'read' use to 1)
-        :return: list of results
-        
-        output:
-        [ { 'id': '...', 'email': '...', ... }, { ... } ]
-        
-        output (if ids_only):
-        [ 'abc', 'xyz', 'ijk', ... ]
-        '''
-
-        pass
-
-    def query(self, filters, limit=0, cursor=None):
-        # eg. [ 'FirstName', '=', 'Ruth'] or [ [ 'DateTime' '>', 150000000 ] ]
-        # https://googleapis.dev/python/datastore/latest/queries.html
-        # https://cloud.google.com/datastore/docs/concepts/queries
-        # NOTE: queries require indices
-        # uid = record.key._flat_path[-1]
-        query = self.client.query(kind=self.kind)
-        if isinstance(filters[0], str):
-            filters = [filters]
-        for filter in filters:
-            query.add_filter(filter[0], filter[1], filter[2])
-        kwargs = {
-        }
-        if limit:
-            kwargs['limit'] = limit
-        if cursor:
-            kwargs['start_cursor'] = cursor
-        if kwargs:
-            query_iter = query.fetch(**kwargs)
-            page = next(query_iter.pages)
-            records = list(page)
-            next_cursor = query_iter.next_page_token
-            return records, next_cursor
-        else:
-            return list(query.fetch())
 
     def remove(self):
 
