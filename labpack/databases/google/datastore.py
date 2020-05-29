@@ -150,6 +150,8 @@ class DatastoreTable(object):
                 dot_index = '.%s' % index
                 if not dot_index in self.model.keyMap.keys():
                     raise ValueError('%s must be a key path in record_schema.' % msg)
+                elif self.model.keyMap[dot_index]['value_datatype'] == 'map':
+                    raise ValueError('%s cannot be a map datatype.' % msg)
                 self.indices.add(index)
                 # correct item path to list path for datastore
                 store_key = index
@@ -235,7 +237,7 @@ class DatastoreTable(object):
                         except:
                             if self.default_values:
                                 results = self.model._walk(key, self.default)
-                                fields[record_key] = results[0]
+                                fields[record_key] = json.dumps(results[0])
                     elif value['value_datatype'] == 'list':
                         try:
                             results = self.model._walk(key, record)
@@ -244,6 +246,16 @@ class DatastoreTable(object):
                             if self.default_values:
                                 results = self.model._walk(key, self.default)
                                 fields[record_key] = results[0]
+                    elif value['value_datatype'] == 'map':
+                        if value['extra_fields']:
+                            default = self.model._walk(key, self.model.ingest(**{}))
+                            if not default[0]:
+                                try:
+                                    results = self.model._walk(key, record)
+                                    fields[record_key] = json.dumps(results[0])
+                                except:
+                                    if self.default_values:
+                                        fields[record_key] = json.dumps({})
 
         # add id field if missing
         uid = self.labID().id24[0:16]
@@ -286,6 +298,8 @@ class DatastoreTable(object):
                             current = current[segment]
                         else:
                             if value['value_datatype'] == 'list' and record_key in self.json_lists:
+                                current[segment] = json.loads(record_value)
+                            elif value['value_datatype'] == 'map':
                                 current[segment] = json.loads(record_value)
                             else:
                                 current[segment] = record_value
