@@ -169,9 +169,10 @@ class DatastoreTable(object):
                 raise ValueError(
                     '%s(record_schema={...}) must either contain an id field or allow extra fields.' % title)
 
-        # enable json dumps if lists contain datatype other than strings or numbers
+        # validate key name restrictions and find fields requiring jsonification
         self.enable_json = set()
         self.json_lists = set()
+        self.empty_maps = set()
         for key, value in self.model.keyMap.items():
             # check for __key__ name
             if key == '.__key__':
@@ -185,6 +186,11 @@ class DatastoreTable(object):
                     self.enable_json.add(key)
                     end = key.find('[0]')
                     self.json_lists.add(key[0:end])
+            if len(key) > 1 and value['value_datatype'] == 'map':
+                if value['extra_fields']:
+                    default = self.model._walk(key, self.default)
+                    if not default[0]:
+                        self.empty_maps.add(key)
 
         # validate there are no lists in indices if json dumps enabled
         if self.enable_json:
@@ -246,19 +252,16 @@ class DatastoreTable(object):
                             if self.default_values:
                                 results = self.model._walk(key, self.default)
                                 fields[record_key] = results[0]
-                    elif value['value_datatype'] == 'map':
-                        if value['extra_fields']:
-                            default = self.model._walk(key, self.model.ingest(**{}))
-                            if not default[0]:
-                                try:
-                                    results = self.model._walk(key, record)
-                                    fields[record_key] = json.dumps(results[0])
-                                except:
-                                    if self.default_values:
-                                        fields[record_key] = json.dumps({})
+                    elif key in self.empty_maps:
+                        try:
+                            results = self.model._walk(key, record)
+                            fields[record_key] = json.dumps(results[0])
+                        except:
+                            if self.default_values:
+                                fields[record_key] = json.dumps({})
 
         # add id field if missing
-        uid = self.labID().id24[0:16]
+        uid = self.labID().id24
         if not 'id' in fields.keys():
             if '.id' in self.model.keyMap.keys():
                 if self.model.keyMap['.id']['value_datatype'] == 'number':
@@ -768,7 +771,7 @@ class DatastoreTable(object):
                     if record includes an id field that is an integer, float
                     or string, then it will be used as the primary key. 
 
-            NOTE:   if the id field is missing, a unique 16 character url safe 
+            NOTE:   if the id field is missing, a unique 24 character url safe 
                     string will be created for the id field and included in the 
                     record. if the id field == 0.0, then datastore will assign a 
                     randomly generated 16 digit numerical id
@@ -893,9 +896,11 @@ class DatastoreTable(object):
 
         ''' a method to delete an existing record '''
 
+        # delete entity
         key = self.client.key(self.kind, record_id)
         self.client.delete(key)
 
+        # return message
         msg = 'Record %s deleted.' % record_id
         self.printer(msg)
 
@@ -918,11 +923,11 @@ class DatastoreTable(object):
 
         return self._paginate(query, iter_func, end_func)
 
-    def export(self, dest_table, merge_rule='skip', coerce=False):
+    def export(self, datastore_table, merge_rule='skip', coerce=False):
 
-        ''' TODO a method to export all the records to another table '''
+        ''' TODO a method to export all the records to another datastore table '''
 
-        # TODO validate methods of destination sql_table
+        # TODO validate methods of destination datastore table
 
         query = self.client.query(kind=self.kind)
         dest_name = 'new_table'

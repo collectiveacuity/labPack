@@ -5,11 +5,9 @@ __license__ = '©2020 Collective Acuity'
 import pytest
 from copy import deepcopy
 from labpack.databases.google.datastore import DatastoreTable
-from labpack.records.id import labID
 
 if __name__ == '__main__':
 
-    lab = labID()
     record_schema = {
         'schema': {
             'id': 0.0,
@@ -111,9 +109,9 @@ if __name__ == '__main__':
     assert 'nowhere' in records[0]['places']
     assert not cursor
     filter = {'address.number': { 'greater_than': 3 } }
-    records, cursor = table.list(filter=filter, results=2, ids_only=True)
+    records, cursor = table.list(filter=filter, limit=2, ids_only=True)
     assert cursor
-    next, cursor = table.list(filter=filter, cursor=cursor, results=2, ids_only=True)
+    next, cursor = table.list(filter=filter, cursor=cursor, limit=2, ids_only=True)
     records.extend(next)
     assert len(set(records)) == 4
 

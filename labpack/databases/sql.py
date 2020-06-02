@@ -15,7 +15,6 @@ except:
     print('sql package requires the SQLAlchemy module. try: pip3 install SQLAlchemy')
     sys.exit(1)
 
-import json
 import pickle
 
 # TODO: sequence integration for integer IDs
@@ -1148,12 +1147,8 @@ class SQLTable(object):
             },
             'limit': 1,
             'cursor': 1,
-            'old_details': {
-                'id': None
-            },
-            'new_details': {
-                'id': None
-            },
+            'original': {},
+            'updated': {},
             'merge_rule': 'overwrite',
             'filter': {},
             'sort': [{}]
@@ -1164,7 +1159,7 @@ class SQLTable(object):
                 'must_not_contain': ['/', '\\.', '-', '^\d', '^__']
             },
             '.merge_rule': {
-                'discrete_values': ['overwrite', 'skip', 'upsert']
+                'discrete_values': ['overwrite', 'skip', 'update']
             },
             '.record_schema': {
                 'extra_fields': True
@@ -1251,7 +1246,8 @@ class SQLTable(object):
 
         self.printer = _printer
 
-        # verify schema criteria 
+        # verify schema criteria
+        self.empty_maps = set()
         for key, value in self.model.keyMap.items():
             if not self.database_dialect in ('sqlite', 'postgres'):
                 # verify max length for string fields for certain sql dialects
@@ -1263,6 +1259,15 @@ class SQLTable(object):
             # verify no null datatype declarations
             if value['value_datatype'] == 'null':
                 raise ValueError('%s(record_schema={...}) field %s cannot have the null datatype.' % (title, key))
+            # verify id key is a string or number
+            if key == '.id':
+                if not value['value_datatype'] in ('string','number'):
+                    raise ValueError('%s(record_schema={...}) field %s must be a string or number datatype.' % (title, key))
+            if len(key) > 1 and value['value_datatype'] == 'map':
+                if value['extra_fields']:
+                    default = self.model._walk(key, self.default)
+                    if not default[0]:
+                        self.empty_maps.add(key)
 
         # # ORM construct
         #     from sqlalchemy.orm import sessionmaker
@@ -1351,7 +1356,7 @@ class SQLTable(object):
                     self._rebuild_table(new_name, old_name, current_columns, prior_columns)
 
             elif not migration_complete:
-                print('Update of %s table previously interrupted...' % self.table_name)
+                self.printer('Update of %s table previously interrupted...' % self.table_name)
                 self._rebuild_table(self.table_name, prior_name, current_columns, prior_columns)
 
             elif add_columns:
@@ -1363,12 +1368,12 @@ class SQLTable(object):
                 plural = ''
                 if len(column_names) > 1:
                     plural = 's'
-                print('%s column%s added to table %s' % (join_words(column_names), plural, self.table_name))
+                self.printer('%s column%s added to table %s' % (join_words(column_names), plural, self.table_name))
 
         # or create new table
         else:
             self.table.create(self.engine)
-            print('%s table created in %s database.' % (self.table_name, self.database_name))
+            self.printer('%s table created in %s database.' % (self.table_name, self.database_name))
 
         # add tables property with list of tables in database
         self.tables = self.engine.table_names()
@@ -1427,9 +1432,12 @@ class SQLTable(object):
                 if self.item_key.findall(record_key):
                     pass
                 else:
-                    if value['value_datatype'] == 'map':
+                    if value['value_datatype'] == 'map' and not key in self.empty_maps:
                         continue
                     datatype = value['value_datatype']
+                    # label empty map fields as lists for column determinations
+                    if value['value_datatype'] == 'map':
+                        datatype = 'list'
                     if value['value_datatype'] == 'number':
                         datatype = 'float'
                         if 'integer_data' in value.keys():
@@ -1488,6 +1496,58 @@ class SQLTable(object):
 
         return column_args
 
+    def _prepare_record(self, record_details):
+
+        ''' a helper method for converting a record to column-based fields '''
+
+        # add fields to create request
+        fields = {}
+        for key, value in self.model.keyMap.items():
+            record_key = key[1:]
+            if record_key:
+                if self.item_key.findall(record_key):
+                    pass
+                else:
+                    if value['value_datatype'] in ('boolean', 'string', 'number'):
+                        try:
+                            results = self.model._walk(key, record_details)
+                            fields[record_key] = results[0]
+                        except:
+                            if self.default_values:
+                                results = self.model._walk(key, self.default)
+                                fields[record_key] = results[0]
+                    elif value['value_datatype'] in 'list':
+                        try:
+                            results = self.model._walk(key, record_details)
+                            fields[record_key] = pickle.dumps(results[0])
+                        except:
+                            if self.default_values:
+                                results = self.model._walk(key, self.default)
+                                fields[record_key] = pickle.dumps(results[0])
+                    elif key in self.empty_maps:
+                        try:
+                            results = self.model._walk(key, record_details)
+                            fields[record_key] = pickle.dumps(results[0])
+                        except:
+                            if self.default_values:
+                                fields[record_key] = pickle.dumps({})
+
+        # add id field if missing
+        lab = self.labID()
+        uid = lab.id24
+        if not 'id' in fields.keys():
+            if '.id' in self.model.keyMap.keys():
+                if self.model.keyMap['.id']['value_datatype'] == 'number':
+                    # TODO auto increment record
+                    import binascii
+                    fields['id'] = int(binascii.hexlify(lab.bytes_18).decode(), 16)
+                else:
+                    fields['id'] = uid
+            else:
+                fields['id'] = uid
+
+        return fields
+
     def _reconstruct_record(self, record_object):
 
         ''' a helper method for reconstructing record fields from record object '''
@@ -1508,7 +1568,7 @@ class SQLTable(object):
                             current_details = current_details[segment]
                         else:
                             if value['value_datatype'] in ('list','map'):
-                                current_details[segment] = json.loads(record_value)
+                                current_details[segment] = pickle.loads(record_value)
                             else:
                                 current_details[segment] = record_value
                     current_details = record_details
@@ -1611,7 +1671,7 @@ class SQLTable(object):
         ''' a helper method for rebuilding table (by renaming & migrating) '''
 
         # verbosity
-        print('Rebuilding %s table in %s database' % (self.table_name, self.database_name), end='', flush=True)
+        self.printer('Rebuilding %s table in %s database' % (self.table_name, self.database_name), flush=True)
 
         from sqlalchemy import Table, MetaData
         metadata_object = MetaData()
@@ -1650,7 +1710,7 @@ class SQLTable(object):
             delete_statement = old_table.delete(old_table.c.id == record.id)
             self.session.execute(delete_statement)
             if not count % 10:
-                print('.', end='', flush=True)
+                self.printer('.', flush=True)
             count += 1
 
         # drop old table
@@ -1661,7 +1721,7 @@ class SQLTable(object):
             self.session = self.engine.connect()
 
         # handle verbosity   
-        print(' done.')
+        self.printer(' done.')
 
         return True
 
@@ -1670,7 +1730,7 @@ class SQLTable(object):
         '''
             a method to determine if record exists
 
-        :param record_id: string with id associated with record
+        :param record_id: string or number with unique identifier of record
         :return: boolean to indicate existence of record
         '''
 
@@ -1891,66 +1951,6 @@ class SQLTable(object):
             next_cursor = next_cursor + count
             select_object.offset(next_cursor)
 
-    def _prepare_record(self, record):
-
-        ''' a helper method for converting a record to column-based fields '''
-
-        # add fields to create request
-        fields = {}
-        for key, value in self.model.keyMap.items():
-            record_key = key[1:]
-            if record_key:
-                if self.item_key.findall(record_key):
-                    pass
-                else:
-                    if value['value_datatype'] in ('boolean', 'string', 'number'):
-                        try:
-                            results = self.model._walk(key, record)
-                            fields[record_key] = results[0]
-                        except:
-                            if self.default_values:
-                                results = self.model._walk(key, self.default)
-                                fields[record_key] = results[0]
-                    elif value['value_datatype'] in 'list':
-                        try:
-                            results = self.model._walk(key, record)
-                            fields[record_key] = json.dumps(results[0])
-                        except:
-                            if self.default_values:
-                                results = self.model._walk(key, self.default)
-                                fields[record_key] = results[0]
-                    elif value['value_datatype'] == 'map':
-                        if value['extra_fields']:
-                            default = self.model._walk(key, self.model.ingest(**{}))
-                            if not default[0]:
-                                try:
-                                    results = self.model._walk(key, record)
-                                    fields[record_key] = json.dumps(results[0])
-                                except:
-                                    if self.default_values:
-                                        fields[record_key] = json.dumps({})
-
-        # add id field if missing
-        uid = self.labID().id24
-        # TODO convert string to integer
-        if not 'id' in fields.keys():
-            if '.id' in self.model.keyMap.keys():
-                if self.model.keyMap['.id']['value_datatype'] == 'number':
-                    integer = False
-                    if 'integer_data' in self.model.keyMap['.id'].keys():
-                        if self.model.keyMap['.id']['integer_data']:
-                            # TODO increment record on sequence
-                            fields['id'] = 0
-                            integer = True
-                    if not integer:
-                        fields['id'] = 0.0
-                else:
-                    fields['id'] = uid
-            else:
-                fields['id'] = uid
-
-        return fields
-
     def create(self, record):
 
         '''
@@ -1959,16 +1959,21 @@ class SQLTable(object):
             NOTE:   this class uses the id key as the primary key for all records
                     if record includes an id field that is an integer, float
                     or string, then it will be used as the primary key. if the id
-                    field is missing, a unique 24 character url safe string will be 
+                    field is missing, a unique integer (if id is a number) or 
+                    24 character url safe string (if id is a string) will be 
                     created for the id field and included in the record
 
-            NOTE:   record fields which do not exist in the record_model
-                    or whose value do not match the requirements of the record_model
+            NOTE:   record fields which do not exist in the record_schema or whose
+                    value do not match the requirements of the record_schema
                     will throw an InputValidationError
 
             NOTE:   lists fields are pickled before they are saved to disk and
                     are not possible to search using sql query statements. it is
                     recommended that lists be stored instead as separate tables
+
+            NOTE:   if a map field is declared as empty in the record_schema, then
+                    all record fields inside it will be pickled before the
+                    record is saved to disk and are not possible to search
 
         :param record: dictionary with record fields 
         :return: string with id for record
@@ -1986,38 +1991,38 @@ class SQLTable(object):
 
         return fields['id']
 
-    def read(self, primary_key):
+    def read(self, record_id):
 
         ''' 
             a method to retrieve the details for a record in the table 
 
-        :param primary_key: string with primary key of record 
+        :param record_id: string or number with unique identifier of record
         :return: dictionary with record fields 
         '''
 
         title = '%s.read' % self.__class__.__name__
 
         # retrieve record object
-        # record_object = self.session.query(self.record).filter_by(id=primary_key).first()
-        select_statement = self.table.select(self.table.c.id == primary_key)
+        # record_object = self.session.query(self.record).filter_by(id=record_id).first()
+        select_statement = self.table.select(self.table.c.id == record_id)
         record_object = self.session.execute(select_statement).first()
         if not record_object:
-            raise ValueError('%s(primary_key=%s) does not exist.' % (title, primary_key))
+            return {}
 
         # reconstruct record details
         record_details = self._reconstruct_record(record_object)
 
         return record_details
 
-    def update(self, new_details, old_details=None):
+    def update(self, updated, original=None):
 
-        ''' a method to upsert changes to a record in the table
+        ''' a method to update changes to a record in the table
 
-        :param new_details: dictionary with updated record fields
-        :param old_details: [optional] dictionary with original record fields 
+        :param updated: dictionary with updated record fields
+        :param original: [optional] dictionary with original record fields 
         :return: list of dictionaries with updated field details
 
-        NOTE:   if old_details is empty, method will poll database for the
+        NOTE:   if original is empty, method will poll database for the
                 most recent version of the record with which to compare the
                 new details for changes
         '''
@@ -2026,39 +2031,43 @@ class SQLTable(object):
 
         # validate inputs
         input_fields = {
-            'new_details': new_details,
-            'old_details': old_details
+            'updated': updated,
+            'original': original
         }
         for key, value in input_fields.items():
             if value:
                 object_title = '%s(%s=%s)' % (title, key, str(value))
                 self.fields.validate(value, '.%s' % key, object_title)
-        if old_details:
-            if new_details['id'] != old_details['id']:
-                raise ValueError('%s old_details["id"] value must match new_details["id"]' % title)
+        if not 'id' in updated.keys():
+            raise ValueError('%s(updated={...}) must have id field.' % title)
+        if original:
+            if not 'id' in original.keys():
+                raise ValueError('%s(original={...}) must have id field.' % title)
+            elif updated['id'] != original['id']:
+                raise ValueError('%s original["id"] value must match updated["id"]' % title)
 
         # extract primary key
-        primary_key = new_details['id']
+        record_id = updated['id']
 
         # # handle missing id
         #     if not '.id' in self.model.keyMap.keys():
-        #         del new_details['id']
-        #         if old_details:
-        #             del old_details['id']
+        #         del updated['id']
+        #         if original:
+        #             del original['id']
 
         # validate new details against record model
-        new_details = self.model.validate(new_details)
+        new_details = self.model.validate(updated)
 
         # retrieve old record if not specified
-        if not old_details:
+        if not original:
             try:
-                old_details = self.read(primary_key)
+                original = self.read(record_id)
             except:
-                raise ValueError('%s new_details["id"] does not exist.' % title)
+                raise ValueError('%s updated["id"] does not exist.' % title)
 
         # determine record differences
         from labpack.parsing.comparison import compare_records
-        update_list = compare_records(new_details, old_details)
+        update_list = compare_records(new_details, original)
 
         # construct update keywords
         update_kwargs = {}
@@ -2070,27 +2079,35 @@ class SQLTable(object):
                     if save_path:
                         save_path += '.'
                     save_path += segment
-                    if isinstance(current_details[segment], dict):
+                    key = '.%s' % save_path
+                    if isinstance(current_details[segment], dict) and not key in self.empty_maps:
                         current_details = current_details[segment]
                         continue
+                    elif isinstance(current_details[segment], dict):
+                        update_kwargs[save_path] = pickle.dumps(current_details[segment])
+                        break
                     elif isinstance(current_details[segment], list):
                         update_kwargs[save_path] = pickle.dumps(current_details[segment])
                         break
                     else:
                         update_kwargs[save_path] = current_details[segment]
             else:
-                current_details = old_details
+                current_details = original
                 save_path = ''
                 for i in range(len(update['path'])):
                     segment = update['path'][i]
                     if save_path:
                         save_path += '.'
                     save_path += segment
+                    key = '.%s' % save_path
                     if update['action'] == 'DELETE' and i + 1 == len(update['path']):
                         update_kwargs[save_path] = None
-                    elif isinstance(current_details[segment], dict):
+                    elif isinstance(current_details[segment], dict) and not key in self.empty_maps:
                         current_details = current_details[segment]
                         continue
+                    elif isinstance(current_details[segment], dict):
+                        update_kwargs[save_path] = pickle.dumps(new_details[segment])
+                        break
                     elif isinstance(current_details[segment], list):
                         update_kwargs[save_path] = pickle.dumps(new_details[segment])
                         break
@@ -2099,29 +2116,31 @@ class SQLTable(object):
 
         # send update command
         if update_kwargs:
-            update_statement = self.table.update(self.table.c.id == primary_key).values(**update_kwargs)
+            update_statement = self.table.update(self.table.c.id == record_id).values(**update_kwargs)
             self.session.execute(update_statement)
 
         return update_list
 
-    def delete(self, primary_key):
+    def delete(self, record_id):
 
         ''' 
             a method to delete a record in the table
 
-        :param primary_key: string with primary key of record 
+        :param record_id: string or number with unique identifier of record
         :return: string with status message
         '''
 
         title = '%s.delete' % self.__class__.__name__
 
         # delete object
-        delete_statement = self.table.delete(self.table.c.id == primary_key)
+        delete_statement = self.table.delete(self.table.c.id == record_id)
         self.session.execute(delete_statement)
 
         # return message
-        exit_msg = '%s has been deleted.' % primary_key
-        return exit_msg
+        msg = 'Record %s deleted.' % record_id
+        self.printer(msg)
+
+        return msg
 
     def remove(self):
 
@@ -2138,12 +2157,12 @@ class SQLTable(object):
 
         return exit_msg
 
-    def export(self, sql_client, merge_rule='skip', coerce=False):
+    def export(self, sql_table, merge_rule='skip', coerce=False):
 
         '''
-            a method to export all the records in table to another table
+            a method to export all the records in table to another sql table
 
-        :param sql_client: class object with sql client methods
+        :param sql_table: class object with sql table methods
         :param merge_rule: string with name of rule to adopt for pre-existing records
         :param coerce: boolean to enable migration even if table schemas don't match
         :return: string with exit message
@@ -2154,23 +2173,23 @@ class SQLTable(object):
         title = '%s.export' % self.__class__.__name__
 
         # validate sql client
-        method_list = ['list', 'create', 'read', 'update', 'delete', 'remove', 'export', 'exists', '_construct_inserts',
-                       '_parse_columns', '_compare_columns', 'table', 'session', 'table_name', 'database_name']
+        # TODO reduce method list requirements for other jsonified databases
+        method_list = ['list', 'create', 'read', 'update', 'delete', 'remove', 'export', 'exists', '_construct_inserts', '_parse_columns', '_compare_columns', 'table', 'session', 'table_name', 'database_name']
         for method in method_list:
-            if getattr(sql_client, method, None) == None:
+            if getattr(sql_table, method, None) == None:
                 from labpack.parsing.grammar import join_words
                 raise ValueError(
-                    '%s(sql_client=...) must be a client object with %s methods.' % (title, join_words(method_list)))
+                    '%s(sql_table=...) must be a client object with %s methods.' % (title, join_words(method_list)))
 
         # verbosity
         export_name = self.table_name
-        import_name = sql_client.table_name
-        print('Migrating %s table in %s database to %s table in %s database' % (
-        export_name, self.database_name, import_name, sql_client.database_name), end='', flush=True)
+        import_name = sql_table.table_name
+        self.printer('Migrating %s table in %s database to %s table in %s database' % (
+        export_name, self.database_name, import_name, sql_table.database_name), flush=True)
 
         # determine differences between tables
         export_columns = self._parse_columns()
-        import_columns = sql_client._parse_columns()
+        import_columns = sql_table._parse_columns()
         add_columns, remove_columns, rename_columns, retype_columns, resize_columns = self._compare_columns(
             import_columns, export_columns)
         if remove_columns or retype_columns or resize_columns:
@@ -2210,34 +2229,34 @@ class SQLTable(object):
         overwritten = 0
         for record in self.session.execute(list_statement).fetchall():
             record_details = self._reconstruct_record(record)
-            primary_key = record_details['id']
-            if not sql_client.exists(primary_key):
+            record_id = record_details['id']
+            if not sql_table.exists(record_id):
                 create_kwargs = self._construct_inserts(record, import_columns, rename_columns, retype_columns,
                                                         resize_columns)
-                insert_statement = sql_client.table.insert().values(**create_kwargs)
-                sql_client.session.execute(insert_statement)
+                insert_statement = sql_table.table.insert().values(**create_kwargs)
+                sql_table.session.execute(insert_statement)
                 added += 1
             elif merge_rule == 'overwrite':
-                sql_client.delete(primary_key)
+                sql_table.delete(record_id)
                 create_kwargs = self._construct_inserts(record, import_columns, rename_columns, retype_columns,
                                                         resize_columns)
-                insert_statement = sql_client.table.insert().values(**create_kwargs)
-                sql_client.session.execute(insert_statement)
+                insert_statement = sql_table.table.insert().values(**create_kwargs)
+                sql_table.session.execute(insert_statement)
                 overwritten += 1
             elif merge_rule == 'skip':
                 skipped += 1
-            elif merge_rule == 'upsert':
+            elif merge_rule == 'update':
                 update_kwargs = self._construct_inserts(record, import_columns, rename_columns, retype_columns,
                                                         resize_columns)
                 update_details = _reconstruct_upsert(update_kwargs)
-                sql_client.update(update_details)
+                sql_table.update(update_details)
                 upserted += 1
             count = added + overwritten + skipped + upserted
             if not count % 10:
-                print('.', end='', flush=True)
+                self.printer('.', flush=True)
 
         # handle verbosity
-        print(' done.')
+        self.printer(' done.')
 
         # report outcome
         plural = ''
@@ -2260,13 +2279,10 @@ class SQLTable(object):
             upsert_plural = ''
             if upserted > 1:
                 upsert_plural = 's'
-            upsert_insert = ' %s record%s upserted.' % (str(upserted), upsert_plural)
+            upsert_insert = ' %s record%s updated.' % (str(upserted), upsert_plural)
         exit_msg = '%s record%s added to %s.%s%s%s' % (
         str(added), plural, import_name, skip_insert, overwrite_insert, upsert_insert)
-        print(exit_msg)
+        self.printer(exit_msg)
 
         return count
 
-    
-    
-        
