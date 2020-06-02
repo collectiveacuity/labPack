@@ -26,7 +26,7 @@ from jsonmodel.validators import jsonModel
 class DatastoreTable(object):
 
     ''' 
-        a class to manage tabular style records in google datastore
+        a class to store json valid records as tabular style in google datastore
 
         STORAGE:
         https://cloud.google.com/datastore/docs/concepts/storage-size
@@ -43,7 +43,9 @@ class DatastoreTable(object):
         ascending and descending orders.
 
         by default, this class requires indices to be specified and 
-        does not create null values for empty fields.
+        does not create null values for empty fields. if an empty
+        map is declared in the record schema, any data in that field
+        of a record is stringified and unindexable.
 
         the most space efficient setup will not have any indices and
         will use the value of the record id as the main query method
@@ -64,16 +66,11 @@ class DatastoreTable(object):
                 'schema': {}
             },
             'indices': [''],
-            'results': 1,
+            'limit': 1,
             'batch': 1,
             'cursor': 'aGFwcHk=',
-            'old_details': {
-                'id': None
-            },
-            'new_details': {
-                'id': None
-            },
             'merge_rule': 'overwrite',
+            'filter': {},
             'sort': [{}]
         },
         'components': {
@@ -81,7 +78,7 @@ class DatastoreTable(object):
                 'max_length': 255,
                 'must_not_contain': ['/', '\\.', '-', '^\d', '^__']
             },
-            '.results': {
+            '.limit': {
                 'greater_than': 0,
                 'integer_data': True,
                 'max_value': 1000
@@ -179,6 +176,9 @@ class DatastoreTable(object):
             # check for __key__ name
             if key == '.__key__':
                 raise ValueError('%(record_schema) cannot contain field "__key__". Name is a keyword in datastore.')
+            # # check for null datatype declarations
+            # if value['value_datatype'] == 'null':
+            #     raise ValueError('%s(record_schema={...}) field %s cannot have the null datatype.' % (title, key))
             # check if field is a list
             if self.item_key.findall(key):
                 if value['value_datatype'] not in ('string', 'number'):
@@ -438,7 +438,24 @@ class DatastoreTable(object):
         self.printer('Table %s indices updated.' % self.table_name)
         return count
 
-    def list(self, filter=None, sort=None, results=100, cursor='', ids_only=False):
+    def exists(self, record_id):
+
+        ''' a method to determine if record exists 
+        
+        :param record_id: string with id associated with record
+        :return: boolean to indicate existence of record
+        '''
+
+        query = self.client.query(kind=self.kind)
+        eval_key = self.client.key(self.kind, record_id)
+        query.add_filter('__key__', '=', eval_key)
+        query.keys_only()
+        result = list(query.fetch())
+        if result:
+            return True
+        return False
+
+    def list(self, filter=None, sort=None, limit=100, cursor=None, ids_only=False):
 
         '''
             a method to retrieve records using criteria evaluated on table indexes
@@ -449,8 +466,8 @@ class DatastoreTable(object):
                 to the datastore are not automatically added to the index. to make
                 sure that all records are properly indexed, you must run
                 _update_indices
-                WARNING - _update_indices is an optimized SCAN of Datastore
-                and could be very costly
+                WARNING: although _update_indices is an optimized SCAN of Datastore,
+                it could be very costly
 
         NOTE:   composite indices allow for more complex queries in-memory
                 but must be registered with Datastore using gcloud client
@@ -459,8 +476,8 @@ class DatastoreTable(object):
 
         :param filter: dictionary of dot path field name and jsonmodel query criteria
         :param sort: list of single key-pair dictionaries with dot path field names
-        :param results: integer with number of results to return
-        :param cursor: object with place of search sequence for last results for pagination
+        :param limit: integer with number of results to return
+        :param cursor: base64 url safe encoded string with location of last result
         :param ids_only: boolean to enable return of only ids (reduces 'read' use to 1)
         :return: list of results
 
@@ -518,6 +535,11 @@ class DatastoreTable(object):
 
         NOTE:   sorts on more than one field require a composite index
 
+        NOTE:   the limit field determines how many records are requested from
+                Datastore. if a query involves filters which are not supported by
+                Datastore, the actual number of results produced may be less than
+                the limit argument due to post-processing
+
         output:
         [ { 'id': '...', 'email': '...', ... }, { ... } ], cursor_string
 
@@ -543,8 +565,9 @@ class DatastoreTable(object):
 
         # validate inputs
         args = {
+            'filter': filter,
             'sort': sort,
-            'results': results,
+            'limit': limit,
             'cursor': cursor
         }
         for key, value in args.items():
@@ -702,7 +725,7 @@ class DatastoreTable(object):
 
         # construct fetch kwargs
         kwargs = {
-            'limit': results
+            'limit': limit
         }
         # convert cursor arg into byte data
         if cursor:
@@ -735,19 +758,6 @@ class DatastoreTable(object):
             end_cursor = base64.urlsafe_b64encode(next_token).decode('utf-8')
 
         return records, end_cursor
-
-    def exists(self, record_id):
-
-        ''' a method to determine if record exists '''
-
-        query = self.client.query(kind=self.kind)
-        eval_key = self.client.key(self.kind, record_id)
-        query.add_filter('__key__', '=', eval_key)
-        query.keys_only()
-        result = list(query.fetch())
-        if result:
-            return True
-        return False
 
     def create(self, record):
 
