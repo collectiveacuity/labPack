@@ -42,7 +42,7 @@ class sqlClient(object):
         'components': {
             '.table_name': {
                 'max_length': 255,
-                'must_not_contain': ['/', '\\.', '-', '^\d']
+                'must_not_contain': ['/', '\\.', '-', '^\d', '\s']
             },
             '.merge_rule': {
                 'discrete_values': [ 'overwrite', 'skip', 'upsert' ]
@@ -271,7 +271,7 @@ class sqlClient(object):
         
         import re
         from sqlalchemy import MetaData, VARCHAR, INTEGER, BLOB, BOOLEAN, FLOAT
-        from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION, BIT, BYTEA
+        from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION, BIT, BYTEA, BIGINT
     
     # retrieve list of tables
         metadata_object = MetaData()
@@ -290,6 +290,8 @@ class sqlClient(object):
                 elif column.type.__class__ == DOUBLE_PRECISION().__class__: # Postgres
                     column_type = 'float'
                 elif column.type.__class__ == INTEGER().__class__:
+                    column_type = 'integer'
+                elif column.type.__class__ == BIGINT().__class__:
                     column_type = 'integer'
                 elif column.type.__class__ == VARCHAR().__class__:
                     column_length = getattr(column.type, 'length', None)
@@ -474,7 +476,7 @@ class sqlClient(object):
                                 record_value = int(record_value)
                         elif retype_columns[key] == 'float':
                             if old_list:
-                                record_value = int(record_value[0])
+                                record_value = float(record_value[0])
                             else:
                                 record_value = float(record_value)
                         elif retype_columns[key] == 'list':
@@ -1134,14 +1136,16 @@ class SQLSession(object):
 
 class SQLTable(object):
     
-    ''' a class of methods for storing json valid records in a sql database 
+    ''' a class to store json valid records in a sql database 
     
-    NOTE:   currently only supports sqlite and postgres dialects
+    REFERENCES:
+    https://docs.sqlalchemy.org/en/13/core/tutorial.html
     '''
 
     _class_fields = {
         'schema': {
-            'table_name': 'User Data',
+            'int': 0,
+            'table_name': 'User_Data',
             'record_schema': {
                 'schema': {}
             },
@@ -1154,29 +1158,33 @@ class SQLTable(object):
             'sort': [{}]
         },
         'components': {
-            '.table_name': {
+            'table_name': {
                 'max_length': 255,
-                'must_not_contain': ['/', '\\.', '-', '^\d', '^__']
+                'must_not_contain': ['/', '\\.', '-', '^\d', '^__', '\s']
             },
-            '.merge_rule': {
+            'merge_rule': {
                 'discrete_values': ['overwrite', 'skip', 'update']
             },
-            '.record_schema': {
+            'record_schema': {
                 'extra_fields': True
             },
-            '.limit': {
+            'limit': {
                 'greater_than': 0,
                 'integer_data': True,
                 'max_value': 1000
             },
-            '.cursor': {
+            'cursor': {
                 'greater_than': 0,
+                'integer_data': True
+            },
+            'int': {
+                'max_value': 9223372036854775807,
                 'integer_data': True
             }
         }
     }
 
-    def __init__(self, sql_session, table_name, record_schema, rebuild=True, default_values=False):
+    def __init__(self, sql_session, table_name, record_schema, rebuild=True, default_values=False, verbose=False):
 
         '''
             the initialization method for the SQLTable class
@@ -1231,8 +1239,9 @@ class SQLTable(object):
         self.table_name = table_name
         self.database_name = sql_session.database_name
         self.database_url = sql_session.database_url
-        self.verbose = sql_session.verbose
+        self.verbose = verbose
         self.database_dialect = sql_session.database_dialect
+        self.table_name_safe = table_name.replace('-','_').replace(' ','_').lower()
 
         # construct verbose method
         self.printer_on = True
@@ -1350,7 +1359,7 @@ class SQLTable(object):
                         self.table_name, self.database_name))
                 else:
                     new_name = self.table_name
-                    old_name = '%s_old_%s' % (self.table_name, labID().id24.replace('-', '_').lower())
+                    old_name = '%s_old_%s' % (self.table_name, self.labID().id24.replace('-', '_').lower())
                     if not migration_complete:
                         old_name = prior_name
                     self._rebuild_table(new_name, old_name, current_columns, prior_columns)
@@ -1384,7 +1393,7 @@ class SQLTable(object):
 
         import re
         from sqlalchemy import MetaData, VARCHAR, INTEGER, BLOB, BOOLEAN, FLOAT
-        from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION, BIT, BYTEA
+        from sqlalchemy.dialects.postgresql import DOUBLE_PRECISION, BIT, BYTEA, BIGINT
 
         # retrieve list of tables
         metadata_object = MetaData()
@@ -1403,6 +1412,8 @@ class SQLTable(object):
                 elif column.type.__class__ == DOUBLE_PRECISION().__class__:  # Postgres
                     column_type = 'float'
                 elif column.type.__class__ == INTEGER().__class__:
+                    column_type = 'integer'
+                elif column.type.__class__ == BIGINT().__class__:
                     column_type = 'integer'
                 elif column.type.__class__ == VARCHAR().__class__:
                     column_length = getattr(column.type, 'length', None)
@@ -1539,8 +1550,16 @@ class SQLTable(object):
             if '.id' in self.model.keyMap.keys():
                 if self.model.keyMap['.id']['value_datatype'] == 'number':
                     # TODO auto increment record
-                    import binascii
-                    fields['id'] = int(binascii.hexlify(lab.bytes_18).decode(), 16)
+
+                    # sqlite and postgres do not support > 64-bit integers
+                    if self.database_dialect in ('sqlite','postgres'):
+                        from labpack.randomization.randomlab import random_integer
+                        fields['id'] = random_integer(0, 2 ** 63)
+                    # produce a non-colliding integer derived from uuid
+                    else:
+                        import binascii
+                        lab_hex = binascii.hexlify(lab.bytes_18).decode()
+                        fields['id'] = int(lab_hex, 16)
                 else:
                     fields['id'] = uid
             else:
@@ -1642,7 +1661,7 @@ class SQLTable(object):
                                 record_value = int(record_value)
                         elif retype_columns[key] == 'float':
                             if old_list:
-                                record_value = int(record_value[0])
+                                record_value = float(record_value[0])
                             else:
                                 record_value = float(record_value)
                         elif retype_columns[key] == 'list':
@@ -1689,8 +1708,7 @@ class SQLTable(object):
         new_table = Table(*new_table_args)
 
         # determine differences between tables
-        add_columns, remove_columns, rename_columns, retype_columns, resize_columns = self._compare_columns(new_columns,
-                                                                                                            old_columns)
+        add_columns, remove_columns, rename_columns, retype_columns, resize_columns = self._compare_columns(new_columns, old_columns)
 
         # rename table and recreate table if it doesn't already exist
         table_list = self.engine.table_names()
@@ -1748,7 +1766,7 @@ class SQLTable(object):
         :param filter: dictionary of dot path field name and jsonmodel query criteria
         :param sort: list of single key-pair dictionaries with dot path field names
         :param limit: integer with number of results to return
-        :param cursor: integer with offset to continue query
+        :param cursor: string form of integer with offset to continue query
         :param ids_only: boolean to enable return of only ids (reduces 'read' use to 1)
         :return: list of results
 
@@ -1825,13 +1843,21 @@ class SQLTable(object):
         args = {
             'filter': filter,
             'sort': sort,
-            'limit': limit,
-            'cursor': cursor
+            'limit': limit
         }
         for key, value in args.items():
             if value:
                 titlex = '%s(%s=%s)' % (title, key, str(value))
                 self.fields.validate(value, '.%s' % key, titlex)
+
+        # validate cursor
+        if cursor:
+            titlex = '%s(cursor=%s)' % (title, str(cursor))
+            try:
+                cursor = int(cursor)
+            except:
+                raise ValueError('%s must be an integer or a string datatype that converts to an integer.' % titlex)
+            self.fields.validate(cursor, '.cursor', titlex)
 
         # validate filter
         if filter:
@@ -1897,7 +1923,7 @@ class SQLTable(object):
                                     select_object = select_object.where(column_object.__ge__(v))
 
         # add order criteria
-        for criterion in sort:
+        for criterion in reversed(sort):
             key, value = next(iter(criterion.items()))
             record_key = key
             if key.find('.') == 0:
@@ -1913,12 +1939,11 @@ class SQLTable(object):
                         select_object = select_object.order_by(column_object)
 
         # apply results and cursor offset
-        select_object.limit(limit)
+        select_object = select_object.limit(limit)
         if cursor:
-            select_object.offset(cursor)
+            select_object = select_object.offset(cursor)
 
         # execute query on database
-        # print(select_object)
         records = []
         next_cursor = 0
         while True:
@@ -1941,11 +1966,11 @@ class SQLTable(object):
                 # return if total records equals limit
                 if len(records) >= limit:
                     next_cursor = next_cursor + count
-                    return records, next_cursor
+                    return records, str(next_cursor)
 
             # return if all records have been examined
             if count == 0 or count < limit:
-                next_cursor = 0
+                next_cursor = ''
                 return records, next_cursor
             # else update offset and repeat
             next_cursor = next_cursor + count
@@ -1959,8 +1984,8 @@ class SQLTable(object):
             NOTE:   this class uses the id key as the primary key for all records
                     if record includes an id field that is an integer, float
                     or string, then it will be used as the primary key. if the id
-                    field is missing, a unique integer (if id is a number) or 
-                    24 character url safe string (if id is a string) will be 
+                    field is missing, a random 64 bit integer (if a number) or a
+                    unique 24 character url safe string (if a string) will be 
                     created for the id field and included in the record
 
             NOTE:   record fields which do not exist in the record_schema or whose
@@ -1988,6 +2013,9 @@ class SQLTable(object):
         # insert record into table
         insert_statement = self.table.insert().values(**fields)
         self.session.execute(insert_statement)
+
+        # report and return record id
+        self.printer('Record %s created.' % fields['id'])
 
         return fields['id']
 
@@ -2285,4 +2313,3 @@ class SQLTable(object):
         self.printer(exit_msg)
 
         return count
-

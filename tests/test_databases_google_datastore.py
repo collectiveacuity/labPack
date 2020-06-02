@@ -129,7 +129,7 @@ if __name__ == '__main__':
     filter = {'address.city': {'must_contain': ['n$']}, 'address.number': {'min_value': 5}}
     records, cursor = table.list(filter=filter)
     assert records[0]['address']['city'] == 'madison'
-    filter = {'address.city': {'less_than': 'n', }, 'address.number': {'min_value': 5}}
+    filter = {'address.city': {'less_than': 'n', }, 'address.number': {'min_value': 6}}
     records, cursor = table.list(filter=filter)
     assert records[-1]['address']['city'] == 'mechanicsville'
 
