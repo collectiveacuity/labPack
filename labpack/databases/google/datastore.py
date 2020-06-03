@@ -102,6 +102,18 @@ class DatastoreTable(object):
 
     def __init__(self, datastore_client, table_name, record_schema, indices=None, default_values=False, verbose=False):
 
+        '''
+            the initialization method for the sqlClient class
+        
+        :param datastore_client: datastore.Client object
+        :param table_name: string with name for table of records
+        :param database_url: string with unique resource identifier to database
+        :param record_schema: dictionary with jsonmodel valid schema for records
+        :param indices: list of strings with fields to index
+        :param default_values: [optional] boolean to add default values to records
+        :param verbose: [optional] boolean to enable database logging to stdout
+        '''
+
         title = '%s.__init__' % self.__class__.__name__
 
         # construct class fields
@@ -480,7 +492,7 @@ class DatastoreTable(object):
         :param filter: dictionary of dot path field name and jsonmodel query criteria
         :param sort: list of single key-pair dictionaries with dot path field names
         :param limit: integer with number of results to return
-        :param cursor: base64 url safe encoded string with location of last result
+        :param cursor: string base64 url safe encoded with location of last result
         :param ids_only: boolean to enable return of only ids (reduces 'read' use to 1)
         :return: list of results
 
@@ -859,7 +871,11 @@ class DatastoreTable(object):
 
     def update(self, record):
 
-        ''' a method to update an existing record '''
+        ''' a method to update an existing record 
+        
+        :param record: dictionary with record fields 
+        :return: dictionary with record fields 
+        '''
 
         title = '%s.update' % self.__class__.__name__
 
@@ -894,7 +910,11 @@ class DatastoreTable(object):
 
     def delete(self, record_id):
 
-        ''' a method to delete an existing record '''
+        ''' a method to delete an existing record 
+        
+        :param record_id: string or number with unique identifier of record
+        :return: string with status message
+        '''
 
         # delete entity
         key = self.client.key(self.kind, record_id)

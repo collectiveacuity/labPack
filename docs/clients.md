@@ -18,7 +18,7 @@ initialization method for moves client class
 </thead>
 <tbody>
 <tr><td>self            </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                         </td></tr>
-<tr><td>access_token    </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with access token for user provided by moves oauth</td></tr>
+<tr><td>access_token    </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with access token for user provided by moves oauth</td></tr>
 <tr><td>service_scope   </td><td>dict    </td><td>Yes       </td><td>None     </td><td>dictionary with service type permissions                 </td></tr>
 <tr><td>usage_client    </td><td>function</td><td>          </td><td>None     </td><td>callable that records usage data                         </td></tr>
 <tr><td>requests_handler</td><td>function</td><td>          </td><td>None     </td><td>callable that handles requests errors                    </td></tr>
@@ -54,7 +54,7 @@ a method to retrieve summary details for a period of time
 <tbody>
 <tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                           </td></tr>
 <tr><td>timezone_offset</td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with timezone offset from user profile details     </td></tr>
-<tr><td>first_date     </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with ISO date from user profile details firstDate   </td></tr>
+<tr><td>first_date     </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with ISO date from user profile details firstDate   </td></tr>
 <tr><td>start          </td><td>float </td><td>          </td><td>0.0      </td><td>[optional] float with starting datetime for daily summaries</td></tr>
 <tr><td>end            </td><td>float </td><td>          </td><td>0.0      </td><td>[optional] float with ending datetime for daily summaries  </td></tr>
 </tbody>
@@ -75,7 +75,7 @@ a method to retrieve activity details for a period of time
 <tbody>
 <tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                           </td></tr>
 <tr><td>timezone_offset</td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with timezone offset from user profile details     </td></tr>
-<tr><td>first_date     </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with ISO date from user profile details firstDate   </td></tr>
+<tr><td>first_date     </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with ISO date from user profile details firstDate   </td></tr>
 <tr><td>start          </td><td>float </td><td>          </td><td>0.0      </td><td>[optional] float with starting datetime for daily summaries</td></tr>
 <tr><td>end            </td><td>float </td><td>          </td><td>0.0      </td><td>[optional] float with ending datetime for daily summaries  </td></tr>
 </tbody>
@@ -96,7 +96,7 @@ a method to retrieve place details for a period of time
 <tbody>
 <tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                           </td></tr>
 <tr><td>timezone_offset</td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with timezone offset from user profile details     </td></tr>
-<tr><td>first_date     </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with ISO date from user profile details firstDate   </td></tr>
+<tr><td>first_date     </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with ISO date from user profile details firstDate   </td></tr>
 <tr><td>start          </td><td>float </td><td>          </td><td>0.0      </td><td>[optional] float with starting datetime for daily summaries</td></tr>
 <tr><td>end            </td><td>float </td><td>          </td><td>0.0      </td><td>[optional] float with ending datetime for daily summaries  </td></tr>
 </tbody>
@@ -119,7 +119,7 @@ a method to retrieve storyline details for a period of time
 <tbody>
 <tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                                </td></tr>
 <tr><td>timezone_offset</td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with timezone offset from user profile details          </td></tr>
-<tr><td>first_date     </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with ISO date from user profile details firstDate        </td></tr>
+<tr><td>first_date     </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with ISO date from user profile details firstDate        </td></tr>
 <tr><td>start          </td><td>float </td><td>          </td><td>0.0      </td><td>[optional] float with starting datetime for daily summaries     </td></tr>
 <tr><td>end            </td><td>float </td><td>          </td><td>0.0      </td><td>[optional] float with ending datetime for daily summaries       </td></tr>
 <tr><td>track_points   </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to provide detailed tracking of user movement</td></tr>
@@ -146,11 +146,11 @@ a method for initializing the connection to AW IAM
 </thead>
 <tbody>
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                     </td></tr>
-<tr><td>access_id  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with access_key_id from aws IAM user setup    </td></tr>
-<tr><td>secret_key </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with secret_access_key from aws IAM user setup</td></tr>
-<tr><td>region_name</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of aws region                       </td></tr>
-<tr><td>owner_id   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with aws account id                           </td></tr>
-<tr><td>user_name  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of user access keys are assigned to </td></tr>
+<tr><td>access_id  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with access_key_id from aws IAM user setup    </td></tr>
+<tr><td>secret_key </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with secret_access_key from aws IAM user setup</td></tr>
+<tr><td>region_name</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of aws region                       </td></tr>
+<tr><td>owner_id   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with aws account id                           </td></tr>
+<tr><td>user_name  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of user access keys are assigned to </td></tr>
 <tr><td>verbose    </td><td>bool  </td><td>          </td><td>True     </td><td>boolean to enable process messages                   </td></tr>
 </tbody>
 </table>
@@ -174,7 +174,7 @@ a method to retrieve the details about a server certificate
 </thead>
 <tbody>
 <tr><td>self            </td><td>object</td><td>Yes       </td><td>None     </td><td>                                      </td></tr>
-<tr><td>certificate_name</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of server certificate</td></tr>
+<tr><td>certificate_name</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of server certificate</td></tr>
 </tbody>
 </table>
 ### list_roles
@@ -203,13 +203,13 @@ the initialization method for oauth2 client class
 </thead>
 <tbody>
 <tr><td>self            </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                                   </td></tr>
-<tr><td>client_id       </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with client id registered for app with service              </td></tr>
-<tr><td>client_secret   </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with client secret registered for app with service          </td></tr>
-<tr><td>auth_endpoint   </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with service endpoint for authorization code requests       </td></tr>
-<tr><td>token_endpoint  </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with service endpoint for token post requests               </td></tr>
-<tr><td>redirect_uri    </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with url for redirect callback registered with service      </td></tr>
-<tr><td>request_mimetype</td><td>str     </td><td>          </td><td>""       </td><td>[optional] string with mimetype for token post requests            </td></tr>
-<tr><td>status_endpoint </td><td>str     </td><td>          </td><td>""       </td><td>[optional] string with service endpoint to retrieve status of token</td></tr>
+<tr><td>client_id       </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with client id registered for app with service              </td></tr>
+<tr><td>client_secret   </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with client secret registered for app with service          </td></tr>
+<tr><td>auth_endpoint   </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with service endpoint for authorization code requests       </td></tr>
+<tr><td>token_endpoint  </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with service endpoint for token post requests               </td></tr>
+<tr><td>redirect_uri    </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with url for redirect callback registered with service      </td></tr>
+<tr><td>request_mimetype</td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with mimetype for token post requests            </td></tr>
+<tr><td>status_endpoint </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with service endpoint to retrieve status of token</td></tr>
 <tr><td>requests_handler</td><td>function</td><td>          </td><td>None     </td><td>[optional] callable that handles requests errors                   </td></tr>
 <tr><td>error_map       </td><td>dict    </td><td>          </td><td>None     </td><td>[optional] dictionary with key value strings for service error msgs</td></tr>
 </tbody>
@@ -228,7 +228,7 @@ a method to generate an authorization url to oauth2 service for client
 <tbody>
 <tr><td>self             </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                        </td></tr>
 <tr><td>service_scope    </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list with scope of permissions for agent     </td></tr>
-<tr><td>state_value      </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with unique identifier for callback   </td></tr>
+<tr><td>state_value      </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with unique identifier for callback   </td></tr>
 <tr><td>additional_fields</td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary with key value strings for service</td></tr>
 </tbody>
 </table>
@@ -245,7 +245,7 @@ a method to retrieve an access token from an oauth2 authorizing party
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                            </td></tr>
-<tr><td>auth_code </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with code provided by client redirect</td></tr>
+<tr><td>auth_code </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with code provided by client redirect</td></tr>
 </tbody>
 </table>
 ### renew_token
@@ -287,8 +287,8 @@ the initialization method for the capital one client
 </thead>
 <tbody>
 <tr><td>self            </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                                    </td></tr>
-<tr><td>client_id       </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with client id registered for app with service               </td></tr>
-<tr><td>client_secret   </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with client secret registered for app with service           </td></tr>
+<tr><td>client_id       </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with client id registered for app with service               </td></tr>
+<tr><td>client_secret   </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with client secret registered for app with service           </td></tr>
 <tr><td>retrieve_details</td><td>bool    </td><td>          </td><td>True     </td><td>boolean to automatically retrieve, store and refresh account details</td></tr>
 <tr><td>sandbox         </td><td>bool    </td><td>          </td><td>False    </td><td>boolean to send requests to test sandbox                            </td></tr>
 <tr><td>requests_handler</td><td>function</td><td>          </td><td>None     </td><td>callable that handles requests errors                               </td></tr>
@@ -396,36 +396,36 @@ a method to submit application for new account
 </thead>
 <tbody>
 <tr><td>self                         </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                                                </td></tr>
-<tr><td>customer_ip                  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with ip address of applicant                                             </td></tr>
-<tr><td>first_name                   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with first name of applicant                                             </td></tr>
-<tr><td>last_name                    </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with last name of applicant                                              </td></tr>
-<tr><td>tax_id                       </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with tax id number of applicant                                          </td></tr>
-<tr><td>date_of_birth                </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with ISO format of date of birth of applicant                            </td></tr>
-<tr><td>address_line_1               </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with first line of street address of applicant                           </td></tr>
-<tr><td>city_name                    </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of city of address of applicant                                </td></tr>
-<tr><td>state_code                   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with code for the state of address of applicant                          </td></tr>
-<tr><td>postal_code                  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with postal code of address of applicant                                 </td></tr>
-<tr><td>phone_number                 </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with phone number and area code of applicant                             </td></tr>
-<tr><td>email_address                </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with email address of applicant                                          </td></tr>
-<tr><td>citizenship_country          </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with ISO 3166 alpha-3 country code of citizenship of applicant           </td></tr>
-<tr><td>employment_status            </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with employment status of applicant                                      </td></tr>
+<tr><td>customer_ip                  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with ip address of applicant                                             </td></tr>
+<tr><td>first_name                   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with first name of applicant                                             </td></tr>
+<tr><td>last_name                    </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with last name of applicant                                              </td></tr>
+<tr><td>tax_id                       </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with tax id number of applicant                                          </td></tr>
+<tr><td>date_of_birth                </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with ISO format of date of birth of applicant                            </td></tr>
+<tr><td>address_line_1               </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with first line of street address of applicant                           </td></tr>
+<tr><td>city_name                    </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of city of address of applicant                                </td></tr>
+<tr><td>state_code                   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with code for the state of address of applicant                          </td></tr>
+<tr><td>postal_code                  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with postal code of address of applicant                                 </td></tr>
+<tr><td>phone_number                 </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with phone number and area code of applicant                             </td></tr>
+<tr><td>email_address                </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with email address of applicant                                          </td></tr>
+<tr><td>citizenship_country          </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with ISO 3166 alpha-3 country code of citizenship of applicant           </td></tr>
+<tr><td>employment_status            </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with employment status of applicant                                      </td></tr>
 <tr><td>product_id                   </td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with id of account product to apply for                                 </td></tr>
 <tr><td>funding_amount               </td><td>float </td><td>Yes       </td><td>0.0      </td><td>float with amount of dollars to initially fund account                          </td></tr>
-<tr><td>account_number               </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with pre-existing bank account number of applicant                       </td></tr>
-<tr><td>routing_number               </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with aba routing number for bank of pre-existing account of applicant    </td></tr>
+<tr><td>account_number               </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with pre-existing bank account number of applicant                       </td></tr>
+<tr><td>routing_number               </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with aba routing number for bank of pre-existing account of applicant    </td></tr>
 <tr><td>backup_withholding           </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to indicate backup withholding on accounts of applicant      </td></tr>
-<tr><td>phone_type                   </td><td>str   </td><td>          </td><td>"mobile" </td><td>[optional] string with type of phone of applicant                               </td></tr>
+<tr><td>phone_type                   </td><td>str   </td><td>          </td><td>&quot;mobile&quot; </td><td>[optional] string with type of phone of applicant                               </td></tr>
 <tr><td>accept_tcpa                  </td><td>bool  </td><td>          </td><td>False    </td><td>boolean to accept to be contacted by citizen one marketing on their phone number</td></tr>
 <tr><td>accept_terms                 </td><td>bool  </td><td>          </td><td>True     </td><td>boolean to accept the terms and conditions associated with new account          </td></tr>
-<tr><td>address_line_2               </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with second line of address of applicant                      </td></tr>
-<tr><td>middle_name                  </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with middle name of applicant                                 </td></tr>
-<tr><td>tax_id_type                  </td><td>str   </td><td>          </td><td>"SSN"    </td><td>string with type of tax id of applicant                                         </td></tr>
-<tr><td>secondary_citizenship_country</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with ISO 3166 alpha-3 country code of secondary citizenship   </td></tr>
-<tr><td>job_title                    </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with job title of applicant                                   </td></tr>
+<tr><td>address_line_2               </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with second line of address of applicant                      </td></tr>
+<tr><td>middle_name                  </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with middle name of applicant                                 </td></tr>
+<tr><td>tax_id_type                  </td><td>str   </td><td>          </td><td>&quot;SSN&quot;    </td><td>string with type of tax id of applicant                                         </td></tr>
+<tr><td>secondary_citizenship_country</td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with ISO 3166 alpha-3 country code of secondary citizenship   </td></tr>
+<tr><td>job_title                    </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with job title of applicant                                   </td></tr>
 <tr><td>annual_income                </td><td>int   </td><td>          </td><td>0        </td><td>[optional] integer with dollar value of annual income of applicant              </td></tr>
-<tr><td>cd_term                      </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with term for the cd account product to apply for             </td></tr>
-<tr><td>funding_type                 </td><td>str   </td><td>          </td><td>"fundach"</td><td>string with funding method selected by the applicant to fund new account        </td></tr>
-<tr><td>account_owner                </td><td>str   </td><td>          </td><td>"primary"</td><td>string with role of applicant who owns pre-existing bank account                </td></tr>
+<tr><td>cd_term                      </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with term for the cd account product to apply for             </td></tr>
+<tr><td>funding_type                 </td><td>str   </td><td>          </td><td>&quot;fundach&quot;</td><td>string with funding method selected by the applicant to fund new account        </td></tr>
+<tr><td>account_owner                </td><td>str   </td><td>          </td><td>&quot;primary&quot;</td><td>string with role of applicant who owns pre-existing bank account                </td></tr>
 <tr><td>secondary_application        </td><td>dict  </td><td>          </td><td>None     </td><td>dictionary with applicant fields of secondary account holder                    </td></tr>
 </tbody>
 </table>
@@ -512,7 +512,7 @@ a method to add a view to a design document of a uid
 <tbody>
 <tr><td>self          </td><td>object</td><td>Yes       </td><td>None        </td><td>                                                       </td></tr>
 <tr><td>query_criteria</td><td>dict  </td><td>          </td><td>None        </td><td>dictionary with valid jsonmodel query criteria         </td></tr>
-<tr><td>uid           </td><td>str   </td><td>          </td><td>"_all_users"</td><td>[optional] string with uid of design document to update</td></tr>
+<tr><td>uid           </td><td>str   </td><td>          </td><td>&quot;_all_users&quot;</td><td>[optional] string with uid of design document to update</td></tr>
 </tbody>
 </table>
 ### delete_view
@@ -529,7 +529,7 @@ a method to delete a view associated with a user design doc
 <tbody>
 <tr><td>self          </td><td>object</td><td>Yes       </td><td>None        </td><td>                                                         </td></tr>
 <tr><td>query_criteria</td><td>dict  </td><td>          </td><td>None        </td><td>[optional] dictionary with valid jsonmodel query criteria</td></tr>
-<tr><td>uid           </td><td>str   </td><td>          </td><td>"_all_users"</td><td>[optional] string with uid of design document to update  </td></tr>
+<tr><td>uid           </td><td>str   </td><td>          </td><td>&quot;_all_users&quot;</td><td>[optional] string with uid of design document to update  </td></tr>
 </tbody>
 </table>
 ### list_users
@@ -552,9 +552,9 @@ a method to add or update an authorized user to the bucket
 </thead>
 <tbody>
 <tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                             </td></tr>
-<tr><td>uid            </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with id to assign to user                             </td></tr>
-<tr><td>user_password  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with password to assign to user                       </td></tr>
-<tr><td>user_email     </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with email of user for future lookup       </td></tr>
+<tr><td>uid            </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with id to assign to user                             </td></tr>
+<tr><td>user_password  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with password to assign to user                       </td></tr>
+<tr><td>user_email     </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with email of user for future lookup       </td></tr>
 <tr><td>user_channels  </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of strings with channels to subscribe to user</td></tr>
 <tr><td>user_roles     </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of strings with roles to assign to user      </td></tr>
 <tr><td>user_views     </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of query criteria to create as views for user</td></tr>
@@ -574,7 +574,7 @@ a method to retrieve the account details of a user in the bucket
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                </td></tr>
-<tr><td>uid       </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with id of user in bucket</td></tr>
+<tr><td>uid       </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with id of user in bucket</td></tr>
 </tbody>
 </table>
 ### delete_user
@@ -590,7 +590,7 @@ a method to retrieve the account details of a user in the bucket
 </thead>
 <tbody>
 <tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>                                          </td></tr>
-<tr><td>uid         </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with id of user in bucket          </td></tr>
+<tr><td>uid         </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with id of user in bucket          </td></tr>
 <tr><td>delete_views</td><td>bool  </td><td>          </td><td>True     </td><td>boolean to remove indices attached to user</td></tr>
 </tbody>
 </table>
@@ -607,7 +607,7 @@ a method to create a session token for the user
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                       </td></tr>
-<tr><td>uid       </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with id of user in bucket                       </td></tr>
+<tr><td>uid       </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with id of user in bucket                       </td></tr>
 <tr><td>duration  </td><td>int   </td><td>          </td><td>0        </td><td>integer with number of seconds to last (default: 24hrs)</td></tr>
 </tbody>
 </table>
@@ -624,7 +624,7 @@ a method to create a session token for the user
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                              </td></tr>
-<tr><td>session_id</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with id of user session token in bucket</td></tr>
+<tr><td>session_id</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with id of user session token in bucket</td></tr>
 </tbody>
 </table>
 ### delete_sessions
@@ -640,7 +640,7 @@ a method to delete all session tokens associated with a user
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                </td></tr>
-<tr><td>uid       </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with id of user in bucket</td></tr>
+<tr><td>uid       </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with id of user in bucket</td></tr>
 </tbody>
 </table>
 ### exists
@@ -656,8 +656,8 @@ a method to determine if document exists
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                        </td></tr>
-<tr><td>doc_id    </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with id of document in bucket                    </td></tr>
-<tr><td>rev_id    </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with revision id of document in bucket</td></tr>
+<tr><td>doc_id    </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with id of document in bucket                    </td></tr>
+<tr><td>rev_id    </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with revision id of document in bucket</td></tr>
 </tbody>
 </table>
 ### list
@@ -674,9 +674,9 @@ a generator method for retrieving documents from the bucket
 <tbody>
 <tr><td>self          </td><td>object</td><td>Yes       </td><td>None        </td><td>                                                             </td></tr>
 <tr><td>query_criteria</td><td>dict  </td><td>          </td><td>None        </td><td>[optional] dictionary with valid jsonmodel query criteria    </td></tr>
-<tr><td>uid           </td><td>str   </td><td>          </td><td>"_all_users"</td><td>[optional] string with uid of design document to update      </td></tr>
+<tr><td>uid           </td><td>str   </td><td>          </td><td>&quot;_all_users&quot;</td><td>[optional] string with uid of design document to update      </td></tr>
 <tr><td>all_versions  </td><td>bool  </td><td>          </td><td>False       </td><td>boolean to include previous revisions in query               </td></tr>
-<tr><td>previous_id   </td><td>str   </td><td>          </td><td>""          </td><td>[optional] string with id of the last doc in a previous query</td></tr>
+<tr><td>previous_id   </td><td>str   </td><td>          </td><td>&quot;&quot;          </td><td>[optional] string with id of the last doc in a previous query</td></tr>
 <tr><td>purge_deleted </td><td>bool  </td><td>          </td><td>False       </td><td>boolean to purge any files in results which have been deleted</td></tr>
 </tbody>
 </table>
@@ -710,7 +710,7 @@ read(self, doc_id, rev_id="")
 <tbody>
 <tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>doc_id    </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>rev_id    </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>rev_id    </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
 </tbody>
 </table>
 ### update
@@ -742,8 +742,8 @@ a method to mark a document for deletion
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                             </td></tr>
-<tr><td>doc_id    </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with id of document in bucket         </td></tr>
-<tr><td>rev_id    </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with revision id of document in bucket</td></tr>
+<tr><td>doc_id    </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with id of document in bucket         </td></tr>
+<tr><td>rev_id    </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with revision id of document in bucket</td></tr>
 </tbody>
 </table>
 ### purge
@@ -759,7 +759,7 @@ a method to remove docs from the collection
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                    </td></tr>
-<tr><td>doc_ids   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string or list of strings with document ids to purge</td></tr>
+<tr><td>doc_ids   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string or list of strings with document ids to purge</td></tr>
 </tbody>
 </table>
 ### remove
@@ -795,8 +795,8 @@ the initialization method for the sqlClient class
 </thead>
 <tbody>
 <tr><td>self         </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                       </td></tr>
-<tr><td>table_name   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name for table of records                  </td></tr>
-<tr><td>database_url </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with unique resource identifier to database     </td></tr>
+<tr><td>table_name   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name for table of records                  </td></tr>
+<tr><td>database_url </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with unique resource identifier to database     </td></tr>
 <tr><td>record_schema</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with jsonmodel valid schema for records     </td></tr>
 <tr><td>rebuild      </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to rebuild table with schema changes</td></tr>
 <tr><td>verbose      </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to enable database logging to stdout</td></tr>
@@ -815,7 +815,7 @@ a method to determine if record exists
 </thead>
 <tbody>
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                 </td></tr>
-<tr><td>primary_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with primary key of record</td></tr>
+<tr><td>primary_key</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with primary key of record</td></tr>
 </tbody>
 </table>
 ### list
@@ -878,7 +878,7 @@ a method to retrieve the details for a record in the table
 </thead>
 <tbody>
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                 </td></tr>
-<tr><td>primary_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with primary key of record</td></tr>
+<tr><td>primary_key</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with primary key of record</td></tr>
 </tbody>
 </table>
 ### update
@@ -911,7 +911,7 @@ a method to delete a record in the table
 </thead>
 <tbody>
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                 </td></tr>
-<tr><td>primary_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with primary key of record</td></tr>
+<tr><td>primary_key</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with primary key of record</td></tr>
 </tbody>
 </table>
 ### remove
@@ -937,8 +937,8 @@ a method to export all the records in table to another table
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                             </td></tr>
 <tr><td>sql_client</td><td>type  </td><td>Yes       </td><td>None     </td><td>class object with sql client methods                         </td></tr>
-<tr><td>merge_rule</td><td>str   </td><td>          </td><td>"skip"   </td><td>string with name of rule to adopt for pre-existing records   </td></tr>
-<tr><td>coerce    </td><td>bool  </td><td>          </td><td>False    </td><td>boolean to enable migration even if table schemas don't match</td></tr>
+<tr><td>merge_rule</td><td>str   </td><td>          </td><td>&quot;skip&quot;   </td><td>string with name of rule to adopt for pre-existing records   </td></tr>
+<tr><td>coerce    </td><td>bool  </td><td>          </td><td>False    </td><td>boolean to enable migration even if table schemas don&#x27;t match</td></tr>
 </tbody>
 </table>
 
@@ -960,9 +960,9 @@ initialization method for mailgun client class
 </thead>
 <tbody>
 <tr><td>self            </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                   </td></tr>
-<tr><td>api_key         </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with api key provided by mailgun            </td></tr>
-<tr><td>email_key       </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with email validation key provide by mailgun</td></tr>
-<tr><td>account_domain  </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with domain from which to send email        </td></tr>
+<tr><td>api_key         </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with api key provided by mailgun            </td></tr>
+<tr><td>email_key       </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with email validation key provide by mailgun</td></tr>
+<tr><td>account_domain  </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with domain from which to send email        </td></tr>
 <tr><td>usage_client    </td><td>function</td><td>          </td><td>None     </td><td>callable that records usage data                   </td></tr>
 <tr><td>requests_handler</td><td>function</td><td>          </td><td>None     </td><td>callable that handles requests errors              </td></tr>
 </tbody>
@@ -984,8 +984,8 @@ send_email(self, recipient_list, sender_email, sender_name, email_subject, conte
 <tr><td>sender_email  </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>sender_name   </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>email_subject </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>content_text  </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
-<tr><td>content_html  </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>content_text  </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>content_html  </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
 <tr><td>tracking_tags </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
 <tr><td>cc_list       </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
 <tr><td>bcc_list      </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
@@ -1005,7 +1005,7 @@ a method to validate an email address
 </thead>
 <tbody>
 <tr><td>self         </td><td>object</td><td>Yes       </td><td>None     </td><td>                                     </td></tr>
-<tr><td>email_address</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with email address to validate</td></tr>
+<tr><td>email_address</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with email address to validate</td></tr>
 </tbody>
 </table>
 
@@ -1027,7 +1027,7 @@ a method to initialize the mandrill client class
 </thead>
 <tbody>
 <tr><td>self            </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                           </td></tr>
-<tr><td>api_key         </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with api key generated by mandrill  </td></tr>
+<tr><td>api_key         </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with api key generated by mandrill  </td></tr>
 <tr><td>allow_fees      </td><td>bool    </td><td>          </td><td>False    </td><td>[optional] boolean to allow additional fees</td></tr>
 <tr><td>usage_client    </td><td>function</td><td>          </td><td>None     </td><td>callable that records usage data           </td></tr>
 <tr><td>requests_handler</td><td>function</td><td>          </td><td>None     </td><td>callable that handles requests errors      </td></tr>
@@ -1050,8 +1050,8 @@ send_email(self, recipient_list, sender_email, sender_name, email_subject, conte
 <tr><td>sender_email  </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>sender_name   </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>email_subject </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>content_text  </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
-<tr><td>content_html  </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>content_text  </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>content_html  </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
 <tr><td>tracking_tags </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
 <tr><td>cc_list       </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
 <tr><td>bcc_list      </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
@@ -1077,7 +1077,7 @@ initialization method for meetup client class
 </thead>
 <tbody>
 <tr><td>self            </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                          </td></tr>
-<tr><td>access_token    </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with access token for user provided by meetup oauth</td></tr>
+<tr><td>access_token    </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with access token for user provided by meetup oauth</td></tr>
 <tr><td>service_scope   </td><td>dict    </td><td>Yes       </td><td>None     </td><td>dictionary with service type permissions                  </td></tr>
 <tr><td>usage_client    </td><td>function</td><td>          </td><td>None     </td><td>[optional] callable that records usage data               </td></tr>
 <tr><td>requests_handler</td><td>function</td><td>          </td><td>None     </td><td>[optional] callable that handles requests errors          </td></tr>
@@ -1211,13 +1211,13 @@ a method to find meetup groups based upon a number of filters
 <tr><td>self         </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                                  </td></tr>
 <tr><td>topics       </td><td>list    </td><td>          </td><td>None     </td><td>[optional] list of integer meetup ids for topics                  </td></tr>
 <tr><td>categories   </td><td>NoneType</td><td>          </td><td>None     </td><td>                                                                  </td></tr>
-<tr><td>text         </td><td>str     </td><td>          </td><td>""       </td><td>[optional] string with words in groups to search                  </td></tr>
-<tr><td>country_code </td><td>str     </td><td>          </td><td>""       </td><td>[optional] string with two character country code                 </td></tr>
+<tr><td>text         </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with words in groups to search                  </td></tr>
+<tr><td>country_code </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with two character country code                 </td></tr>
 <tr><td>latitude     </td><td>float   </td><td>          </td><td>0.0      </td><td>[optional] float with latitude coordinate at center of geo search </td></tr>
 <tr><td>longitude    </td><td>float   </td><td>          </td><td>0.0      </td><td>[optional] float with longitude coordinate at center of geo search</td></tr>
-<tr><td>location     </td><td>str     </td><td>          </td><td>""       </td><td>[optional] string with meetup location name fields to search      </td></tr>
+<tr><td>location     </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with meetup location name fields to search      </td></tr>
 <tr><td>radius       </td><td>float   </td><td>          </td><td>0.0      </td><td>[optional] float with distance from center of geographic search   </td></tr>
-<tr><td>zip_code     </td><td>str     </td><td>          </td><td>""       </td><td>[optional] string with zip code of geographic search              </td></tr>
+<tr><td>zip_code     </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with zip code of geographic search              </td></tr>
 <tr><td>max_results  </td><td>int     </td><td>          </td><td>0        </td><td>[optional] integer with number of groups to include               </td></tr>
 <tr><td>member_groups</td><td>bool    </td><td>          </td><td>True     </td><td>[optional] boolean to include groups member belongs to            </td></tr>
 </tbody>
@@ -1235,7 +1235,7 @@ a method to retrieve details about a meetup group
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                   </td></tr>
-<tr><td>group_url </td><td>str   </td><td>          </td><td>""       </td><td>string with meetup urlname of group</td></tr>
+<tr><td>group_url </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>string with meetup urlname of group</td></tr>
 <tr><td>group_id  </td><td>int   </td><td>          </td><td>0        </td><td>int with meetup id for group       </td></tr>
 </tbody>
 </table>
@@ -1252,7 +1252,7 @@ a method to retrieve a list of upcoming events hosted by group
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                       </td></tr>
-<tr><td>group_url </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with meetup urlname field of group              </td></tr>
+<tr><td>group_url </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with meetup urlname field of group              </td></tr>
 <tr><td>upcoming  </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to filter list to only future events</td></tr>
 </tbody>
 </table>
@@ -1269,7 +1269,7 @@ a method to retrieve a list of members for a meetup group
 </thead>
 <tbody>
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                    </td></tr>
-<tr><td>group_url  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with meetup urlname for group                </td></tr>
+<tr><td>group_url  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with meetup urlname for group                </td></tr>
 <tr><td>max_results</td><td>int   </td><td>          </td><td>0        </td><td>[optional] integer with number of members to include</td></tr>
 </tbody>
 </table>
@@ -1286,7 +1286,7 @@ a method to retrieve details for an event
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                         </td></tr>
-<tr><td>group_url </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with meetup urlname for host group</td></tr>
+<tr><td>group_url </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with meetup urlname for host group</td></tr>
 <tr><td>event_id  </td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with meetup id for event         </td></tr>
 </tbody>
 </table>
@@ -1303,7 +1303,7 @@ a method to retrieve attendee list for event from meetup api
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                         </td></tr>
-<tr><td>group_url </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with meetup urlname for host group</td></tr>
+<tr><td>group_url </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with meetup urlname for host group</td></tr>
 <tr><td>event_id  </td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with meetup id for event         </td></tr>
 </tbody>
 </table>
@@ -1338,8 +1338,8 @@ a method to retrieve location address details based upon search parameters
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                                  </td></tr>
 <tr><td>latitude   </td><td>float </td><td>          </td><td>0.0      </td><td>[optional] float with latitude coordinate at center of geo search </td></tr>
 <tr><td>longitude  </td><td>float </td><td>          </td><td>0.0      </td><td>[optional] float with longitude coordinate at center of geo search</td></tr>
-<tr><td>zip_code   </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with zip code of geographic search              </td></tr>
-<tr><td>city_name  </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with name of city for search                    </td></tr>
+<tr><td>zip_code   </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with zip code of geographic search              </td></tr>
+<tr><td>city_name  </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with name of city for search                    </td></tr>
 <tr><td>max_results</td><td>int   </td><td>          </td><td>0        </td><td>[optional] integer with number of groups to include               </td></tr>
 </tbody>
 </table>
@@ -1356,7 +1356,7 @@ a method to add member to a meetup group
 </thead>
 <tbody>
 <tr><td>self              </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                         </td></tr>
-<tr><td>group_url         </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with meetup urlname for group                     </td></tr>
+<tr><td>group_url         </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with meetup urlname for group                     </td></tr>
 <tr><td>membership_answers</td><td>list  </td><td>          </td><td>None     </td><td>list with question id and answer for group join questions</td></tr>
 </tbody>
 </table>
@@ -1373,9 +1373,9 @@ a method to remove group from meetup member profile
 </thead>
 <tbody>
 <tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>                                           </td></tr>
-<tr><td>group_url   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with meetup urlname for group       </td></tr>
+<tr><td>group_url   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with meetup urlname for group       </td></tr>
 <tr><td>member_id   </td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with member id from member profile </td></tr>
-<tr><td>exit_comment</td><td>str   </td><td>          </td><td>""       </td><td>string with comment to leave with organizer</td></tr>
+<tr><td>exit_comment</td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>string with comment to leave with organizer</td></tr>
 </tbody>
 </table>
 ### join_topics
@@ -1425,12 +1425,12 @@ a method to create an rsvp for a meetup event
 </thead>
 <tbody>
 <tr><td>self              </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                           </td></tr>
-<tr><td>group_url         </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with meetup urlname for group                       </td></tr>
+<tr><td>group_url         </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with meetup urlname for group                       </td></tr>
 <tr><td>event_id          </td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with meetup id for event                           </td></tr>
 <tr><td>additional_guests </td><td>int   </td><td>          </td><td>0        </td><td>[optional] integer with number of additional guests        </td></tr>
-<tr><td>attendance_answers</td><td>list  </td><td>          </td><td>None     </td><td>[optional] list with id & answer for event survey questions</td></tr>
-<tr><td>payment_service   </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with name of payment service to use      </td></tr>
-<tr><td>payment_code      </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with token to authorize payment          </td></tr>
+<tr><td>attendance_answers</td><td>list  </td><td>          </td><td>None     </td><td>[optional] list with id &amp; answer for event survey questions</td></tr>
+<tr><td>payment_service   </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with name of payment service to use      </td></tr>
+<tr><td>payment_code      </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with token to authorize payment          </td></tr>
 </tbody>
 </table>
 ### leave_event
@@ -1446,7 +1446,7 @@ a method to rescind an rsvp to a meetup event
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                    </td></tr>
-<tr><td>group_url </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with meetup urlname for group</td></tr>
+<tr><td>group_url </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with meetup urlname for group</td></tr>
 <tr><td>event_id  </td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with meetup id for event    </td></tr>
 </tbody>
 </table>
@@ -1469,9 +1469,9 @@ a method to initialize a findClient class object
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None                        </td><td>                                                   </td></tr>
-<tr><td>group_name</td><td>str   </td><td>Yes       </td><td>""                          </td><td>string with name of group                          </td></tr>
-<tr><td>server_url</td><td>str   </td><td>          </td><td>"ml.internalpositioning.com"</td><td>string with url for FIND server                    </td></tr>
-<tr><td>password  </td><td>str   </td><td>          </td><td>""                          </td><td>[optional] string with password to mosquitto server</td></tr>
+<tr><td>group_name</td><td>str   </td><td>Yes       </td><td>&quot;&quot;                          </td><td>string with name of group                          </td></tr>
+<tr><td>server_url</td><td>str   </td><td>          </td><td>&quot;ml.internalpositioning.com&quot;</td><td>string with url for FIND server                    </td></tr>
+<tr><td>password  </td><td>str   </td><td>          </td><td>&quot;&quot;                          </td><td>[optional] string with password to mosquitto server</td></tr>
 </tbody>
 </table>
 ### get_password
@@ -1508,7 +1508,7 @@ a method to retrieve the latest position of a user
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                              </td></tr>
-<tr><td>user_id   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with id of user                                        </td></tr>
+<tr><td>user_id   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with id of user                                        </td></tr>
 <tr><td>track     </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to add user to self.positions              </td></tr>
 <tr><td>confidence</td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to include the data model confidence scores</td></tr>
 </tbody>
@@ -1526,7 +1526,7 @@ a method to retrieve the position history of a user
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                                </td></tr>
-<tr><td>user_id   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with id of user                                          </td></tr>
+<tr><td>user_id   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with id of user                                          </td></tr>
 <tr><td>history   </td><td>int   </td><td>          </td><td>1        </td><td>[optional] integer with length of previous positions to retrieve</td></tr>
 <tr><td>confidence</td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to include the data model confidence scores  </td></tr>
 </tbody>
@@ -1569,10 +1569,10 @@ a method to publish wifi fingerprint data to a mosquitto server
 </thead>
 <tbody>
 <tr><td>self            </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                                </td></tr>
-<tr><td>user_id         </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with id of user                                          </td></tr>
+<tr><td>user_id         </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with id of user                                          </td></tr>
 <tr><td>wifi_fingerprint</td><td>list  </td><td>Yes       </td><td>None     </td><td>list of dictionaries with wifi fields mac and rssi              </td></tr>
-<tr><td>action          </td><td>str   </td><td>          </td><td>"track"  </td><td>string with type of action to perform with data (track or learn)</td></tr>
-<tr><td>location_id     </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with classifier to add to learning data       </td></tr>
+<tr><td>action          </td><td>str   </td><td>          </td><td>&quot;track&quot;  </td><td>string with type of action to perform with data (track or learn)</td></tr>
+<tr><td>location_id     </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with classifier to add to learning data       </td></tr>
 <tr><td>port            </td><td>int   </td><td>          </td><td>1883     </td><td>[optional] integer with port to connect to                      </td></tr>
 </tbody>
 </table>
@@ -1596,7 +1596,7 @@ initialization method for moves client class
 <tbody>
 <tr><td>self            </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
 <tr><td>bot_id          </td><td>int     </td><td>Yes       </td><td>0        </td><td>integer with telegram id number for bot                        </td></tr>
-<tr><td>access_token    </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with access token for bot provided by telegram botfather</td></tr>
+<tr><td>access_token    </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with access token for bot provided by telegram botfather</td></tr>
 <tr><td>requests_handler</td><td>function</td><td>          </td><td>None     </td><td>callable that handles requests errors                          </td></tr>
 </tbody>
 </table>
@@ -1621,9 +1621,9 @@ set_webhook(self, webhook_url, certificate_id="", certificate_path="", certifica
 <tbody>
 <tr><td>self            </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>webhook_url     </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>certificate_id  </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
-<tr><td>certificate_path</td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
-<tr><td>certificate_url </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>certificate_id  </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>certificate_path</td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>certificate_url </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
 <tr><td>max_connections </td><td>int     </td><td>          </td><td>40       </td><td>             </td></tr>
 </tbody>
 </table>
@@ -1663,7 +1663,7 @@ a method to retrieve route information for file on telegram api
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                               </td></tr>
-<tr><td>file_id   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with id of file in a message send to bot</td></tr>
+<tr><td>file_id   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with id of file in a message send to bot</td></tr>
 </tbody>
 </table>
 ### get_file
@@ -1679,8 +1679,8 @@ a method to retrieve data for a file housed on telegram api
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                  </td></tr>
-<tr><td>file_route</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with route to file endpoint on telegram api</td></tr>
-<tr><td>file_name </td><td>str   </td><td>          </td><td>""       </td><td>                                                  </td></tr>
+<tr><td>file_route</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with route to file endpoint on telegram api</td></tr>
+<tr><td>file_name </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>                                                  </td></tr>
 </tbody>
 </table>
 ### send_message
@@ -1697,8 +1697,8 @@ a method to send a message using telegram api
 <tbody>
 <tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                                   </td></tr>
 <tr><td>user_id        </td><td>int   </td><td>Yes       </td><td>0        </td><td>integer with id of telegram user                                   </td></tr>
-<tr><td>message_text   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with message to user                                        </td></tr>
-<tr><td>message_style  </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with style to apply to text, only 'markdown'     </td></tr>
+<tr><td>message_text   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with message to user                                        </td></tr>
+<tr><td>message_style  </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with style to apply to text, only &#x27;markdown&#x27;     </td></tr>
 <tr><td>button_list    </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of string to include as buttons in message         </td></tr>
 <tr><td>small_buttons  </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to resize buttons to single line                </td></tr>
 <tr><td>persist_buttons</td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to keep buttons around after exiting            </td></tr>
@@ -1719,10 +1719,10 @@ a method to send a photo using telegram api
 <tbody>
 <tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                          </td></tr>
 <tr><td>user_id        </td><td>int     </td><td>Yes       </td><td>0        </td><td>integer with id of telegram user                          </td></tr>
-<tr><td>photo_id       </td><td>str     </td><td>          </td><td>""       </td><td>[optional] string with id of file stored with telegram api</td></tr>
-<tr><td>photo_path     </td><td>str     </td><td>          </td><td>""       </td><td>[optional] string with local path to file                 </td></tr>
-<tr><td>photo_url      </td><td>str     </td><td>          </td><td>""       </td><td>[optional] string with url of file                        </td></tr>
-<tr><td>caption_text   </td><td>str     </td><td>          </td><td>""       </td><td>[optional] string with caption to add to photo            </td></tr>
+<tr><td>photo_id       </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with id of file stored with telegram api</td></tr>
+<tr><td>photo_path     </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with local path to file                 </td></tr>
+<tr><td>photo_url      </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with url of file                        </td></tr>
+<tr><td>caption_text   </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with caption to add to photo            </td></tr>
 <tr><td>button_list    </td><td>NoneType</td><td>          </td><td>None     </td><td>                                                          </td></tr>
 <tr><td>small_buttons  </td><td>bool    </td><td>          </td><td>True     </td><td>                                                          </td></tr>
 <tr><td>persist_buttons</td><td>bool    </td><td>          </td><td>False    </td><td>                                                          </td></tr>
@@ -1742,10 +1742,10 @@ send_voice(self, user_id, voice_id="", voice_path="", voice_url="", caption_text
 <tbody>
 <tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>user_id        </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>voice_id       </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
-<tr><td>voice_path     </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
-<tr><td>voice_url      </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
-<tr><td>caption_text   </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>voice_id       </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>voice_path     </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>voice_url      </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>caption_text   </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
 <tr><td>button_list    </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
 <tr><td>small_buttons  </td><td>bool    </td><td>          </td><td>True     </td><td>             </td></tr>
 <tr><td>persist_buttons</td><td>bool    </td><td>          </td><td>False    </td><td>             </td></tr>
@@ -1788,8 +1788,8 @@ send an SMS from the Twilio account to phone number
 </thead>
 <tbody>
 <tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                   </td></tr>
-<tr><td>phone_number</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with phone number with country and area code</td></tr>
-<tr><td>message_text</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with message text                           </td></tr>
+<tr><td>phone_number</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with phone number with country and area code</td></tr>
+<tr><td>message_text</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with message text                           </td></tr>
 </tbody>
 </table>
 
@@ -1811,7 +1811,7 @@ initialization method for apschedulerClient class
 </thead>
 <tbody>
 <tr><td>self            </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                </td></tr>
-<tr><td>scheduler_url   </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with url of scheduler service            </td></tr>
+<tr><td>scheduler_url   </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with url of scheduler service            </td></tr>
 <tr><td>requests_handler</td><td>function</td><td>          </td><td>None     </td><td>[optional] callable for handling requests errors</td></tr>
 </tbody>
 </table>
@@ -1856,7 +1856,7 @@ add_date_job(self, id, function, args=None, kwargs=None, dt=0.0, name="")
 <tr><td>args      </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
 <tr><td>kwargs    </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
 <tr><td>dt        </td><td>float   </td><td>          </td><td>0.0      </td><td>             </td></tr>
-<tr><td>name      </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>name      </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
 </tbody>
 </table>
 ### add_interval_job
@@ -1879,7 +1879,7 @@ add_interval_job(self, id, function, interval, args=None, kwargs=None, start=0.0
 <tr><td>kwargs    </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
 <tr><td>start     </td><td>float   </td><td>          </td><td>0.0      </td><td>             </td></tr>
 <tr><td>end       </td><td>float   </td><td>          </td><td>0.0      </td><td>             </td></tr>
-<tr><td>name      </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>name      </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
 </tbody>
 </table>
 ### add_cron_job
@@ -1907,7 +1907,7 @@ add_cron_job(self, id, function, month=None, day=None, weekday=None, hour=None, 
 <tr><td>kwargs    </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
 <tr><td>start     </td><td>float   </td><td>          </td><td>0.0      </td><td>             </td></tr>
 <tr><td>end       </td><td>float   </td><td>          </td><td>0.0      </td><td>             </td></tr>
-<tr><td>name      </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>name      </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
 </tbody>
 </table>
 ### delete_job
@@ -1947,11 +1947,11 @@ a method for initializing the connection to EC2
 </thead>
 <tbody>
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                     </td></tr>
-<tr><td>access_id  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with access_key_id from aws IAM user setup    </td></tr>
-<tr><td>secret_key </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with secret_access_key from aws IAM user setup</td></tr>
-<tr><td>region_name</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of aws region                       </td></tr>
-<tr><td>owner_id   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with aws account id                           </td></tr>
-<tr><td>user_name  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of user access keys are assigned to </td></tr>
+<tr><td>access_id  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with access_key_id from aws IAM user setup    </td></tr>
+<tr><td>secret_key </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with secret_access_key from aws IAM user setup</td></tr>
+<tr><td>region_name</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of aws region                       </td></tr>
+<tr><td>owner_id   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with aws account id                           </td></tr>
+<tr><td>user_name  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of user access keys are assigned to </td></tr>
 <tr><td>verbose    </td><td>bool  </td><td>          </td><td>True     </td><td>boolean to enable process messages                   </td></tr>
 </tbody>
 </table>
@@ -1968,7 +1968,7 @@ method for checking the state of an instance on AWS EC2
 </thead>
 <tbody>
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                     </td></tr>
-<tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with AWS id of instance                       </td></tr>
+<tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with AWS id of instance                       </td></tr>
 <tr><td>wait       </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to wait for instance while pending</td></tr>
 </tbody>
 </table>
@@ -1985,7 +1985,7 @@ a method to wait until AWS instance reports an OK status
 </thead>
 <tbody>
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                          </td></tr>
-<tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>""       </td><td>string of instance id on AWS                              </td></tr>
+<tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string of instance id on AWS                              </td></tr>
 <tr><td>wait       </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to wait for instance while initializing</td></tr>
 </tbody>
 </table>
@@ -1998,11 +1998,11 @@ list_instances(self, tag_values=None)
 a method to retrieve the list of instances on AWS EC2  
 <table>
 <thead>
-<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                  </th></tr>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                  </th></tr>
 </thead>
 <tbody>
-<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                             </td></tr>
-<tr><td>tag_values</td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of tag values</td></tr>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                             </td></tr>
+<tr><td>tag_values</td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary of tag key-values pairs</td></tr>
 </tbody>
 </table>
 ### read_instance
@@ -2018,7 +2018,7 @@ a method to retrieving the details of a single instances on AWS EC2
 </thead>
 <tbody>
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                            </td></tr>
-<tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>""       </td><td>string of instance id on AWS</td></tr>
+<tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string of instance id on AWS</td></tr>
 </tbody>
 </table>
 ### tag_instance
@@ -2034,7 +2034,7 @@ a method for adding or updating tags on an AWS instance
 </thead>
 <tbody>
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                              </td></tr>
-<tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>""       </td><td>string of instance id on AWS  </td></tr>
+<tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string of instance id on AWS  </td></tr>
 <tr><td>tag_list   </td><td>list  </td><td>Yes       </td><td>None     </td><td>list of single key-value pairs</td></tr>
 </tbody>
 </table>
@@ -2051,14 +2051,14 @@ a method for starting an instance on AWS EC2
 </thead>
 <tbody>
 <tr><td>self               </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                            </td></tr>
-<tr><td>image_id           </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with aws id of image for instance                    </td></tr>
-<tr><td>pem_file           </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with path to pem file to access image                </td></tr>
+<tr><td>image_id           </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with aws id of image for instance                    </td></tr>
+<tr><td>pem_file           </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with path to pem file to access image                </td></tr>
 <tr><td>group_ids          </td><td>list  </td><td>Yes       </td><td>None     </td><td>list with aws id of security group(s) to attach to instance </td></tr>
-<tr><td>instance_type      </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with type of instance resource to use                </td></tr>
-<tr><td>volume_type        </td><td>str   </td><td>          </td><td>"gp2"    </td><td>string with type of on-disk storage                         </td></tr>
+<tr><td>instance_type      </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with type of instance resource to use                </td></tr>
+<tr><td>volume_type        </td><td>str   </td><td>          </td><td>&quot;gp2&quot;    </td><td>string with type of on-disk storage                         </td></tr>
 <tr><td>ebs_optimized      </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to activate ebs optimization             </td></tr>
 <tr><td>instance_monitoring</td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to active instance monitoring            </td></tr>
-<tr><td>iam_profile        </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with name of iam instance profile role    </td></tr>
+<tr><td>iam_profile        </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with name of iam instance profile role    </td></tr>
 <tr><td>tag_list           </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of single key-pair tags for instance        </td></tr>
 <tr><td>auction_bid        </td><td>float </td><td>          </td><td>0.0      </td><td>[optional] float with dollar amount to bid for instance hour</td></tr>
 </tbody>
@@ -2076,7 +2076,7 @@ method for removing an instance from AWS EC2
 </thead>
 <tbody>
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                            </td></tr>
-<tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>""       </td><td>string of instance id on AWS</td></tr>
+<tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string of instance id on AWS</td></tr>
 </tbody>
 </table>
 ### list_addresses
@@ -2088,11 +2088,11 @@ list_addresses(self, tag_values=None)
 a method to list elastic ip addresses associated with account on AWS  
 <table>
 <thead>
-<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                  </th></tr>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                            </th></tr>
 </thead>
 <tbody>
-<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                             </td></tr>
-<tr><td>tag_values</td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of tag values</td></tr>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                       </td></tr>
+<tr><td>tag_values</td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary of tag key values</td></tr>
 </tbody>
 </table>
 ### read_address
@@ -2108,7 +2108,7 @@ a method to retrieve details about an elastic ip address associated with account
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                       </td></tr>
-<tr><td>ip_address</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with elastic ipv4 address on ec2</td></tr>
+<tr><td>ip_address</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with elastic ipv4 address on ec2</td></tr>
 </tbody>
 </table>
 ### assign_address
@@ -2124,8 +2124,8 @@ a method to assign (or reassign) an elastic ip to an instance on AWS
 </thead>
 <tbody>
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                       </td></tr>
-<tr><td>ip_address </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with elastic ipv4 address on ec2</td></tr>
-<tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with aws id for running instance</td></tr>
+<tr><td>ip_address </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with elastic ipv4 address on ec2</td></tr>
+<tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with aws id for running instance</td></tr>
 </tbody>
 </table>
 ### check_image_state
@@ -2141,7 +2141,7 @@ method for checking the state of an image on AWS EC2
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                  </td></tr>
-<tr><td>image_id  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with AWS id of image                       </td></tr>
+<tr><td>image_id  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with AWS id of image                       </td></tr>
 <tr><td>wait      </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to wait for image while pending</td></tr>
 </tbody>
 </table>
@@ -2174,7 +2174,7 @@ a method to retrieve the details of a single image on AWS EC2
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                           </td></tr>
-<tr><td>image_id  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with AWS id of image</td></tr>
+<tr><td>image_id  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with AWS id of image</td></tr>
 </tbody>
 </table>
 ### tag_image
@@ -2190,7 +2190,7 @@ a method for adding or updating tags on an AWS instance
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                               </td></tr>
-<tr><td>image_id  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with AWS id of instance </td></tr>
+<tr><td>image_id  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with AWS id of instance </td></tr>
 <tr><td>tag_list  </td><td>list  </td><td>Yes       </td><td>None     </td><td>list of tags to add to instance</td></tr>
 </tbody>
 </table>
@@ -2207,8 +2207,8 @@ method for imaging an instance on AWS EC2
 </thead>
 <tbody>
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                 </td></tr>
-<tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with AWS id of running instance           </td></tr>
-<tr><td>image_name </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name to give new image               </td></tr>
+<tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with AWS id of running instance           </td></tr>
+<tr><td>image_name </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name to give new image               </td></tr>
 <tr><td>tag_list   </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of resources tags to add to image</td></tr>
 </tbody>
 </table>
@@ -2225,7 +2225,7 @@ method for removing an image from AWS EC2
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                              </td></tr>
-<tr><td>image_id  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with AWS id of instance</td></tr>
+<tr><td>image_id  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with AWS id of instance</td></tr>
 </tbody>
 </table>
 ### import_image
@@ -2245,8 +2245,8 @@ a method to import an image from another AWS region
 </thead>
 <tbody>
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                      </td></tr>
-<tr><td>image_id   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with AWS id of source image    </td></tr>
-<tr><td>region_name</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with AWS region of source image</td></tr>
+<tr><td>image_id   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with AWS id of source image    </td></tr>
+<tr><td>region_name</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with AWS region of source image</td></tr>
 </tbody>
 </table>
 ### export_image
@@ -2266,8 +2266,8 @@ a method to add a copy of an image to another AWS region
 </thead>
 <tbody>
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                      </td></tr>
-<tr><td>image_id   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string of AWS id of image to be copied</td></tr>
-<tr><td>region_name</td><td>str   </td><td>Yes       </td><td>""       </td><td>string of AWS region to copy image to </td></tr>
+<tr><td>image_id   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string of AWS id of image to be copied</td></tr>
+<tr><td>region_name</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string of AWS region to copy image to </td></tr>
 </tbody>
 </table>
 ### list_keypairs
@@ -2306,7 +2306,7 @@ a method to retrieve the details about a subnet
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                            </td></tr>
-<tr><td>subnet_id </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with AWS id of subnet</td></tr>
+<tr><td>subnet_id </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with AWS id of subnet</td></tr>
 </tbody>
 </table>
 ### list_security_groups
@@ -2338,7 +2338,7 @@ a method to retrieve the details about a security group
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                    </td></tr>
-<tr><td>group_id  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with AWS id of security group</td></tr>
+<tr><td>group_id  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with AWS id of security group</td></tr>
 </tbody>
 </table>
 ### cleanup
@@ -2348,6 +2348,191 @@ cleanup(self)
 ##### 
 **Description:**  
 a method for removing instances and images in unusual states  
+
+## r53Client
+### Import:
+labpack.platforms.aws.r53.r53Client  
+### Description:
+a class of methods for interacting with AWS Route 53
+
+        https://boto3.readthedocs.org/en/latest/  
+### \__init__
+##### 
+**Signature:**  
+\__init__(self, access_id, secret_key, region_name, owner_id, user_name, verbose=True)
+##### 
+**Description:**  
+a method for initializing the connection to Route 53  
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                          </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                     </td></tr>
+<tr><td>access_id  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with access_key_id from aws IAM user setup    </td></tr>
+<tr><td>secret_key </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with secret_access_key from aws IAM user setup</td></tr>
+<tr><td>region_name</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of aws region                       </td></tr>
+<tr><td>owner_id   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with aws account id                           </td></tr>
+<tr><td>user_name  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of user access keys are assigned to </td></tr>
+<tr><td>verbose    </td><td>bool  </td><td>          </td><td>True     </td><td>boolean to enable process messages                   </td></tr>
+</tbody>
+</table>
+### list_zones
+##### 
+**Signature:**  
+list_zones(self)
+##### 
+**Description:**  
+a method to retrieve the list of hosted zones on AWS Route 53  
+### list_records
+##### 
+**Signature:**  
+list_records(self, zone_id)
+##### 
+**Description:**  
+method for listing records associated with a hosted zone  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                    </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                               </td></tr>
+<tr><td>zone_id   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string of hosted zone id on AWS</td></tr>
+</tbody>
+</table>
+### create_record
+##### 
+**Signature:**  
+create_record(self, zone_id, record_fields)
+##### 
+**Description:**  
+method to create a record on a hosted zone on AWS Route 53
+            https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/route53.html#Route53.Client.change_resource_record_sets  
+<table>
+<thead>
+<tr><th>Argument     </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                  </th></tr>
+</thead>
+<tbody>
+<tr><td>self         </td><td>object</td><td>Yes       </td><td>None     </td><td>                                             </td></tr>
+<tr><td>zone_id      </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string of hosted zone id on AWS              </td></tr>
+<tr><td>record_fields</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with fields associated with record</td></tr>
+</tbody>
+</table>
+### update_record
+##### 
+**Signature:**  
+update_record(self, zone_id, record_fields)
+##### 
+**Description:**  
+method to update a hosted zone record on AWS Route 53
+            https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/route53.html#Route53.Client.change_resource_record_sets  
+<table>
+<thead>
+<tr><th>Argument     </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                  </th></tr>
+</thead>
+<tbody>
+<tr><td>self         </td><td>object</td><td>Yes       </td><td>None     </td><td>                                             </td></tr>
+<tr><td>zone_id      </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string of hosted zone id on AWS              </td></tr>
+<tr><td>record_fields</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with fields associated with record</td></tr>
+</tbody>
+</table>
+### delete_record
+##### 
+**Signature:**  
+delete_record(self, zone_id, record_fields)
+##### 
+**Description:**  
+method to delete a hosted zone record on AWS Route 53
+            https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/route53.html#Route53.Client.change_resource_record_sets  
+<table>
+<thead>
+<tr><th>Argument     </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                  </th></tr>
+</thead>
+<tbody>
+<tr><td>self         </td><td>object</td><td>Yes       </td><td>None     </td><td>                                             </td></tr>
+<tr><td>zone_id      </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string of hosted zone id on AWS              </td></tr>
+<tr><td>record_fields</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with fields associated with record</td></tr>
+</tbody>
+</table>
+### delete_zone
+##### 
+**Signature:**  
+delete_zone(self, zone_id)
+##### 
+**Description:**  
+method to delete zone from AWS Route 53
+            https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/route53.html#Route53.Client.delete_hosted_zone
+            PLEASE NOTE: method will first remove all record types besides SOA and NS  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                    </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                               </td></tr>
+<tr><td>zone_id   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string of hosted zone id on AWS</td></tr>
+</tbody>
+</table>
+
+## rdsClient
+### Import:
+labpack.platforms.aws.rds.rdsClient  
+### Description:
+a class of methods for interacting with AWS Relational Database Store
+
+        https://boto3.readthedocs.org/en/latest/  
+### \__init__
+##### 
+**Signature:**  
+\__init__(self, access_id, secret_key, region_name, owner_id, user_name, verbose=True)
+##### 
+**Description:**  
+a method for initializing the connection to EC2  
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                          </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                     </td></tr>
+<tr><td>access_id  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with access_key_id from aws IAM user setup    </td></tr>
+<tr><td>secret_key </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with secret_access_key from aws IAM user setup</td></tr>
+<tr><td>region_name</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of aws region                       </td></tr>
+<tr><td>owner_id   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with aws account id                           </td></tr>
+<tr><td>user_name  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of user access keys are assigned to </td></tr>
+<tr><td>verbose    </td><td>bool  </td><td>          </td><td>True     </td><td>boolean to enable process messages                   </td></tr>
+</tbody>
+</table>
+### list_instances
+##### 
+**Signature:**  
+list_instances(self, tag_values=None)
+##### 
+**Description:**  
+a method to retrieve the list of instances on AWS RDS  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                             </td></tr>
+<tr><td>tag_values</td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary of tag key-values pairs</td></tr>
+</tbody>
+</table>
+### delete_instance
+##### 
+**Signature:**  
+delete_instance(self, instance_id)
+##### 
+**Description:**  
+method for removing a db instance from AWS EC2  
+<table>
+<thead>
+<tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                 </th></tr>
+</thead>
+<tbody>
+<tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                            </td></tr>
+<tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string of instance id on AWS</td></tr>
+</tbody>
+</table>
 
 ## sshClient
 ### Import:
@@ -2370,14 +2555,14 @@ a method for initializing the SSH connection parameters to the EC2 instance
 </thead>
 <tbody>
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                     </td></tr>
-<tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with AWS id of instance                       </td></tr>
-<tr><td>pem_file   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with path to keypair pem file                 </td></tr>
-<tr><td>access_id  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with access_key_id from aws IAM user setup    </td></tr>
-<tr><td>secret_key </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with secret_access_key from aws IAM user setup</td></tr>
-<tr><td>region_name</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of aws region                       </td></tr>
-<tr><td>owner_id   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with aws account id                           </td></tr>
-<tr><td>user_name  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of user access keys are assigned to </td></tr>
-<tr><td>login_name </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with name of login user            </td></tr>
+<tr><td>instance_id</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with AWS id of instance                       </td></tr>
+<tr><td>pem_file   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with path to keypair pem file                 </td></tr>
+<tr><td>access_id  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with access_key_id from aws IAM user setup    </td></tr>
+<tr><td>secret_key </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with secret_access_key from aws IAM user setup</td></tr>
+<tr><td>region_name</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of aws region                       </td></tr>
+<tr><td>owner_id   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with aws account id                           </td></tr>
+<tr><td>user_name  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of user access keys are assigned to </td></tr>
+<tr><td>login_name </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with name of login user            </td></tr>
 <tr><td>verbose    </td><td>bool  </td><td>          </td><td>True     </td><td>boolean to enable process messages                   </td></tr>
 </tbody>
 </table>
@@ -2427,8 +2612,8 @@ a method to copy a folder or file from local device to AWS instance
 </thead>
 <tbody>
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                            </td></tr>
-<tr><td>local_path </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with path to folder or file on local host            </td></tr>
-<tr><td>remote_path</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with path to copy contents on remote host </td></tr>
+<tr><td>local_path </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with path to folder or file on local host            </td></tr>
+<tr><td>remote_path</td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with path to copy contents on remote host </td></tr>
 <tr><td>overwrite  </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to enable file overwrite on remote host  </td></tr>
 <tr><td>synopsis   </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to simplify progress messages to one line</td></tr>
 </tbody>
@@ -2446,8 +2631,8 @@ a method to copy a folder or file from AWS instance to local device
 </thead>
 <tbody>
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                            </td></tr>
-<tr><td>remote_path</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with path to copy contents on remote host            </td></tr>
-<tr><td>local_path </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with path to folder or file on local host </td></tr>
+<tr><td>remote_path</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with path to copy contents on remote host            </td></tr>
+<tr><td>local_path </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with path to folder or file on local host </td></tr>
 <tr><td>overwrite  </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to enable file overwrite on remote host  </td></tr>
 <tr><td>synopsis   </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to simplify progress messages to one line</td></tr>
 </tbody>
@@ -2488,7 +2673,7 @@ a method to initialize the dockerClient class
 </thead>
 <tbody>
 <tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                               </td></tr>
-<tr><td>virtualbox_name</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with name of virtualbox image</td></tr>
+<tr><td>virtualbox_name</td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with name of virtualbox image</td></tr>
 <tr><td>verbose        </td><td>bool  </td><td>          </td><td>False    </td><td>                                               </td></tr>
 </tbody>
 </table>
@@ -2526,7 +2711,7 @@ a method to retrieve the settings of a container
 </thead>
 <tbody>
 <tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                   </td></tr>
-<tr><td>container_alias</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name or id of container</td></tr>
+<tr><td>container_alias</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name or id of container</td></tr>
 </tbody>
 </table>
 ### inspect_image
@@ -2542,8 +2727,8 @@ a method to retrieve the settings of an image
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                </td></tr>
-<tr><td>image_name</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name or id of image                 </td></tr>
-<tr><td>image_tag </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with tag associated with image</td></tr>
+<tr><td>image_name</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name or id of image                 </td></tr>
+<tr><td>image_tag </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with tag associated with image</td></tr>
 </tbody>
 </table>
 ### rm
@@ -2559,7 +2744,7 @@ a method to remove an active container
 </thead>
 <tbody>
 <tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                   </td></tr>
-<tr><td>container_alias</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name or id of container</td></tr>
+<tr><td>container_alias</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name or id of container</td></tr>
 </tbody>
 </table>
 ### rmi
@@ -2615,8 +2800,8 @@ build(self, image_name, image_tag="", dockerfile_path="./Dockerfile")
 <tbody>
 <tr><td>self           </td><td>object  </td><td>Yes       </td><td>None          </td><td>             </td></tr>
 <tr><td>image_name     </td><td>NoneType</td><td>Yes       </td><td>None          </td><td>             </td></tr>
-<tr><td>image_tag      </td><td>str     </td><td>          </td><td>""            </td><td>             </td></tr>
-<tr><td>dockerfile_path</td><td>str     </td><td>          </td><td>"./Dockerfile"</td><td>             </td></tr>
+<tr><td>image_tag      </td><td>str     </td><td>          </td><td>&quot;&quot;            </td><td>             </td></tr>
+<tr><td>dockerfile_path</td><td>str     </td><td>          </td><td>&quot;./Dockerfile&quot;</td><td>             </td></tr>
 </tbody>
 </table>
 ### save
@@ -2634,7 +2819,7 @@ save(self, image_name, file_name, image_tag="")
 <tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>image_name</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>file_name </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>image_tag </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>image_tag </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
 </tbody>
 </table>
 ### command
@@ -2650,7 +2835,7 @@ a method to run a system command in a separate shell
 </thead>
 <tbody>
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                          </td></tr>
-<tr><td>sys_command</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with docker command</td></tr>
+<tr><td>sys_command</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with docker command</td></tr>
 </tbody>
 </table>
 ### synopsis
@@ -2666,7 +2851,7 @@ a method to summarize key configuration settings required for docker compose
 </thead>
 <tbody>
 <tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                   </td></tr>
-<tr><td>container_alias</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name or id of container</td></tr>
+<tr><td>container_alias</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name or id of container</td></tr>
 </tbody>
 </table>
 ### enter
@@ -2682,7 +2867,7 @@ a method to open up a terminal inside a running container
 </thead>
 <tbody>
 <tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                   </td></tr>
-<tr><td>container_alias</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name or id of container</td></tr>
+<tr><td>container_alias</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name or id of container</td></tr>
 </tbody>
 </table>
 ### run
@@ -2698,15 +2883,15 @@ a method to start a local container
 </thead>
 <tbody>
 <tr><td>self                   </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                                        </td></tr>
-<tr><td>image_name             </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name or id of image                                         </td></tr>
-<tr><td>container_alias        </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name to assign to container                                 </td></tr>
-<tr><td>image_tag              </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with tag assigned to image                            </td></tr>
+<tr><td>image_name             </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name or id of image                                         </td></tr>
+<tr><td>container_alias        </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name to assign to container                                 </td></tr>
+<tr><td>image_tag              </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with tag assigned to image                            </td></tr>
 <tr><td>environmental_variables</td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary of envvar fields to add to container              </td></tr>
 <tr><td>mapped_ports           </td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary of port fields to map to container                </td></tr>
 <tr><td>mounted_volumes        </td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary of path fields to map to container                </td></tr>
-<tr><td>start_command          </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string of command (and any arguments) to run inside container</td></tr>
-<tr><td>network_name           </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with name of docker network to link container to      </td></tr>
-<tr><td>run_flags              </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with additional docker options to add to container    </td></tr>
+<tr><td>start_command          </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string of command (and any arguments) to run inside container</td></tr>
+<tr><td>network_name           </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with name of docker network to link container to      </td></tr>
+<tr><td>run_flags              </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with additional docker options to add to container    </td></tr>
 </tbody>
 </table>
 
@@ -2763,7 +2948,7 @@ a method to deploy app to heroku using docker
 <tbody>
 <tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>dockerfile_path</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>virtualbox_name</td><td>str     </td><td>          </td><td>"default"</td><td>             </td></tr>
+<tr><td>virtualbox_name</td><td>str     </td><td>          </td><td>&quot;default&quot;</td><td>             </td></tr>
 </tbody>
 </table>
 ### deploy_app
@@ -2780,7 +2965,7 @@ a method to deploy a static html page to heroku using php
 <tbody>
 <tr><td>self        </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>site_folder </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>runtime_type</td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>runtime_type</td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
 </tbody>
 </table>
 
@@ -2811,8 +2996,8 @@ a method to retrieve the os appropriate path to user app data
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                           </td></tr>
-<tr><td>org_name  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of product/service creator</td></tr>
-<tr><td>prod_name </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of product/service        </td></tr>
+<tr><td>org_name  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of product/service creator</td></tr>
+<tr><td>prod_name </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of product/service        </td></tr>
 </tbody>
 </table>
 ### walk
@@ -2828,9 +3013,9 @@ a generator method of file paths on localhost from walk of directories
 </thead>
 <tbody>
 <tr><td>self         </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                                 </td></tr>
-<tr><td>walk_root    </td><td>str   </td><td>          </td><td>""       </td><td>string with path from which to root walk of localhost directories</td></tr>
+<tr><td>walk_root    </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>string with path from which to root walk of localhost directories</td></tr>
 <tr><td>reverse_order</td><td>bool  </td><td>          </td><td>False    </td><td>boolean to determine alphabetical direction of walk              </td></tr>
-<tr><td>previous_file</td><td>str   </td><td>          </td><td>""       </td><td>string with path of file after which to start walk               </td></tr>
+<tr><td>previous_file</td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>string with path of file after which to start walk               </td></tr>
 </tbody>
 </table>
 ### metadata
@@ -2846,7 +3031,7 @@ a method to retrieve the metadata of a file on the localhost
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                        </td></tr>
-<tr><td>file_path </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with path to file</td></tr>
+<tr><td>file_path </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with path to file</td></tr>
 </tbody>
 </table>
 ### conditional_filter
@@ -2879,10 +3064,10 @@ a method to list files on localhost from walk of directories
 <tbody>
 <tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                           </td></tr>
 <tr><td>filter_function</td><td>function</td><td>          </td><td>None     </td><td>(keyword arguments) function used to filter results        </td></tr>
-<tr><td>list_root      </td><td>str     </td><td>          </td><td>""       </td><td>string with localhost path from which to root list of files</td></tr>
+<tr><td>list_root      </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>string with localhost path from which to root list of files</td></tr>
 <tr><td>max_results    </td><td>int     </td><td>          </td><td>1        </td><td>integer with maximum number of results to return           </td></tr>
 <tr><td>reverse_order  </td><td>bool    </td><td>          </td><td>False    </td><td>boolean to determine alphabetical direction of walk        </td></tr>
-<tr><td>previous_file  </td><td>str     </td><td>          </td><td>""       </td><td>string with absolute path of file to begin search after    </td></tr>
+<tr><td>previous_file  </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>string with absolute path of file to begin search after    </td></tr>
 </tbody>
 </table>
 
@@ -2904,11 +3089,11 @@ a method for initializing the connection to AWS Polly
 </thead>
 <tbody>
 <tr><td>self        </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                     </td></tr>
-<tr><td>access_id   </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with access_key_id from aws IAM user setup    </td></tr>
-<tr><td>secret_key  </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with secret_access_key from aws IAM user setup</td></tr>
-<tr><td>region_name </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with name of aws region                       </td></tr>
-<tr><td>owner_id    </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with aws account id                           </td></tr>
-<tr><td>user_name   </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with name of user access keys are assigned to </td></tr>
+<tr><td>access_id   </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with access_key_id from aws IAM user setup    </td></tr>
+<tr><td>secret_key  </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with secret_access_key from aws IAM user setup</td></tr>
+<tr><td>region_name </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of aws region                       </td></tr>
+<tr><td>owner_id    </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with aws account id                           </td></tr>
+<tr><td>user_name   </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of user access keys are assigned to </td></tr>
 <tr><td>verbose     </td><td>bool    </td><td>          </td><td>True     </td><td>boolean to enable process messages                   </td></tr>
 <tr><td>usage_client</td><td>function</td><td>          </td><td>None     </td><td>callable object to track resource usage              </td></tr>
 </tbody>
@@ -2926,10 +3111,10 @@ a method to synthesize speech from text
 </thead>
 <tbody>
 <tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                </td></tr>
-<tr><td>message_text   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with text to synthesize                  </td></tr>
-<tr><td>voice_id       </td><td>str   </td><td>          </td><td>"Nicole" </td><td>string with name of voice id in AWS polly to use</td></tr>
-<tr><td>output_format  </td><td>str   </td><td>          </td><td>"mp3"    </td><td>string with file type of audio output           </td></tr>
-<tr><td>sample_rate    </td><td>str   </td><td>          </td><td>"22050"  </td><td>string with the audio frequency specified in Hz </td></tr>
+<tr><td>message_text   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with text to synthesize                  </td></tr>
+<tr><td>voice_id       </td><td>str   </td><td>          </td><td>&quot;Nicole&quot; </td><td>string with name of voice id in AWS polly to use</td></tr>
+<tr><td>output_format  </td><td>str   </td><td>          </td><td>&quot;mp3&quot;    </td><td>string with file type of audio output           </td></tr>
+<tr><td>sample_rate    </td><td>str   </td><td>          </td><td>&quot;22050&quot;  </td><td>string with the audio frequency specified in Hz </td></tr>
 <tr><td>stream_response</td><td>bool  </td><td>          </td><td>False    </td><td>boolean to return a StreamingBody object        </td></tr>
 </tbody>
 </table>
@@ -2957,7 +3142,7 @@ a class of methods to convert speech to text using IBM Watson api
 <tr><td>service_username</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>service_password</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>requests_handler</td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
-<tr><td>magic_file      </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>magic_file      </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
 </tbody>
 </table>
 ### convert_audio
@@ -2973,8 +3158,8 @@ a method to convert an audio file into a different codec
 </thead>
 <tbody>
 <tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>                                             </td></tr>
-<tr><td>file_path   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with path to file on localhost        </td></tr>
-<tr><td>new_mimetype</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with mimetype for new file            </td></tr>
+<tr><td>file_path   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with path to file on localhost        </td></tr>
+<tr><td>new_mimetype</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with mimetype for new file            </td></tr>
 <tr><td>overwrite   </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to overwrite existing file</td></tr>
 </tbody>
 </table>
@@ -2993,7 +3178,7 @@ a method to transcribe the text from an audio file
 </thead>
 <tbody>
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                    </td></tr>
-<tr><td>file_path  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with path to audio file on localhost         </td></tr>
+<tr><td>file_path  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with path to audio file on localhost         </td></tr>
 <tr><td>clip_length</td><td>int   </td><td>          </td><td>10       </td><td>[optional] integer with seconds to divide clips into</td></tr>
 <tr><td>compress   </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to convert file to audio/ogg     </td></tr>
 </tbody>
@@ -3031,7 +3216,7 @@ a method to transcribe text from audio byte data
 <tr><td>self          </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                    </td></tr>
 <tr><td>byte_data     </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>byte data in buffer with audio data                 </td></tr>
 <tr><td>clip_length   </td><td>int     </td><td>          </td><td>0        </td><td>[optional] integer with seconds to divide clips into</td></tr>
-<tr><td>audio_mimetype</td><td>str     </td><td>          </td><td>""       </td><td>[optional] string with byte data mimetype           </td></tr>
+<tr><td>audio_mimetype</td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with byte data mimetype           </td></tr>
 <tr><td>compress      </td><td>bool    </td><td>          </td><td>True     </td><td>[optional] boolean to convert file to audio/ogg     </td></tr>
 </tbody>
 </table>
@@ -3074,10 +3259,10 @@ initialization method of appdata client class
 </thead>
 <tbody>
 <tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                                          </td></tr>
-<tr><td>collection_name</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with name of collection to store records                </td></tr>
-<tr><td>prod_name      </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with name of application product                        </td></tr>
-<tr><td>org_name       </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with name of organization behind product                </td></tr>
-<tr><td>root_path      </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with path to root of collections (defaults to user home)</td></tr>
+<tr><td>collection_name</td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with name of collection to store records                </td></tr>
+<tr><td>prod_name      </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with name of application product                        </td></tr>
+<tr><td>org_name       </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with name of organization behind product                </td></tr>
+<tr><td>root_path      </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with path to root of collections (defaults to user home)</td></tr>
 </tbody>
 </table>
 ### exists
@@ -3093,7 +3278,7 @@ a method to determine if a record exists in collection
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                         </td></tr>
-<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with key of record</td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with key of record</td></tr>
 </tbody>
 </table>
 ### save
@@ -3109,10 +3294,10 @@ a method to create a record in the collection folder
 </thead>
 <tbody>
 <tr><td>self       </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                      </td></tr>
-<tr><td>record_key </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with name to assign to record (see NOTES below)</td></tr>
+<tr><td>record_key </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name to assign to record (see NOTES below)</td></tr>
 <tr><td>record_data</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>byte data for record body                             </td></tr>
 <tr><td>overwrite  </td><td>bool    </td><td>          </td><td>True     </td><td>[optional] boolean to overwrite records with same name</td></tr>
-<tr><td>secret_key </td><td>str     </td><td>          </td><td>""       </td><td>[optional] string with key to encrypt data            </td></tr>
+<tr><td>secret_key </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with key to encrypt data            </td></tr>
 </tbody>
 </table>
 ### load
@@ -3128,8 +3313,8 @@ a method to retrieve byte data of appdata record
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                      </td></tr>
-<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of record            </td></tr>
-<tr><td>secret_key</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string used to decrypt data</td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of record            </td></tr>
+<tr><td>secret_key</td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string used to decrypt data</td></tr>
 </tbody>
 </table>
 ### conditional_filter
@@ -3161,12 +3346,12 @@ a method to list keys in the collection
 </thead>
 <tbody>
 <tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
-<tr><td>prefix         </td><td>str     </td><td>          </td><td>""       </td><td>string with prefix value to filter results                     </td></tr>
-<tr><td>delimiter      </td><td>str     </td><td>          </td><td>""       </td><td>string with value which results must not contain (after prefix)</td></tr>
+<tr><td>prefix         </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>string with prefix value to filter results                     </td></tr>
+<tr><td>delimiter      </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>string with value which results must not contain (after prefix)</td></tr>
 <tr><td>filter_function</td><td>function</td><td>          </td><td>None     </td><td>(positional arguments) function used to filter results         </td></tr>
 <tr><td>max_results    </td><td>int     </td><td>          </td><td>1        </td><td>integer with maximum number of results to return               </td></tr>
 <tr><td>reverse_search </td><td>bool    </td><td>          </td><td>True     </td><td>boolean to search keys in reverse alphanumeric order           </td></tr>
-<tr><td>previous_key   </td><td>str     </td><td>          </td><td>""       </td><td>string with key in collection to begin search after            </td></tr>
+<tr><td>previous_key   </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>string with key in collection to begin search after            </td></tr>
 </tbody>
 </table>
 ### delete
@@ -3182,7 +3367,7 @@ a method to delete a file
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                        </td></tr>
-<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of file</td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of file</td></tr>
 </tbody>
 </table>
 ### remove
@@ -3228,11 +3413,11 @@ a method for initializing the connection to S3
 </thead>
 <tbody>
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                     </td></tr>
-<tr><td>access_id  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with access_key_id from aws IAM user setup    </td></tr>
-<tr><td>secret_key </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with secret_access_key from aws IAM user setup</td></tr>
-<tr><td>region_name</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of aws region                       </td></tr>
-<tr><td>owner_id   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with aws account id                           </td></tr>
-<tr><td>user_name  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of user access keys are assigned to </td></tr>
+<tr><td>access_id  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with access_key_id from aws IAM user setup    </td></tr>
+<tr><td>secret_key </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with secret_access_key from aws IAM user setup</td></tr>
+<tr><td>region_name</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of aws region                       </td></tr>
+<tr><td>owner_id   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with aws account id                           </td></tr>
+<tr><td>user_name  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of user access keys are assigned to </td></tr>
 <tr><td>verbose    </td><td>bool  </td><td>          </td><td>True     </td><td>boolean to enable process messages                   </td></tr>
 </tbody>
 </table>
@@ -3256,8 +3441,8 @@ a method for creating a bucket on AWS S3
 </thead>
 <tbody>
 <tr><td>self                 </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
-<tr><td>bucket_name          </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of bucket                                     </td></tr>
-<tr><td>access_control       </td><td>str   </td><td>          </td><td>"private"</td><td>string with type of access control policy                      </td></tr>
+<tr><td>bucket_name          </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of bucket                                     </td></tr>
+<tr><td>access_control       </td><td>str   </td><td>          </td><td>&quot;private&quot;</td><td>string with type of access control policy                      </td></tr>
 <tr><td>version_control      </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to enable versioning of records             </td></tr>
 <tr><td>log_destination      </td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary with bucket name and prefix of log bucket</td></tr>
 <tr><td>lifecycle_rules      </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of dictionaries with rules for aging data      </td></tr>
@@ -3280,7 +3465,7 @@ a method to retrieve properties of a bucket in s3
 </thead>
 <tbody>
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                          </td></tr>
-<tr><td>bucket_name</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of bucket</td></tr>
+<tr><td>bucket_name</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of bucket</td></tr>
 </tbody>
 </table>
 ### update_bucket
@@ -3296,8 +3481,8 @@ a method for updating the properties of a bucket in S3
 </thead>
 <tbody>
 <tr><td>self                 </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
-<tr><td>bucket_name          </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of bucket                                     </td></tr>
-<tr><td>access_control       </td><td>str   </td><td>          </td><td>"private"</td><td>string with type of access control policy                      </td></tr>
+<tr><td>bucket_name          </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of bucket                                     </td></tr>
+<tr><td>access_control       </td><td>str   </td><td>          </td><td>&quot;private&quot;</td><td>string with type of access control policy                      </td></tr>
 <tr><td>version_control      </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to enable versioning of records             </td></tr>
 <tr><td>log_destination      </td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary with bucket name and prefix of log bucket</td></tr>
 <tr><td>lifecycle_rules      </td><td>list  </td><td>          </td><td>None     </td><td>[optional] list of dictionaries with rules for aging data      </td></tr>
@@ -3320,7 +3505,7 @@ a method to delete a bucket in s3 and all its contents
 </thead>
 <tbody>
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                          </td></tr>
-<tr><td>bucket_name</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of bucket</td></tr>
+<tr><td>bucket_name</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of bucket</td></tr>
 </tbody>
 </table>
 ### list_records
@@ -3336,11 +3521,11 @@ a method for retrieving a list of the versions of records in a bucket
 </thead>
 <tbody>
 <tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
-<tr><td>bucket_name </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of bucket                                     </td></tr>
-<tr><td>prefix      </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with value limiting results to key prefix    </td></tr>
-<tr><td>delimiter   </td><td>str   </td><td>          </td><td>""       </td><td>string with value which results must not contain (after prefix)</td></tr>
+<tr><td>bucket_name </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of bucket                                     </td></tr>
+<tr><td>prefix      </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with value limiting results to key prefix    </td></tr>
+<tr><td>delimiter   </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>string with value which results must not contain (after prefix)</td></tr>
 <tr><td>max_results </td><td>int   </td><td>          </td><td>1000     </td><td>[optional] integer with max results to return                  </td></tr>
-<tr><td>starting_key</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with key value to continue search with       </td></tr>
+<tr><td>starting_key</td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with key value to continue search with       </td></tr>
 </tbody>
 </table>
 ### list_versions
@@ -3356,12 +3541,12 @@ a method for retrieving a list of the versions of records in a bucket
 </thead>
 <tbody>
 <tr><td>self            </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                              </td></tr>
-<tr><td>bucket_name     </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of bucket                                    </td></tr>
-<tr><td>prefix          </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with value limiting results to key prefix   </td></tr>
-<tr><td>delimiter       </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with value limiting results to key delimiter</td></tr>
+<tr><td>bucket_name     </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of bucket                                    </td></tr>
+<tr><td>prefix          </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with value limiting results to key prefix   </td></tr>
+<tr><td>delimiter       </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with value limiting results to key delimiter</td></tr>
 <tr><td>max_results     </td><td>int   </td><td>          </td><td>1000     </td><td>[optional] integer with max results to return                 </td></tr>
-<tr><td>starting_key    </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with key value to continue search with      </td></tr>
-<tr><td>starting_version</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with version id to continue search with     </td></tr>
+<tr><td>starting_key    </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with key value to continue search with      </td></tr>
+<tr><td>starting_version</td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with version id to continue search with     </td></tr>
 </tbody>
 </table>
 ### create_record
@@ -3377,12 +3562,12 @@ a method for adding a record to an S3 bucket
 </thead>
 <tbody>
 <tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                       </td></tr>
-<tr><td>bucket_name    </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with name of bucket                             </td></tr>
-<tr><td>record_key     </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with name of key (path) for record              </td></tr>
+<tr><td>bucket_name    </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of bucket                             </td></tr>
+<tr><td>record_key     </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of key (path) for record              </td></tr>
 <tr><td>record_data    </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>byte data for record                                   </td></tr>
 <tr><td>record_metadata</td><td>dict    </td><td>          </td><td>None     </td><td>[optional] dictionary with metadata to attach to record</td></tr>
-<tr><td>record_mimetype</td><td>str     </td><td>          </td><td>""       </td><td>[optional] string with content mimetype of record data </td></tr>
-<tr><td>record_encoding</td><td>str     </td><td>          </td><td>""       </td><td>[optional] string with content encoding of record data </td></tr>
+<tr><td>record_mimetype</td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with content mimetype of record data </td></tr>
+<tr><td>record_encoding</td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with content encoding of record data </td></tr>
 <tr><td>overwrite      </td><td>bool    </td><td>          </td><td>True     </td><td>[optional] boolean to overwrite any existing record    </td></tr>
 </tbody>
 </table>
@@ -3399,9 +3584,9 @@ a method for retrieving the headers of a record from s3
 </thead>
 <tbody>
 <tr><td>self          </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                  </td></tr>
-<tr><td>bucket_name   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of bucket                        </td></tr>
-<tr><td>record_key    </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with key value of record                   </td></tr>
-<tr><td>record_version</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with aws id of version of record</td></tr>
+<tr><td>bucket_name   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of bucket                        </td></tr>
+<tr><td>record_key    </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with key value of record                   </td></tr>
+<tr><td>record_version</td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with aws id of version of record</td></tr>
 <tr><td>version_check </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to enable current version check</td></tr>
 </tbody>
 </table>
@@ -3418,9 +3603,9 @@ a method for retrieving data of record from AWS S3
 </thead>
 <tbody>
 <tr><td>self          </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                  </td></tr>
-<tr><td>bucket_name   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of bucket                        </td></tr>
-<tr><td>record_key    </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of key (path) for record         </td></tr>
-<tr><td>record_version</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with aws id of version of record</td></tr>
+<tr><td>bucket_name   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of bucket                        </td></tr>
+<tr><td>record_key    </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of key (path) for record         </td></tr>
+<tr><td>record_version</td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with aws id of version of record</td></tr>
 <tr><td>version_check </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to enable current version check</td></tr>
 </tbody>
 </table>
@@ -3437,9 +3622,9 @@ a method for deleting an object record in s3
 </thead>
 <tbody>
 <tr><td>self          </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                  </td></tr>
-<tr><td>bucket_name   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of bucket                        </td></tr>
-<tr><td>record_key    </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with key value of record                   </td></tr>
-<tr><td>record_version</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with aws id of version of record</td></tr>
+<tr><td>bucket_name   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of bucket                        </td></tr>
+<tr><td>record_key    </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with key value of record                   </td></tr>
+<tr><td>record_version</td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with aws id of version of record</td></tr>
 </tbody>
 </table>
 ### export_records
@@ -3455,8 +3640,8 @@ a method to export all the records from a bucket to local files
 </thead>
 <tbody>
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
-<tr><td>bucket_name</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of bucket                                     </td></tr>
-<tr><td>export_path</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with path to root directory for record dump  </td></tr>
+<tr><td>bucket_name</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of bucket                                     </td></tr>
+<tr><td>export_path</td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with path to root directory for record dump  </td></tr>
 <tr><td>overwrite  </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to overwrite existing files matching records</td></tr>
 </tbody>
 </table>
@@ -3473,8 +3658,8 @@ a method to importing records from local files to a bucket
 </thead>
 <tbody>
 <tr><td>self       </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
-<tr><td>bucket_name</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of bucket                                     </td></tr>
-<tr><td>import_path</td><td>str   </td><td>          </td><td>""       </td><td>                                                               </td></tr>
+<tr><td>bucket_name</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of bucket                                     </td></tr>
+<tr><td>import_path</td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>                                                               </td></tr>
 <tr><td>overwrite  </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to overwrite existing files matching records</td></tr>
 </tbody>
 </table>
@@ -3502,10 +3687,10 @@ a class of methods to manage file storage on AWS S3
 <tr><td>region_name          </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>owner_id             </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>user_name            </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>collection_name      </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
-<tr><td>prod_name            </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
-<tr><td>org_name             </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
-<tr><td>access_control       </td><td>str     </td><td>          </td><td>"private"</td><td>             </td></tr>
+<tr><td>collection_name      </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>prod_name            </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>org_name             </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>access_control       </td><td>str     </td><td>          </td><td>&quot;private&quot;</td><td>             </td></tr>
 <tr><td>version_control      </td><td>bool    </td><td>          </td><td>False    </td><td>             </td></tr>
 <tr><td>log_destination      </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
 <tr><td>lifecycle_rules      </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
@@ -3529,7 +3714,7 @@ a method to determine if a record exists in collection
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                         </td></tr>
-<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with key of record</td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with key of record</td></tr>
 </tbody>
 </table>
 ### save
@@ -3545,10 +3730,10 @@ a method to create a file in the collection folder on S3
 </thead>
 <tbody>
 <tr><td>self       </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                      </td></tr>
-<tr><td>record_key </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with name to assign to record (see NOTES below)</td></tr>
+<tr><td>record_key </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name to assign to record (see NOTES below)</td></tr>
 <tr><td>record_data</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>byte data for record body                             </td></tr>
 <tr><td>overwrite  </td><td>bool    </td><td>          </td><td>True     </td><td>[optional] boolean to overwrite records with same name</td></tr>
-<tr><td>secret_key </td><td>str     </td><td>          </td><td>""       </td><td>[optional] string with key to encrypt data            </td></tr>
+<tr><td>secret_key </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with key to encrypt data            </td></tr>
 </tbody>
 </table>
 ### load
@@ -3564,8 +3749,8 @@ a method to retrieve byte data of an S3 record
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                      </td></tr>
-<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of record            </td></tr>
-<tr><td>secret_key</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string used to decrypt data</td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of record            </td></tr>
+<tr><td>secret_key</td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string used to decrypt data</td></tr>
 </tbody>
 </table>
 ### conditional_filter
@@ -3597,11 +3782,11 @@ a method to list keys in the collection
 </thead>
 <tbody>
 <tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                         </td></tr>
-<tr><td>prefix         </td><td>str     </td><td>          </td><td>""       </td><td>string with prefix value to filter results               </td></tr>
-<tr><td>delimiter      </td><td>str     </td><td>          </td><td>""       </td><td>string with value results must not contain (after prefix)</td></tr>
+<tr><td>prefix         </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>string with prefix value to filter results               </td></tr>
+<tr><td>delimiter      </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>string with value results must not contain (after prefix)</td></tr>
 <tr><td>filter_function</td><td>function</td><td>          </td><td>None     </td><td>(positional arguments) function used to filter results   </td></tr>
 <tr><td>max_results    </td><td>int     </td><td>          </td><td>1        </td><td>integer with maximum number of results to return         </td></tr>
-<tr><td>previous_key   </td><td>str     </td><td>          </td><td>""       </td><td>string with key in collection to begin search after      </td></tr>
+<tr><td>previous_key   </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>string with key in collection to begin search after      </td></tr>
 </tbody>
 </table>
 ### delete
@@ -3617,7 +3802,7 @@ a method to delete a record from S3
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                         </td></tr>
-<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with key of record</td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with key of record</td></tr>
 </tbody>
 </table>
 ### remove
@@ -3663,8 +3848,8 @@ a method to initialize the dropboxClient class
 </thead>
 <tbody>
 <tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                 </td></tr>
-<tr><td>access_token   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with oauth2 access token for users account</td></tr>
-<tr><td>collection_name</td><td>str   </td><td>          </td><td>""       </td><td>                                                 </td></tr>
+<tr><td>access_token   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with oauth2 access token for users account</td></tr>
+<tr><td>collection_name</td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>                                                 </td></tr>
 </tbody>
 </table>
 ### exists
@@ -3680,7 +3865,7 @@ a method to determine if a record exists in collection
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                         </td></tr>
-<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with key of record</td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with key of record</td></tr>
 </tbody>
 </table>
 ### save
@@ -3696,10 +3881,10 @@ a method to create a record in the collection folder
 </thead>
 <tbody>
 <tr><td>self       </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                      </td></tr>
-<tr><td>record_key </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with name to assign to record (see NOTES below)</td></tr>
+<tr><td>record_key </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name to assign to record (see NOTES below)</td></tr>
 <tr><td>record_data</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>byte data for record body                             </td></tr>
 <tr><td>overwrite  </td><td>bool    </td><td>          </td><td>True     </td><td>[optional] boolean to overwrite records with same name</td></tr>
-<tr><td>secret_key </td><td>str     </td><td>          </td><td>""       </td><td>[optional] string with key to encrypt data            </td></tr>
+<tr><td>secret_key </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with key to encrypt data            </td></tr>
 </tbody>
 </table>
 ### load
@@ -3715,8 +3900,8 @@ a method to retrieve byte data of appdata record
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                      </td></tr>
-<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of record            </td></tr>
-<tr><td>secret_key</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string used to decrypt data</td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of record            </td></tr>
+<tr><td>secret_key</td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string used to decrypt data</td></tr>
 </tbody>
 </table>
 ### conditional_filter
@@ -3748,11 +3933,11 @@ a method to list keys in the dropbox collection
 </thead>
 <tbody>
 <tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
-<tr><td>prefix         </td><td>str     </td><td>          </td><td>""       </td><td>string with prefix value to filter results                     </td></tr>
-<tr><td>delimiter      </td><td>str     </td><td>          </td><td>""       </td><td>string with value which results must not contain (after prefix)</td></tr>
+<tr><td>prefix         </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>string with prefix value to filter results                     </td></tr>
+<tr><td>delimiter      </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>string with value which results must not contain (after prefix)</td></tr>
 <tr><td>filter_function</td><td>function</td><td>          </td><td>None     </td><td>(positional arguments) function used to filter results         </td></tr>
 <tr><td>max_results    </td><td>int     </td><td>          </td><td>1        </td><td>integer with maximum number of results to return               </td></tr>
-<tr><td>previous_key   </td><td>str     </td><td>          </td><td>""       </td><td>string with key in collection to begin search after            </td></tr>
+<tr><td>previous_key   </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>string with key in collection to begin search after            </td></tr>
 </tbody>
 </table>
 ### delete
@@ -3768,7 +3953,7 @@ a method to delete a file
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                        </td></tr>
-<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of file</td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of file</td></tr>
 </tbody>
 </table>
 ### remove
@@ -3818,8 +4003,8 @@ a method to initialize the driveClient class
 </thead>
 <tbody>
 <tr><td>self           </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                    </td></tr>
-<tr><td>access_token   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with oauth2 access token for users account   </td></tr>
-<tr><td>collection_name</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with name of collection for import</td></tr>
+<tr><td>access_token   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with oauth2 access token for users account   </td></tr>
+<tr><td>collection_name</td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with name of collection for import</td></tr>
 </tbody>
 </table>
 ### exists
@@ -3835,7 +4020,7 @@ a method to determine if a record exists in collection
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                         </td></tr>
-<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with key of record</td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with key of record</td></tr>
 </tbody>
 </table>
 ### save
@@ -3851,10 +4036,10 @@ a method to create a record in the collection folder
 </thead>
 <tbody>
 <tr><td>self       </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                      </td></tr>
-<tr><td>record_key </td><td>str     </td><td>Yes       </td><td>""       </td><td>string with name to assign to record (see NOTES below)</td></tr>
+<tr><td>record_key </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name to assign to record (see NOTES below)</td></tr>
 <tr><td>record_data</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>byte data for record body                             </td></tr>
 <tr><td>overwrite  </td><td>bool    </td><td>          </td><td>True     </td><td>[optional] boolean to overwrite records with same name</td></tr>
-<tr><td>secret_key </td><td>str     </td><td>          </td><td>""       </td><td>[optional] string with key to encrypt data            </td></tr>
+<tr><td>secret_key </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with key to encrypt data            </td></tr>
 </tbody>
 </table>
 ### load
@@ -3870,8 +4055,8 @@ a method to retrieve byte data of appdata record
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                      </td></tr>
-<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of record            </td></tr>
-<tr><td>secret_key</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string used to decrypt data</td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of record            </td></tr>
+<tr><td>secret_key</td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string used to decrypt data</td></tr>
 </tbody>
 </table>
 ### conditional_filter
@@ -3903,11 +4088,11 @@ a method to list keys in the google drive collection
 </thead>
 <tbody>
 <tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                                               </td></tr>
-<tr><td>prefix         </td><td>str     </td><td>          </td><td>""       </td><td>string with prefix value to filter results                     </td></tr>
-<tr><td>delimiter      </td><td>str     </td><td>          </td><td>""       </td><td>string with value which results must not contain (after prefix)</td></tr>
+<tr><td>prefix         </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>string with prefix value to filter results                     </td></tr>
+<tr><td>delimiter      </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>string with value which results must not contain (after prefix)</td></tr>
 <tr><td>filter_function</td><td>function</td><td>          </td><td>None     </td><td>(positional arguments) function used to filter results         </td></tr>
 <tr><td>max_results    </td><td>int     </td><td>          </td><td>1        </td><td>integer with maximum number of results to return               </td></tr>
-<tr><td>previous_key   </td><td>str     </td><td>          </td><td>""       </td><td>string with key in collection to begin search after            </td></tr>
+<tr><td>previous_key   </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>string with key in collection to begin search after            </td></tr>
 </tbody>
 </table>
 ### delete
@@ -3923,7 +4108,7 @@ a method to delete a file
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                        </td></tr>
-<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of file</td></tr>
+<tr><td>record_key</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of file</td></tr>
 </tbody>
 </table>
 ### remove

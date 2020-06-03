@@ -18,14 +18,14 @@ a function to generate a keystore and cert files for self-signed ssl authenticat
 </thead>
 <tbody>
 <tr><td>key_alias        </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>key_folder       </td><td>str     </td><td>          </td><td>"./"     </td><td>             </td></tr>
-<tr><td>root_cert        </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
-<tr><td>truststore       </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
-<tr><td>password         </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
-<tr><td>organization     </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
-<tr><td>organization_unit</td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
-<tr><td>locality         </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
-<tr><td>country          </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>key_folder       </td><td>str     </td><td>          </td><td>&quot;./&quot;     </td><td>             </td></tr>
+<tr><td>root_cert        </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>truststore       </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>password         </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>organization     </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>organization_unit</td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>locality         </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>country          </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
 <tr><td>key_size         </td><td>int     </td><td>          </td><td>2048     </td><td>             </td></tr>
 <tr><td>verbose          </td><td>bool    </td><td>          </td><td>True     </td><td>             </td></tr>
 <tr><td>overwrite        </td><td>bool    </td><td>          </td><td>False    </td><td>             </td></tr>
@@ -89,8 +89,8 @@ decode_data(file_name, byte_data, mimetype="", secret_key="")
 <tbody>
 <tr><td>file_name </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>byte_data </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>mimetype  </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
-<tr><td>secret_key</td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>mimetype  </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>secret_key</td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
 </tbody>
 </table>
 ### encode_data
@@ -107,8 +107,8 @@ encode_data(file_name, python_object, mimetype="", secret_key="")
 <tbody>
 <tr><td>file_name    </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>python_object</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>mimetype     </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
-<tr><td>secret_key   </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>mimetype     </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>secret_key   </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
 </tbody>
 </table>
 
@@ -130,7 +130,7 @@ a method to construct a conditional filter function to test positional arguments
 </thead>
 <tbody>
 <tr><td>positional_filters</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary or list of dictionaries with query criteria</td></tr>
-<tr><td>title             </td><td>str   </td><td>          </td><td>""       </td><td>string with name of function to use instead           </td></tr>
+<tr><td>title             </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>string with name of function to use instead           </td></tr>
 </tbody>
 </table>
 
@@ -153,7 +153,7 @@ retrieve_function(function_string, global_scope=None, root_path="./")
 <tbody>
 <tr><td>function_string</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>global_scope   </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
-<tr><td>root_path      </td><td>str     </td><td>          </td><td>"./"     </td><td>             </td></tr>
+<tr><td>root_path      </td><td>str     </td><td>          </td><td>&quot;./&quot;     </td><td>             </td></tr>
 </tbody>
 </table>
 
@@ -181,7 +181,7 @@ compile_map(key_column="Alpha-3code", csv_list=None)
 <tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default      </th><th>Description  </th></tr>
 </thead>
 <tbody>
-<tr><td>key_column</td><td>str     </td><td>          </td><td>"Alpha-3code"</td><td>             </td></tr>
+<tr><td>key_column</td><td>str     </td><td>          </td><td>&quot;Alpha-3code&quot;</td><td>             </td></tr>
 <tr><td>csv_list  </td><td>NoneType</td><td>          </td><td>None         </td><td>             </td></tr>
 </tbody>
 </table>
@@ -217,7 +217,7 @@ compile_map(key_column="USPS", csv_list=None)
 <tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
 </thead>
 <tbody>
-<tr><td>key_column</td><td>str     </td><td>          </td><td>"USPS"   </td><td>             </td></tr>
+<tr><td>key_column</td><td>str     </td><td>          </td><td>&quot;USPS&quot;   </td><td>             </td></tr>
 <tr><td>csv_list  </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
 </tbody>
 </table>
@@ -254,7 +254,7 @@ uses cryptography module to decrypt byte data
 </thead>
 <tbody>
 <tr><td>encrypted_data</td><td>bytes </td><td>Yes       </td><td>None     </td><td>bytes with data to decrypt            </td></tr>
-<tr><td>secret_key    </td><td>str   </td><td>Yes       </td><td>""       </td><td>[optional] string used to decrypt data</td></tr>
+<tr><td>secret_key    </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>[optional] string used to decrypt data</td></tr>
 </tbody>
 </table>
 ### encrypt
@@ -280,7 +280,7 @@ uses cryptography module to encrypt byte data
 </thead>
 <tbody>
 <tr><td>byte_data </td><td>bytes </td><td>Yes       </td><td>None     </td><td>bytes with data to encrypt            </td></tr>
-<tr><td>secret_key</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string used to encrypt data</td></tr>
+<tr><td>secret_key</td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string used to encrypt data</td></tr>
 </tbody>
 </table>
 
@@ -302,7 +302,7 @@ handle_requests(request_object, uptime_url="www.google.com")
 </thead>
 <tbody>
 <tr><td>request_object</td><td>NoneType</td><td>Yes       </td><td>None            </td><td>             </td></tr>
-<tr><td>uptime_url    </td><td>str     </td><td>          </td><td>"www.google.com"</td><td>             </td></tr>
+<tr><td>uptime_url    </td><td>str     </td><td>          </td><td>&quot;www.google.com&quot;</td><td>             </td></tr>
 </tbody>
 </table>
 ### requestsHandler
@@ -318,8 +318,8 @@ the initialization method for the requestsHandler class object
 </thead>
 <tbody>
 <tr><td>self            </td><td>object  </td><td>Yes       </td><td>None             </td><td>                                                           </td></tr>
-<tr><td>uptime_url      </td><td>str     </td><td>          </td><td>"www.google.com" </td><td>[optional] string with url to test availability of internet</td></tr>
-<tr><td>requests_handler</td><td>function</td><td>          </td><td>"handle_requests"</td><td>[optional] callable method which accepts a Request object  </td></tr>
+<tr><td>uptime_url      </td><td>str     </td><td>          </td><td>&quot;www.google.com&quot; </td><td>[optional] string with url to test availability of internet</td></tr>
+<tr><td>requests_handler</td><td>function</td><td>          </td><td>&quot;handle_requests&quot;</td><td>[optional] callable method which accepts a Request object  </td></tr>
 <tr><td>response_handler</td><td>function</td><td>          </td><td>None             </td><td>[optional] callable method which accepts a Response object </td></tr>
 <tr><td>verbose         </td><td>bool    </td><td>          </td><td>False            </td><td>boolean to enable print out of status                      </td></tr>
 </tbody>
@@ -482,8 +482,8 @@ a method to extract and validate jwt session token from request headers
 </thead>
 <tbody>
 <tr><td>request_headers</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with header fields from request         </td></tr>
-<tr><td>session_header </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with name of session token header key       </td></tr>
-<tr><td>secret_key     </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with secret key to json web token encryption</td></tr>
+<tr><td>session_header </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of session token header key       </td></tr>
+<tr><td>secret_key     </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with secret key to json web token encryption</td></tr>
 </tbody>
 </table>
 ### validate_request_content
@@ -500,7 +500,7 @@ a method to validate the content fields of a flask request
 <tbody>
 <tr><td>request_content  </td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with content fields to validate        </td></tr>
 <tr><td>request_model    </td><td>object</td><td>Yes       </td><td>None     </td><td>object with jsonmodel class properties            </td></tr>
-<tr><td>request_component</td><td>str   </td><td>          </td><td>"body"   </td><td>string with name of component of request evaluated</td></tr>
+<tr><td>request_component</td><td>str   </td><td>          </td><td>&quot;body&quot;   </td><td>string with name of component of request evaluated</td></tr>
 </tbody>
 </table>
 
@@ -512,18 +512,18 @@ labpack.parsing.grammar
 ### join_words
 ##### 
 **Signature:**  
-join_words(word_list, operator="conjuction", quotes=False)
+join_words(word_list, operator="and", quotes=False)
 ##### 
 **Description:**  
   
 <table>
 <thead>
-<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default     </th><th>Description  </th></tr>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
 </thead>
 <tbody>
-<tr><td>word_list </td><td>NoneType</td><td>Yes       </td><td>None        </td><td>             </td></tr>
-<tr><td>operator  </td><td>str     </td><td>          </td><td>"conjuction"</td><td>             </td></tr>
-<tr><td>quotes    </td><td>bool    </td><td>          </td><td>False       </td><td>             </td></tr>
+<tr><td>word_list </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>operator  </td><td>str     </td><td>          </td><td>&quot;and&quot;    </td><td>             </td></tr>
+<tr><td>quotes    </td><td>bool    </td><td>          </td><td>False    </td><td>             </td></tr>
 </tbody>
 </table>
 ### section_text
@@ -540,7 +540,7 @@ section_text(text_string, max_characters=500, continue_text="...")
 <tbody>
 <tr><td>text_string   </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>max_characters</td><td>int     </td><td>          </td><td>500      </td><td>             </td></tr>
-<tr><td>continue_text </td><td>str     </td><td>          </td><td>"..."    </td><td>             </td></tr>
+<tr><td>continue_text </td><td>str     </td><td>          </td><td>&quot;...&quot;    </td><td>             </td></tr>
 </tbody>
 </table>
 
@@ -561,10 +561,10 @@ a method to convert a STDOUT shell table into a python data structure
 <tr><th>Argument    </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                                </th></tr>
 </thead>
 <tbody>
-<tr><td>shell_output</td><td>str     </td><td>Yes       </td><td>""       </td><td>string from STDOUT with headers                            </td></tr>
-<tr><td>delimiter   </td><td>str     </td><td>          </td><td>"\t|\s{" </td><td>string with regex pattern delimiting headers               </td></tr>
-<tr><td>}'          </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>                                                           </td></tr>
-<tr><td>output      </td><td>str     </td><td>          </td><td>"dict"   </td><td>string with type of structure to output (dict, list or csv)</td></tr>
+<tr><td>shell_output</td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string from STDOUT with headers                            </td></tr>
+<tr><td>delimiter   </td><td>str     </td><td>          </td><td>&quot;\t|\s{&quot; </td><td>string with regex pattern delimiting headers               </td></tr>
+<tr><td>}&#x27;          </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>                                                           </td></tr>
+<tr><td>output      </td><td>str     </td><td>          </td><td>&quot;dict&quot;   </td><td>string with type of structure to output (dict, list or csv)</td></tr>
 </tbody>
 </table>
 
@@ -707,7 +707,7 @@ a method to get the details associated with an ip address
 </thead>
 <tbody>
 <tr><td>ip_address</td><td>NoneType</td><td>Yes       </td><td>None        </td><td>             </td></tr>
-<tr><td>source    </td><td>str     </td><td>          </td><td>"whatismyip"</td><td>             </td></tr>
+<tr><td>source    </td><td>str     </td><td>          </td><td>&quot;whatismyip&quot;</td><td>             </td></tr>
 </tbody>
 </table>
 ### get_ip
@@ -751,8 +751,8 @@ a method to compile configuration values from different sources
 <tr><th>Argument     </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                    </th></tr>
 </thead>
 <tbody>
-<tr><td>model_path   </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with path to jsonmodel valid model data </td></tr>
-<tr><td>file_path    </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with path to local configuration file   </td></tr>
+<tr><td>model_path   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with path to jsonmodel valid model data </td></tr>
+<tr><td>file_path    </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with path to local configuration file   </td></tr>
 <tr><td>ignore_errors</td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to ignore any invalid values</td></tr>
 </tbody>
 </table>
@@ -775,9 +775,9 @@ a method to load data from json valid files
 <tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                               </th></tr>
 </thead>
 <tbody>
-<tr><td>file_path  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with path to settings file                         </td></tr>
-<tr><td>module_name</td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with name of module containing file path</td></tr>
-<tr><td>secret_key </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with key to decrypt drep file           </td></tr>
+<tr><td>file_path  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with path to settings file                         </td></tr>
+<tr><td>module_name</td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with name of module containing file path</td></tr>
+<tr><td>secret_key </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with key to decrypt drep file           </td></tr>
 </tbody>
 </table>
 ### remove_settings
@@ -795,7 +795,7 @@ a method to remove a file using a child process
 <tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                     </th></tr>
 </thead>
 <tbody>
-<tr><td>file_path  </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with path to file to remove                              </td></tr>
+<tr><td>file_path  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with path to file to remove                              </td></tr>
 <tr><td>retry_count</td><td>int   </td><td>          </td><td>10       </td><td>integer with number of attempts to remove before error is thrown</td></tr>
 <tr><td>remove_dir </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to remove empty parent directories           </td></tr>
 </tbody>
@@ -812,10 +812,10 @@ a method to save dictionary typed data to a local file
 <tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                       </th></tr>
 </thead>
 <tbody>
-<tr><td>file_path     </td><td>str   </td><td>Yes       </td><td>""       </td><td>string with path to settings file                 </td></tr>
+<tr><td>file_path     </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with path to settings file                 </td></tr>
 <tr><td>record_details</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with record details                    </td></tr>
 <tr><td>overwrite     </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to overwrite existing file data</td></tr>
-<tr><td>secret_key    </td><td>str   </td><td>          </td><td>""       </td><td>[optional] string with key to decrypt drep file   </td></tr>
+<tr><td>secret_key    </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with key to decrypt drep file   </td></tr>
 </tbody>
 </table>
 

@@ -1189,10 +1189,12 @@ class SQLTable(object):
         '''
             the initialization method for the SQLTable class
 
-        :param sql_session: sql session object
+        :param sql_session: sql.SQLSession object
         :param table_name: string with name for table of records
         :param record_schema: dictionary with jsonmodel valid schema for records
-        :param rebuild: [optional] boolean to rebuild table with schema changes 
+        :param rebuild: [optional] boolean to rebuild table with schema changes
+        :param default_values: [optional] boolean to add default values to records
+        :param verbose: [optional] boolean to enable database logging to stdout
 
         NOTE:   init will automatically update the table schema if the record schema
                 differs from the existing table. in order to change the name of a field

@@ -1,9 +1,14 @@
 ChangeLog
 =========
 
-0.22 (TBD)
-----------
+0.22 (2020.06.02)
+-----------------
+* [FEATURE ADDED] SQLSession class added to handle sql database connections
+* [FEATURE ADDED] SQLTable class added to manage sql table records
+* [FEATURE ADDED] databases.google package added to support Datastore
+* [FEATURE ADDED] DatastoreTable class added to manage Google Datastore
 * [FEATURE ADDED] r53Client class added to manage domains on AWS
+* [BUG FIX] removed spaces from eligible table names in sqlClient
 
 0.21 (2020.04.28)
 -----------------
