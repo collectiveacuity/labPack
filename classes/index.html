@@ -9,96 +9,128 @@
         
         <link rel="shortcut icon" href="../img/favicon.ico">
         <title>Classes - Lab Pack</title>
-        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
-        <link href="../css/font-awesome-4.5.0.css" rel="stylesheet">
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/font-awesome.min.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
-        <link rel="stylesheet" href="../css/highlight.css">
-        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-        <!--[if lt IE 9]>
-            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
-        <![endif]-->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
 
-        <script src="../js/jquery-1.10.2.min.js"></script>
-        <script src="../js/bootstrap-3.0.3.min.js"></script>
-        <script src="../js/highlight.pack.js"></script> 
+        <script src="../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../js/bootstrap.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
     </head>
 
     <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="..">Lab Pack</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
 
-        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
-    <div class="container">
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="navitem">
+                                <a href=".." class="nav-link">Home</a>
+                            </li>
+                            <li class="navitem active">
+                                <a href="./" class="nav-link">Classes</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../clients/" class="nav-link">Clients</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../packages/" class="nav-link">Packages</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../resources/" class="nav-link">Resources</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../roadmap/" class="nav-link">Roadmap</a>
+                            </li>
+                        </ul>
 
-        <!-- Collapsed navigation -->
-        <div class="navbar-header">
-            <!-- Expander button -->
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="..">Lab Pack</a>
+                    <ul class="nav navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" href=".." class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="../clients/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
         </div>
-
-        <!-- Expanded navigation -->
-        <div class="navbar-collapse collapse">
-                <!-- Main navigation -->
-                <ul class="nav navbar-nav">
-                    <li >
-                        <a href="..">Home</a>
-                    </li>
-                    <li class="active">
-                        <a href="./">Classes</a>
-                    </li>
-                    <li >
-                        <a href="../clients/">Clients</a>
-                    </li>
-                    <li >
-                        <a href="../packages/">Packages</a>
-                    </li>
-                    <li >
-                        <a href="../resources/">Resources</a>
-                    </li>
-                    <li >
-                        <a href="../roadmap/">Roadmap</a>
-                    </li>
-                </ul>
-
-            <ul class="nav navbar-nav navbar-right">
-                <li>
-                    <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
-                        <i class="fa fa-search"></i> Search
-                    </a>
-                </li>
-                    <li >
-                        <a rel="next" href="..">
-                            <i class="fa fa-arrow-left"></i> Previous
-                        </a>
-                    </li>
-                    <li >
-                        <a rel="prev" href="../clients/">
-                            Next <i class="fa fa-arrow-right"></i>
-                        </a>
-                    </li>
-            </ul>
-        </div>
-    </div>
-</div>
 
         <div class="container">
-                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
-    <ul class="nav bs-sidenav">
-        <li class="main active"><a href="#classes">Classes</a></li>
-            <li><a href="#cassandrasession">cassandraSession</a></li>
-            <li><a href="#cassandratable">cassandraTable</a></li>
-            <li><a href="#labmagic">labMagic</a></li>
-            <li><a href="#labregex">labRegex</a></li>
-            <li><a href="#labid">labID</a></li>
-            <li><a href="#labdt">labDT</a></li>
-    </ul>
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-light navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-level="1"><a href="#classes" class="nav-link">Classes</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#cassandrasession" class="nav-link">cassandraSession</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#cassandratable" class="nav-link">cassandraTable</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#datastoretable" class="nav-link">DatastoreTable</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#sqlsession" class="nav-link">SQLSession</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#sqltable" class="nav-link">SQLTable</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#labmagic" class="nav-link">labMagic</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#labregex" class="nav-link">labRegex</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#labid" class="nav-link">labID</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#labdt" class="nav-link">labDT</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
 </div></div>
-                <div class="col-md-9" role="main">
+                    <div class="col-md-9" role="main">
 
 <h1 id="classes">Classes</h1>
 <h2 id="cassandrasession">cassandraSession</h2>
@@ -115,7 +147,7 @@ Authentication
 https://datastax.github.io/python-driver/api/cassandra/auth.html#
 https://cassandra.apache.org/doc/latest/operating/security.html#enabling-password-authentication
 </code></pre>
-<h3 id="95_init__">__init__</h3>
+<h3 id="__init__">__init__</h3>
 <h5 id="_1"></h5>
 <p><strong>Signature:</strong><br />
 __init__(self, hostname, port=9042, username=&rdquo;&ldquo;, password=&rdquo;&ldquo;, cert_path=&rdquo;&ldquo;)</p>
@@ -129,9 +161,9 @@ __init__(self, hostname, port=9042, username=&rdquo;&ldquo;, password=&rdquo;&ld
 <tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>hostname  </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>port      </td><td>int     </td><td>          </td><td>9042     </td><td>             </td></tr>
-<tr><td>username  </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
-<tr><td>password  </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
-<tr><td>cert_path </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>username  </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>password  </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>cert_path </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
 </tbody>
 </table>
 
@@ -146,7 +178,7 @@ https://cassandra.apache.org/doc/latest/cql/dml.html
 
 NOTE:   WIP
 </code></pre>
-<h3 id="95_init___1">__init__</h3>
+<h3 id="__init___1">__init__</h3>
 <h5 id="_3"></h5>
 <p><strong>Signature:</strong><br />
 __init__(self, keyspace_name, table_name, record_schema, cassandra_session, replication_strategy=None)</p>
@@ -166,16 +198,434 @@ __init__(self, keyspace_name, table_name, record_schema, cassandra_session, repl
 </tbody>
 </table>
 
-<h2 id="labmagic">labMagic</h2>
+<h2 id="datastoretable">DatastoreTable</h2>
 <h3 id="import_2">Import:</h3>
-<p>labpack.parsing.magic.labMagic  </p>
+<p>labpack.databases.google.datastore.DatastoreTable  </p>
 <h3 id="description_2">Description:</h3>
-<p>initialization method for labMagic class  </p>
-<h3 id="95_init___2">__init__</h3>
+<p>a class to store json valid records as tabular style in google datastore</p>
+<pre><code>    STORAGE:
+    https://cloud.google.com/datastore/docs/concepts/storage-size
+
+    each record size is dramatically impacted by the length of:
+
+        1. the name of the table
+        2. the id for each record
+        3. the name of each field
+
+    as well as the number of indexed fields. each index uses
+    storage equal to the combined size of each of the elements above
+    plus the value of the field and duplicate it twice... for both
+    ascending and descending orders.
+
+    by default, this class requires indices to be specified and 
+    does not create null values for empty fields. if an empty
+    map is declared in the record schema, any data in that field
+    of a record is stringified and unindexable.
+
+    the most space efficient setup will not have any indices and
+    will use the value of the record id as the main query method
+    and/or will allow datastore to generate an id automatically
+
+    LIMITS:
+    https://cloud.google.com/datastore/docs/concepts/limits
+
+    REFERENCES:
+    https://googleapis.dev/python/datastore/latest/index.html 
+    https://cloud.google.com/datastore/docs/concepts/entities
+</code></pre>
+<h3 id="__init___2">__init__</h3>
 <h5 id="_5"></h5>
 <p><strong>Signature:</strong><br />
-__init__(self, magic_file=&rdquo;&ldquo;)</p>
+__init__(self, datastore_client, table_name, record_schema, indices=None, default_values=False, verbose=False)</p>
 <h5 id="_6"></h5>
+<p><strong>Description:</strong><br />
+the initialization method for the sqlClient class<br />
+<table>
+<thead>
+<tr><th>Argument        </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                            </th></tr>
+</thead>
+<tbody>
+<tr><td>self            </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                       </td></tr>
+<tr><td>datastore_client</td><td>object</td><td>Yes       </td><td>None     </td><td>datastore.Client object                                </td></tr>
+<tr><td>table_name      </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name for table of records                  </td></tr>
+<tr><td>record_schema   </td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with jsonmodel valid schema for records     </td></tr>
+<tr><td>indices         </td><td>list  </td><td>          </td><td>None     </td><td>list of strings with fields to index                   </td></tr>
+<tr><td>default_values  </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to add default values to records    </td></tr>
+<tr><td>verbose         </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to enable database logging to stdout</td></tr>
+</tbody>
+</table></p>
+<h3 id="exists">exists</h3>
+<h5 id="_7"></h5>
+<p><strong>Signature:</strong><br />
+exists(self, record_id)</p>
+<h5 id="_8"></h5>
+<p><strong>Description:</strong><br />
+a method to determine if record exists<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                          </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                     </td></tr>
+<tr><td>record_id </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with id associated with record</td></tr>
+</tbody>
+</table></p>
+<h3 id="list">list</h3>
+<h5 id="_9"></h5>
+<p><strong>Signature:</strong><br />
+list(self, filter=None, sort=None, limit=100, cursor=&rdquo;&ldquo;, ids_only=False)</p>
+<h5 id="_10"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve records using criteria evaluated on table indexes</p>
+<pre><code>    NOTE:   only fields which have been added to the indices argument at object
+            construction can be queried in-memory by Datastore and if an index
+            is added after records are in the database, records previously added
+            to the datastore are not automatically added to the index. to make
+            sure that all records are properly indexed, you must run
+            _update_indices
+            WARNING: although _update_indices is an optimized SCAN of Datastore,
+            it could be very costly
+
+    NOTE:   composite indices allow for more complex queries in-memory
+            but must be registered with Datastore using gcloud client
+            and specified as index.yaml in app root and built before 
+            https://cloud.google.com/datastore/docs/concepts/indexes
+</code></pre>
+<p><table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                   </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                              </td></tr>
+<tr><td>filter    </td><td>dict  </td><td>          </td><td>None     </td><td>dictionary of dot path field name and jsonmodel query criteria</td></tr>
+<tr><td>sort      </td><td>list  </td><td>          </td><td>None     </td><td>list of single key-pair dictionaries with dot path field names</td></tr>
+<tr><td>limit     </td><td>int   </td><td>          </td><td>100      </td><td>integer with number of results to return                      </td></tr>
+<tr><td>cursor    </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>string base64 url safe encoded with location of last result   </td></tr>
+<tr><td>ids_only  </td><td>bool  </td><td>          </td><td>False    </td><td>boolean to enable return of only ids (reduces &#x27;read&#x27; use to 1)</td></tr>
+</tbody>
+</table></p>
+<h3 id="create">create</h3>
+<h5 id="_11"></h5>
+<p><strong>Signature:</strong><br />
+create(self, record)</p>
+<h5 id="_12"></h5>
+<p><strong>Description:</strong><br />
+a method to create a new record in the table</p>
+<pre><code>        NOTE:   this class uses the id field as the primary key for all records
+                if record includes an id field that is an integer, float
+                or string, then it will be used as the primary key.
+
+        NOTE:   if the id field is missing, a unique 24 character url safe 
+                string will be created for the id field and included in the 
+                record. if the id field == 0.0, then datastore will assign a 
+                randomly generated 16 digit numerical id
+
+        NOTE:   key length is a significant component of the size of storing a
+                record. the built in datastore id take up 8 bytes while an id
+                string takes up bytes = len(id) + 1. in addition, all keys have
+                an additional 16 byte overhead and the record id is reused for
+                each index twice, once for ascending and once for descending
+                order.
+
+        NOTE:   record fields which do not exist in the record_schema or 
+                whose value do not match the requirements of the record_schema
+                will throw an InputValidationError
+
+        NOTE:   list fields are stringified using json before they are saved 
+                to the datastore and are not possible to search using query
+                statements. it is recommended that lists be stored instead as
+                separate tables
+</code></pre>
+<p><table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                             </td></tr>
+<tr><td>record    </td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with record fields</td></tr>
+</tbody>
+</table></p>
+<h3 id="read">read</h3>
+<h5 id="_13"></h5>
+<p><strong>Signature:</strong><br />
+read(self, record_id)</p>
+<h5 id="_14"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve the details for a record in the table<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                      </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                 </td></tr>
+<tr><td>record_id </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string or number with unique identifier of record</td></tr>
+</tbody>
+</table></p>
+<h3 id="update">update</h3>
+<h5 id="_15"></h5>
+<p><strong>Signature:</strong><br />
+update(self, record)</p>
+<h5 id="_16"></h5>
+<p><strong>Description:</strong><br />
+a method to update an existing record<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                             </td></tr>
+<tr><td>record    </td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with record fields</td></tr>
+</tbody>
+</table></p>
+<h3 id="delete">delete</h3>
+<h5 id="_17"></h5>
+<p><strong>Signature:</strong><br />
+delete(self, record_id)</p>
+<h5 id="_18"></h5>
+<p><strong>Description:</strong><br />
+a method to delete an existing record<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                      </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                 </td></tr>
+<tr><td>record_id </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string or number with unique identifier of record</td></tr>
+</tbody>
+</table></p>
+<h3 id="remove">remove</h3>
+<h5 id="_19"></h5>
+<p><strong>Signature:</strong><br />
+remove(self)</p>
+<h5 id="_20"></h5>
+<p><strong>Description:</strong><br />
+a method to remove all records in table  </p>
+<h3 id="export">export</h3>
+<h5 id="_21"></h5>
+<p><strong>Signature:</strong><br />
+export(self, datastore_table, merge_rule=&rdquo;skip&rdquo;, coerce=False)</p>
+<h5 id="_22"></h5>
+<p><strong>Description:</strong><br />
+TODO a method to export all the records to another datastore table<br />
+<table>
+<thead>
+<tr><th>Argument       </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self           </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>datastore_table</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>merge_rule     </td><td>str     </td><td>          </td><td>&quot;skip&quot;   </td><td>             </td></tr>
+<tr><td>coerce         </td><td>bool    </td><td>          </td><td>False    </td><td>             </td></tr>
+</tbody>
+</table></p>
+<h2 id="sqlsession">SQLSession</h2>
+<h3 id="import_3">Import:</h3>
+<p>labpack.databases.sql.SQLSession  </p>
+<h3 id="description_3">Description:</h3>
+<p>the initialization method for the SQLSession class  </p>
+<h3 id="__init___3">__init__</h3>
+<h5 id="_23"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self, database_url, verbose=False)</p>
+<h5 id="_24"></h5>
+<p><strong>Description:</strong><br />
+the initialization method for the SQLSession class<br />
+<table>
+<thead>
+<tr><th>Argument    </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                            </th></tr>
+</thead>
+<tbody>
+<tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                       </td></tr>
+<tr><td>database_url</td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with unique resource identifier to database     </td></tr>
+<tr><td>verbose     </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to enable database logging to stdout</td></tr>
+</tbody>
+</table></p>
+<h2 id="sqltable">SQLTable</h2>
+<h3 id="import_4">Import:</h3>
+<p>labpack.databases.sql.SQLTable  </p>
+<h3 id="description_4">Description:</h3>
+<p>a class to store json valid records in a sql database </p>
+<pre><code>REFERENCES:
+https://docs.sqlalchemy.org/en/13/core/tutorial.html
+</code></pre>
+<h3 id="__init___4">__init__</h3>
+<h5 id="_25"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self, sql_session, table_name, record_schema, rebuild=True, default_values=False, verbose=False)</p>
+<h5 id="_26"></h5>
+<p><strong>Description:</strong><br />
+the initialization method for the SQLTable class<br />
+<table>
+<thead>
+<tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                            </th></tr>
+</thead>
+<tbody>
+<tr><td>self          </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                       </td></tr>
+<tr><td>sql_session   </td><td>object</td><td>Yes       </td><td>None     </td><td>sql.SQLSession object                                  </td></tr>
+<tr><td>table_name    </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name for table of records                  </td></tr>
+<tr><td>record_schema </td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with jsonmodel valid schema for records     </td></tr>
+<tr><td>rebuild       </td><td>bool  </td><td>          </td><td>True     </td><td>[optional] boolean to rebuild table with schema changes</td></tr>
+<tr><td>default_values</td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to add default values to records    </td></tr>
+<tr><td>verbose       </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to enable database logging to stdout</td></tr>
+</tbody>
+</table></p>
+<h3 id="exists_1">exists</h3>
+<h5 id="_27"></h5>
+<p><strong>Signature:</strong><br />
+exists(self, record_id)</p>
+<h5 id="_28"></h5>
+<p><strong>Description:</strong><br />
+a method to determine if record exists<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                      </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                 </td></tr>
+<tr><td>record_id </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string or number with unique identifier of record</td></tr>
+</tbody>
+</table></p>
+<h3 id="list_1">list</h3>
+<h5 id="_29"></h5>
+<p><strong>Signature:</strong><br />
+list(self, filter=None, sort=None, limit=100, cursor=&rdquo;&ldquo;, ids_only=False)</p>
+<h5 id="_30"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve records from table which match query criteria<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                   </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                              </td></tr>
+<tr><td>filter    </td><td>dict  </td><td>          </td><td>None     </td><td>dictionary of dot path field name and jsonmodel query criteria</td></tr>
+<tr><td>sort      </td><td>list  </td><td>          </td><td>None     </td><td>list of single key-pair dictionaries with dot path field names</td></tr>
+<tr><td>limit     </td><td>int   </td><td>          </td><td>100      </td><td>integer with number of results to return                      </td></tr>
+<tr><td>cursor    </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>string form of integer with offset to continue query          </td></tr>
+<tr><td>ids_only  </td><td>bool  </td><td>          </td><td>False    </td><td>boolean to enable return of only ids (reduces &#x27;read&#x27; use to 1)</td></tr>
+</tbody>
+</table></p>
+<h3 id="create_1">create</h3>
+<h5 id="_31"></h5>
+<p><strong>Signature:</strong><br />
+create(self, record)</p>
+<h5 id="_32"></h5>
+<p><strong>Description:</strong><br />
+a method to create a new record in the table </p>
+<pre><code>        NOTE:   this class uses the id key as the primary key for all records
+                if record includes an id field that is an integer, float
+                or string, then it will be used as the primary key. if the id
+                field is missing, a random 64 bit integer (if a number) or a
+                unique 24 character url safe string (if a string) will be 
+                created for the id field and included in the record
+
+        NOTE:   record fields which do not exist in the record_schema or whose
+                value do not match the requirements of the record_schema
+                will throw an InputValidationError
+
+        NOTE:   lists fields are pickled before they are saved to disk and
+                are not possible to search using sql query statements. it is
+                recommended that lists be stored instead as separate tables
+
+        NOTE:   if a map field is declared as empty in the record_schema, then
+                all record fields inside it will be pickled before the
+                record is saved to disk and are not possible to search
+</code></pre>
+<p><table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                             </td></tr>
+<tr><td>record    </td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with record fields</td></tr>
+</tbody>
+</table></p>
+<h3 id="read_1">read</h3>
+<h5 id="_33"></h5>
+<p><strong>Signature:</strong><br />
+read(self, record_id)</p>
+<h5 id="_34"></h5>
+<p><strong>Description:</strong><br />
+a method to retrieve the details for a record in the table<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                      </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                 </td></tr>
+<tr><td>record_id </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string or number with unique identifier of record</td></tr>
+</tbody>
+</table></p>
+<h3 id="update_1">update</h3>
+<h5 id="_35"></h5>
+<p><strong>Signature:</strong><br />
+update(self, updated, original=None)</p>
+<h5 id="_36"></h5>
+<p><strong>Description:</strong><br />
+a method to update changes to a record in the table<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                      </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                 </td></tr>
+<tr><td>updated   </td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with updated record fields            </td></tr>
+<tr><td>original  </td><td>dict  </td><td>          </td><td>None     </td><td>[optional] dictionary with original record fields</td></tr>
+</tbody>
+</table></p>
+<h3 id="delete_1">delete</h3>
+<h5 id="_37"></h5>
+<p><strong>Signature:</strong><br />
+delete(self, record_id)</p>
+<h5 id="_38"></h5>
+<p><strong>Description:</strong><br />
+a method to delete a record in the table<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                      </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                 </td></tr>
+<tr><td>record_id </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string or number with unique identifier of record</td></tr>
+</tbody>
+</table></p>
+<h3 id="remove_1">remove</h3>
+<h5 id="_39"></h5>
+<p><strong>Signature:</strong><br />
+remove(self)</p>
+<h5 id="_40"></h5>
+<p><strong>Description:</strong><br />
+a method to remove the entire table </p>
+<pre><code>    :return string with status message
+</code></pre>
+<h3 id="export_1">export</h3>
+<h5 id="_41"></h5>
+<p><strong>Signature:</strong><br />
+export(self, sql_table, merge_rule=&rdquo;skip&rdquo;, coerce=False)</p>
+<h5 id="_42"></h5>
+<p><strong>Description:</strong><br />
+a method to export all the records in table to another sql table<br />
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                             </td></tr>
+<tr><td>sql_table </td><td>type  </td><td>Yes       </td><td>None     </td><td>class object with sql table methods                          </td></tr>
+<tr><td>merge_rule</td><td>str   </td><td>          </td><td>&quot;skip&quot;   </td><td>string with name of rule to adopt for pre-existing records   </td></tr>
+<tr><td>coerce    </td><td>bool  </td><td>          </td><td>False    </td><td>boolean to enable migration even if table schemas don&#x27;t match</td></tr>
+</tbody>
+</table></p>
+<h2 id="labmagic">labMagic</h2>
+<h3 id="import_5">Import:</h3>
+<p>labpack.parsing.magic.labMagic  </p>
+<h3 id="description_5">Description:</h3>
+<p>initialization method for labMagic class  </p>
+<h3 id="__init___5">__init__</h3>
+<h5 id="_43"></h5>
+<p><strong>Signature:</strong><br />
+__init__(self, magic_file=&rdquo;&ldquo;)</p>
+<h5 id="_44"></h5>
 <p><strong>Description:</strong><br />
 initialization method for labMagic class<br />
 <table>
@@ -184,14 +634,14 @@ initialization method for labMagic class<br />
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                                   </td></tr>
-<tr><td>magic_file</td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with local path to magic.mgc file</td></tr>
+<tr><td>magic_file</td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with local path to magic.mgc file</td></tr>
 </tbody>
 </table></p>
 <h3 id="analyze">analyze</h3>
-<h5 id="_7"></h5>
+<h5 id="_45"></h5>
 <p><strong>Signature:</strong><br />
 analyze(self, file_path=&rdquo;&ldquo;, file_url=&rdquo;&ldquo;, byte_data=None)</p>
-<h5 id="_8"></h5>
+<h5 id="_46"></h5>
 <p><strong>Description:</strong><br />
 a method to determine the mimetype and extension of a file from its byte data<br />
 <table>
@@ -200,21 +650,21 @@ a method to determine the mimetype and extension of a file from its byte data<br
 </thead>
 <tbody>
 <tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>                                         </td></tr>
-<tr><td>file_path </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with local path to file</td></tr>
-<tr><td>file_url  </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with url of file       </td></tr>
+<tr><td>file_path </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with local path to file</td></tr>
+<tr><td>file_url  </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with url of file       </td></tr>
 <tr><td>byte_data </td><td>NoneType</td><td>          </td><td>None     </td><td>[optional] byte data from a file         </td></tr>
 </tbody>
 </table></p>
 <h2 id="labregex">labRegex</h2>
-<h3 id="import_3">Import:</h3>
+<h3 id="import_6">Import:</h3>
 <p>labpack.parsing.regex.labRegex  </p>
-<h3 id="description_3">Description:</h3>
+<h3 id="description_6">Description:</h3>
 <p>instantiates class with a regular expression dictionary  </p>
-<h3 id="95_init___3">__init__</h3>
-<h5 id="_9"></h5>
+<h3 id="__init___6">__init__</h3>
+<h5 id="_47"></h5>
 <p><strong>Signature:</strong><br />
 __init__(self, regex_schema, override=False)</p>
-<h5 id="_10"></h5>
+<h5 id="_48"></h5>
 <p><strong>Description:</strong><br />
 instantiates class with a regular expression dictionary<br />
 <table>
@@ -228,10 +678,10 @@ instantiates class with a regular expression dictionary<br />
 </tbody>
 </table></p>
 <h3 id="map">map</h3>
-<h5 id="_11"></h5>
+<h5 id="_49"></h5>
 <p><strong>Signature:</strong><br />
 map(self, string_input, n_grams=1)</p>
-<h5 id="_12"></h5>
+<h5 id="_50"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
@@ -245,9 +695,9 @@ map(self, string_input, n_grams=1)</p>
 </table>
 
 <h2 id="labid">labID</h2>
-<h3 id="import_4">Import:</h3>
+<h3 id="import_7">Import:</h3>
 <p>labpack.records.id.labID  </p>
-<h3 id="description_4">Description:</h3>
+<h3 id="description_7">Description:</h3>
 <p>a class of methods for uniquely identifying objects</p>
 <pre><code>    build-in methods:
         self.uuid: uuid1 uuid object
@@ -260,17 +710,17 @@ map(self, string_input, n_grams=1)</p>
         self.iso: current iso utc datetime string
         self.datetime: current python datetime
 </code></pre>
-<h3 id="95_init___4">__init__</h3>
-<h5 id="_13"></h5>
+<h3 id="__init___7">__init__</h3>
+<h5 id="_51"></h5>
 <p><strong>Signature:</strong><br />
 __init__(self)</p>
-<h5 id="_14"></h5>
+<h5 id="_52"></h5>
 <p><strong>Description:</strong><br />
 a method to initialize a unique ID based upon the UUID1 method  </p>
 <h2 id="labdt">labDT</h2>
-<h3 id="import_5">Import:</h3>
+<h3 id="import_8">Import:</h3>
 <p>labpack.records.time.labDT  </p>
-<h3 id="description_5">Description:</h3>
+<h3 id="description_8">Description:</h3>
 <p>a class of methods for datetime conversion</p>
 <pre><code>for list of timezones:
     https://stackoverflow.com/questions/13866926/python-pytz-list-of-timezones
@@ -278,42 +728,42 @@ for list of datetime directives:
     https://docs.python.org/2/library/datetime.html#strftime-and-strptime-behavior
 </code></pre>
 <h3 id="new">new</h3>
-<h5 id="_15"></h5>
+<h5 id="_53"></h5>
 <p><strong>Signature:</strong><br />
 new(cls)</p>
-<h5 id="_16"></h5>
+<h5 id="_54"></h5>
 <p><strong>Description:</strong><br />
 a method to generate the current datetime as a labDT object  </p>
 <h3 id="zulu">zulu</h3>
-<h5 id="_17"></h5>
+<h5 id="_55"></h5>
 <p><strong>Signature:</strong><br />
 zulu(self)</p>
-<h5 id="_18"></h5>
+<h5 id="_56"></h5>
 <p><strong>Description:</strong><br />
 a method to report ISO UTC datetime string from a labDT object</p>
 <pre><code>    NOTE: for timezone offset string use .isoformat() instead
 </code></pre>
 <h3 id="epoch">epoch</h3>
-<h5 id="_19"></h5>
+<h5 id="_57"></h5>
 <p><strong>Signature:</strong><br />
 epoch(self)</p>
-<h5 id="_20"></h5>
+<h5 id="_58"></h5>
 <p><strong>Description:</strong><br />
 a method to report posix epoch timestamp from a labDT object  </p>
 <h3 id="rfc2822">rfc2822</h3>
-<h5 id="_21"></h5>
+<h5 id="_59"></h5>
 <p><strong>Signature:</strong><br />
 rfc2822(self)</p>
-<h5 id="_22"></h5>
+<h5 id="_60"></h5>
 <p><strong>Description:</strong><br />
 a method to report a RFC-2822 Compliant Date from a labDT object</p>
 <pre><code>        https://tools.ietf.org/html/rfc2822.html#page-14
 </code></pre>
 <h3 id="pylocal">pyLocal</h3>
-<h5 id="_23"></h5>
+<h5 id="_61"></h5>
 <p><strong>Signature:</strong><br />
 pyLocal(self, time_zone=&rdquo;&ldquo;)</p>
-<h5 id="_24"></h5>
+<h5 id="_62"></h5>
 <p><strong>Description:</strong><br />
 a method to report a python datetime from a labDT object<br />
 <table>
@@ -322,14 +772,14 @@ a method to report a python datetime from a labDT object<br />
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                            </td></tr>
-<tr><td>time_zone </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with timezone to report in</td></tr>
+<tr><td>time_zone </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with timezone to report in</td></tr>
 </tbody>
 </table></p>
 <h3 id="jslocal">jsLocal</h3>
-<h5 id="_25"></h5>
+<h5 id="_63"></h5>
 <p><strong>Signature:</strong><br />
 jsLocal(self, time_zone=&rdquo;&ldquo;)</p>
-<h5 id="_26"></h5>
+<h5 id="_64"></h5>
 <p><strong>Description:</strong><br />
 a method to report a javascript string from a labDT object<br />
 <table>
@@ -338,14 +788,14 @@ a method to report a javascript string from a labDT object<br />
 </thead>
 <tbody>
 <tr><td>self      </td><td>object</td><td>Yes       </td><td>None     </td><td>                                            </td></tr>
-<tr><td>time_zone </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with timezone to report in</td></tr>
+<tr><td>time_zone </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with timezone to report in</td></tr>
 </tbody>
 </table></p>
 <h3 id="humanfriendly">humanFriendly</h3>
-<h5 id="_27"></h5>
+<h5 id="_65"></h5>
 <p><strong>Signature:</strong><br />
 humanFriendly(self, time_zone=&rdquo;&ldquo;, include_day=True, include_time=True)</p>
-<h5 id="_28"></h5>
+<h5 id="_66"></h5>
 <p><strong>Description:</strong><br />
 a method to report a human friendly string from a labDT object<br />
 <table>
@@ -354,16 +804,16 @@ a method to report a human friendly string from a labDT object<br />
 </thead>
 <tbody>
 <tr><td>self        </td><td>object</td><td>Yes       </td><td>None     </td><td>                                            </td></tr>
-<tr><td>time_zone   </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with timezone to report in</td></tr>
+<tr><td>time_zone   </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with timezone to report in</td></tr>
 <tr><td>include_day </td><td>bool  </td><td>          </td><td>True     </td><td>                                            </td></tr>
 <tr><td>include_time</td><td>bool  </td><td>          </td><td>True     </td><td>                                            </td></tr>
 </tbody>
 </table></p>
 <h3 id="fromepoch">fromEpoch</h3>
-<h5 id="_29"></h5>
+<h5 id="_67"></h5>
 <p><strong>Signature:</strong><br />
 fromEpoch(cls, epoch_time)</p>
-<h5 id="_30"></h5>
+<h5 id="_68"></h5>
 <p><strong>Description:</strong><br />
 a method for constructing a labDT object from epoch timestamp<br />
 <table>
@@ -376,10 +826,10 @@ a method for constructing a labDT object from epoch timestamp<br />
 </tbody>
 </table></p>
 <h3 id="fromiso">fromISO</h3>
-<h5 id="_31"></h5>
+<h5 id="_69"></h5>
 <p><strong>Signature:</strong><br />
 fromISO(cls, iso_string)</p>
-<h5 id="_32"></h5>
+<h5 id="_70"></h5>
 <p><strong>Description:</strong><br />
 a method for constructing a labDT object from a timezone aware ISO string<br />
 <table>
@@ -388,14 +838,14 @@ a method for constructing a labDT object from a timezone aware ISO string<br />
 </thead>
 <tbody>
 <tr><td>cls       </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>                                            </td></tr>
-<tr><td>iso_string</td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with date and time info in ISO format</td></tr>
+<tr><td>iso_string</td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with date and time info in ISO format</td></tr>
 </tbody>
 </table></p>
 <h3 id="frompython">fromPython</h3>
-<h5 id="_33"></h5>
+<h5 id="_71"></h5>
 <p><strong>Signature:</strong><br />
 fromPython(cls, python_datetime)</p>
-<h5 id="_34"></h5>
+<h5 id="_72"></h5>
 <p><strong>Description:</strong><br />
 a method for constructing a labDT from a python datetime with timezone info<br />
 <table>
@@ -408,10 +858,10 @@ a method for constructing a labDT from a python datetime with timezone info<br /
 </tbody>
 </table></p>
 <h3 id="fromjavascript">fromJavascript</h3>
-<h5 id="_35"></h5>
+<h5 id="_73"></h5>
 <p><strong>Signature:</strong><br />
 fromJavascript(cls, javascript_datetime)</p>
-<h5 id="_36"></h5>
+<h5 id="_74"></h5>
 <p><strong>Description:</strong><br />
 a method to construct labDT from a javascript datetime string<br />
 <table>
@@ -420,14 +870,14 @@ a method to construct labDT from a javascript datetime string<br />
 </thead>
 <tbody>
 <tr><td>cls                </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>                                                  </td></tr>
-<tr><td>javascript_datetime</td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with datetime info in javascript formatting</td></tr>
+<tr><td>javascript_datetime</td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with datetime info in javascript formatting</td></tr>
 </tbody>
 </table></p>
 <h3 id="frompattern">fromPattern</h3>
-<h5 id="_37"></h5>
+<h5 id="_75"></h5>
 <p><strong>Signature:</strong><br />
 fromPattern(cls, datetime_string, datetime_pattern, time_zone, require_hour=True)</p>
-<h5 id="_38"></h5>
+<h5 id="_76"></h5>
 <p><strong>Description:</strong><br />
 a method for constructing labDT from a strptime pattern in a string
             https://docs.python.org/2/library/datetime.html#strftime-and-strptime-behavior
@@ -439,38 +889,41 @@ a method for constructing labDT from a strptime pattern in a string
 </thead>
 <tbody>
 <tr><td>cls             </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>                                              </td></tr>
-<tr><td>datetime_string </td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with date and time info                </td></tr>
-<tr><td>datetime_pattern</td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with python formatted pattern          </td></tr>
-<tr><td>time_zone       </td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with timezone info                     </td></tr>
+<tr><td>datetime_string </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with date and time info                </td></tr>
+<tr><td>datetime_pattern</td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with python formatted pattern          </td></tr>
+<tr><td>time_zone       </td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with timezone info                     </td></tr>
 <tr><td>require_hour    </td><td>bool    </td><td>          </td><td>True     </td><td>[optional] boolean to disable hour requirement</td></tr>
 </tbody>
 </table></p></div>
+            </div>
         </div>
 
         <footer class="col-md-12">
             <hr>
-            <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
         </footer>
-        <script>var base_url = '..';</script>
-        <script src="../js/base.js"></script>
-        <script src="../search/require.js"></script>
-        <script src="../search/search.js"></script>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js" defer></script>
+        <script src="../search/main.js" defer></script>
 
-        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
-    <div class="modal-dialog">
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
             </div>
             <div class="modal-body">
                 <p>
                     From here you can search these documents. Enter
                     your search terms below.
                 </p>
-                <form role="form">
+                <form>
                     <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
                     </div>
                 </form>
                 <div id="mkdocs-search-results"></div>
@@ -479,12 +932,12 @@ a method for constructing labDT from a strptime pattern in a string
             </div>
         </div>
     </div>
-</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
             </div>
             <div class="modal-body">
               <table class="table">
@@ -496,19 +949,19 @@ a method for constructing labDT from a strptime pattern in a string
                 </thead>
                 <tbody>
                   <tr>
-                    <td><kbd>?</kbd></td>
+                    <td class="help shortcut"><kbd>?</kbd></td>
                     <td>Open this help</td>
                   </tr>
                   <tr>
-                    <td><kbd>&larr;</kbd></td>
-                    <td>Previous page</td>
-                  </tr>
-                  <tr>
-                    <td><kbd>&rarr;</kbd></td>
+                    <td class="next shortcut"><kbd>n</kbd></td>
                     <td>Next page</td>
                   </tr>
                   <tr>
-                    <td><kbd>s</kbd></td>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
                     <td>Search</td>
                   </tr>
                 </tbody>
@@ -519,7 +972,6 @@ a method for constructing labDT from a strptime pattern in a string
         </div>
     </div>
 </div>
-
 
     </body>
 </html>

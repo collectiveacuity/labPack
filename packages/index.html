@@ -9,110 +9,172 @@
         
         <link rel="shortcut icon" href="../img/favicon.ico">
         <title>Packages - Lab Pack</title>
-        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
-        <link href="../css/font-awesome-4.5.0.css" rel="stylesheet">
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/font-awesome.min.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
-        <link rel="stylesheet" href="../css/highlight.css">
-        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-        <!--[if lt IE 9]>
-            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
-        <![endif]-->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
 
-        <script src="../js/jquery-1.10.2.min.js"></script>
-        <script src="../js/bootstrap-3.0.3.min.js"></script>
-        <script src="../js/highlight.pack.js"></script> 
+        <script src="../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../js/bootstrap.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
     </head>
 
     <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="..">Lab Pack</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
 
-        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
-    <div class="container">
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="navitem">
+                                <a href=".." class="nav-link">Home</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../classes/" class="nav-link">Classes</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../clients/" class="nav-link">Clients</a>
+                            </li>
+                            <li class="navitem active">
+                                <a href="./" class="nav-link">Packages</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../resources/" class="nav-link">Resources</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../roadmap/" class="nav-link">Roadmap</a>
+                            </li>
+                        </ul>
 
-        <!-- Collapsed navigation -->
-        <div class="navbar-header">
-            <!-- Expander button -->
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="..">Lab Pack</a>
+                    <ul class="nav navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" href="../clients/" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="../resources/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
         </div>
-
-        <!-- Expanded navigation -->
-        <div class="navbar-collapse collapse">
-                <!-- Main navigation -->
-                <ul class="nav navbar-nav">
-                    <li >
-                        <a href="..">Home</a>
-                    </li>
-                    <li >
-                        <a href="../classes/">Classes</a>
-                    </li>
-                    <li >
-                        <a href="../clients/">Clients</a>
-                    </li>
-                    <li class="active">
-                        <a href="./">Packages</a>
-                    </li>
-                    <li >
-                        <a href="../resources/">Resources</a>
-                    </li>
-                    <li >
-                        <a href="../roadmap/">Roadmap</a>
-                    </li>
-                </ul>
-
-            <ul class="nav navbar-nav navbar-right">
-                <li>
-                    <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
-                        <i class="fa fa-search"></i> Search
-                    </a>
-                </li>
-                    <li >
-                        <a rel="next" href="../clients/">
-                            <i class="fa fa-arrow-left"></i> Previous
-                        </a>
-                    </li>
-                    <li >
-                        <a rel="prev" href="../resources/">
-                            Next <i class="fa fa-arrow-right"></i>
-                        </a>
-                    </li>
-            </ul>
-        </div>
-    </div>
-</div>
 
         <div class="container">
-                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
-    <ul class="nav bs-sidenav">
-        <li class="main active"><a href="#packages">Packages</a></li>
-            <li><a href="#sslpy">ssl.py</a></li>
-            <li><a href="#dreppy">drep.py</a></li>
-            <li><a href="#encodingpy">encoding.py</a></li>
-            <li><a href="#filterspy">filters.py</a></li>
-            <li><a href="#objectspy">objects.py</a></li>
-            <li><a href="#iso_3166py">iso_3166.py</a></li>
-            <li><a href="#iso_3166_2_uspy">iso_3166_2_US.py</a></li>
-            <li><a href="#cryptolabpy">cryptolab.py</a></li>
-            <li><a href="#requestspy">requests.py</a></li>
-            <li><a href="#datapy">data.py</a></li>
-            <li><a href="#comparisonpy">comparison.py</a></li>
-            <li><a href="#conversionpy">conversion.py</a></li>
-            <li><a href="#flaskpy">flask.py</a></li>
-            <li><a href="#grammarpy">grammar.py</a></li>
-            <li><a href="#shellpy">shell.py</a></li>
-            <li><a href="#performlabpy">performlab.py</a></li>
-            <li><a href="#randomlabpy">randomlab.py</a></li>
-            <li><a href="#ippy">ip.py</a></li>
-            <li><a href="#settingspy">settings.py</a></li>
-            <li><a href="#barrelpy">barrel.py</a></li>
-    </ul>
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-light navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-level="1"><a href="#packages" class="nav-link">Packages</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#sslpy" class="nav-link">ssl.py</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#dreppy" class="nav-link">drep.py</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#encodingpy" class="nav-link">encoding.py</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#filterspy" class="nav-link">filters.py</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#objectspy" class="nav-link">objects.py</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#iso_3166py" class="nav-link">iso_3166.py</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#iso_3166_2_uspy" class="nav-link">iso_3166_2_US.py</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#cryptolabpy" class="nav-link">cryptolab.py</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#requestspy" class="nav-link">requests.py</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#datapy" class="nav-link">data.py</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#comparisonpy" class="nav-link">comparison.py</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#conversionpy" class="nav-link">conversion.py</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#flaskpy" class="nav-link">flask.py</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#grammarpy" class="nav-link">grammar.py</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#shellpy" class="nav-link">shell.py</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#performlabpy" class="nav-link">performlab.py</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#randomlabpy" class="nav-link">randomlab.py</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#ippy" class="nav-link">ip.py</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#settingspy" class="nav-link">settings.py</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#barrelpy" class="nav-link">barrel.py</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
 </div></div>
-                <div class="col-md-9" role="main">
+                    <div class="col-md-9" role="main">
 
 <h1 id="packages">Packages</h1>
 <h2 id="sslpy">ssl.py</h2>
@@ -133,14 +195,14 @@ a function to generate a keystore and cert files for self-signed ssl authenticat
 </thead>
 <tbody>
 <tr><td>key_alias        </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>key_folder       </td><td>str     </td><td>          </td><td>&ldquo;./&rdquo;     </td><td>             </td></tr>
-<tr><td>root_cert        </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>             </td></tr>
-<tr><td>truststore       </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>             </td></tr>
-<tr><td>password         </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>             </td></tr>
-<tr><td>organization     </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>             </td></tr>
-<tr><td>organization_unit</td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>             </td></tr>
-<tr><td>locality         </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>             </td></tr>
-<tr><td>country          </td><td>str     </td><td>          </td><td>&ldquo;&rdquo;       </td><td>             </td></tr>
+<tr><td>key_folder       </td><td>str     </td><td>          </td><td>&quot;./&quot;     </td><td>             </td></tr>
+<tr><td>root_cert        </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>truststore       </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>password         </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>organization     </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>organization_unit</td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>locality         </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>country          </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
 <tr><td>key_size         </td><td>int     </td><td>          </td><td>2048     </td><td>             </td></tr>
 <tr><td>verbose          </td><td>bool    </td><td>          </td><td>True     </td><td>             </td></tr>
 <tr><td>overwrite        </td><td>bool    </td><td>          </td><td>False    </td><td>             </td></tr>
@@ -200,8 +262,8 @@ decode_data(file_name, byte_data, mimetype=&rdquo;&ldquo;, secret_key=&rdquo;&ld
 <tbody>
 <tr><td>file_name </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>byte_data </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>mimetype  </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
-<tr><td>secret_key</td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>mimetype  </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>secret_key</td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
 </tbody>
 </table>
 
@@ -218,8 +280,8 @@ encode_data(file_name, python_object, mimetype=&rdquo;&ldquo;, secret_key=&rdquo
 <tbody>
 <tr><td>file_name    </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>python_object</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
-<tr><td>mimetype     </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
-<tr><td>secret_key   </td><td>str     </td><td>          </td><td>""       </td><td>             </td></tr>
+<tr><td>mimetype     </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
+<tr><td>secret_key   </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>             </td></tr>
 </tbody>
 </table>
 
@@ -241,7 +303,7 @@ a method to construct a conditional filter function to test positional arguments
 </thead>
 <tbody>
 <tr><td>positional_filters</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary or list of dictionaries with query criteria</td></tr>
-<tr><td>title             </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>string with name of function to use instead           </td></tr>
+<tr><td>title             </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>string with name of function to use instead           </td></tr>
 </tbody>
 </table></p>
 <h2 id="objectspy">objects.py</h2>
@@ -261,7 +323,7 @@ retrieve_function(function_string, global_scope=None, root_path=&rdquo;./&rdquo;
 <tbody>
 <tr><td>function_string</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>global_scope   </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
-<tr><td>root_path      </td><td>str     </td><td>          </td><td>"./"     </td><td>             </td></tr>
+<tr><td>root_path      </td><td>str     </td><td>          </td><td>&quot;./&quot;     </td><td>             </td></tr>
 </tbody>
 </table>
 
@@ -287,7 +349,7 @@ compile_map(key_column=&rdquo;Alpha-3code&rdquo;, csv_list=None)</p>
 <tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default      </th><th>Description  </th></tr>
 </thead>
 <tbody>
-<tr><td>key_column</td><td>str     </td><td>          </td><td>"Alpha-3code"</td><td>             </td></tr>
+<tr><td>key_column</td><td>str     </td><td>          </td><td>&quot;Alpha-3code&quot;</td><td>             </td></tr>
 <tr><td>csv_list  </td><td>NoneType</td><td>          </td><td>None         </td><td>             </td></tr>
 </tbody>
 </table>
@@ -320,7 +382,7 @@ compile_map(key_column=&rdquo;USPS&rdquo;, csv_list=None)</p>
 <tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
 </thead>
 <tbody>
-<tr><td>key_column</td><td>str     </td><td>          </td><td>"USPS"   </td><td>             </td></tr>
+<tr><td>key_column</td><td>str     </td><td>          </td><td>&quot;USPS&quot;   </td><td>             </td></tr>
 <tr><td>csv_list  </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
 </tbody>
 </table>
@@ -355,7 +417,7 @@ uses cryptography module to decrypt byte data
 </thead>
 <tbody>
 <tr><td>encrypted_data</td><td>bytes </td><td>Yes       </td><td>None     </td><td>bytes with data to decrypt            </td></tr>
-<tr><td>secret_key    </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>[optional] string used to decrypt data</td></tr>
+<tr><td>secret_key    </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>[optional] string used to decrypt data</td></tr>
 </tbody>
 </table></p>
 <h3 id="encrypt">encrypt</h3>
@@ -381,7 +443,7 @@ uses cryptography module to encrypt byte data
 </thead>
 <tbody>
 <tr><td>byte_data </td><td>bytes </td><td>Yes       </td><td>None     </td><td>bytes with data to encrypt            </td></tr>
-<tr><td>secret_key</td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string used to encrypt data</td></tr>
+<tr><td>secret_key</td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string used to encrypt data</td></tr>
 </tbody>
 </table></p>
 <h2 id="requestspy">requests.py</h2>
@@ -400,7 +462,7 @@ handle_requests(request_object, uptime_url=&rdquo;www.google.com&rdquo;)</p>
 </thead>
 <tbody>
 <tr><td>request_object</td><td>NoneType</td><td>Yes       </td><td>None            </td><td>             </td></tr>
-<tr><td>uptime_url    </td><td>str     </td><td>          </td><td>"www.google.com"</td><td>             </td></tr>
+<tr><td>uptime_url    </td><td>str     </td><td>          </td><td>&quot;www.google.com&quot;</td><td>             </td></tr>
 </tbody>
 </table>
 
@@ -417,8 +479,8 @@ the initialization method for the requestsHandler class object<br />
 </thead>
 <tbody>
 <tr><td>self            </td><td>object  </td><td>Yes       </td><td>None             </td><td>                                                           </td></tr>
-<tr><td>uptime_url      </td><td>str     </td><td>          </td><td>&ldquo;www.google.com&rdquo; </td><td>[optional] string with url to test availability of internet</td></tr>
-<tr><td>requests_handler</td><td>function</td><td>          </td><td>&ldquo;handle_requests&rdquo;</td><td>[optional] callable method which accepts a Request object  </td></tr>
+<tr><td>uptime_url      </td><td>str     </td><td>          </td><td>&quot;www.google.com&quot; </td><td>[optional] string with url to test availability of internet</td></tr>
+<tr><td>requests_handler</td><td>function</td><td>          </td><td>&quot;handle_requests&quot;</td><td>[optional] callable method which accepts a Request object  </td></tr>
 <tr><td>response_handler</td><td>function</td><td>          </td><td>None             </td><td>[optional] callable method which accepts a Response object </td></tr>
 <tr><td>verbose         </td><td>bool    </td><td>          </td><td>False            </td><td>boolean to enable print out of status                      </td></tr>
 </tbody>
@@ -575,8 +637,8 @@ a method to extract and validate jwt session token from request headers<br />
 </thead>
 <tbody>
 <tr><td>request_headers</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with header fields from request         </td></tr>
-<tr><td>session_header </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with name of session token header key       </td></tr>
-<tr><td>secret_key     </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with secret key to json web token encryption</td></tr>
+<tr><td>session_header </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with name of session token header key       </td></tr>
+<tr><td>secret_key     </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with secret key to json web token encryption</td></tr>
 </tbody>
 </table></p>
 <h3 id="validate_request_content">validate_request_content</h3>
@@ -593,7 +655,7 @@ a method to validate the content fields of a flask request<br />
 <tbody>
 <tr><td>request_content  </td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with content fields to validate        </td></tr>
 <tr><td>request_model    </td><td>object</td><td>Yes       </td><td>None     </td><td>object with jsonmodel class properties            </td></tr>
-<tr><td>request_component</td><td>str   </td><td>          </td><td>&ldquo;body&rdquo;   </td><td>string with name of component of request evaluated</td></tr>
+<tr><td>request_component</td><td>str   </td><td>          </td><td>&quot;body&quot;   </td><td>string with name of component of request evaluated</td></tr>
 </tbody>
 </table></p>
 <h2 id="grammarpy">grammar.py</h2>
@@ -603,17 +665,17 @@ a method to validate the content fields of a flask request<br />
 <h3 id="join_words">join_words</h3>
 <h5 id="_57"></h5>
 <p><strong>Signature:</strong><br />
-join_words(word_list, operator=&rdquo;conjuction&rdquo;, quotes=False)</p>
+join_words(word_list, operator=&rdquo;and&rdquo;, quotes=False)</p>
 <h5 id="_58"></h5>
 <p><strong>Description:</strong>  </p>
 <table>
 <thead>
-<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default     </th><th>Description  </th></tr>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
 </thead>
 <tbody>
-<tr><td>word_list </td><td>NoneType</td><td>Yes       </td><td>None        </td><td>             </td></tr>
-<tr><td>operator  </td><td>str     </td><td>          </td><td>"conjuction"</td><td>             </td></tr>
-<tr><td>quotes    </td><td>bool    </td><td>          </td><td>False       </td><td>             </td></tr>
+<tr><td>word_list </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>operator  </td><td>str     </td><td>          </td><td>&quot;and&quot;    </td><td>             </td></tr>
+<tr><td>quotes    </td><td>bool    </td><td>          </td><td>False    </td><td>             </td></tr>
 </tbody>
 </table>
 
@@ -630,7 +692,7 @@ section_text(text_string, max_characters=500, continue_text=&rdquo;&hellip;&rdqu
 <tbody>
 <tr><td>text_string   </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>max_characters</td><td>int     </td><td>          </td><td>500      </td><td>             </td></tr>
-<tr><td>continue_text </td><td>str     </td><td>          </td><td>"..."    </td><td>             </td></tr>
+<tr><td>continue_text </td><td>str     </td><td>          </td><td>&quot;...&quot;    </td><td>             </td></tr>
 </tbody>
 </table>
 
@@ -651,10 +713,10 @@ a method to convert a STDOUT shell table into a python data structure<br />
 <tr><th>Argument    </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                                </th></tr>
 </thead>
 <tbody>
-<tr><td>shell_output</td><td>str     </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string from STDOUT with headers                            </td></tr>
-<tr><td>delimiter   </td><td>str     </td><td>          </td><td>&ldquo;\t|\s{&rdquo; </td><td>string with regex pattern delimiting headers               </td></tr>
-<tr><td>}&rsquo;          </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>                                                           </td></tr>
-<tr><td>output      </td><td>str     </td><td>          </td><td>&ldquo;dict&rdquo;   </td><td>string with type of structure to output (dict, list or csv)</td></tr>
+<tr><td>shell_output</td><td>str     </td><td>Yes       </td><td>&quot;&quot;       </td><td>string from STDOUT with headers                            </td></tr>
+<tr><td>delimiter   </td><td>str     </td><td>          </td><td>&quot;\t|\s{&quot; </td><td>string with regex pattern delimiting headers               </td></tr>
+<tr><td>}&#x27;          </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>                                                           </td></tr>
+<tr><td>output      </td><td>str     </td><td>          </td><td>&quot;dict&quot;   </td><td>string with type of structure to output (dict, list or csv)</td></tr>
 </tbody>
 </table></p>
 <h2 id="performlabpy">performlab.py</h2>
@@ -785,7 +847,7 @@ a method to get the details associated with an ip address<br />
 </thead>
 <tbody>
 <tr><td>ip_address</td><td>NoneType</td><td>Yes       </td><td>None        </td><td>             </td></tr>
-<tr><td>source    </td><td>str     </td><td>          </td><td>&ldquo;whatismyip&rdquo;</td><td>             </td></tr>
+<tr><td>source    </td><td>str     </td><td>          </td><td>&quot;whatismyip&quot;</td><td>             </td></tr>
 </tbody>
 </table></p>
 <h3 id="get_ip">get_ip</h3>
@@ -827,8 +889,8 @@ a method to compile configuration values from different sources</p>
 <tr><th>Argument     </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                    </th></tr>
 </thead>
 <tbody>
-<tr><td>model_path   </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with path to jsonmodel valid model data </td></tr>
-<tr><td>file_path    </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with path to local configuration file   </td></tr>
+<tr><td>model_path   </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with path to jsonmodel valid model data </td></tr>
+<tr><td>file_path    </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with path to local configuration file   </td></tr>
 <tr><td>ignore_errors</td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to ignore any invalid values</td></tr>
 </tbody>
 </table></p>
@@ -851,9 +913,9 @@ a method to load data from json valid files<br />
 <tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                               </th></tr>
 </thead>
 <tbody>
-<tr><td>file_path  </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with path to settings file                         </td></tr>
-<tr><td>module_name</td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with name of module containing file path</td></tr>
-<tr><td>secret_key </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with key to decrypt drep file           </td></tr>
+<tr><td>file_path  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with path to settings file                         </td></tr>
+<tr><td>module_name</td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with name of module containing file path</td></tr>
+<tr><td>secret_key </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with key to decrypt drep file           </td></tr>
 </tbody>
 </table></p>
 <h3 id="remove_settings">remove_settings</h3>
@@ -871,7 +933,7 @@ a method to remove a file using a child process</p>
 <tr><th>Argument   </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                     </th></tr>
 </thead>
 <tbody>
-<tr><td>file_path  </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with path to file to remove                              </td></tr>
+<tr><td>file_path  </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with path to file to remove                              </td></tr>
 <tr><td>retry_count</td><td>int   </td><td>          </td><td>10       </td><td>integer with number of attempts to remove before error is thrown</td></tr>
 <tr><td>remove_dir </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to remove empty parent directories           </td></tr>
 </tbody>
@@ -888,10 +950,10 @@ a method to save dictionary typed data to a local file<br />
 <tr><th>Argument      </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                       </th></tr>
 </thead>
 <tbody>
-<tr><td>file_path     </td><td>str   </td><td>Yes       </td><td>&ldquo;&rdquo;       </td><td>string with path to settings file                 </td></tr>
+<tr><td>file_path     </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with path to settings file                 </td></tr>
 <tr><td>record_details</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with record details                    </td></tr>
 <tr><td>overwrite     </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to overwrite existing file data</td></tr>
-<tr><td>secret_key    </td><td>str   </td><td>          </td><td>&ldquo;&rdquo;       </td><td>[optional] string with key to decrypt drep file   </td></tr>
+<tr><td>secret_key    </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with key to decrypt drep file   </td></tr>
 </tbody>
 </table></p>
 <h2 id="barrelpy">barrel.py</h2>
@@ -925,32 +987,35 @@ store_values(file_path, data)</p>
 <tr><td>data      </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 </tbody>
 </table></div>
+            </div>
         </div>
 
         <footer class="col-md-12">
             <hr>
-            <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
         </footer>
-        <script>var base_url = '..';</script>
-        <script src="../js/base.js"></script>
-        <script src="../search/require.js"></script>
-        <script src="../search/search.js"></script>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js" defer></script>
+        <script src="../search/main.js" defer></script>
 
-        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
-    <div class="modal-dialog">
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
             </div>
             <div class="modal-body">
                 <p>
                     From here you can search these documents. Enter
                     your search terms below.
                 </p>
-                <form role="form">
+                <form>
                     <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
                     </div>
                 </form>
                 <div id="mkdocs-search-results"></div>
@@ -959,12 +1024,12 @@ store_values(file_path, data)</p>
             </div>
         </div>
     </div>
-</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
             </div>
             <div class="modal-body">
               <table class="table">
@@ -976,19 +1041,19 @@ store_values(file_path, data)</p>
                 </thead>
                 <tbody>
                   <tr>
-                    <td><kbd>?</kbd></td>
+                    <td class="help shortcut"><kbd>?</kbd></td>
                     <td>Open this help</td>
                   </tr>
                   <tr>
-                    <td><kbd>&larr;</kbd></td>
-                    <td>Previous page</td>
-                  </tr>
-                  <tr>
-                    <td><kbd>&rarr;</kbd></td>
+                    <td class="next shortcut"><kbd>n</kbd></td>
                     <td>Next page</td>
                   </tr>
                   <tr>
-                    <td><kbd>s</kbd></td>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
                     <td>Search</td>
                   </tr>
                 </tbody>
@@ -999,7 +1064,6 @@ store_values(file_path, data)</p>
         </div>
     </div>
 </div>
-
 
     </body>
 </html>

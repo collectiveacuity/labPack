@@ -9,96 +9,116 @@
         
         <link rel="shortcut icon" href="../img/favicon.ico">
         <title>Resources - Lab Pack</title>
-        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
-        <link href="../css/font-awesome-4.5.0.css" rel="stylesheet">
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/font-awesome.min.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
-        <link rel="stylesheet" href="../css/highlight.css">
-        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-        <!--[if lt IE 9]>
-            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
-        <![endif]-->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
 
-        <script src="../js/jquery-1.10.2.min.js"></script>
-        <script src="../js/bootstrap-3.0.3.min.js"></script>
-        <script src="../js/highlight.pack.js"></script> 
+        <script src="../js/jquery-1.10.2.min.js" defer></script>
+        <script src="../js/bootstrap.min.js" defer></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+        <script>hljs.initHighlightingOnLoad();</script> 
     </head>
 
     <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="..">Lab Pack</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
 
-        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
-    <div class="container">
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="navitem">
+                                <a href=".." class="nav-link">Home</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../classes/" class="nav-link">Classes</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../clients/" class="nav-link">Clients</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../packages/" class="nav-link">Packages</a>
+                            </li>
+                            <li class="navitem active">
+                                <a href="./" class="nav-link">Resources</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../roadmap/" class="nav-link">Roadmap</a>
+                            </li>
+                        </ul>
 
-        <!-- Collapsed navigation -->
-        <div class="navbar-header">
-            <!-- Expander button -->
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="..">Lab Pack</a>
+                    <ul class="nav navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" href="../packages/" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="../roadmap/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
         </div>
-
-        <!-- Expanded navigation -->
-        <div class="navbar-collapse collapse">
-                <!-- Main navigation -->
-                <ul class="nav navbar-nav">
-                    <li >
-                        <a href="..">Home</a>
-                    </li>
-                    <li >
-                        <a href="../classes/">Classes</a>
-                    </li>
-                    <li >
-                        <a href="../clients/">Clients</a>
-                    </li>
-                    <li >
-                        <a href="../packages/">Packages</a>
-                    </li>
-                    <li class="active">
-                        <a href="./">Resources</a>
-                    </li>
-                    <li >
-                        <a href="../roadmap/">Roadmap</a>
-                    </li>
-                </ul>
-
-            <ul class="nav navbar-nav navbar-right">
-                <li>
-                    <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
-                        <i class="fa fa-search"></i> Search
-                    </a>
-                </li>
-                    <li >
-                        <a rel="next" href="../packages/">
-                            <i class="fa fa-arrow-left"></i> Previous
-                        </a>
-                    </li>
-                    <li >
-                        <a rel="prev" href="../roadmap/">
-                            Next <i class="fa fa-arrow-right"></i>
-                        </a>
-                    </li>
-            </ul>
-        </div>
-    </div>
-</div>
 
         <div class="container">
-                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
-    <ul class="nav bs-sidenav">
-        <li class="main active"><a href="#resources">Resources</a></li>
-            <li><a href="#entity-recognition">Entity Recognition</a></li>
-            <li><a href="#ocr">OCR</a></li>
-            <li><a href="#speech-recognition">Speech Recognition</a></li>
-            <li><a href="#speech-synthesis">Speech Synthesis</a></li>
-            <li><a href="#telephony">Telephony</a></li>
-            <li><a href="#translation">Translation</a></li>
-    </ul>
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-light navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
+
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-level="1"><a href="#resources" class="nav-link">Resources</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#entity-recognition" class="nav-link">Entity Recognition</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#ocr" class="nav-link">OCR</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#speech-recognition" class="nav-link">Speech Recognition</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#speech-synthesis" class="nav-link">Speech Synthesis</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#telephony" class="nav-link">Telephony</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#translation" class="nav-link">Translation</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
 </div></div>
-                <div class="col-md-9" role="main">
+                    <div class="col-md-9" role="main">
 
 <h1 id="resources">Resources</h1>
 <h2 id="entity-recognition">Entity Recognition</h2>
@@ -107,11 +127,11 @@
 <tr><th>Resource                                                                                                                                                                                                                                                                                           </th><th>Author               </th><th>Type         </th><th>Protocols  </th><th>Free Usage                                </th><th>Documentation                                                                                                         </th><th>Coverage  </th></tr>
 </thead>
 <tbody>
-<tr><td><a href="https://api.ai/" title="API.AI is a natural language understanding platform that makes it easy for developers (and non-developers) to design and integrate intelligent and sophisticated conversational user interfaces into mobile apps, web applications, devices, and bots.">API.ai</a></td><td>Google               </td><td>Service      </td><td>REST api   </td><td>Unlimited                                 </td><td><a href="https://docs.api.ai/">API Reference</a>                                                                      </td><td>          </td></tr>
-<tr><td><a href="https://console.aws.amazon.com/lex/" title="Amazon Lex is a service for building conversational interfaces using voice and text. ">Amazon Lex</a>                                                                                                                                         </td><td>Amazon               </td><td>Service      </td><td>REST api   </td><td>5k requests/month&nbsp;<sup>(1 year)</sup></td><td><a href="http://docs.aws.amazon.com/lex/latest/dg/what-is.html">API Reference</a>                                     </td><td>          </td></tr>
-<tr><td><a href="https://console.ng.bluemix.net/catalog/services/conversation" title="Add a natural language interface to your application to automate interactions with your end users.">IBM Watson</a>                                                                                                   </td><td>IBM                  </td><td>Service      </td><td>REST api   </td><td>10k calls/month                           </td><td><a href="https://console.bluemix.net/docs/services/conversation/getting-started.html#gettingstarted">API Reference</a></td><td>          </td></tr>
-<tr><td><a href="https://rasa.ai/" title="Rasa NLU (Natural Language Understanding) is a tool for intent classification and entity extraction. ">Rasa</a>                                                                                                                                                  </td><td>LastMile Technologies</td><td>Python Module</td><td>python     </td><td>Unlimited                                 </td><td><a href="https://github.com/golastmile/rasa_nlu">Installation</a>                                                     </td><td>          </td></tr>
-<tr><td><a href="https://wit.ai/" title="Natural Language for Developers">Wit.ai</a>                                                                                                                                                                                                                       </td><td>Facebook             </td><td>Service      </td><td>REST api   </td><td>1 request/second                          </td><td><a href="https://wit.ai/docs/http/20170307#post%E2%80%94speech-link">API Reference</a>                                </td><td>          </td></tr>
+<tr><td>&lt;a href=&quot;https://api.ai/&quot; title=&quot;API.AI is a natural language understanding platform that makes it easy for developers (and non-developers) to design and integrate intelligent and sophisticated conversational user interfaces into mobile apps, web applications, devices, and bots.&quot;&gt;API.ai&lt;/a&gt;</td><td>Google               </td><td>Service      </td><td>REST api   </td><td>Unlimited                                 </td><td>&lt;a href=&quot;https://docs.api.ai/&quot;&gt;API Reference&lt;/a&gt;                                                                      </td><td>          </td></tr>
+<tr><td>&lt;a href=&quot;https://console.aws.amazon.com/lex/&quot; title=&quot;Amazon Lex is a service for building conversational interfaces using voice and text. &quot;&gt;Amazon Lex&lt;/a&gt;                                                                                                                                         </td><td>Amazon               </td><td>Service      </td><td>REST api   </td><td>5k requests/month&amp;nbsp;&lt;sup&gt;(1 year)&lt;/sup&gt;</td><td>&lt;a href=&quot;http://docs.aws.amazon.com/lex/latest/dg/what-is.html&quot;&gt;API Reference&lt;/a&gt;                                     </td><td>          </td></tr>
+<tr><td>&lt;a href=&quot;https://console.ng.bluemix.net/catalog/services/conversation&quot; title=&quot;Add a natural language interface to your application to automate interactions with your end users.&quot;&gt;IBM Watson&lt;/a&gt;                                                                                                   </td><td>IBM                  </td><td>Service      </td><td>REST api   </td><td>10k calls/month                           </td><td>&lt;a href=&quot;https://console.bluemix.net/docs/services/conversation/getting-started.html#gettingstarted&quot;&gt;API Reference&lt;/a&gt;</td><td>          </td></tr>
+<tr><td>&lt;a href=&quot;https://rasa.ai/&quot; title=&quot;Rasa NLU (Natural Language Understanding) is a tool for intent classification and entity extraction. &quot;&gt;Rasa&lt;/a&gt;                                                                                                                                                  </td><td>LastMile Technologies</td><td>Python Module</td><td>python     </td><td>Unlimited                                 </td><td>&lt;a href=&quot;https://github.com/golastmile/rasa_nlu&quot;&gt;Installation&lt;/a&gt;                                                     </td><td>          </td></tr>
+<tr><td>&lt;a href=&quot;https://wit.ai/&quot; title=&quot;Natural Language for Developers&quot;&gt;Wit.ai&lt;/a&gt;                                                                                                                                                                                                                       </td><td>Facebook             </td><td>Service      </td><td>REST api   </td><td>1 request/second                          </td><td>&lt;a href=&quot;https://wit.ai/docs/http/20170307#post%E2%80%94speech-link&quot;&gt;API Reference&lt;/a&gt;                                </td><td>          </td></tr>
 </tbody>
 </table></p>
 <h2 id="ocr">OCR</h2>
@@ -120,9 +140,9 @@
 <tr><th>Resource                                                                                                                                                                                                           </th><th>Author       </th><th>Type     </th><th>Protocols   </th><th>Free Usage     </th><th>Documentation                                                                        </th><th>Coverage  </th></tr>
 </thead>
 <tbody>
-<tr><td><a href="https://cloud.google.com/vision/docs/fulltext-annotations" title="Document Text Detection performs Optical Character Recognition. This feature detects dense document text in an image.">Google Vision</a></td><td>Google       </td><td>Service  </td><td>REST api    </td><td>1k pages/month </td><td><a href="https://cloud.google.com/vision/docs/fulltext-annotations">API Reference</a></td><td>          </td></tr>
-<tr><td><a href="https://ocr.space/" title="Free Online OCR - Convert images to text (Powered by the OCR API)">OCR.space</a>                                                                                               </td><td>a9t9 software</td><td>Service  </td><td>REST api    </td><td>25k pages/month</td><td><a href="https://ocr.space/ocrapi">API Reference</a>                                 </td><td>          </td></tr>
-<tr><td><a href="https://github.com/tesseract-ocr/tesseract" title="Tesseract is an open source Optical Character Recognition (OCR) Engine, available under the Apache 2.0 license.">Tesseract</a>                         </td><td>Tesseract    </td><td>C Package</td><td>command line</td><td>Unlimited      </td><td><a href="https://github.com/tesseract-ocr/tesseract/wiki">Installation</a>           </td><td>          </td></tr>
+<tr><td>&lt;a href=&quot;https://cloud.google.com/vision/docs/fulltext-annotations&quot; title=&quot;Document Text Detection performs Optical Character Recognition. This feature detects dense document text in an image.&quot;&gt;Google Vision&lt;/a&gt;</td><td>Google       </td><td>Service  </td><td>REST api    </td><td>1k pages/month </td><td>&lt;a href=&quot;https://cloud.google.com/vision/docs/fulltext-annotations&quot;&gt;API Reference&lt;/a&gt;</td><td>          </td></tr>
+<tr><td>&lt;a href=&quot;https://ocr.space/&quot; title=&quot;Free Online OCR - Convert images to text (Powered by the OCR API)&quot;&gt;OCR.space&lt;/a&gt;                                                                                               </td><td>a9t9 software</td><td>Service  </td><td>REST api    </td><td>25k pages/month</td><td>&lt;a href=&quot;https://ocr.space/ocrapi&quot;&gt;API Reference&lt;/a&gt;                                 </td><td>          </td></tr>
+<tr><td>&lt;a href=&quot;https://github.com/tesseract-ocr/tesseract&quot; title=&quot;Tesseract is an open source Optical Character Recognition (OCR) Engine, available under the Apache 2.0 license.&quot;&gt;Tesseract&lt;/a&gt;                         </td><td>Tesseract    </td><td>C Package</td><td>command line</td><td>Unlimited      </td><td>&lt;a href=&quot;https://github.com/tesseract-ocr/tesseract/wiki&quot;&gt;Installation&lt;/a&gt;           </td><td>          </td></tr>
 </tbody>
 </table></p>
 <h2 id="speech-recognition">Speech Recognition</h2>
@@ -131,11 +151,11 @@
 <tr><th>Resource                                                                                                                                                                                                                                                                                                                                        </th><th>Author      </th><th>Type     </th><th>Protocols          </th><th>Free Usage           </th><th>Documentation                                                                                     </th><th>Coverage  </th></tr>
 </thead>
 <tbody>
-<tr><td><a href="https://azure.microsoft.com/en-us/services/cognitive-services/speech/" title="Convert spoken audio to text. The API can be directed to turn on and recognize audio coming from the microphone in real-time, recognize audio coming from a different real-time audio source, or to recognize audio from within a file. ">Bing Speech</a></td><td>Microsoft   </td><td>Service  </td><td>websocket, REST api</td><td>5k transactions/month</td><td><a href="https://docs.microsoft.com/en-us/azure/cognitive-services/speech/home">API Reference</a> </td><td>          </td></tr>
-<tr><td><a href="https://cloud.google.com/speech/" title="Google Cloud Speech API enables developers to convert audio to text by applying powerful neural network models in an easy to use API.">Google Speech</a>                                                                                                                                      </td><td>Google      </td><td>Service  </td><td>websocket, REST api</td><td>60 min/month         </td><td><a href="https://cloud.google.com/speech/docs/">API Reference</a>                                 </td><td>          </td></tr>
-<tr><td><a href="https://console.ng.bluemix.net/catalog/services/speech-to-text" title="The Speech to Text service converts the human voice into the written word.">IBM Watson</a>                                                                                                                                                                      </td><td>IBM         </td><td>Service  </td><td>websocket, REST api</td><td>1k minutes           </td><td><a href="https://www.ibm.com/watson/developercloud/speech-to-text.html">API Reference</a>         </td><td>          </td></tr>
-<tr><td><a href="https://github.com/julius-speech/julius" title="Julius is an open-source, high-performance large vocabulary continuous speech recognition (LVCSR) engine for speech-related researchs and developments. ">Julius</a>                                                                                                                   </td><td>Kawahara Lab</td><td>C Package</td><td>command line       </td><td>Unlimited            </td><td><a href="https://jasperproject.github.io/documentation/configuration/#julius-stt">Installation</a></td><td>          </td></tr>
-<tr><td><a href="https://wit.ai/" title="Natural Language for Developers">Wit.ai</a>                                                                                                                                                                                                                                                                    </td><td>Facebook    </td><td>Service  </td><td>REST api           </td><td>1 request/second     </td><td><a href="https://wit.ai/docs/http/20170307#post%E2%80%94speech-link">API Reference</a>            </td><td>          </td></tr>
+<tr><td>&lt;a href=&quot;https://azure.microsoft.com/en-us/services/cognitive-services/speech/&quot; title=&quot;Convert spoken audio to text. The API can be directed to turn on and recognize audio coming from the microphone in real-time, recognize audio coming from a different real-time audio source, or to recognize audio from within a file. &quot;&gt;Bing Speech&lt;/a&gt;</td><td>Microsoft   </td><td>Service  </td><td>websocket, REST api</td><td>5k transactions/month</td><td>&lt;a href=&quot;https://docs.microsoft.com/en-us/azure/cognitive-services/speech/home&quot;&gt;API Reference&lt;/a&gt; </td><td>          </td></tr>
+<tr><td>&lt;a href=&quot;https://cloud.google.com/speech/&quot; title=&quot;Google Cloud Speech API enables developers to convert audio to text by applying powerful neural network models in an easy to use API.&quot;&gt;Google Speech&lt;/a&gt;                                                                                                                                      </td><td>Google      </td><td>Service  </td><td>websocket, REST api</td><td>60 min/month         </td><td>&lt;a href=&quot;https://cloud.google.com/speech/docs/&quot;&gt;API Reference&lt;/a&gt;                                 </td><td>          </td></tr>
+<tr><td>&lt;a href=&quot;https://console.ng.bluemix.net/catalog/services/speech-to-text&quot; title=&quot;The Speech to Text service converts the human voice into the written word.&quot;&gt;IBM Watson&lt;/a&gt;                                                                                                                                                                      </td><td>IBM         </td><td>Service  </td><td>websocket, REST api</td><td>1k minutes           </td><td>&lt;a href=&quot;https://www.ibm.com/watson/developercloud/speech-to-text.html&quot;&gt;API Reference&lt;/a&gt;         </td><td>          </td></tr>
+<tr><td>&lt;a href=&quot;https://github.com/julius-speech/julius&quot; title=&quot;Julius is an open-source, high-performance large vocabulary continuous speech recognition (LVCSR) engine for speech-related researchs and developments. &quot;&gt;Julius&lt;/a&gt;                                                                                                                   </td><td>Kawahara Lab</td><td>C Package</td><td>command line       </td><td>Unlimited            </td><td>&lt;a href=&quot;https://jasperproject.github.io/documentation/configuration/#julius-stt&quot;&gt;Installation&lt;/a&gt;</td><td>          </td></tr>
+<tr><td>&lt;a href=&quot;https://wit.ai/&quot; title=&quot;Natural Language for Developers&quot;&gt;Wit.ai&lt;/a&gt;                                                                                                                                                                                                                                                                    </td><td>Facebook    </td><td>Service  </td><td>REST api           </td><td>1 request/second     </td><td>&lt;a href=&quot;https://wit.ai/docs/http/20170307#post%E2%80%94speech-link&quot;&gt;API Reference&lt;/a&gt;            </td><td>          </td></tr>
 </tbody>
 </table></p>
 <h2 id="speech-synthesis">Speech Synthesis</h2>
@@ -144,9 +164,9 @@
 <tr><th>Resource                                                                                                                                                                                                                                                                                                                                        </th><th>Author   </th><th>Type   </th><th>Protocols          </th><th>Free Usage                                 </th><th>Documentation                                                                                    </th><th>Coverage  </th></tr>
 </thead>
 <tbody>
-<tr><td><a href="https://console.aws.amazon.com/polly/" title="Amazon Polly converts text to lifelike speech in the cloud.">Amazon Polly</a>                                                                                                                                                                                                            </td><td>Amazon   </td><td>Service</td><td>REST api           </td><td>5m character/month&nbsp;<sup>(1 year)</sup></td><td><a href="http://docs.aws.amazon.com/polly/latest/dg/getting-started.html">API Reference</a>      </td><td>          </td></tr>
-<tr><td><a href="https://azure.microsoft.com/en-us/services/cognitive-services/speech/" title="Convert spoken audio to text. The API can be directed to turn on and recognize audio coming from the microphone in real-time, recognize audio coming from a different real-time audio source, or to recognize audio from within a file. ">Bing Speech</a></td><td>Microsoft</td><td>Service</td><td>websocket, REST api</td><td>5k transactions/month                      </td><td><a href="https://docs.microsoft.com/en-us/azure/cognitive-services/speech/home">API Reference</a></td><td>          </td></tr>
-<tr><td><a href="https://console.ng.bluemix.net/catalog/services/speech-to-text" title="The Speech to Text service converts the human voice into the written word.">IBM Watson</a>                                                                                                                                                                      </td><td>IBM      </td><td>Service</td><td>websocket, REST api</td><td>1k minutes                                 </td><td><a href="https://www.ibm.com/watson/developercloud/speech-to-text.html">API Reference</a>        </td><td>          </td></tr>
+<tr><td>&lt;a href=&quot;https://console.aws.amazon.com/polly/&quot; title=&quot;Amazon Polly converts text to lifelike speech in the cloud.&quot;&gt;Amazon Polly&lt;/a&gt;                                                                                                                                                                                                            </td><td>Amazon   </td><td>Service</td><td>REST api           </td><td>5m character/month&amp;nbsp;&lt;sup&gt;(1 year)&lt;/sup&gt;</td><td>&lt;a href=&quot;http://docs.aws.amazon.com/polly/latest/dg/getting-started.html&quot;&gt;API Reference&lt;/a&gt;      </td><td>          </td></tr>
+<tr><td>&lt;a href=&quot;https://azure.microsoft.com/en-us/services/cognitive-services/speech/&quot; title=&quot;Convert spoken audio to text. The API can be directed to turn on and recognize audio coming from the microphone in real-time, recognize audio coming from a different real-time audio source, or to recognize audio from within a file. &quot;&gt;Bing Speech&lt;/a&gt;</td><td>Microsoft</td><td>Service</td><td>websocket, REST api</td><td>5k transactions/month                      </td><td>&lt;a href=&quot;https://docs.microsoft.com/en-us/azure/cognitive-services/speech/home&quot;&gt;API Reference&lt;/a&gt;</td><td>          </td></tr>
+<tr><td>&lt;a href=&quot;https://console.ng.bluemix.net/catalog/services/speech-to-text&quot; title=&quot;The Speech to Text service converts the human voice into the written word.&quot;&gt;IBM Watson&lt;/a&gt;                                                                                                                                                                      </td><td>IBM      </td><td>Service</td><td>websocket, REST api</td><td>1k minutes                                 </td><td>&lt;a href=&quot;https://www.ibm.com/watson/developercloud/speech-to-text.html&quot;&gt;API Reference&lt;/a&gt;        </td><td>          </td></tr>
 </tbody>
 </table></p>
 <h2 id="telephony">Telephony</h2>
@@ -155,11 +175,11 @@
 <tr><th>Resource                                                                                                                                                                             </th><th>Author      </th><th>Type   </th><th>Protocols  </th><th>Free Usage  </th><th>Documentation                                                                   </th><th>Coverage  </th></tr>
 </thead>
 <tbody>
-<tr><td><a href="https://www.messagebird.com/en-us/" title="Reach 7 billion phones in seconds via SMS, Chat & Voice. Try it for free and improve your communication.">Message Bird</a>       </td><td>Message Bird</td><td>Service</td><td>REST api   </td><td>-           </td><td><a href="https://developers.messagebird.com/docs/introduction">API Reference</a></td><td>          </td></tr>
-<tr><td><a href="https://www.nexmo.com/" title="Programmable Building Blocks for Next Generation Communication Applications">Nexmo</a>                                                       </td><td>Nexmo       </td><td>Service</td><td>REST api   </td><td>$2 credit   </td><td><a href="https://docs.nexmo.com/">API Reference</a>                             </td><td>          </td></tr>
-<tr><td><a href="https://www.plivo.com/" title="Global SMS & Voice calls for businesses of all sizes">Plivo</a>                                                                              </td><td>Plivo       </td><td>Service</td><td>REST api   </td><td>-           </td><td><a href="https://www.plivo.com/voice-api/">API Reference</a>                    </td><td>          </td></tr>
-<tr><td><a href="https://www.twilio.com/" title="Build apps that communicate with everyone in the world. Voice & Video, Messaging, and Authentication APIs for every application.">Twilio</a></td><td>Twilio      </td><td>Service</td><td>REST api   </td><td>$10 credit  </td><td><a href="https://www.twilio.com/docs/">API Reference</a>                        </td><td>          </td></tr>
-<tr><td><a href="https://cloud.zang.io/" title="Cloud communication technology that transforms your conversations — and your business">Zang</a>                                              </td><td>Avaya       </td><td>Service</td><td>REST api   </td><td>$10 credit  </td><td><a href="https://github.com/zang-cloud/zang-python">API Reference</a>           </td><td>          </td></tr>
+<tr><td>&lt;a href=&quot;https://www.messagebird.com/en-us/&quot; title=&quot;Reach 7 billion phones in seconds via SMS, Chat &amp; Voice. Try it for free and improve your communication.&quot;&gt;Message Bird&lt;/a&gt;       </td><td>Message Bird</td><td>Service</td><td>REST api   </td><td>-           </td><td>&lt;a href=&quot;https://developers.messagebird.com/docs/introduction&quot;&gt;API Reference&lt;/a&gt;</td><td>          </td></tr>
+<tr><td>&lt;a href=&quot;https://www.nexmo.com/&quot; title=&quot;Programmable Building Blocks for Next Generation Communication Applications&quot;&gt;Nexmo&lt;/a&gt;                                                       </td><td>Nexmo       </td><td>Service</td><td>REST api   </td><td>$2 credit   </td><td>&lt;a href=&quot;https://docs.nexmo.com/&quot;&gt;API Reference&lt;/a&gt;                             </td><td>          </td></tr>
+<tr><td>&lt;a href=&quot;https://www.plivo.com/&quot; title=&quot;Global SMS &amp; Voice calls for businesses of all sizes&quot;&gt;Plivo&lt;/a&gt;                                                                              </td><td>Plivo       </td><td>Service</td><td>REST api   </td><td>-           </td><td>&lt;a href=&quot;https://www.plivo.com/voice-api/&quot;&gt;API Reference&lt;/a&gt;                    </td><td>          </td></tr>
+<tr><td>&lt;a href=&quot;https://www.twilio.com/&quot; title=&quot;Build apps that communicate with everyone in the world. Voice &amp; Video, Messaging, and Authentication APIs for every application.&quot;&gt;Twilio&lt;/a&gt;</td><td>Twilio      </td><td>Service</td><td>REST api   </td><td>$10 credit  </td><td>&lt;a href=&quot;https://www.twilio.com/docs/&quot;&gt;API Reference&lt;/a&gt;                        </td><td>          </td></tr>
+<tr><td>&lt;a href=&quot;https://cloud.zang.io/&quot; title=&quot;Cloud communication technology that transforms your conversations — and your business&quot;&gt;Zang&lt;/a&gt;                                              </td><td>Avaya       </td><td>Service</td><td>REST api   </td><td>$10 credit  </td><td>&lt;a href=&quot;https://github.com/zang-cloud/zang-python&quot;&gt;API Reference&lt;/a&gt;           </td><td>          </td></tr>
 </tbody>
 </table></p>
 <h2 id="translation">Translation</h2>
@@ -168,37 +188,40 @@
 <tr><th>Resource                                                                                                                                                                                                                                                                                                </th><th>Author   </th><th>Type   </th><th>Protocols  </th><th>Free Usage         </th><th>Documentation                                                                                                            </th><th>Coverage  </th></tr>
 </thead>
 <tbody>
-<tr><td><a href="https://cloud.google.com/translate/" title="Dynamically translate between thousands of available language pairs ">Google Translate</a>                                                                                                                                                         </td><td>Google   </td><td>Service</td><td>REST api   </td><td>-                  </td><td><a href="https://cloud.google.com/translate/docs/">API Reference</a>                                                     </td><td>          </td></tr>
-<tr><td><a href="https://console.ng.bluemix.net/catalog/services/language-translator" title="Want to dynamically translate news, patents, or conversational documents? Instantly publish content in multiple languages? Or allow your French-speaking staff to instantly send emails in English?">IBM Watson</a></td><td>IBM      </td><td>Service</td><td>REST api   </td><td>1m characters/month</td><td><a href="https://console.bluemix.net/docs/services/language-translator/getting-started.html">API Reference</a>           </td><td>          </td></tr>
-<tr><td><a href="https://azure.microsoft.com/en-us/services/cognitive-services/translator-text-api/" title="Easily conduct real-time text translation with a simple REST API call">Microsoft Translate Text</a>                                                                                                 </td><td>Microsoft</td><td>Service</td><td>REST api   </td><td>2m characters/month</td><td><a href="https://docs.microsoft.com/en-us/azure/cognitive-services/translator/translator-info-overview">API Reference</a></td><td>          </td></tr>
+<tr><td>&lt;a href=&quot;https://cloud.google.com/translate/&quot; title=&quot;Dynamically translate between thousands of available language pairs &quot;&gt;Google Translate&lt;/a&gt;                                                                                                                                                         </td><td>Google   </td><td>Service</td><td>REST api   </td><td>-                  </td><td>&lt;a href=&quot;https://cloud.google.com/translate/docs/&quot;&gt;API Reference&lt;/a&gt;                                                     </td><td>          </td></tr>
+<tr><td>&lt;a href=&quot;https://console.ng.bluemix.net/catalog/services/language-translator&quot; title=&quot;Want to dynamically translate news, patents, or conversational documents? Instantly publish content in multiple languages? Or allow your French-speaking staff to instantly send emails in English?&quot;&gt;IBM Watson&lt;/a&gt;</td><td>IBM      </td><td>Service</td><td>REST api   </td><td>1m characters/month</td><td>&lt;a href=&quot;https://console.bluemix.net/docs/services/language-translator/getting-started.html&quot;&gt;API Reference&lt;/a&gt;           </td><td>          </td></tr>
+<tr><td>&lt;a href=&quot;https://azure.microsoft.com/en-us/services/cognitive-services/translator-text-api/&quot; title=&quot;Easily conduct real-time text translation with a simple REST API call&quot;&gt;Microsoft Translate Text&lt;/a&gt;                                                                                                 </td><td>Microsoft</td><td>Service</td><td>REST api   </td><td>2m characters/month</td><td>&lt;a href=&quot;https://docs.microsoft.com/en-us/azure/cognitive-services/translator/translator-info-overview&quot;&gt;API Reference&lt;/a&gt;</td><td>          </td></tr>
 </tbody>
 </table></p></div>
+            </div>
         </div>
 
         <footer class="col-md-12">
             <hr>
-            <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
         </footer>
-        <script>var base_url = '..';</script>
-        <script src="../js/base.js"></script>
-        <script src="../search/require.js"></script>
-        <script src="../search/search.js"></script>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
+        <script src="../js/base.js" defer></script>
+        <script src="../search/main.js" defer></script>
 
-        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
-    <div class="modal-dialog">
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
             </div>
             <div class="modal-body">
                 <p>
                     From here you can search these documents. Enter
                     your search terms below.
                 </p>
-                <form role="form">
+                <form>
                     <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query">
+                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
                     </div>
                 </form>
                 <div id="mkdocs-search-results"></div>
@@ -207,12 +230,12 @@
             </div>
         </div>
     </div>
-</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
             </div>
             <div class="modal-body">
               <table class="table">
@@ -224,19 +247,19 @@
                 </thead>
                 <tbody>
                   <tr>
-                    <td><kbd>?</kbd></td>
+                    <td class="help shortcut"><kbd>?</kbd></td>
                     <td>Open this help</td>
                   </tr>
                   <tr>
-                    <td><kbd>&larr;</kbd></td>
-                    <td>Previous page</td>
-                  </tr>
-                  <tr>
-                    <td><kbd>&rarr;</kbd></td>
+                    <td class="next shortcut"><kbd>n</kbd></td>
                     <td>Next page</td>
                   </tr>
                   <tr>
-                    <td><kbd>s</kbd></td>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
                     <td>Search</td>
                   </tr>
                 </tbody>
@@ -247,7 +270,6 @@
         </div>
     </div>
 </div>
-
 
     </body>
 </html>
