@@ -1,6 +1,11 @@
 ChangeLog
 =========
 
+0.23 (????.??.??)
+-----------------
+* [UPDATE] added support for list records to save_settings 
+* [DEPRECATED] removed error throwing from ingest_environ with model arg
+
 0.22 (2020.06.02)
 -----------------
 * [FEATURE ADDED] SQLSession class added to handle sql database connections

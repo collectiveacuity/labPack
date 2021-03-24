@@ -105,7 +105,7 @@ def save_settings(file_path, record_details, overwrite=False, secret_key=''):
     ''' a method to save dictionary typed data to a local file
 
     :param file_path: string with path to settings file
-    :param record_details: dictionary with record details
+    :param record_details: list or dictionary with record details
     :param overwrite: [optional] boolean to overwrite existing file data
     :param secret_key: [optional] string with key to decrypt drep file
     :return: string with file path
@@ -118,8 +118,8 @@ def save_settings(file_path, record_details, overwrite=False, secret_key=''):
     except:
         raise ValueError('%s(file_path=...) must be a string.' % title)
     _details_arg = '%s(record_details={...})' % title
-    if not isinstance(record_details, dict):
-        raise ValueError('%s must be a dictionary.' % _details_arg)
+    if not isinstance(record_details, dict) and not isinstance(record_details, list):
+        raise ValueError('%s must be a list or dictionary.' % _details_arg)
     if secret_key:
         try:
             _secret_arg = '%s(secret_key=%s)' % (title, str(secret_key))
@@ -271,7 +271,8 @@ def ingest_environ(model_path=''):
             added to the output and the value of any environment variable which
             matches the uppercase name of each field in the model will be added
             to the dictionary if its value is valid according to the model. if
-            a value is not valid, the method will throw a InputValidationError
+            a value is not valid, the method will produce the default value of
+            the model
     '''
 
 # convert environment variables into json typed data
@@ -304,15 +305,12 @@ def ingest_environ(model_path=''):
         from jsonmodel.validators import jsonModel
         model_object = jsonModel(model_dict)
         default_dict = model_object.ingest(**{})
+        ingest_dict = {}
         for key in default_dict.keys():
-            if key.upper() in typed_dict:
-                valid_kwargs = {
-                    'input_data': typed_dict[key.upper()],
-                    'object_title': 'Environment variable %s' % key.upper(),
-                    'path_to_root': '.%s' % key
-                }
-                default_dict[key] = model_object.validate(**valid_kwargs)
-        return default_dict
+            if key.upper() in typed_dict.keys():
+                ingest_dict[key] = typed_dict[key.upper()]
+
+        return model_object.ingest(**ingest_dict)
 
     return typed_dict
 

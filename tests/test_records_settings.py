@@ -6,21 +6,21 @@ from labpack.records.settings import *
 
 if __name__ == '__main__':
 
-# define arguments
+    # define arguments
     import os
-    os.environ['labpack_records_settings'] = '2'
+    os.environ['LABPACK_RECORDS_SETTINGS'] = '2'
     model_path = 'test-model.json'
     file_path = 'test-settings.yaml'
 
-# test ingest environ
+    # test ingest environ
     assert ingest_environ()['LABPACK_RECORDS_SETTINGS'] == 2
     model_env = ingest_environ(model_path)
     assert model_env['labpack_records_settings'] == 2
+    
+    # test load settings from module path
+    assert load_settings(file_path='models/model-rules.json', module_name='jsonmodel')
 
-# test load settings from module path
-    assert load_settings(file_path='model-rules.json', module_name='jsonmodel')
-
-# test save settings
+    # test save settings
     test_details = load_settings(model_path)
     try:
         import pytest
@@ -31,7 +31,7 @@ if __name__ == '__main__':
         save_settings(model_path, test_details)
     assert save_settings(model_path, test_details, overwrite=True)
 
-# test compile settings
+    # test compile settings
     from jsonmodel.exceptions import InputValidationError
     with pytest.raises(InputValidationError): # exception for not a string
         test_details = compile_settings(model_path, file_path)
