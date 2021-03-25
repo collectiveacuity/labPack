@@ -7,7 +7,7 @@ from labpack.compilers.yaml import merge_yaml
 if __name__ == '__main__':
 
     target = 'test20210325c.yaml'
-    sources = ['test20210325a.yaml']
+    sources = ['test20210325a.yaml', 'test20210325b.yaml']
     combined = merge_yaml(*sources, target=target)
     print(combined)
     for key, value in combined.items():

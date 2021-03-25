@@ -6,17 +6,25 @@ brands:
   old:
     - face cream
     - skin cream
+  protential:
+    - vitamins
 campaigns:
   - name: west coast
     places:
       - city: Seattle # a major airport
         state: WA
+        neighborhood: suburbs
       - city: Portland
         state: OR
+        neighborhood: suburbs
+    season: winter
   - name: midwest
     places:
       - city: Chicago # cold in the winter
         state: IL
+        neighborhood: suburbs
       - city: Cincinnati
         state: OH
-
+        neighborhood: suburbs
+    season: winter
+topic: branding

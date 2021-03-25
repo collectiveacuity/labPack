@@ -1,5 +1,5 @@
 date: 20210102 # second day of the year
-topic: branding
+topic: branding # important
 brands:
   protential:
     - vitamins
@@ -8,9 +8,11 @@ brands:
     - toothbrushes
 campaigns:
   - name: midwest # added another location
+    season: winter
     places:
       - city: Cincinnati 
         state: OH
+        neighborhood: suburbs # near malls
   - name: east coast
     places:
       - city: Charleston 
