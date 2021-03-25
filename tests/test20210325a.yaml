@@ -1,0 +1,22 @@
+date: 20210101 # start of the year
+brands:
+  new:
+    - toothpaste
+    - floss
+  old: 
+    - face cream
+    - skin cream
+campaigns:
+  - name: west coast
+    places:
+      - city: Seattle # a major airport
+        state: WA
+      - city: Portland
+        state: OR
+  - name: midwest
+    places:
+      - city: Chicago # cold in the winter
+        state: IL
+      - city: Cincinnati
+        state: OH
+              

@@ -1,0 +1,19 @@
+date: 20210102 # second day of the year
+topic: branding
+brands:
+  protential:
+    - vitamins
+  new:
+    - floss
+    - toothbrushes
+campaigns:
+  - name: midwest # added another location
+    places:
+      - city: Cincinnati 
+        state: OH
+  - name: east coast
+    places:
+      - city: Charleston 
+        state: SC
+      - city: Philadelphia 
+        state: PA # only location in northeast
