@@ -1,12 +1,15 @@
+# other information that's important
+# including a website
 date: 20210102 # second day of the year
 topic: branding # important
 brands:
   protential:
-    - vitamins
+    - vitamins # an item comment
   new:
     - floss
     - toothbrushes
-campaigns:
+# something interesting
+campaigns: # simultaneous
   - name: midwest # added another location
     season: winter
     places:

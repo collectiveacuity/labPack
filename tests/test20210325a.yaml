@@ -1,5 +1,6 @@
+# some general comments
 date: 20210101 # start of the year
-brands:
+brands:        # good place to start
   new:
     - toothpaste
     - floss
