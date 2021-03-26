@@ -1,32 +1,32 @@
 # some general comments
 # including a website
 date: 20210101 # start of the year
-topic: branding # important
 brands:        # good place to start
-  protential:
-    - vitamins # an item comment
   new:
     - toothpaste
     - floss
   old:
     - face cream
     - skin cream
+  protential:
+    - vitamins # an item comment
 campaigns:
   - name: west coast
-    season: winter
     places:
       - city: Seattle # a major airport
         state: WA
-        neighborhood: suburbs # near malls
+        neighborhood: suburbs
       - city: Portland
         state: OR
-        neighborhood: suburbs  # near malls
-  - name: midwest
+        neighborhood: suburbs
     season: winter
+  - name: midwest
     places:
       - city: Chicago # cold in the winter
         state: IL
-        neighborhood: suburbs # near malls
+        neighborhood: suburbs
       - city: Cincinnati
         state: OH
-        neighborhood: suburbs  # near malls
+        neighborhood: suburbs
+    season: winter
+topic: branding

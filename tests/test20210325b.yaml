@@ -1,24 +1,30 @@
-# other information that's important
-# including a website
-date: 20210102 # second day of the year
-topic: branding # important
+# different comment at head of file
+# additional comment at head
+date: 20210102 # different comment on key-value pair
+topic: branding # comment on key-value pair
+# comment before key
 brands:
+  # comment at beginning of map
   protential:
-    - vitamins # an item comment
+    - vitamins # comment on item
   new:
-    - floss
-    - toothbrushes
-# something interesting
-campaigns: # simultaneous
-  - name: midwest # added another location
-    season: winter
+    - floss # new comment on item
+    - toothbrushes # comment on item
+  old:
+    - face cream # different comment on item
+  # comment at end of map
+campaigns:  # comment on key for list
+  - name: midwest # new comment on item
+    season: winter # comment on key-value pair
     places:
+      # comment before list items
       - city: Cincinnati 
         state: OH
-        neighborhood: suburbs # near malls
+        neighborhood: suburbs # comment on key-value pair
+      # comment after list items
   - name: east coast
     places:
       - city: Charleston 
         state: SC
       - city: Philadelphia 
-        state: PA # only location in northeast
+        state: PA  

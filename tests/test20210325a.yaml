@@ -1,22 +1,25 @@
-# some general comments
-date: 20210101 # start of the year
-brands:        # good place to start
+# comments at head of file
+date: 20210101 # comment on key-value pair
+brands:        # comment on key to map
   new:
     - toothpaste
     - floss
   old: 
-    - face cream
+    # comment before list items
+    - face cream # comment on item
     - skin cream
 campaigns:
   - name: west coast
-    places:
-      - city: Seattle # a major airport
+    places:             # comment on key to list
+      - city: Seattle   
         state: WA
+      # comment after map
       - city: Portland
         state: OR
+    # comment after list
   - name: midwest
     places:
-      - city: Chicago # cold in the winter
+      - city: Chicago
         state: IL
       - city: Cincinnati
         state: OH

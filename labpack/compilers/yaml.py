@@ -17,9 +17,41 @@ except:
     print('yaml package requires the ruamel.yaml module. try: pip3 install ruamel.yaml')
     sys.exit(1)
 
-import re
+# add get comments attribute to Commented Objects
+def _get_comments_map(self, key):
+    coms = []
+    comments = self.ca.items.get(key)
+    if comments is None:
+        return coms
+    for token in comments:
+        if token is None:
+            continue
+        elif isinstance(token, list):
+            coms.extend(token)
+        else:
+            coms.append(token)
+    return coms
 
-def _parse_top(text):
+def _get_comments_seq(self, idx):
+    coms = []
+    comments = self.ca.items.get(idx)
+    if comments is None:
+        return coms
+    for token in comments:
+        if token is None:
+            continue
+        elif isinstance(token, list):
+            coms.extend(token)
+        else:
+            coms.append(token)
+    return coms
+
+setattr(CommentedMap, 'get_comments', _get_comments_map)
+setattr(CommentedSeq, 'get_comments', _get_comments_seq)
+
+def _parse_head(text):
+    ''' a method to parse initial comments at head of file using regex '''
+    import re
     comments = []
     for line in text.split('\n'):
         comment = re.match('^# ?(.*?)$', line)
@@ -28,95 +60,39 @@ def _parse_top(text):
         comments.append(comment[1])
     return comments
 
-def _parse_comments(text):
-    ''' a method to parse lines with comments using regex'''
-    comments = {}
-    count = 0
-    for line in text.split('\n'):
-        comment = re.match('^(.*?) (#.*?)$', line)
-        if comment:
-            comments[count] = {
-                'comment': comment[2] + '\n'
-            }
-            parts = comment[1].strip().split(':')
-            if len(parts) == 1:
-                comments[count]['item'] = re.sub('^(- )','',parts[0])
-            else:
-                comments[count]['key'] = re.sub('^(- )','',parts[0])
-                comments[count]['value'] = ':'.join(parts[1:]).strip()
-        count += 1
-    return comments
-
-def _get_comments(obj):
-    ''' a method to retrieve comments from CommentMap data '''
-    # https://sourceforge.net/p/ruamel-yaml/tickets/293/
-    comments = {}
-    if isinstance(obj, CommentedMap):
-        comment = obj.ca.comment
-        if comment:
-            for sub in comment:
-                if sub is None:
-                    continue
-                if isinstance(sub, list):
-                    for com in sub:
-                        comments[com.start_mark.line] = com.value
-                else:
-                    comments[sub.start_mark.line] = sub.value
-        for v in obj.ca.items.values():
-            if v:
-                for comment in v:
-                    if comment is None:
-                        continue
-                    if isinstance(comment, list):
-                        for com in comment:
-                            comments[com.start_mark.line] = com.value
-                    elif comment.value and comment.value.strip():
-                        comments[comment.start_mark.line] = comment.value
-    if isinstance(obj, CommentedSeq):
-        comment = obj.ca.comment
-        if comment:
-            for sub in comment:
-                if sub is None:
-                    continue
-                if isinstance(sub, list):
-                    for com in sub:
-                        comments[com.start_mark.line] = com.value
-                else:
-                    comments[sub.start_mark.line] = sub.value
-    return comments
-
-def merge_maps(target, source, rule, prune, comments):
+def _merge_maps(target, source, rule, prune):
 
     if isinstance(target, CommentedMap):
         if prune:
             p = set(target.keys()) - set(source.keys())
             for k in p:
                 del target[k]
-        map_comments = _get_comments(source)
-        shared_comments = set(map_comments.keys()).intersection(set(comments.keys()))
-        shared = {}
-        if shared_comments:
-            for k in shared_comments:
-                if map_comments[k] == comments[k]['comment']:
-                    shared[map_comments[k]] = comments[k]
+        # map_comments = _get_comments(source)
+        # shared_comments = set(map_comments.keys()).intersection(set(comments.keys()))
+        # shared = {}
+        # if shared_comments:
+        #     for k in shared_comments:
+        #         if map_comments[k] == comments[k]['comment']:
+        #             shared[map_comments[k]] = comments[k]
         count = 0
         for key, value in source.items():
             if key in target.keys():
                 # TODO insert key at start of map https://stackoverflow.com/a/40705671/4941585
-                merge_maps(target[key], value, rule, prune, comments)
+                _merge_maps(target[key], value, rule, prune)
             else:
-                comment = None
-                for k, v in shared.items():
-                    if v['key'] == key and v['value'] == value:
-                        comment = k
-                target.insert(count, key, value, comment=comment)
+                target[key] = value
+                # comment = None
+                # for k, v in shared.items():
+                #     if v['key'] == key and v['value'] == value:
+                #         comment = k
+                # target.insert(count, key, value, comment=comment)
             count += 1
     elif isinstance(target, CommentedSeq):
-        merge_seqs(target, source, rule, prune, comments)
+        _merge_seqs(target, source, rule, prune)
     elif rule == 'overwrite':
         target = source
 
-def merge_seqs(target, source, rule, prune, comments):
+def _merge_seqs(target, source, rule, prune):
 
     if rule == 'overwrite' and (not target or not source):
         target = source
@@ -134,20 +110,20 @@ def merge_seqs(target, source, rule, prune, comments):
     elif isinstance(target[0], CommentedMap):
         for item in target:
             if isinstance(item, CommentedMap):
-                merge_maps(item, source[0], rule, prune, comments)
+                _merge_maps(item, source[0], rule, prune)
         if rule == 'extend':
             target.extend(source)
     else:
         for item in target:
             if isinstance(item, CommentedSeq):
-                merge_seqs(item, source[0], rule, prune, comments)
+                _merge_seqs(item, source[0], rule, prune)
         if rule == 'extend':
             target.extend(source)
 
-def merge_yaml(*sources, target='', rule='update', prune=False):
+def merge_yaml_strings(*sources, rule='update', prune=False, output=''):
 
     '''
-        core method for merging two or more yaml files
+        core method for merging two or more yaml strings
 
         this method runs recursively down the nested trees of yaml datatypes
         to merge values between two or more yaml files while maximally preserving
@@ -169,15 +145,16 @@ def merge_yaml(*sources, target='', rule='update', prune=False):
         PLEASE NOTE:    this method makes no checks to ensure the file path of the 
                         sources exist nor the folder path to any target output
     
-    :param sources: variable-length argument list of strings with path to yaml files
-    :param target: [optional] string with path to save the combined yaml data to file
-    :param rule: [optional] string to determine rule for merging: update, overwrite
+    :param sources: variable-length argument list of strings with yaml text
+    :param rule: [optional] string to determine rule for merging: update, extend, overwrite
     :param prune: boolean to remove fields in earlier files not found in subsequent files
+    :param output: [optional] string with type of output: default = string, io = StringIO
     :return: CommentedMap or CommentedSeq with combined values
     '''
 
     # import libraries
     from copy import deepcopy
+    from ruamel.yaml.compat import StringIO
     from ruamel.yaml.util import load_yaml_guess_indent
     yml = YAML(typ='rt')
     yml.default_flow_style = False
@@ -186,41 +163,91 @@ def merge_yaml(*sources, target='', rule='update', prune=False):
     combined = None
     indent = 2
     seq_indent = 0
-    combined_top = None
+    combined_head = None
 
     # open and combine sources
-    for yaml_path in sources:
-        text = open(yaml_path).read()
-        comments = _parse_comments(text)
-        top = _parse_top(text)
+    for text in sources:
+        head = _parse_head(text)
         result, indent, seq_indent = load_yaml_guess_indent(text)
         code = yml.load(text)
         if not isinstance(code, CommentedMap) and not isinstance(code, CommentedSeq):
-            raise ValueError('Source files must be either lists or dictionaries.')
+            raise ValueError('Source documents must be either lists or dictionaries.')
         if not combined:
             combined = deepcopy(code)
-            combined_top = top
+            combined_head = head
         elif combined.__class__.__name__ != code.__class__.__name__:
-            raise ValueError('Source files must be the same top-level datatype: either lists or dictionaries.')
-        elif isinstance(code, CommentedMap):
-            merge_maps(combined, deepcopy(code), rule, prune, comments)
-        elif isinstance(code, CommentedSeq):
-            merge_seqs(combined, deepcopy(code), rule, prune, comments)
-
-        # add top comments if more comments
-        if len(combined_top) < len(top):
-            lines = '\n'.join(top)
-            if combined_top:
-                combined_top.extend(top[len(combined_top):])
-                lines = '\n'.join(combined_top)
+            if rule == 'overwrite':
+                combined = deepcopy(code)
+                combined_head = head
             else:
-                combined_top = top
+                raise ValueError('Source documents must be the same top-level datatype or use rule="overwrite"')
+        elif isinstance(code, CommentedMap):
+            _merge_maps(combined, deepcopy(code), rule, prune)
+        elif isinstance(code, CommentedSeq):
+            _merge_seqs(combined, deepcopy(code), rule, prune)
+
+        # add to header comments if there are more comments to add
+        if rule == 'overwrite':
+            if head:
+                combined.yaml_set_start_comment('\n'.join(head))
+        elif len(combined_head) < len(head):
+            lines = '\n'.join(head)
+            if combined_head:
+                combined_head.extend(head[len(combined_head):])
+                lines = '\n'.join(combined_head)
+            else:
+                combined_head = head
             combined.yaml_set_start_comment(lines, indent=0)
 
-    # save to target path
-    if target:
-        yml.indent(sequence=indent, offset=seq_indent)
-        with open(target, 'w') as f:
-            yml.dump(combined, f)
+    # apply indentation and return string
+    stream = StringIO()
+    yml.indent(sequence=indent, offset=seq_indent)
+    yml.dump(combined, stream)
+    if output == 'io':
+        return stream
+    return stream.getvalue()
 
-    return combined
+def merge_yaml_files(*sources, target='', rule='update', prune=False):
+    
+    '''
+        method for merging two or more yaml files
+
+        this method runs recursively down the nested trees of yaml datatypes
+        to merge values between two or more yaml files while maximally preserving
+        order and comments from the original files
+
+        there are three different rules:
+        update - [default] adds only new fields to earlier sources
+        extend - adds new fields to earlier sources and appends items
+        overwrite - adds new fields and items and overwrites any earlier values 
+
+        when merging more than two files, the order of the input files matters
+        as each subsequent input will treat the previous merger as its earlier input
+
+        PLEASE NOTE:    update only adds new fields to dictionaries, existing list
+                        length is preserved, but dictionaries within a list are
+                        updated with any new fields which occur in the first item of
+                        a subsequent file
+
+        PLEASE NOTE:    this method makes no checks to ensure the file path of the 
+                        sources exist nor the folder path to any target output
+
+    :param sources: variable-length argument list of strings with path to yaml files
+    :param target: [optional] string with path to save the combined yaml data to file
+    :param rule: [optional] string to determine rule for merging: update, overwrite
+    :param prune: boolean to remove fields in earlier files not found in subsequent files
+    :return: CommentedMap or CommentedSeq with combined values
+    '''
+
+    # open and combine sources
+    src = [ open(yaml_path).read() for yaml_path in sources ]
+    stream = merge_yaml_strings(*src, rule=rule, prune=prune, output='io')
+
+    # save to file and return combined string
+    if target:
+        from shutil import copyfileobj
+        with open(target, 'w') as f:
+            stream.seek(0)
+            copyfileobj(stream, f)
+            f.close()
+    return stream.getvalue()
