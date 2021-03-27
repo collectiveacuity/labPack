@@ -1,32 +1,42 @@
-# some general comments
-# including a website
-date: 20210101 # start of the year
-brands:        # good place to start
+# comments at head of file
+# different comment at head of file
+# additional comment at head
+date: 20210101 # comment on key-value pair
+topic: branding # comment on key-value pair
+# new comment before key
+brands:        # comment on key to map
+  protential:
+    - vitamins # comment on new item
   new:
     - toothpaste
-    - floss
+    - floss # new comment on item
   old:
-    - face cream
+    # comment before list items
+    - face cream # comment on item
     - skin cream
-  protential:
-    - vitamins # an item comment
-campaigns:
-  - name: west coast
-    places:
-      - city: Seattle # a major airport
+campaigns:  # new comment on key for list
+  - name: west coast # new comment on item
+    season: winter # comment on new key-value pair
+    places:             # comment on key to list
+      - city: Seattle
+        neighborhood: suburbs # comment on new key-value pair
+      # different comment after list items
         state: WA
-        neighborhood: suburbs
+      # comment after map
       - city: Portland
+        neighborhood: suburbs # comment on new key-value pair
+      # different comment after list items
         state: OR
-        neighborhood: suburbs
-    season: winter
-  - name: midwest
+    # comment after list
+  - name: midwest # new comment on item
+    season: winter # comment on new key-value pair
     places:
-      - city: Chicago # cold in the winter
+      # different comment before list items
+      - city: Chicago
+        neighborhood: suburbs  # comment on new key-value pair
+      # different comment after list items
         state: IL
-        neighborhood: suburbs
       - city: Cincinnati
+        neighborhood: suburbs  # comment on new key-value pair
+      # different comment after list items
         state: OH
-        neighborhood: suburbs
-    season: winter
-topic: branding

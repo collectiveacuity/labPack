@@ -2,29 +2,26 @@
 # additional comment at head
 date: 20210102 # different comment on key-value pair
 topic: branding # comment on key-value pair
-# comment before key
+# new comment before key
 brands:
-  # comment at beginning of map
+  # new comment at beginning of map
   protential:
-    - vitamins # comment on item
+    - vitamins # comment on new item
   new:
     - floss # new comment on item
-    - toothbrushes # comment on item
+    - toothbrushes # comment on new item
   old:
     - face cream # different comment on item
-  # comment at end of map
-campaigns:  # comment on key for list
+  # new comment at end of map
+campaigns:  # new comment on key for list
   - name: midwest # new comment on item
-    season: winter # comment on key-value pair
+    season: winter # comment on new key-value pair
     places:
-      # comment before list items
+      # different comment before list items
       - city: Cincinnati 
-        state: OH
-        neighborhood: suburbs # comment on key-value pair
-      # comment after list items
+        neighborhood: suburbs # comment on new key-value pair
+      # different comment after list items
   - name: east coast
     places:
       - city: Charleston 
-        state: SC
-      - city: Philadelphia 
-        state: PA  
+      - city: Philadelphia
