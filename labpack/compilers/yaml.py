@@ -12,6 +12,7 @@ PLEASE NOTE:    yaml package requires the ruamel.yaml module.
 try:
     from ruamel.yaml import YAML, version_info as ruamel_yaml_version
     from ruamel.yaml.comments import CommentedMap, CommentedSeq, Comment
+    from ruamel.yaml.tokens import CommentToken
 except:
     import sys
     print('yaml package requires the ruamel.yaml module. try: pip3 install ruamel.yaml')
@@ -50,6 +51,7 @@ setattr(CommentedMap, 'get_comments', get_comments_map)
 setattr(CommentedSeq, 'get_comments', get_comments_seq)
 
 def walk_data_merge(target, source, rule, prune):
+    from copy import deepcopy
     # handle different types between target and source
     if target.__class__.__name__ != source.__class__.__name__:
         if rule == 'overwrite':
@@ -86,9 +88,10 @@ def walk_data_merge(target, source, rule, prune):
     elif isinstance(target, CommentedSeq):
         for idx, item in enumerate(target):
             # walk down maps and sequences
+            source_copy = deepcopy(source[0])
             if isinstance(item, CommentedMap) or isinstance(item, CommentedSeq):
                 if source:
-                    walk_data_merge(item, source[0], rule, prune)
+                    walk_data_merge(item, source_copy, rule, prune)
             # add comments to items found in both target and source
             elif source:
                 if item in source:

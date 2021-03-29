@@ -75,6 +75,12 @@ if __name__ == '__main__':
     assert merged.find('# new comment at beginning of map') == -1
     assert merged.find('# new comment at end of map') == -1
 
+    # test idempotence
+    remerged = merge_yaml_strings(merged, str_b)
+    assert remerged == merged
+    reremerged = merge_yaml_strings(merged, str_b)
+    assert reremerged == merged
+
     # test overwrite and prune
     merged = merge_yaml_strings(str_a, str_b, rule='overwrite', prune=True)
     assert merged.find('# comments at head of file') == -1
@@ -84,7 +90,16 @@ if __name__ == '__main__':
     assert merged.find('# different comment on key-value pair') > -1
     assert merged.find('state: ') == -1
     assert merged.find('# missing from prune') == -1
+    assert merged.find('places:   -\n') == -1
+    
+    # test idempotence
+    # TODO address the strange extra space in inserted comment for neighhborhood key
+    # TODO but not topic key
+    remerged = merge_yaml_strings(merged, str_b, rule='overwrite', prune=True)
+    reremerged = merge_yaml_strings(merged, str_b, rule='overwrite', prune=True)
+    assert reremerged == remerged
 
+    # test file loading
     target = 'test20210325c.yaml'
     sources = ['test20210325a.yaml', 'test20210325b.yaml']
     merged = merge_yaml_files(*sources, target=target)
@@ -96,3 +111,4 @@ if __name__ == '__main__':
     assert merged.find('# different comment on key-value pair') == -1
     assert merged.find('# new comment at beginning of map') == -1
     assert merged.find('# new comment at end of map') == -1
+    
