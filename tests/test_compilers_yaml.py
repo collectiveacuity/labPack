@@ -2,7 +2,7 @@ __author__ = 'rcj1492'
 __created__ = '2021.03'
 __license__ = '©2021 Collective Acuity'
 
-from labpack.compilers.yaml import merge_yaml_files, merge_yaml_strings
+from labpack.compilers.yaml import extend_yaml_files, extend_yaml_strings
 
 str_a = """\
 # comments at head of file
@@ -65,7 +65,7 @@ campaigns:  # new comment on key for list
 if __name__ == '__main__':
 
     # test default merge
-    merged = merge_yaml_strings(str_a, str_b)
+    merged = extend_yaml_strings(str_a, str_b)
     assert merged.find('# different comment at head of file') > -1
     assert merged.find('date: 20210101') > -1
     assert merged.find('# new comment on item') > -1
@@ -76,33 +76,15 @@ if __name__ == '__main__':
     assert merged.find('# new comment at end of map') == -1
 
     # test idempotence
-    remerged = merge_yaml_strings(merged, str_b)
+    remerged = extend_yaml_strings(merged, str_b)
     assert remerged == merged
-    reremerged = merge_yaml_strings(merged, str_b)
+    reremerged = extend_yaml_strings(merged, str_b)
     assert reremerged == merged
 
-    # test overwrite and prune
-    merged = merge_yaml_strings(str_a, str_b, rule='overwrite', prune=True)
-    assert merged.find('# comments at head of file') == -1
-    assert merged.find('date: 20210102') > -1
-    assert merged.find('# different comment on item') > -1
-    assert merged.find('# different comment after list items') > -1
-    assert merged.find('# different comment on key-value pair') > -1
-    assert merged.find('state: ') == -1
-    assert merged.find('# missing from prune') == -1
-    assert merged.find('places:   -\n') == -1
-    
-    # test idempotence
-    # TODO address the strange extra space in inserted comment for neighhborhood key
-    # TODO but not topic key
-    remerged = merge_yaml_strings(merged, str_b, rule='overwrite', prune=True)
-    reremerged = merge_yaml_strings(merged, str_b, rule='overwrite', prune=True)
-    assert reremerged == remerged
-
     # test file loading
-    target = 'test20210325c.yaml'
+    output = 'test20210325c.yaml'
     sources = ['test20210325a.yaml', 'test20210325b.yaml']
-    merged = merge_yaml_files(*sources, target=target)
+    merged = extend_yaml_files(*sources, output=output)
     assert merged.find('# different comment at head of file') > -1
     assert merged.find('date: 20210101') > -1
     assert merged.find('# new comment on item') > -1
@@ -111,4 +93,5 @@ if __name__ == '__main__':
     assert merged.find('# different comment on key-value pair') == -1
     assert merged.find('# new comment at beginning of map') == -1
     assert merged.find('# new comment at end of map') == -1
+
     

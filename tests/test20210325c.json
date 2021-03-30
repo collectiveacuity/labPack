@@ -1,0 +1,51 @@
+{
+  "date": 20210101,
+  "topic": "branding",
+  "brands": {
+    "protential": [
+      "vitamins"
+    ],
+    "new": [
+      "toothpaste",
+      "floss"
+    ],
+    "old": [
+      "face cream",
+      "skin cream"
+    ]
+  },
+  "campaigns": [
+    {
+      "name": "west coast",
+      "season": "winter",
+      "places": [
+        {
+          "city": "Seattle",
+          "neighborhood": "suburbs",
+          "state": "WA"
+        },
+        {
+          "city": "Portland",
+          "neighborhood": "suburbs",
+          "state": "OR"
+        }
+      ]
+    },
+    {
+      "name": "midwest",
+      "season": "winter",
+      "places": [
+        {
+          "city": "Chicago",
+          "neighborhood": "suburbs",
+          "state": "IL"
+        },
+        {
+          "city": "Cincinnati",
+          "neighborhood": "suburbs",
+          "state": "OH"
+        }
+      ]
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-''' a package of methods to merge two or more yaml files preserving order & comments '''
+''' a package of methods to merge two or more yaml documents preserving order & comments '''
 __author__ = 'rcj1492'
 __created__ = '2021.03'
 __license__ = '©2021 Collective Acuity'
@@ -50,19 +50,17 @@ def get_comments_seq(self, idx, default=None):
 setattr(CommentedMap, 'get_comments', get_comments_map)
 setattr(CommentedSeq, 'get_comments', get_comments_seq)
 
-def walk_data_merge(target, source, rule, prune):
+def walk_data(target, source):
+    
+    ''' method to recursively walk parse tree and extend target '''
+    
     from copy import deepcopy
-    # handle different types between target and source
+    
+    # skip if target and source are different datatypes
     if target.__class__.__name__ != source.__class__.__name__:
-        if rule == 'overwrite':
-            target = source
+        pass
     # handle maps
     elif isinstance(target, CommentedMap):
-        # prune back fields not found in source
-        if prune:
-            p = set(target.keys()) - set(source.keys())
-            for k in p:
-                del target[k]
         count = 0
         for k, v in source.items():
             # retrieve comments of field in source
@@ -73,16 +71,13 @@ def walk_data_merge(target, source, rule, prune):
             if k not in target.keys():
                 target.insert(count, k, v, comments)
             else:
-                # add source comments when missing or overwrite
+                # add comments from source when missing from target
                 if comments:
-                    if not target.get_comments(k) or rule == 'overwrite':
+                    if not target.get_comments(k):
                         target.ca.items[k] = source.ca.items.get(k)
                 # walk down maps and sequences
                 if isinstance(v, CommentedMap) or isinstance(v, CommentedSeq):
-                    walk_data_merge(target[k], v, rule, prune)
-                # overwrite other values
-                elif rule == 'overwrite':
-                    target[k] = v
+                    walk_data(target[k], v)
             count += 1
     # handle sequences
     elif isinstance(target, CommentedSeq):
@@ -91,36 +86,32 @@ def walk_data_merge(target, source, rule, prune):
             source_copy = deepcopy(source[0])
             if isinstance(item, CommentedMap) or isinstance(item, CommentedSeq):
                 if source:
-                    walk_data_merge(item, source_copy, rule, prune)
+                    walk_data(item, source_copy)
             # add comments to items found in both target and source
             elif source:
                 if item in source:
                     comments = source.ca.items.get(source.index(item))
                     if comments:
-                        if not target.get_comments(idx) or rule == 'overwrite':
+                        if not target.get_comments(idx):
                             target.ca.items[idx] = comments
 
-def merge_yaml_strings(*sources, output='', rule='extend', prune=False):
+def extend_yaml_strings(*sources, output=''):
 
     '''
         method for merging two or more yaml strings
 
-    this method walks the parse tree of yaml data to merge the values 
-    (and comments) of two or more yaml data
-
-    there are two different rules for handling conflicts between previous
-    and subsequent data:
-      extend        [default] a field (or comment) is added only if it doesn't exist
-      overwrite     where a value (or comment) already exists, it is replaced
+    this method walks the parse tree of yaml data to extend the fields
+    (and comments) found in subsequent sources into the data structure of the
+    initial sources. any number of sources can be added to the source args, but
+    only new fields and new comments from subsequent sources will be added. to
+    overwrite values, it suffices to simply reverse the order of the sources
 
     PLEASE NOTE:    since there is no way to uniquely identify list items between
                     two yaml documents, items are not added to existing lists.
-                    the overwrite rule also has no effect on items in lists
 
     PLEASE NOTE:    however, lists are transversed in order to evaluate comments
                     and keys of nested dictionaries using the first item of any
-                    subsequent list as a model for the scope (for extending or
-                    pruning)
+                    subsequent list as a model for the scope
 
     PLEASE NOTE:    the way that ruamel.yaml keeps track of multi-line comments
                     can create odd results for comments which appear at the start
@@ -130,9 +121,7 @@ def merge_yaml_strings(*sources, output='', rule='extend', prune=False):
 
     :param sources: variable-length argument list of strings with yaml text
     :param output: [optional] string with type of output: '' [default], io
-    :param rule: string to determine rule for merging: extend [default], overwrite
-    :param prune: boolean to remove fields in earlier files not found in subsequent files
-    :return: string with merged data [or StringIO object]
+    :return: string with extended data [or StringIO object]
     '''
 
     # import libraries
@@ -166,22 +155,16 @@ def merge_yaml_strings(*sources, output='', rule='extend', prune=False):
             combined = deepcopy(data)
             combined_head = head
         elif combined.__class__.__name__ != data.__class__.__name__:
-            if rule == 'overwrite':
-                combined = deepcopy(data)
-                combined_head = head
-            else:
-                raise ValueError('Source documents must be the same top-level datatype or use rule="overwrite"')
+            pass
+            # raise ValueError('Source documents must be the same top-level datatype or use rule="overwrite"')
         else:
-            walk_data_merge(combined, data, rule, prune)
+            walk_data(combined, data)
 
         # add comments to head of document
         if head:
-            if rule == 'overwrite':
-                combined_head = head
-            else:
-                for comment in head:
-                    if comment not in combined_head:
-                        combined_head.append(comment)
+            for comment in head:
+                if comment not in combined_head:
+                    combined_head.append(comment)
             head_comments = []
             for comment in combined_head:
                 comment = re.sub('^# ?','',comment)
@@ -198,18 +181,16 @@ def merge_yaml_strings(*sources, output='', rule='extend', prune=False):
         return stream
     return stream.getvalue()
 
-def merge_yaml_files(*sources, target='', rule='extend', prune=False):
+def extend_yaml_files(*sources, output=''):
     
     '''
         method for merging two or more yaml strings
 
-    this method walks the parse tree of yaml data to merge the values 
-    (and comments) of two or more yaml data
-
-    there are two different rules for handling conflicts between previous
-    and subsequent data:
-      extend        [default] a field (or comment) is added only if it doesn't exist
-      overwrite     where a value (or comment) already exists, it is replaced
+    this method walks the parse tree of yaml data to extend the values 
+    (and comments) found in subsequent sources into the data structure of the
+    initial sources. any number of sources can be added to the source args, but
+    only new fields and new comments from subsequent sources will be added. to
+    overwrite values, it suffices to simply reverse the order of the sources
 
     PLEASE NOTE:    since there is no way to uniquely identify list items between
                     two yaml documents, items are not added to existing lists.
@@ -217,8 +198,7 @@ def merge_yaml_files(*sources, target='', rule='extend', prune=False):
 
     PLEASE NOTE:    however, lists are transversed in order to evaluate comments
                     and keys of nested dictionaries using the first item of any
-                    subsequent list as a model for the scope (for extending or
-                    pruning)
+                    subsequent list as a model for the scope
 
     PLEASE NOTE:    the way that ruamel.yaml keeps track of multi-line comments
                     can create odd results for comments which appear at the start
@@ -227,23 +207,21 @@ def merge_yaml_files(*sources, target='', rule='extend', prune=False):
                     and dictionaries.
 
     PLEASE NOTE:    this method makes no checks to ensure the file path of the 
-                    sources exist nor the folder path to any target output
+                    sources exist nor the folder path to any output
 
     :param sources: variable-length argument list of strings with path to yaml files
-    :param target: [optional] string with path to save the combined yaml data to file
-    :param rule: string to determine rule for merging: extend [default], overwrite
-    :param prune: boolean to remove fields in earlier files not found in subsequent files
+    :param output: [optional] string with path to save the combined yaml data to file
     :return: string with merged data
     '''
 
     # open and combine sources
     src = [ open(yaml_path).read() for yaml_path in sources ]
-    stream = merge_yaml_strings(*src, output='io', rule=rule, prune=prune)
+    stream = extend_yaml_strings(*src, output='io')
 
     # save to file and return combined string
-    if target:
+    if output:
         from shutil import copyfileobj
-        with open(target, 'w') as f:
+        with open(output, 'w') as f:
             stream.seek(0)
             copyfileobj(stream, f)
             f.close()

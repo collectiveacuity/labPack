@@ -1,0 +1,41 @@
+{
+  "date": 20210101,
+  "brands": {
+    "new": [
+      "toothpaste",
+      "floss"
+    ],
+    "old": [
+      "face cream",
+      "skin cream"
+    ]
+  },
+  "campaigns": [
+    {
+      "name": "west coast",
+      "places": [
+        {
+          "city": "Seattle",
+          "state": "WA"
+        },
+        {
+          "city": "Portland",
+          "state": "OR"
+        }
+      ]
+    },
+    {
+      "name": "midwest",
+      "places": [
+        {
+          "city": "Chicago",
+          "state": "IL"
+        },
+        {
+          "city": "Cincinnati",
+          "state": "OH"
+        }
+      ]
+    }
+  ]
+}

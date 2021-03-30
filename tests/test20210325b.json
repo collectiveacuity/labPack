@@ -1,0 +1,39 @@
+{
+  "date": 20210102,
+  "topic": "branding",
+  "brands": {
+    "protential": [
+      "vitamins"
+    ],
+    "new": [
+      "floss",
+      "toothbrushes"
+    ],
+    "old": [
+      "face cream"
+    ]
+  },
+  "campaigns": [
+    {
+      "name": "midwest",
+      "season": "winter",
+      "places": [
+        {
+          "city": "Cincinnati",
+          "neighborhood": "suburbs"
+        }
+      ]
+    },
+    {
+      "name": "east coast",
+      "places": [
+        {
+          "city": "Charleston"
+        },
+        {
+          "city": "Philadelphia"
+        }
+      ]
+    }
+  ]
+}
