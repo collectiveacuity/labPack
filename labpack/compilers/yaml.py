@@ -52,10 +52,10 @@ setattr(CommentedSeq, 'get_comments', get_comments_seq)
 
 def walk_data(target, source):
     
-    ''' method to recursively walk parse tree and extend target '''
-    
+    ''' method to recursively walk parse tree and merge source into target '''
+
     from copy import deepcopy
-    
+
     # skip if target and source are different datatypes
     if target.__class__.__name__ != source.__class__.__name__:
         pass
@@ -95,16 +95,17 @@ def walk_data(target, source):
                         if not target.get_comments(idx):
                             target.ca.items[idx] = comments
 
-def extend_yaml_strings(*sources, output=''):
+def merge_yaml_strings(*sources, output=''):
 
     '''
         method for merging two or more yaml strings
 
-    this method walks the parse tree of yaml data to extend the fields
+    this method walks the parse tree of yaml data to merge the fields
     (and comments) found in subsequent sources into the data structure of the
     initial sources. any number of sources can be added to the source args, but
     only new fields and new comments from subsequent sources will be added. to
-    overwrite values, it suffices to simply reverse the order of the sources
+    overwrite the values in the initial source, it suffices to simply reverse 
+    the order of the sources
 
     PLEASE NOTE:    since there is no way to uniquely identify list items between
                     two yaml documents, items are not added to existing lists.
@@ -121,7 +122,7 @@ def extend_yaml_strings(*sources, output=''):
 
     :param sources: variable-length argument list of strings with yaml text
     :param output: [optional] string with type of output: '' [default], io
-    :return: string with extended data [or StringIO object]
+    :return: string with merged data [or StringIO object]
     '''
 
     # import libraries
@@ -181,16 +182,17 @@ def extend_yaml_strings(*sources, output=''):
         return stream
     return stream.getvalue()
 
-def extend_yaml_files(*sources, output=''):
+def merge_yaml(*sources, output=''):
     
     '''
         method for merging two or more yaml strings
 
-    this method walks the parse tree of yaml data to extend the values 
+    this method walks the parse tree of yaml data to merge the fields
     (and comments) found in subsequent sources into the data structure of the
     initial sources. any number of sources can be added to the source args, but
     only new fields and new comments from subsequent sources will be added. to
-    overwrite values, it suffices to simply reverse the order of the sources
+    overwrite the values in the initial source, it suffices to simply reverse 
+    the order of the sources
 
     PLEASE NOTE:    since there is no way to uniquely identify list items between
                     two yaml documents, items are not added to existing lists.
@@ -216,7 +218,7 @@ def extend_yaml_files(*sources, output=''):
 
     # open and combine sources
     src = [ open(yaml_path).read() for yaml_path in sources ]
-    stream = extend_yaml_strings(*src, output='io')
+    stream = merge_yaml_strings(*src, output='io')
 
     # save to file and return combined string
     if output:

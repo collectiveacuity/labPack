@@ -2,7 +2,7 @@ __author__ = 'rcj1492'
 __created__ = '2021.03'
 __license__ = '©2021 Collective Acuity'
 
-from labpack.compilers.yaml import extend_yaml_files, extend_yaml_strings
+from labpack.compilers.yaml import merge_yaml, merge_yaml_strings
 
 str_a = """\
 # comments at head of file
@@ -65,7 +65,7 @@ campaigns:  # new comment on key for list
 if __name__ == '__main__':
 
     # test default merge
-    merged = extend_yaml_strings(str_a, str_b)
+    merged = merge_yaml_strings(str_a, str_b)
     assert merged.find('# different comment at head of file') > -1
     assert merged.find('date: 20210101') > -1
     assert merged.find('# new comment on item') > -1
@@ -76,15 +76,15 @@ if __name__ == '__main__':
     assert merged.find('# new comment at end of map') == -1
 
     # test idempotence
-    remerged = extend_yaml_strings(merged, str_b)
+    remerged = merge_yaml_strings(merged, str_b)
     assert remerged == merged
-    reremerged = extend_yaml_strings(merged, str_b)
+    reremerged = merge_yaml_strings(merged, str_b)
     assert reremerged == merged
 
     # test file loading
     output = 'test20210325c.yaml'
     sources = ['test20210325a.yaml', 'test20210325b.yaml']
-    merged = extend_yaml_files(*sources, output=output)
+    merged = merge_yaml(*sources, output=output)
     assert merged.find('# different comment at head of file') > -1
     assert merged.find('date: 20210101') > -1
     assert merged.find('# new comment on item') > -1

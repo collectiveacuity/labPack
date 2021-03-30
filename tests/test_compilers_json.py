@@ -2,7 +2,7 @@ __author__ = 'rcj1492'
 __created__ = '2021.03'
 __license__ = '©2021 Collective Acuity'
 
-from labpack.compilers.json import extend_json
+from labpack.compilers.json import merge_json
 
 data_a = {
   "date": 20210101,
@@ -89,7 +89,11 @@ if __name__ == '__main__':
 
     output = 'test20210325c.json'
     sources = ['test20210325a.json', 'test20210325b.json']
-    combined = extend_json(*sources, output=output)
-    print(combined)
+    combined = merge_json(*sources, output=output)
+    assert 'topic' in combined.keys()
+    assert len(combined['brands']) > 2
+    assert 'season' in combined['campaigns'][1].keys()
+    assert 'neighborhood' in combined['campaigns'][1]['places'][1].keys()
+    assert combined['date'] < 20210102
     
         
