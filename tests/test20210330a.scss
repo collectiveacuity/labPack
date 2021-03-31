@@ -1,0 +1,23 @@
+// APP SCSS GLOBALS 
+// @import 'globals.scss';
+
+// determine device widths
+$width-mobile: 768;
+$width-tablet: 1024;
+$width-laptop: 1366; // $width-laptop: 1280;
+$width-desktop: 1550; // 1750 prod
+
+// determine dashboard layer order
+$index-header: 100;
+$index-menu: 200;
+$index-dropdown: 300;
+$index-preload: 500;
+$index-dialogs: 1000;
+$index-splash: 2000;
+
+// determine line heights
+$height-header: 56;
+$height-menu: 36;
+$height-options: 56;
+$height-footer: 56;
+$height-title: 28;
