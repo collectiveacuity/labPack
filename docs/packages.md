@@ -134,6 +134,90 @@ a method to construct a conditional filter function to test positional arguments
 </tbody>
 </table>
 
+## git.py
+### Import:
+labpack.compilers.git  
+### Description:
+  
+### merge_diff
+##### 
+**Signature:**  
+merge_diff(target, source, output="")
+##### 
+**Description:**  
+a method to merge the non-conflicting diffs between two files
+        
+        method retrieves the results from `git diff --no-index target source`
+        and adds to target the lines from additions found in source. diff
+        results which would subtract lines from target are ignored.
+        
+        PLEASE NOTE:    method makes no check to ensure that target, source
+                        or output are valid paths  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type  </th><th>Required  </th><th>Default  </th><th>Description                                                </th></tr>
+</thead>
+<tbody>
+<tr><td>target    </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with path to file for target data                   </td></tr>
+<tr><td>source    </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with path to file for source data                   </td></tr>
+<tr><td>output    </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with path to file to save output of merge</td></tr>
+</tbody>
+</table>
+
+## json.py
+### Import:
+labpack.compilers.json  
+### Description:
+a package of methods to merge two or more json documents preserving order  
+### merge_json
+##### 
+**Signature:**  
+merge_json(*sources, output="")
+##### 
+**Description:**  
+method for merging two or more json files
+
+    this method walks the parse tree of json data to merge the fields
+    found in subsequent sources into the data structure of the initial source. 
+    any number of sources can be added to the source args, but only new fields
+    from subsequent sources will be added. to overwrite values in the initial
+    source instead, it suffices to simply reverse the order of the sources
+
+    PLEASE NOTE:    since there is no way to uniquely identify list items between
+                    two json documents, items are not added to existing lists.
+
+    PLEASE NOTE:    however, lists are transversed in order to evaluate keys of 
+                    nested dictionaries using the first item of any subsequent list
+                    as a model for the scope
+    
+    PLEASE NOTE:    this method makes no checks to ensure the file path of the 
+                    sources exist nor the folder path to any output  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                                       </th></tr>
+</thead>
+<tbody>
+<tr><td>*sources  </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>                                                                  </td></tr>
+<tr><td>output    </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with path to save the combined json data to file</td></tr>
+</tbody>
+</table>
+### walk_data
+##### 
+**Signature:**  
+walk_data(target, source)
+##### 
+**Description:**  
+method to recursively walk parse tree and merge source into target  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>target    </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>source    </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+
 ## objects.py
 ### Import:
 labpack.compilers.objects  
@@ -154,6 +238,138 @@ retrieve_function(function_string, global_scope=None, root_path="./")
 <tr><td>function_string</td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 <tr><td>global_scope   </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
 <tr><td>root_path      </td><td>str     </td><td>          </td><td>&quot;./&quot;     </td><td>             </td></tr>
+</tbody>
+</table>
+
+## yaml.py
+### Import:
+labpack.compilers.yaml  
+### Description:
+a package of methods to merge two or more yaml documents preserving order & comments  
+### get_comments_map
+##### 
+**Signature:**  
+get_comments_map(self, key, default=None)
+##### 
+**Description:**  
+  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>key       </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>default   </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+### get_comments_seq
+##### 
+**Signature:**  
+get_comments_seq(self, idx, default=None)
+##### 
+**Description:**  
+  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>self      </td><td>object  </td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>idx       </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>default   </td><td>NoneType</td><td>          </td><td>None     </td><td>             </td></tr>
+</tbody>
+</table>
+### merge_yaml
+##### 
+**Signature:**  
+merge_yaml(*sources, output="")
+##### 
+**Description:**  
+method for merging two or more yaml strings
+
+    this method walks the parse tree of yaml data to merge the fields
+    (and comments) found in subsequent sources into the data structure of the
+    initial sources. any number of sources can be added to the source args, but
+    only new fields and new comments from subsequent sources will be added. to
+    overwrite the values in the initial source, it suffices to simply reverse 
+    the order of the sources
+
+    PLEASE NOTE:    since there is no way to uniquely identify list items between
+                    two yaml documents, items are not added to existing lists.
+                    the overwrite rule also has no effect on items in lists
+
+    PLEASE NOTE:    however, lists are transversed in order to evaluate comments
+                    and keys of nested dictionaries using the first item of any
+                    subsequent list as a model for the scope
+
+    PLEASE NOTE:    the way that ruamel.yaml keeps track of multi-line comments
+                    can create odd results for comments which appear at the start
+                    or the end of lists and dictionaries when new fields and comments 
+                    are added. it is best to restrict comments to the start of lists
+                    and dictionaries.
+
+    PLEASE NOTE:    this method makes no checks to ensure the file path of the 
+                    sources exist nor the folder path to any output  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                                       </th></tr>
+</thead>
+<tbody>
+<tr><td>*sources  </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>                                                                  </td></tr>
+<tr><td>output    </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with path to save the combined yaml data to file</td></tr>
+</tbody>
+</table>
+### merge_yaml_strings
+##### 
+**Signature:**  
+merge_yaml_strings(*sources, output="")
+##### 
+**Description:**  
+method for merging two or more yaml strings
+
+    this method walks the parse tree of yaml data to merge the fields
+    (and comments) found in subsequent sources into the data structure of the
+    initial sources. any number of sources can be added to the source args, but
+    only new fields and new comments from subsequent sources will be added. to
+    overwrite the values in the initial source, it suffices to simply reverse 
+    the order of the sources
+
+    PLEASE NOTE:    since there is no way to uniquely identify list items between
+                    two yaml documents, items are not added to existing lists.
+
+    PLEASE NOTE:    however, lists are transversed in order to evaluate comments
+                    and keys of nested dictionaries using the first item of any
+                    subsequent list as a model for the scope
+
+    PLEASE NOTE:    the way that ruamel.yaml keeps track of multi-line comments
+                    can create odd results for comments which appear at the start
+                    or the end of lists and dictionaries when new fields and comments 
+                    are added. it is best to restrict comments to the start of lists
+                    and dictionaries.  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description                                            </th></tr>
+</thead>
+<tbody>
+<tr><td>*sources  </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>                                                       </td></tr>
+<tr><td>output    </td><td>str     </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with type of output: &#x27;&#x27; [default], io</td></tr>
+</tbody>
+</table>
+### walk_data
+##### 
+**Signature:**  
+walk_data(target, source)
+##### 
+**Description:**  
+method to recursively walk parse tree and merge source into target  
+<table>
+<thead>
+<tr><th>Argument  </th><th>Type    </th><th>Required  </th><th>Default  </th><th>Description  </th></tr>
+</thead>
+<tbody>
+<tr><td>target    </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
+<tr><td>source    </td><td>NoneType</td><td>Yes       </td><td>None     </td><td>             </td></tr>
 </tbody>
 </table>
 
@@ -813,7 +1029,7 @@ a method to save dictionary typed data to a local file
 </thead>
 <tbody>
 <tr><td>file_path     </td><td>str   </td><td>Yes       </td><td>&quot;&quot;       </td><td>string with path to settings file                 </td></tr>
-<tr><td>record_details</td><td>dict  </td><td>Yes       </td><td>None     </td><td>dictionary with record details                    </td></tr>
+<tr><td>record_details</td><td>list  </td><td>Yes       </td><td>None     </td><td>list or dictionary with record details            </td></tr>
 <tr><td>overwrite     </td><td>bool  </td><td>          </td><td>False    </td><td>[optional] boolean to overwrite existing file data</td></tr>
 <tr><td>secret_key    </td><td>str   </td><td>          </td><td>&quot;&quot;       </td><td>[optional] string with key to decrypt drep file   </td></tr>
 </tbody>

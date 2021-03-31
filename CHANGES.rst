@@ -1,8 +1,11 @@
 ChangeLog
 =========
 
-0.23 (????.??.??)
+0.23 (2021.03.31)
 -----------------
+* [FEATURE ADDED] compilers.git package with merge_diff method
+* [FEATURE ADDED] compilers.json package with merge_json method
+* [FEATURE ADDED] compilers.yaml package with merge_yaml method
 * [UPDATE] added support for list records to save_settings 
 * [DEPRECATED] removed error throwing from ingest_environ with model arg
 

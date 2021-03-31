@@ -2,9 +2,23 @@ __author__ = 'rcj1492'
 __created__ = '2021.03'
 __license__ = '©2021 Collective Acuity'
 
+'''
+PLEASE NOTE:    git package requires the git command line tool.
+
+(all platforms) sudo apt-get install git
+'''
+
+
 import re
 import subprocess
 from os import devnull
+
+try:
+    subprocess.Popen(["git", "--version"], stdout=subprocess.PIPE)
+except:
+    import sys
+    print('git package requires the git command line tool. try: sudo apt-get install git')
+    sys.exit(1)
 
 def merge_diff(target, source, output=''):
    
